@@ -39,6 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
 	AlertDialog,
@@ -357,17 +358,17 @@ function AgentsSection({ agents, setAgents }: { agents: Agent[]; setAgents: Reac
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<Agent | null>(null);
-	const [form, setForm] = useState({ name: "", email: "", role: "Agent" });
+	const [form, setForm] = useState({ email: "", role: "Agent" });
 
 	function openAdd() {
 		setEditingAgent(null);
-		setForm({ name: "", email: "", role: "Agent" });
+		setForm({ email: "", role: "Agent" });
 		setDialogOpen(true);
 	}
 
 	function openEdit(agent: Agent) {
 		setEditingAgent(agent);
-		setForm({ name: agent.name, email: agent.email, role: agent.role });
+		setForm({ email: agent.email, role: agent.role });
 		setDialogOpen(true);
 	}
 
@@ -377,36 +378,30 @@ function AgentsSection({ agents, setAgents }: { agents: Agent[]; setAgents: Reac
 	}
 
 	function handleSave() {
-		if (!form.name || !form.email) return;
+		if (!form.email) return;
 		if (editingAgent) {
 			setAgents((prev) =>
 				prev.map((a) =>
 					a.id === editingAgent.id
 						? {
 								...a,
-								name: form.name,
-								email: form.email,
 								role: form.role,
-								initials: form.name
-									.split(" ")
-									.map((w) => w[0])
-									.join("")
-									.slice(0, 2)
-									.toUpperCase(),
 							}
 						: a,
 				),
 			);
 		} else {
+			const emailPrefix = form.email.split("@")[0] || "Agent";
+			const name = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
 			const newAgent: Agent = {
 				id: nextId("a"),
-				name: form.name,
+				name,
 				email: form.email,
 				role: form.role,
 				status: "offline",
 				invitationStatus: "pending",
 				invitationSentAt: new Date().toISOString(),
-				initials: form.name
+				initials: name
 					.split(" ")
 					.map((w) => w[0])
 					.join("")
@@ -512,12 +507,6 @@ function AgentsSection({ agents, setAgents }: { agents: Agent[]; setAgents: Reac
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
 						<div className="grid gap-2">
-							<Label htmlFor="agent-name" className="text-xs font-medium">
-								Full Name
-							</Label>
-							<Input id="agent-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="h-9 rounded-lg" />
-						</div>
-						<div className="grid gap-2">
 							<Label htmlFor="agent-email" className="text-xs font-medium">
 								Email Address
 							</Label>
@@ -526,6 +515,7 @@ function AgentsSection({ agents, setAgents }: { agents: Agent[]; setAgents: Reac
 								type="email"
 								value={form.email}
 								onChange={(e) => setForm({ ...form, email: e.target.value })}
+								disabled={!!editingAgent}
 								className="h-9 rounded-lg"
 							/>
 						</div>
@@ -547,7 +537,7 @@ function AgentsSection({ agents, setAgents }: { agents: Agent[]; setAgents: Reac
 						<Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-lg text-xs">
 							Cancel
 						</Button>
-						<Button onClick={handleSave} disabled={!form.name || !form.email} className="rounded-lg text-xs font-semibold">
+						<Button onClick={handleSave} disabled={!form.email} className="rounded-lg text-xs font-semibold">
 							{editingAgent ? "Save Changes" : "Send Invitation"}
 						</Button>
 					</DialogFooter>
@@ -1133,24 +1123,12 @@ function CannedRepliesSection({ replies, setReplies }: { replies: CannedReply[];
 							<Label htmlFor="reply-content" className="text-xs font-medium">
 								Content
 							</Label>
-							<Textarea
-								id="reply-content"
-								value={form.content}
-								onChange={(e) => setForm({ ...form, content: e.target.value })}
-								placeholder="Use variables like {{ticket_id}}, {{customer_name}}"
-								className="min-h-32 rounded-lg resize-none"
+							<TiptapEditor
+								content={form.content}
+								onChange={(content) => setForm({ ...form, content })}
+								placeholder="Enter the canned reply content..."
+								minHeight="min-h-[128px]"
 							/>
-							<p className="text-[10px] text-muted-foreground">
-								Available: {"{"}
-								{"{"}ticket_id{"}"}
-								{"}"}, {"{"}
-								{"{"}customer_name{"}"}
-								{"}"}, {"{"}
-								{"{"}agent_name{"}"}
-								{"}"}, {"{"}
-								{"{"}team_name{"}"}
-								{"}"}
-							</p>
 						</div>
 					</div>
 					<DialogFooter>
@@ -1312,24 +1290,12 @@ function SignaturesSection({ signatures, setSignatures }: { signatures: Signatur
 							<Label htmlFor="sig-content" className="text-xs font-medium">
 								Signature Content
 							</Label>
-							<Textarea
-								id="sig-content"
-								value={form.content}
-								onChange={(e) => setForm({ ...form, content: e.target.value })}
-								placeholder="Best regards,\n{{agent_name}}\nSupportDesk 365"
-								className="min-h-32 rounded-lg resize-none font-mono text-xs"
+							<TiptapEditor
+								content={form.content}
+								onChange={(content) => setForm({ ...form, content })}
+								placeholder="Enter your signature..."
+								minHeight="min-h-[128px]"
 							/>
-							<p className="text-[10px] text-muted-foreground">
-								Variables: {"{"}
-								{"{"}agent_name{"}"}
-								{"}"}, {"{"}
-								{"{"}agent_role{"}"}
-								{"}"}, {"{"}
-								{"{"}team_name{"}"}
-								{"}"}, {"{"}
-								{"{"}company{"}"}
-								{"}"}
-							</p>
 						</div>
 						<div className="flex items-center gap-2">
 							<Checkbox

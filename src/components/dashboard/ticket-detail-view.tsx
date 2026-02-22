@@ -27,7 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -381,11 +381,12 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 									Internal Note
 								</Button>
 							</div>
-							<Textarea
+							<TiptapEditor
+								content={reply}
+								onChange={setReply}
 								placeholder={isInternal ? "Write an internal note..." : "Type your reply..."}
-								value={reply}
-								onChange={(e) => setReply(e.target.value)}
-								className={`min-h-24 rounded-xl resize-none ${isInternal ? "border-warning/30 bg-warning/5" : ""}`}
+								className={isInternal ? "border-warning/30 bg-warning/5" : ""}
+								minHeight="min-h-[96px]"
 							/>
 							<div className="flex items-center justify-between mt-3">
 								<Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5 text-muted-foreground rounded-lg">
