@@ -1,0 +1,13 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { OverviewView } from "@/components/dashboard/overview-view";
+
+export const Route = createFileRoute("/dashboard/overview")({
+	component: OverviewViewRoute,
+});
+
+function OverviewViewRoute() {
+	const navigate = useNavigate();
+	return (
+		<OverviewView onOpenTicket={(id) => navigate({ to: "/dashboard/tickets/$id", params: { id } })} />
+	);
+}

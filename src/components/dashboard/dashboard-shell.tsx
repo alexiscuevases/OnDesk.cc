@@ -1,6 +1,5 @@
-"use client";
-
 import { useState } from "react";
+import { Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
 	LayoutDashboard,
 	Ticket,
@@ -49,20 +48,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { OverviewView } from "@/components/dashboard/overview-view";
-import { TicketsView } from "@/components/dashboard/tickets-view";
-import { TeamsView } from "@/components/dashboard/teams-view";
-import { AnalyticsView } from "@/components/dashboard/analytics-view";
-import { ConfigurationsView } from "@/components/dashboard/configurations-view";
-import { TicketDetailView } from "@/components/dashboard/ticket-detail-view";
-import { tickets, agents, teams, customers } from "@/lib/data";
+import { tickets, agents, teams } from "@/lib/data";
 
 const navItems = [
-	{ id: "overview", label: "Overview", icon: LayoutDashboard, badge: null },
-	{ id: "tickets", label: "Tickets", icon: Ticket, badge: "248" },
-	{ id: "teams", label: "Teams", icon: Users, badge: "7" },
-	{ id: "analytics", label: "Analytics", icon: BarChart3, badge: null },
-	{ id: "configurations", label: "Settings", icon: Settings, badge: null },
+	{ id: "overview", label: "Overview", icon: LayoutDashboard, badge: null, to: "/dashboard/overview" },
+	{ id: "tickets", label: "Tickets", icon: Ticket, badge: "248", to: "/dashboard/tickets" },
+	{ id: "teams", label: "Teams", icon: Users, badge: "7", to: "/dashboard/teams" },
+	{ id: "analytics", label: "Analytics", icon: BarChart3, badge: null, to: "/dashboard/analytics" },
+	{ id: "configurations", label: "Settings", icon: Settings, badge: null, to: "/dashboard/configurations" },
 ];
 
 interface Notification {
@@ -147,8 +140,10 @@ function NotificationIcon({ type }: { type: Notification["type"] }) {
 }
 
 export function DashboardShell() {
-	const [activeView, setActiveView] = useState("overview");
-	const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+	const navigate = useNavigate();
+	const routerState = useRouterState();
+	const currentPath = routerState.location.pathname;
+
 	const [notifications, setNotifications] = useState(initialNotifications);
 	const [notifOpen, setNotifOpen] = useState(false);
 	const [newTicketOpen, setNewTicketOpen] = useState(false);
@@ -164,7 +159,6 @@ export function DashboardShell() {
 
 	const unreadCount = notifications.filter((n) => !n.read).length;
 
-	// Search results
 	const searchResults = {
 		tickets: tickets
 			.filter(
@@ -186,16 +180,6 @@ export function DashboardShell() {
 
 	const hasResults = searchResults.tickets.length > 0 || searchResults.agents.length > 0 || searchResults.teams.length > 0;
 
-	function handleOpenTicket(ticketId: string) {
-		setSelectedTicketId(ticketId);
-		setActiveView("ticket-detail");
-	}
-
-	function handleBackToTickets() {
-		setSelectedTicketId(null);
-		setActiveView("tickets");
-	}
-
 	function markAllRead() {
 		setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
 	}
@@ -209,12 +193,11 @@ export function DashboardShell() {
 	}
 
 	function handleCreateTicket() {
-		// In a real app this would call an API
 		setNewTicketOpen(false);
 		setNewTicket({ subject: "", requester: "", priority: "medium", team: "", description: "" });
 	}
 
-	const showNewTicketButton = activeView === "tickets";
+	const showNewTicketButton = currentPath === "/dashboard/tickets" || currentPath === "/dashboard/tickets/";
 
 	return (
 		<SidebarProvider>
@@ -239,15 +222,14 @@ export function DashboardShell() {
 								{navItems.map((item) => (
 									<SidebarMenuItem key={item.id}>
 										<SidebarMenuButton
-											isActive={activeView === item.id}
-											onClick={() => {
-												setActiveView(item.id);
-												setSelectedTicketId(null);
-											}}
+											asChild
+											isActive={currentPath.startsWith(item.to)}
 											tooltip={item.label}
 											className="h-9 rounded-lg text-[13px] transition-all">
-											<item.icon className="size-[18px]" />
-											<span>{item.label}</span>
+											<Link to={item.to}>
+												<item.icon className="size-[18px]" />
+												<span>{item.label}</span>
+											</Link>
 										</SidebarMenuButton>
 										{item.badge && (
 											<SidebarMenuBadge className="text-[10px] font-medium bg-sidebar-primary/20 text-sidebar-primary border-0 rounded-full px-2">
@@ -286,7 +268,7 @@ export function DashboardShell() {
 									<DropdownMenuItem>Profile</DropdownMenuItem>
 									<DropdownMenuItem>Account Settings</DropdownMenuItem>
 									<DropdownMenuSeparator />
-									<DropdownMenuItem>Sign Out</DropdownMenuItem>
+									<DropdownMenuItem onClick={() => navigate({ to: "/auth/signin" })}>Sign Out</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
 						</SidebarMenuItem>
@@ -327,7 +309,7 @@ export function DashboardShell() {
 												<button
 													key={ticket.id}
 													onClick={() => {
-														handleOpenTicket(ticket.id);
+														navigate({ to: "/dashboard/tickets/$id", params: { id: ticket.id } });
 														setSearchOpen(false);
 														setGlobalSearch("");
 													}}
@@ -586,12 +568,7 @@ export function DashboardShell() {
 				</header>
 
 				<main className="flex-1 overflow-auto p-6">
-					{activeView === "overview" && <OverviewView onOpenTicket={handleOpenTicket} />}
-					{activeView === "tickets" && <TicketsView onOpenTicket={handleOpenTicket} />}
-					{activeView === "teams" && <TeamsView />}
-					{activeView === "analytics" && <AnalyticsView />}
-					{activeView === "configurations" && <ConfigurationsView />}
-					{activeView === "ticket-detail" && selectedTicketId && <TicketDetailView ticketId={selectedTicketId} onBack={handleBackToTickets} />}
+					<Outlet />
 				</main>
 			</SidebarInset>
 		</SidebarProvider>
