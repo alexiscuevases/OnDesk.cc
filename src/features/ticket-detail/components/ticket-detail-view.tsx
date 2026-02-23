@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { tickets, getTicketMessages, customers, agents, type TicketStatus, type TicketPriority } from "@/lib/data";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTicketById, fetchTicketMessages as fetchMessages, fetchTickets, fetchCustomers, queryKeys } from "@/lib/queries";
+import type { TicketStatus, TicketPriority } from "@/lib/data";
 import { TicketDetailHeader } from "./ticket-detail-header";
 import { TicketConversation } from "./ticket-conversation";
 import { TicketReplyBox } from "./ticket-reply-box";
@@ -25,8 +27,10 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 	const [mergeOpen, setMergeOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
 
-	const ticket = tickets.find((t) => t.id === ticketId);
-	const messages = getTicketMessages(ticketId);
+	const { data: ticket } = useQuery({ queryKey: queryKeys.tickets.detail(ticketId), queryFn: () => fetchTicketById(ticketId) });
+	const { data: messages = [] } = useQuery({ queryKey: queryKeys.tickets.messages(ticketId), queryFn: () => fetchMessages(ticketId) });
+	const { data: allTickets = [] } = useQuery({ queryKey: queryKeys.tickets.all, queryFn: () => fetchTickets() });
+	const { data: customers = [] } = useQuery({ queryKey: queryKeys.customers.all, queryFn: fetchCustomers });
 
 	if (!ticket) {
 		return (
@@ -40,7 +44,7 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 	}
 
 	const currentRequester = customers.find((c) => c.email === ticket.requester);
-	const mergeableTickets = tickets.filter((t) => t.id !== ticketId);
+	const mergeableTickets = allTickets.filter((t) => t.id !== ticketId);
 
 	function handleSaveTitle(title: string) {
 		console.log("[v0] Updating title to:", title);

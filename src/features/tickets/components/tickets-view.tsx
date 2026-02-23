@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { tickets as initialTickets } from "@/lib/data";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchTickets, queryKeys } from "@/lib/queries";
 import { TicketsFilters } from "./tickets-filters";
 import { TicketsBulkActions } from "./tickets-bulk-actions";
 import { TicketsTable } from "./tickets-table";
@@ -7,9 +8,10 @@ import { DeleteTicketModal } from "../modals/delete-ticket-modal";
 import { AssignAgentModal } from "../modals/assign-agent-modal";
 import { AssignTeamModal } from "../modals/assign-team-modal";
 import { MergeTicketModal } from "../modals/merge-ticket-modal";
+import type { Ticket } from "@/lib/data";
 
 export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => void }) {
-	const [tickets, setTickets] = useState(initialTickets);
+	const queryClient = useQueryClient();
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
 	const [priorityFilter, setPriorityFilter] = useState<string>("all");
@@ -21,20 +23,21 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 	const [assignAgentOpen, setAssignAgentOpen] = useState(false);
 	const [assignTeamOpen, setAssignTeamOpen] = useState(false);
 
-	const filtered = tickets.filter((t) => {
-		const matchSearch =
-			t.subject.toLowerCase().includes(search.toLowerCase()) ||
-			t.id.toLowerCase().includes(search.toLowerCase()) ||
-			t.requester.toLowerCase().includes(search.toLowerCase());
-		const matchStatus = statusFilter === "all" || t.status === statusFilter;
-		const matchPriority = priorityFilter === "all" || t.priority === priorityFilter;
-		return matchSearch && matchStatus && matchPriority;
+	const { data: tickets = [], isLoading } = useQuery({
+		queryKey: queryKeys.tickets.list({ search, status: statusFilter as Ticket["status"] | "all", priority: priorityFilter as Ticket["priority"] | "all" }),
+		queryFn: () => fetchTickets({ search, status: statusFilter as Ticket["status"] | "all", priority: priorityFilter as Ticket["priority"] | "all" }),
+	});
+
+	// Para stats usamos todos los tickets sin filtros
+	const { data: allTickets = [] } = useQuery({
+		queryKey: queryKeys.tickets.all,
+		queryFn: () => fetchTickets(),
 	});
 
 	const mergeableTickets = tickets.filter((t) => !selectedTickets.includes(t.id));
 
 	function handleSelectAll(checked: boolean) {
-		setSelectedTickets(checked ? filtered.map((t) => t.id) : []);
+		setSelectedTickets(checked ? tickets.map((t) => t.id) : []);
 	}
 
 	function handleSelectTicket(ticketId: string, checked: boolean) {
@@ -42,7 +45,14 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 	}
 
 	function handleDeleteConfirm() {
-		setTickets((prev) => prev.filter((t) => !selectedTickets.includes(t.id)));
+		// Optimistic update: elimina de la cache
+		queryClient.setQueryData<Ticket[]>(queryKeys.tickets.all, (prev = []) =>
+			prev.filter((t) => !selectedTickets.includes(t.id)),
+		);
+		queryClient.setQueryData<Ticket[]>(
+			queryKeys.tickets.list({ search, status: statusFilter as Ticket["status"] | "all", priority: priorityFilter as Ticket["priority"] | "all" }),
+			(prev = []) => prev.filter((t) => !selectedTickets.includes(t.id)),
+		);
 		setSelectedTickets([]);
 		setDeleteOpen(false);
 	}
@@ -53,8 +63,13 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 	}
 
 	function handleAssignTeamConfirm(teamName: string) {
-		setTickets((prev) =>
-			prev.map((t) => (selectedTickets.includes(t.id) ? { ...t, team: teamName } : t)),
+		// Optimistic update: actualiza el equipo en la cache
+		const updater = (prev: Ticket[] = []) =>
+			prev.map((t) => (selectedTickets.includes(t.id) ? { ...t, team: teamName } : t));
+		queryClient.setQueryData<Ticket[]>(queryKeys.tickets.all, updater);
+		queryClient.setQueryData<Ticket[]>(
+			queryKeys.tickets.list({ search, status: statusFilter as Ticket["status"] | "all", priority: priorityFilter as Ticket["priority"] | "all" }),
+			updater,
 		);
 		setSelectedTickets([]);
 	}
@@ -79,10 +94,10 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 			{/* Summary Stats */}
 			<div className="grid grid-cols-4 gap-3">
 				{[
-					{ label: "Open", count: tickets.filter((t) => t.status === "open").length, color: "bg-chart-1" },
-					{ label: "In Progress", count: tickets.filter((t) => t.status === "in-progress").length, color: "bg-warning" },
-					{ label: "Resolved", count: tickets.filter((t) => t.status === "resolved").length, color: "bg-success" },
-					{ label: "Closed", count: tickets.filter((t) => t.status === "closed").length, color: "bg-muted-foreground" },
+					{ label: "Open", count: allTickets.filter((t) => t.status === "open").length, color: "bg-chart-1" },
+					{ label: "In Progress", count: allTickets.filter((t) => t.status === "in-progress").length, color: "bg-warning" },
+					{ label: "Resolved", count: allTickets.filter((t) => t.status === "resolved").length, color: "bg-success" },
+					{ label: "Closed", count: allTickets.filter((t) => t.status === "closed").length, color: "bg-muted-foreground" },
 				].map((stat) => (
 					<div key={stat.label} className="flex items-center gap-3 rounded-xl bg-card p-3.5 shadow-sm">
 						<div className={`size-2.5 rounded-full ${stat.color}`} />
@@ -114,13 +129,14 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 			/>
 
 			<TicketsTable
-				tickets={filtered}
-				totalCount={tickets.length}
+				tickets={tickets}
+				totalCount={allTickets.length}
 				selectedTickets={selectedTickets}
 				onSelectAll={handleSelectAll}
 				onSelectTicket={handleSelectTicket}
 				onOpenTicket={onOpenTicket}
 				onDeleteSingle={handleDeleteSingle}
+				isLoading={isLoading}
 			/>
 
 			<DeleteTicketModal

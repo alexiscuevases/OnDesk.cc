@@ -6,7 +6,8 @@ import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContaine
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { kpis, tickets, ticketVolumeData, channelDistribution } from "@/lib/data";
+import { useQuery } from "@tanstack/react-query";
+import { fetchKPIs, fetchTickets, fetchTicketVolumeData, fetchChannelDistribution, queryKeys } from "@/lib/queries";
 
 const kpiIcons = [AlertTriangle, Clock, CheckCircle2, TrendingUp];
 
@@ -20,6 +21,11 @@ const tooltipStyle = {
 };
 
 export function OverviewView({ onOpenTicket }: { onOpenTicket: (id: string) => void }) {
+	const { data: kpis = [] } = useQuery({ queryKey: queryKeys.kpis.all, queryFn: fetchKPIs });
+	const { data: tickets = [] } = useQuery({ queryKey: queryKeys.tickets.all, queryFn: () => fetchTickets() });
+	const { data: ticketVolumeData = [] } = useQuery({ queryKey: queryKeys.analytics.ticketVolume, queryFn: fetchTicketVolumeData });
+	const { data: channelDistribution = [] } = useQuery({ queryKey: queryKeys.analytics.channelDistribution, queryFn: fetchChannelDistribution });
+
 	const recentTickets = tickets.slice(0, 5);
 
 	return (

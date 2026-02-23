@@ -9,15 +9,20 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { teams, tickets } from "@/lib/data";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTeams, fetchTickets, queryKeys } from "@/lib/queries";
 
 export function TeamsView() {
-	const [selectedTeam, setSelectedTeam] = useState<string | null>(teams[0]?.id || null);
+	const { data: teams = [] } = useQuery({ queryKey: queryKeys.teams.all, queryFn: fetchTeams });
+	const { data: tickets = [] } = useQuery({ queryKey: queryKeys.tickets.all, queryFn: () => fetchTickets() });
+
+	const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [priorityFilter, setPriorityFilter] = useState<string>("all");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
 
-	const selectedTeamData = teams.find((t) => t.id === selectedTeam);
+	const effectiveSelectedTeam = selectedTeam ?? teams[0]?.id ?? null;
+	const selectedTeamData = teams.find((t) => t.id === effectiveSelectedTeam);
 	const teamTickets = selectedTeamData ? tickets.filter((t) => t.team === selectedTeamData.name) : [];
 
 	// Apply filters

@@ -4,7 +4,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { customers } from "@/lib/data";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCustomers, queryKeys } from "@/lib/queries";
 import type { Customer } from "@/lib/data";
 import { getInitials } from "@/lib/format";
 
@@ -15,6 +16,7 @@ interface ChangeRequesterModalProps {
 }
 
 export function ChangeRequesterModal({ open, onOpenChange, onSave }: ChangeRequesterModalProps) {
+	const { data: customers = [] } = useQuery({ queryKey: queryKeys.customers.all, queryFn: fetchCustomers });
 	const [search, setSearch] = useState("");
 	const [selected, setSelected] = useState<Customer | null>(null);
 

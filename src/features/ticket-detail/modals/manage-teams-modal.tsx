@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { teams } from "@/lib/data";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTeams, queryKeys } from "@/lib/queries";
 
 interface ManageTeamsModalProps {
 	open: boolean;
@@ -13,6 +14,7 @@ interface ManageTeamsModalProps {
 }
 
 export function ManageTeamsModal({ open, onOpenChange, currentTeams, onSave }: ManageTeamsModalProps) {
+	const { data: teams = [] } = useQuery({ queryKey: queryKeys.teams.all, queryFn: fetchTeams });
 	const [selected, setSelected] = useState<string[]>(currentTeams);
 
 	function handleOpenChange(open: boolean) {

@@ -19,6 +19,7 @@ interface TicketsTableProps {
 	onSelectTicket: (id: string, checked: boolean) => void;
 	onOpenTicket: (id: string) => void;
 	onDeleteSingle: (id: string) => void;
+	isLoading?: boolean;
 }
 
 export function TicketsTable({
@@ -29,6 +30,7 @@ export function TicketsTable({
 	onSelectTicket,
 	onOpenTicket,
 	onDeleteSingle,
+	isLoading,
 }: TicketsTableProps) {
 	return (
 		<Card className="border-0 shadow-sm overflow-hidden">
@@ -37,7 +39,7 @@ export function TicketsTable({
 					<div>
 						<CardTitle className="text-sm font-semibold">All Tickets</CardTitle>
 						<CardDescription className="text-xs">
-							{tickets.length} ticket{tickets.length !== 1 ? "s" : ""} found
+							{isLoading ? "Loading..." : `${tickets.length} ticket${tickets.length !== 1 ? "s" : ""} found`}
 						</CardDescription>
 					</div>
 					<Button variant="outline" size="sm" className="gap-1.5 h-8 rounded-lg text-xs">

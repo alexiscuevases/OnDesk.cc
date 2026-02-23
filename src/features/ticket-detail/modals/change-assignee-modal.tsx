@@ -4,7 +4,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { agents } from "@/lib/data";
+import { useQuery } from "@tanstack/react-query";
+import { fetchAgents, queryKeys } from "@/lib/queries";
 import type { Agent } from "@/lib/data";
 
 interface ChangeAssigneeModalProps {
@@ -14,6 +15,7 @@ interface ChangeAssigneeModalProps {
 }
 
 export function ChangeAssigneeModal({ open, onOpenChange, onSave }: ChangeAssigneeModalProps) {
+	const { data: agents = [] } = useQuery({ queryKey: queryKeys.agents.all, queryFn: fetchAgents });
 	const [search, setSearch] = useState("");
 	const [selected, setSelected] = useState<Agent | null>(null);
 

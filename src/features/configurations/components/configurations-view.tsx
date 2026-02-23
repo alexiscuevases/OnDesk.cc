@@ -1,18 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Save, Bell, Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Check, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-	agents as importedAgents,
-	outlookAccounts as importedOutlookAccounts,
-	companies as importedCompanies,
-	customers as importedCustomers,
-	type Agent,
-	type OutlookAccount,
-	type Company,
-	type Customer,
-} from "@/lib/data";
+import { useQuery } from "@tanstack/react-query";
+import { fetchAgents, fetchOutlookAccounts, fetchCompanies, fetchCustomers, queryKeys } from "@/lib/queries";
+import type { Agent, OutlookAccount, Company, Customer } from "@/lib/data";
 import { initialTeams, initialCannedReplies, initialSignatures } from "@/lib/config-data";
 import { type ConfigTeam, type CannedReply, type Signature } from "@/types/index";
 import { GeneralSection } from "./general-section";
@@ -43,13 +36,24 @@ export function ConfigurationsView() {
 	const [activeSection, setActiveSection] = useState<ConfigSection>("general");
 	const [saved, setSaved] = useState(false);
 
-	const [agents, setAgents] = useState<Agent[]>(importedAgents);
-	const [outlookAccounts, setOutlookAccounts] = useState<OutlookAccount[]>(importedOutlookAccounts);
+	const { data: fetchedAgents = [] } = useQuery({ queryKey: queryKeys.agents.all, queryFn: fetchAgents });
+	const { data: fetchedOutlookAccounts = [] } = useQuery({ queryKey: queryKeys.outlookAccounts.all, queryFn: fetchOutlookAccounts });
+	const { data: fetchedCompanies = [] } = useQuery({ queryKey: queryKeys.companies.all, queryFn: fetchCompanies });
+	const { data: fetchedCustomers = [] } = useQuery({ queryKey: queryKeys.customers.all, queryFn: fetchCustomers });
+
+	const [agents, setAgents] = useState<Agent[]>([]);
+	const [outlookAccounts, setOutlookAccounts] = useState<OutlookAccount[]>([]);
 	const [configTeams, setConfigTeams] = useState<ConfigTeam[]>(initialTeams);
 	const [cannedReplies, setCannedReplies] = useState<CannedReply[]>(initialCannedReplies);
 	const [signatures, setSignatures] = useState<Signature[]>(initialSignatures);
-	const [companies, setCompanies] = useState<Company[]>(importedCompanies);
-	const [customers, setCustomers] = useState<Customer[]>(importedCustomers);
+	const [companies, setCompanies] = useState<Company[]>([]);
+	const [customers, setCustomers] = useState<Customer[]>([]);
+
+	// Inicializar estado local una sola vez cuando los datos lleguen de la query
+	useEffect(() => { if (fetchedAgents.length > 0) setAgents(fetchedAgents); }, [fetchedAgents]);
+	useEffect(() => { if (fetchedOutlookAccounts.length > 0) setOutlookAccounts(fetchedOutlookAccounts); }, [fetchedOutlookAccounts]);
+	useEffect(() => { if (fetchedCompanies.length > 0) setCompanies(fetchedCompanies); }, [fetchedCompanies]);
+	useEffect(() => { if (fetchedCustomers.length > 0) setCustomers(fetchedCustomers); }, [fetchedCustomers]);
 
 	function handleSave() {
 		setSaved(true);

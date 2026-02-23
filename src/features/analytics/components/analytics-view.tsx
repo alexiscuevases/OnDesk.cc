@@ -20,7 +20,16 @@ import {
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ticketVolumeData, responseTimeData, csatTrendData, teamPerformanceData, priorityBreakdown, hourlyTicketData } from "@/lib/data";
+import { useQuery } from "@tanstack/react-query";
+import {
+	fetchTicketVolumeData,
+	fetchResponseTimeData,
+	fetchCsatTrendData,
+	fetchTeamPerformanceData,
+	fetchPriorityBreakdown,
+	fetchHourlyTicketData,
+	queryKeys,
+} from "@/lib/queries";
 
 const tooltipStyle = {
 	backgroundColor: "var(--color-card)",
@@ -32,6 +41,13 @@ const tooltipStyle = {
 };
 
 export function AnalyticsView() {
+	const { data: ticketVolumeData = [] } = useQuery({ queryKey: queryKeys.analytics.ticketVolume, queryFn: fetchTicketVolumeData });
+	const { data: responseTimeData = [] } = useQuery({ queryKey: queryKeys.analytics.responseTime, queryFn: fetchResponseTimeData });
+	const { data: csatTrendData = [] } = useQuery({ queryKey: queryKeys.analytics.csatTrend, queryFn: fetchCsatTrendData });
+	const { data: teamPerformanceData = [] } = useQuery({ queryKey: queryKeys.analytics.teamPerformance, queryFn: fetchTeamPerformanceData });
+	const { data: priorityBreakdown = [] } = useQuery({ queryKey: queryKeys.analytics.priorityBreakdown, queryFn: fetchPriorityBreakdown });
+	const { data: hourlyTicketData = [] } = useQuery({ queryKey: queryKeys.analytics.hourlyTickets, queryFn: fetchHourlyTicketData });
+
 	return (
 		<div className="flex flex-col gap-6">
 			<div>
