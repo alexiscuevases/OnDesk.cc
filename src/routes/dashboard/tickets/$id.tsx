@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { TicketDetailView } from "@/components/dashboard/ticket-detail-view";
+import { TicketDetailView } from "@/features/ticket-detail";
 
 export const Route = createFileRoute("/dashboard/tickets/$id")({
 	component: TicketDetailRoute,

@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { OverviewView } from "@/components/dashboard/overview-view";
+import { OverviewView } from "@/features/overview";
 
 export const Route = createFileRoute("/dashboard/overview")({
 	component: OverviewViewRoute,
