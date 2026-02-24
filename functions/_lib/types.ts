@@ -164,7 +164,7 @@ export interface TicketRow {
   status: TicketStatus;
   priority: TicketPriority;
   channel: string | null;
-  graph_message_id: string | null;
+  conversation_id: string | null;
   created_at: number;
   updated_at: number;
 }
@@ -221,6 +221,7 @@ export interface TicketMessageRow {
   author_type: AuthorType;
   type: MessageType;
   content: string;
+  graph_message_id: string | null;
   created_at: number;
 }
 
@@ -231,6 +232,7 @@ export interface PublicTicketMessage {
   author_type: AuthorType;
   type: MessageType;
   content: string;
+  graph_message_id: string | null;
   created_at: number;
 }
 

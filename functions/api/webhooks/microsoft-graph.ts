@@ -149,7 +149,6 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
           status: "open",
           priority: "medium",
           channel: "email",
-          graph_message_id: message.internetMessageId,
           conversation_id: message.conversationId || undefined,
         });
         ticketId = ticket.id;
@@ -162,6 +161,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
         author_type: "contact",
         type: "message",
         content,
+        graph_message_id: message.internetMessageId,
       });
 
       // 10. Mark as processed to prevent duplicates

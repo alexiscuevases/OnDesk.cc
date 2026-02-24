@@ -6,6 +6,7 @@ import { jsonOk, jsonCreated, jsonError } from "../../../_lib/response";
 import {
   findTicketById, findMessagesByTicket, createTicketMessage, isWorkspaceMember,
   findContactById, findFirstMailboxByWorkspace, updateMailboxTokens,
+  findLastInboundMessageByTicket,
 } from "../../../_lib/db";
 import { sendGraphMail, replyGraphMail, refreshAccessToken } from "../../../_lib/graph";
 import type { MessageType } from "../../../_lib/types";
@@ -83,9 +84,10 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
             });
           }
 
-          if (ticket.graph_message_id) {
+          const lastInbound = await findLastInboundMessageByTicket(env.DB, ticketId);
+          if (lastInbound?.graph_message_id) {
             try {
-              await replyGraphMail(token, ticket.graph_message_id, content.trim());
+              await replyGraphMail(token, lastInbound.graph_message_id, content.trim());
             } catch {
               // Fallback to sendMail if createReply fails (e.g. missing Mail.ReadWrite scope)
               await sendGraphMail(

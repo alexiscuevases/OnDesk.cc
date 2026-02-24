@@ -111,7 +111,6 @@ CREATE INDEX IF NOT EXISTS idx_contacts_company_id   ON contacts(company_id);
 -- status: 'open' | 'pending' | 'resolved' | 'closed'
 -- priority: 'low' | 'medium' | 'high' | 'urgent'
 -- channel: 'email' | null
--- graph_message_id: Microsoft Graph internal message ID of the originating email (for createReply threading)
 -- conversation_id: Microsoft Graph conversationId to thread replies into the same ticket
 CREATE TABLE IF NOT EXISTS tickets (
   id               TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
@@ -123,7 +122,6 @@ CREATE TABLE IF NOT EXISTS tickets (
   status           TEXT NOT NULL DEFAULT 'open',
   priority         TEXT NOT NULL DEFAULT 'medium',
   channel          TEXT,
-  graph_message_id TEXT,
   conversation_id  TEXT,
   created_at       INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at       INTEGER NOT NULL DEFAULT (unixepoch())
@@ -139,14 +137,16 @@ CREATE INDEX IF NOT EXISTS idx_tickets_conversation_id ON tickets(conversation_i
 -- Ticket messages
 -- type: 'message' | 'note' (internal note)
 -- author_type: 'agent' | 'contact'
+-- graph_message_id: internetMessageId of the email this message represents (for reply threading)
 CREATE TABLE IF NOT EXISTS ticket_messages (
-  id          TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  ticket_id   TEXT NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
-  author_id   TEXT NOT NULL,
-  author_type TEXT NOT NULL DEFAULT 'agent',
-  type        TEXT NOT NULL DEFAULT 'message',
-  content     TEXT NOT NULL,
-  created_at  INTEGER NOT NULL DEFAULT (unixepoch())
+  id               TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  ticket_id        TEXT NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+  author_id        TEXT NOT NULL,
+  author_type      TEXT NOT NULL DEFAULT 'agent',
+  type             TEXT NOT NULL DEFAULT 'message',
+  content          TEXT NOT NULL,
+  graph_message_id TEXT,
+  created_at       INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
 CREATE INDEX IF NOT EXISTS idx_ticket_messages_ticket_id ON ticket_messages(ticket_id);
