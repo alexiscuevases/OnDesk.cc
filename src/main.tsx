@@ -5,6 +5,13 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { routeTree } from "./routeTree.gen";
+import { AuthProvider, type AuthUser } from "@/context/auth-context";
+import { apiMe } from "@/features/auth/api/auth-api";
+
+// Bootstrap: attempt to restore session before rendering.
+// apiMe() tries the access token, silently refreshes if expired.
+// Returns null if no valid session exists.
+const initialUser: AuthUser | null = await apiMe().catch(() => null);
 
 const router = createRouter({ routeTree });
 
@@ -25,9 +32,11 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
-		<QueryClientProvider client={queryClient}>
-			<RouterProvider router={router} />
-			<ReactQueryDevtools initialIsOpen={false} />
-		</QueryClientProvider>
+		<AuthProvider initialUser={initialUser}>
+			<QueryClientProvider client={queryClient}>
+				<RouterProvider router={router} />
+				<ReactQueryDevtools initialIsOpen={false} />
+			</QueryClientProvider>
+		</AuthProvider>
 	</StrictMode>,
 );

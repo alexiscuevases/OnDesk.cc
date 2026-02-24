@@ -3,10 +3,17 @@ import { AuthLayout } from "./auth-layout";
 import { AuthOAuthBlock } from "./auth-oauth-block";
 import { SignInForm } from "../forms/sign-in-form";
 import type { SignInFormValues } from "../schemas/auth.schema";
+import { useLoginMutation } from "../hooks/use-auth-mutations";
 
 export default function SignInView() {
+	const loginMutation = useLoginMutation();
+
 	function handleSignIn(values: SignInFormValues) {
-		console.log("[v0] Sign in attempt:", values);
+		loginMutation.mutate({
+			email: values.email,
+			password: values.password,
+			rememberMe: values.rememberMe,
+		});
 	}
 
 	return (
@@ -21,7 +28,11 @@ export default function SignInView() {
 
 			<AuthOAuthBlock mode="signin" />
 
-			<SignInForm onSubmit={handleSignIn} />
+			<SignInForm
+				onSubmit={handleSignIn}
+				isLoading={loginMutation.isPending}
+				error={loginMutation.error?.message ?? null}
+			/>
 
 			<div className="mt-6 text-center text-sm">
 				<span className="text-muted-foreground">Don't have an account? </span>

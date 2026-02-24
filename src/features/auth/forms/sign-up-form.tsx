@@ -10,9 +10,11 @@ import { signUpSchema, type SignUpFormValues } from "../schemas/auth.schema";
 
 interface SignUpFormProps {
 	onSubmit: (values: SignUpFormValues) => void;
+	isLoading?: boolean;
+	error?: string | null;
 }
 
-export function SignUpForm({ onSubmit }: SignUpFormProps) {
+export function SignUpForm({ onSubmit, isLoading = false, error = null }: SignUpFormProps) {
 	const form = useForm({
 		defaultValues: { name: "", email: "", password: "", agreeToTerms: false },
 		onSubmit: async ({ value }) => onSubmit(value),
@@ -121,8 +123,10 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
 				)}
 			</form.Field>
 
-			<Button type="submit" className="w-full" size="lg">
-				Create account
+			{error && <p className="text-sm text-destructive text-center">{error}</p>}
+
+			<Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+				{isLoading ? "Creating account..." : "Create account"}
 			</Button>
 
 			<div className="mt-6 text-center text-sm">

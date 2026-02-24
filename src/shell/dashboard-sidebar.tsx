@@ -1,5 +1,7 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { LayoutDashboard, Ticket, Users, BarChart3, Settings, ChevronDown, Headset } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
+import { useLogoutMutation } from "@/features/auth/hooks/use-auth-mutations";
 import {
 	Sidebar,
 	SidebarContent,
@@ -26,9 +28,17 @@ const navItems = [
 ] as const;
 
 export function DashboardSidebar() {
-	const navigate = useNavigate();
+	const { user } = useAuth();
+	const logoutMutation = useLogoutMutation();
 	const routerState = useRouterState();
 	const currentPath = routerState.location.pathname;
+
+	const initials = user?.name
+		.split(" ")
+		.map((n) => n[0])
+		.join("")
+		.slice(0, 2)
+		.toUpperCase() ?? "??";
 
 	return (
 		<Sidebar collapsible="icon" className="border-r-0">
@@ -86,12 +96,12 @@ export function DashboardSidebar() {
 									className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-lg">
 									<Avatar className="size-8 rounded-lg">
 										<AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
-											CM
+											{initials}
 										</AvatarFallback>
 									</Avatar>
 									<div className="grid flex-1 text-left text-sm leading-tight">
-										<span className="truncate font-semibold text-[13px]">Carlos Mendez</span>
-										<span className="truncate text-[11px] text-sidebar-foreground/50">Admin</span>
+										<span className="truncate font-semibold text-[13px]">{user?.name ?? "..."}</span>
+										<span className="truncate text-[11px] text-sidebar-foreground/50">{user?.role ?? ""}</span>
 									</div>
 									<ChevronDown className="ml-auto size-4 text-sidebar-foreground/40" />
 								</SidebarMenuButton>
@@ -100,7 +110,11 @@ export function DashboardSidebar() {
 								<DropdownMenuItem>Profile</DropdownMenuItem>
 								<DropdownMenuItem>Account Settings</DropdownMenuItem>
 								<DropdownMenuSeparator />
-								<DropdownMenuItem onClick={() => navigate({ to: "/auth/signin" })}>Sign Out</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => logoutMutation.mutate()}
+									disabled={logoutMutation.isPending}>
+									{logoutMutation.isPending ? "Signing out..." : "Sign Out"}
+								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</SidebarMenuItem>

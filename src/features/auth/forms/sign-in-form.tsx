@@ -10,9 +10,11 @@ import { signInSchema, type SignInFormValues } from "../schemas/auth.schema";
 
 interface SignInFormProps {
 	onSubmit: (values: SignInFormValues) => void;
+	isLoading?: boolean;
+	error?: string | null;
 }
 
-export function SignInForm({ onSubmit }: SignInFormProps) {
+export function SignInForm({ onSubmit, isLoading = false, error = null }: SignInFormProps) {
 	const form = useForm({
 		defaultValues: { email: "", password: "", rememberMe: false },
 		onSubmit: async ({ value }) => onSubmit(value),
@@ -93,8 +95,10 @@ export function SignInForm({ onSubmit }: SignInFormProps) {
 				)}
 			</form.Field>
 
-			<Button type="submit" className="w-full" size="lg">
-				Sign in
+			{error && <p className="text-sm text-destructive text-center">{error}</p>}
+
+			<Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+				{isLoading ? "Signing in..." : "Sign in"}
 			</Button>
 		</form>
 	);

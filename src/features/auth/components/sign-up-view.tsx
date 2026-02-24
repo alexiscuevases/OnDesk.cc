@@ -2,10 +2,17 @@ import { AuthLayout } from "./auth-layout";
 import { AuthOAuthBlock } from "./auth-oauth-block";
 import { SignUpForm } from "../forms/sign-up-form";
 import type { SignUpFormValues } from "../schemas/auth.schema";
+import { useRegisterMutation } from "../hooks/use-auth-mutations";
 
 export default function SignUpView() {
+	const registerMutation = useRegisterMutation();
+
 	function handleSignUp(values: SignUpFormValues) {
-		console.log("[v0] Sign up attempt:", values);
+		registerMutation.mutate({
+			name: values.name,
+			email: values.email,
+			password: values.password,
+		});
 	}
 
 	return (
@@ -25,7 +32,11 @@ export default function SignUpView() {
 
 			<AuthOAuthBlock mode="signup" />
 
-			<SignUpForm onSubmit={handleSignUp} />
+			<SignUpForm
+				onSubmit={handleSignUp}
+				isLoading={registerMutation.isPending}
+				error={registerMutation.error?.message ?? null}
+			/>
 		</AuthLayout>
 	);
 }

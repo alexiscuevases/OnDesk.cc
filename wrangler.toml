@@ -1,0 +1,8 @@
+name = "desk"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "./dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "desk"
+database_id = "5ad5172b-ee5b-49ac-bde7-a8303f3dd57f"
