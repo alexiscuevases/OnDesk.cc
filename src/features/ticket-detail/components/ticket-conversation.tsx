@@ -6,6 +6,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { TicketMessage } from "@/features/tickets/api/tickets-api";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
+import type { Contact } from "@/features/contacts/api/contacts-api";
+
+function decodeHtmlEntities(str: string) {
+	const txt = document.createElement("textarea");
+	txt.innerHTML = str;
+	return txt.value;
+}
 
 function ShadowHtml({ html }: { html: string }) {
 	const hostRef = useRef<HTMLDivElement>(null);
@@ -13,9 +20,9 @@ function ShadowHtml({ html }: { html: string }) {
 	useEffect(() => {
 		const host = hostRef.current;
 		if (!host) return;
-		if (!host.shadowRoot) {
-			host.attachShadow({ mode: "open" });
-		}
+		if (!host.shadowRoot) host.attachShadow({ mode: "open" });
+
+		const decoded = decodeHtmlEntities(html);
 		host.shadowRoot!.innerHTML = `
 			<style>
 				:host { display: block; }
@@ -42,7 +49,7 @@ function ShadowHtml({ html }: { html: string }) {
 				code { font-family: monospace; font-size: 0.875em; }
 				img { max-width: 100%; height: auto; }
 			</style>
-			<div style="font-size:0.875rem;line-height:1.625;color:inherit;">${html}</div>
+			<div style="font-size:0.875rem;line-height:1.625;color:inherit;">${decoded}</div>
 		`;
 	}, [html]);
 
@@ -52,18 +59,24 @@ function ShadowHtml({ html }: { html: string }) {
 interface TicketConversationProps {
 	messages: TicketMessage[];
 	members: WorkspaceMember[];
+	contact: Contact | null;
 }
 
-export function TicketConversation({ messages, members }: TicketConversationProps) {
+export function TicketConversation({ messages, members, contact }: TicketConversationProps) {
 	function getAuthorName(msg: TicketMessage) {
 		if (msg.author_type === "agent") {
 			return members.find((m) => m.id === msg.author_id)?.name ?? "Agent";
 		}
-		return "Contact";
+		return contact?.name ?? "Contact";
 	}
 
 	function getInitials(name: string) {
-		return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+		return name
+			.split(" ")
+			.map((w) => w[0])
+			.join("")
+			.slice(0, 2)
+			.toUpperCase();
 	}
 
 	return (
@@ -89,9 +102,7 @@ export function TicketConversation({ messages, members }: TicketConversationProp
 									<Avatar className="size-8 rounded-lg shrink-0 mt-0.5">
 										<AvatarFallback
 											className={`rounded-lg text-[10px] font-bold ${
-												isAgent
-													? "bg-primary text-primary-foreground"
-													: "bg-secondary text-secondary-foreground"
+												isAgent ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
 											}`}>
 											{getInitials(authorName)}
 										</AvatarFallback>
@@ -108,9 +119,7 @@ export function TicketConversation({ messages, members }: TicketConversationProp
 											<div className="flex items-center gap-2 mb-1.5">
 												<span className="text-xs font-semibold">{authorName}</span>
 												{isInternal && (
-													<Badge
-														variant="outline"
-														className="text-[9px] px-1.5 py-0 rounded-full border-warning text-warning">
+													<Badge variant="outline" className="text-[9px] px-1.5 py-0 rounded-full border-warning text-warning">
 														<Eye className="size-2.5 mr-0.5" />
 														Internal
 													</Badge>
