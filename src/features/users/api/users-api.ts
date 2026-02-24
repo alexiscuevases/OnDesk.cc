@@ -4,6 +4,7 @@ export interface WorkspaceMember {
 	email: string;
 	role: string; // global role
 	workspace_role: string;
+	logo_url: string | null;
 	created_at: number;
 }
 

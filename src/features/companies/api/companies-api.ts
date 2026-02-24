@@ -4,6 +4,7 @@ export interface Company {
 	name: string;
 	domain: string | null;
 	description: string | null;
+	logo_url: string | null;
 	created_at: number;
 }
 
@@ -12,12 +13,14 @@ export interface CreateCompanyInput {
 	name: string;
 	domain?: string;
 	description?: string;
+	logo_url?: string;
 }
 
 export interface UpdateCompanyInput {
 	name?: string;
 	domain?: string;
 	description?: string;
+	logo_url?: string | null;
 }
 
 const API_BASE = "/api/companies";

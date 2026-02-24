@@ -14,6 +14,7 @@ export interface UserRow {
   email: string;
   password_hash: string;
   role: string;
+  logo_url: string | null;
   created_at: number;
   updated_at: number;
 }
@@ -43,6 +44,7 @@ export interface PublicUser {
   name: string;
   email: string;
   role: string;
+  logo_url: string | null;
 }
 
 // Database row shapes for workspaces
@@ -83,6 +85,8 @@ export interface TeamRow {
   workspace_id: string;
   name: string;
   description: string | null;
+  leader_id: string | null;
+  logo_url: string | null;
   created_at: number;
   updated_at: number;
 }
@@ -92,6 +96,8 @@ export interface PublicTeam {
   workspace_id: string;
   name: string;
   description: string | null;
+  leader_id: string | null;
+  logo_url: string | null;
   created_at: number;
 }
 
@@ -103,6 +109,7 @@ export interface CompanyRow {
   name: string;
   domain: string | null;
   description: string | null;
+  logo_url: string | null;
   created_at: number;
   updated_at: number;
 }
@@ -113,6 +120,7 @@ export interface PublicCompany {
   name: string;
   domain: string | null;
   description: string | null;
+  logo_url: string | null;
   created_at: number;
 }
 
@@ -125,6 +133,7 @@ export interface ContactRow {
   name: string;
   email: string;
   phone: string | null;
+  logo_url: string | null;
   created_at: number;
   updated_at: number;
 }
@@ -136,6 +145,7 @@ export interface PublicContact {
   name: string;
   email: string;
   phone: string | null;
+  logo_url: string | null;
   created_at: number;
 }
 
@@ -230,6 +240,7 @@ export interface CannedReplyRow {
   workspace_id: string;
   name: string;
   content: string;
+  shortcut: string | null;
   created_by: string;
   created_at: number;
   updated_at: number;
@@ -240,6 +251,7 @@ export interface PublicCannedReply {
   workspace_id: string;
   name: string;
   content: string;
+  shortcut: string | null;
   created_by: string;
   created_at: number;
 }
@@ -248,7 +260,8 @@ export interface PublicCannedReply {
 
 export interface SignatureRow {
   id: string;
-  user_id: string;
+  created_by: string;
+  workspace_id: string;
   name: string;
   content: string;
   is_default: number; // SQLite boolean: 0 | 1
@@ -258,7 +271,8 @@ export interface SignatureRow {
 
 export interface PublicSignature {
   id: string;
-  user_id: string;
+  created_by: string;
+  workspace_id: string;
   name: string;
   content: string;
   is_default: boolean;

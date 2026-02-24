@@ -17,7 +17,7 @@ interface CannedReplyFormProps {
 export function CannedReplyForm({ defaultValues, onSubmit, onCancel, submitLabel }: CannedReplyFormProps) {
 	const form = useForm({
 		defaultValues: {
-			title: defaultValues?.title ?? "",
+			name: defaultValues?.name ?? "",
 			shortcut: defaultValues?.shortcut ?? "",
 			content: defaultValues?.content ?? "",
 		},
@@ -33,14 +33,14 @@ export function CannedReplyForm({ defaultValues, onSubmit, onCancel, submitLabel
 				form.handleSubmit();
 			}}>
 			<div className="grid gap-4 py-4">
-				<form.Field name="title">
+				<form.Field name="name">
 					{(field) => (
 						<div className="grid gap-2">
-							<Label htmlFor="reply-title" className="text-xs font-medium">
-								Title
+							<Label htmlFor="reply-name" className="text-xs font-medium">
+								Name
 							</Label>
 							<Input
-								id="reply-title"
+								id="reply-name"
 								value={field.state.value}
 								onChange={(e) => field.handleChange(e.target.value)}
 								onBlur={field.handleBlur}

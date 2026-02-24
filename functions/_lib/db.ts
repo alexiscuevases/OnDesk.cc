@@ -227,7 +227,7 @@ export async function findWorkspaceMembers(
 ): Promise<(UserRow & { workspace_role: string })[]> {
   const result = await db
     .prepare(
-      `SELECT u.id, u.name, u.email, u.role, u.created_at, u.updated_at, wm.role AS workspace_role
+      `SELECT u.id, u.name, u.email, u.role, u.logo_url, u.created_at, u.updated_at, wm.role AS workspace_role
        FROM users u
        JOIN workspace_members wm ON wm.user_id = u.id
        WHERE wm.workspace_id = ?
@@ -282,7 +282,7 @@ export async function findTeamsByWorkspace(
 ): Promise<PublicTeam[]> {
   const result = await db
     .prepare(
-      "SELECT id, workspace_id, name, description, created_at FROM teams WHERE workspace_id = ? ORDER BY name ASC"
+      "SELECT id, workspace_id, name, description, leader_id, logo_url, created_at FROM teams WHERE workspace_id = ? ORDER BY name ASC"
     )
     .bind(workspaceId)
     .all<PublicTeam>();
@@ -303,12 +303,12 @@ export async function findTeamById(
 export async function createTeam(
   db: D1Database,
   workspaceId: string,
-  data: { name: string; description?: string }
+  data: { name: string; description?: string; leader_id?: string; logo_url?: string }
 ): Promise<TeamRow> {
   const id = crypto.randomUUID();
   await db
-    .prepare("INSERT INTO teams (id, workspace_id, name, description) VALUES (?, ?, ?, ?)")
-    .bind(id, workspaceId, data.name, data.description ?? null)
+    .prepare("INSERT INTO teams (id, workspace_id, name, description, leader_id, logo_url) VALUES (?, ?, ?, ?, ?, ?)")
+    .bind(id, workspaceId, data.name, data.description ?? null, data.leader_id ?? null, data.logo_url ?? null)
     .run();
   return (await findTeamById(db, id))!;
 }
@@ -316,12 +316,14 @@ export async function createTeam(
 export async function updateTeam(
   db: D1Database,
   teamId: string,
-  data: { name?: string; description?: string }
+  data: { name?: string; description?: string; leader_id?: string | null; logo_url?: string | null }
 ): Promise<void> {
   const fields: string[] = [];
   const values: (string | null)[] = [];
   if (data.name !== undefined) { fields.push("name = ?"); values.push(data.name); }
   if (data.description !== undefined) { fields.push("description = ?"); values.push(data.description); }
+  if (data.leader_id !== undefined) { fields.push("leader_id = ?"); values.push(data.leader_id); }
+  if (data.logo_url !== undefined) { fields.push("logo_url = ?"); values.push(data.logo_url); }
   if (fields.length === 0) return;
   fields.push("updated_at = unixepoch()");
   values.push(teamId);
@@ -381,7 +383,7 @@ export async function findCompaniesByWorkspace(
 ): Promise<PublicCompany[]> {
   const result = await db
     .prepare(
-      "SELECT id, workspace_id, name, domain, description, created_at FROM companies WHERE workspace_id = ? ORDER BY name ASC"
+      "SELECT id, workspace_id, name, domain, description, logo_url, created_at FROM companies WHERE workspace_id = ? ORDER BY name ASC"
     )
     .bind(workspaceId)
     .all<PublicCompany>();
@@ -402,12 +404,12 @@ export async function findCompanyById(
 export async function createCompany(
   db: D1Database,
   workspaceId: string,
-  data: { name: string; domain?: string; description?: string }
+  data: { name: string; domain?: string; description?: string; logo_url?: string }
 ): Promise<CompanyRow> {
   const id = crypto.randomUUID();
   await db
-    .prepare("INSERT INTO companies (id, workspace_id, name, domain, description) VALUES (?, ?, ?, ?, ?)")
-    .bind(id, workspaceId, data.name, data.domain ?? null, data.description ?? null)
+    .prepare("INSERT INTO companies (id, workspace_id, name, domain, description, logo_url) VALUES (?, ?, ?, ?, ?, ?)")
+    .bind(id, workspaceId, data.name, data.domain ?? null, data.description ?? null, data.logo_url ?? null)
     .run();
   return (await findCompanyById(db, id))!;
 }
@@ -415,13 +417,14 @@ export async function createCompany(
 export async function updateCompany(
   db: D1Database,
   companyId: string,
-  data: { name?: string; domain?: string; description?: string }
+  data: { name?: string; domain?: string; description?: string; logo_url?: string | null }
 ): Promise<void> {
   const fields: string[] = [];
   const values: (string | null)[] = [];
   if (data.name !== undefined) { fields.push("name = ?"); values.push(data.name); }
   if (data.domain !== undefined) { fields.push("domain = ?"); values.push(data.domain); }
   if (data.description !== undefined) { fields.push("description = ?"); values.push(data.description); }
+  if (data.logo_url !== undefined) { fields.push("logo_url = ?"); values.push(data.logo_url); }
   if (fields.length === 0) return;
   fields.push("updated_at = unixepoch()");
   values.push(companyId);
@@ -443,7 +446,7 @@ export async function findContactsByWorkspace(
 ): Promise<PublicContact[]> {
   const result = await db
     .prepare(
-      "SELECT id, workspace_id, company_id, name, email, phone, created_at FROM contacts WHERE workspace_id = ? ORDER BY name ASC"
+      "SELECT id, workspace_id, company_id, name, email, phone, logo_url, created_at FROM contacts WHERE workspace_id = ? ORDER BY name ASC"
     )
     .bind(workspaceId)
     .all<PublicContact>();
@@ -656,7 +659,7 @@ export async function findCannedRepliesByWorkspace(
 ): Promise<PublicCannedReply[]> {
   const result = await db
     .prepare(
-      "SELECT id, workspace_id, name, content, created_by, created_at FROM canned_replies WHERE workspace_id = ? ORDER BY name ASC"
+      "SELECT id, workspace_id, name, content, shortcut, created_by, created_at FROM canned_replies WHERE workspace_id = ? ORDER BY name ASC"
     )
     .bind(workspaceId)
     .all<PublicCannedReply>();
@@ -678,12 +681,12 @@ export async function createCannedReply(
   db: D1Database,
   workspaceId: string,
   userId: string,
-  data: { name: string; content: string }
+  data: { name: string; content: string; shortcut?: string }
 ): Promise<CannedReplyRow> {
   const id = crypto.randomUUID();
   await db
-    .prepare("INSERT INTO canned_replies (id, workspace_id, name, content, created_by) VALUES (?, ?, ?, ?, ?)")
-    .bind(id, workspaceId, data.name, data.content, userId)
+    .prepare("INSERT INTO canned_replies (id, workspace_id, name, content, shortcut, created_by) VALUES (?, ?, ?, ?, ?, ?)")
+    .bind(id, workspaceId, data.name, data.content, data.shortcut ?? null, userId)
     .run();
   return (await findCannedReplyById(db, id))!;
 }
@@ -691,12 +694,13 @@ export async function createCannedReply(
 export async function updateCannedReply(
   db: D1Database,
   replyId: string,
-  data: { name?: string; content?: string }
+  data: { name?: string; content?: string; shortcut?: string | null }
 ): Promise<void> {
   const fields: string[] = [];
   const values: (string | null)[] = [];
   if (data.name !== undefined) { fields.push("name = ?"); values.push(data.name); }
   if (data.content !== undefined) { fields.push("content = ?"); values.push(data.content); }
+  if (data.shortcut !== undefined) { fields.push("shortcut = ?"); values.push(data.shortcut); }
   if (fields.length === 0) return;
   fields.push("updated_at = unixepoch()");
   values.push(replyId);
@@ -718,7 +722,7 @@ export async function findSignaturesByUser(
 ): Promise<PublicSignature[]> {
   const result = await db
     .prepare(
-      "SELECT id, user_id, name, content, is_default, created_at FROM signatures WHERE user_id = ? ORDER BY name ASC"
+      "SELECT id, created_by, workspace_id, name, content, is_default, created_at FROM signatures WHERE created_by = ? ORDER BY name ASC"
     )
     .bind(userId)
     .all<SignatureRow>();
@@ -745,12 +749,12 @@ export async function createSignature(
   const isDefault = data.is_default ? 1 : 0;
   if (isDefault) {
     await db
-      .prepare("UPDATE signatures SET is_default = 0 WHERE user_id = ?")
+      .prepare("UPDATE signatures SET is_default = 0 WHERE created_by = ?")
       .bind(userId)
       .run();
   }
   await db
-    .prepare("INSERT INTO signatures (id, user_id, name, content, is_default) VALUES (?, ?, ?, ?, ?)")
+    .prepare("INSERT INTO signatures (id, created_by, name, content, is_default) VALUES (?, ?, ?, ?, ?)")
     .bind(id, userId, data.name, data.content, isDefault)
     .run();
   return toPublicSignature((await findSignatureById(db, id))!);
@@ -764,7 +768,7 @@ export async function updateSignature(
 ): Promise<void> {
   if (data.is_default) {
     await db
-      .prepare("UPDATE signatures SET is_default = 0 WHERE user_id = ?")
+      .prepare("UPDATE signatures SET is_default = 0 WHERE created_by = ?")
       .bind(userId)
       .run();
   }
@@ -789,7 +793,8 @@ export async function deleteSignature(db: D1Database, signatureId: string): Prom
 function toPublicSignature(row: SignatureRow): PublicSignature {
   return {
     id: row.id,
-    user_id: row.user_id,
+    created_by: row.created_by,
+    workspace_id: row.workspace_id,
     name: row.name,
     content: row.content,
     is_default: row.is_default === 1,

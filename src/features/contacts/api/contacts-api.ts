@@ -5,6 +5,7 @@ export interface Contact {
 	name: string;
 	email: string;
 	phone: string | null;
+	logo_url: string | null;
 	created_at: number;
 }
 
@@ -14,12 +15,14 @@ export interface CreateContactInput {
 	email: string;
 	phone?: string;
 	company_id?: string;
+	logo_url?: string;
 }
 
 export interface UpdateContactInput {
 	name?: string;
 	phone?: string;
 	company_id?: string | null;
+	logo_url?: string | null;
 }
 
 const API_BASE = "/api/contacts";

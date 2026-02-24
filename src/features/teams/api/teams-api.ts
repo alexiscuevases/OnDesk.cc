@@ -3,6 +3,8 @@ export interface Team {
 	workspace_id: string;
 	name: string;
 	description: string | null;
+	leader_id: string | null;
+	logo_url: string | null;
 	created_at: number;
 }
 
@@ -16,11 +18,15 @@ export interface CreateTeamInput {
 	workspace_id: string;
 	name: string;
 	description?: string;
+	leader_id?: string;
+	logo_url?: string;
 }
 
 export interface UpdateTeamInput {
 	name?: string;
 	description?: string;
+	leader_id?: string | null;
+	logo_url?: string | null;
 }
 
 const API_BASE = "/api/teams";

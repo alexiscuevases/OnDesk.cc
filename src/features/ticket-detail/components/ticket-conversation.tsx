@@ -43,6 +43,13 @@ export function TicketConversation({ messages, members, contact }: TicketConvers
 		return contact?.name ?? "Contact";
 	}
 
+	function getAuthorEmail(msg: TicketMessage) {
+		if (msg.author_type === "agent") {
+			return members.find((m) => m.id === msg.author_id)?.email ?? null;
+		}
+		return contact?.email ?? null;
+	}
+
 	function getInitials(name: string) {
 		return name
 			.split(" ")
@@ -70,6 +77,7 @@ export function TicketConversation({ messages, members, contact }: TicketConvers
 							const isInternal = msg.type === "note";
 							const isAgent = msg.author_type === "agent";
 							const authorName = getAuthorName(msg);
+							const authorEmail = getAuthorEmail(msg);
 							return (
 								<div key={msg.id} className={`flex gap-3 ${isInternal ? "opacity-80" : ""}`}>
 									<Avatar className="size-8 rounded-lg shrink-0 mt-0.5">
@@ -90,7 +98,10 @@ export function TicketConversation({ messages, members, contact }: TicketConvers
 														: "bg-secondary/60 border border-border"
 											}`}>
 											<div className="flex items-center gap-2 mb-1.5">
+												<div className="flex flex-col">
 												<span className="text-xs font-semibold">{authorName}</span>
+												{authorEmail && <span className="text-[10px] text-muted-foreground">{authorEmail}</span>}
+											</div>
 												{isInternal && (
 													<Badge variant="outline" className="text-[9px] px-1.5 py-0 rounded-full border-warning text-warning">
 														<Eye className="size-2.5 mr-0.5" />

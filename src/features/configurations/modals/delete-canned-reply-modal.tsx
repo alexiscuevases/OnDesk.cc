@@ -11,7 +11,7 @@ import {
 interface DeleteCannedReplyModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	reply: { id: string; title: string } | null;
+	reply: { id: string; name: string } | null;
 	onConfirm: () => void;
 }
 
@@ -22,7 +22,7 @@ export function DeleteCannedReplyModal({ open, onOpenChange, reply, onConfirm }:
 				<AlertDialogHeader>
 					<AlertDialogTitle>Delete Canned Reply?</AlertDialogTitle>
 					<AlertDialogDescription>
-						Are you sure you want to delete &quot;{reply?.title}&quot;? This action cannot be undone.
+						Are you sure you want to delete &quot;{reply?.name}&quot;? This action cannot be undone.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

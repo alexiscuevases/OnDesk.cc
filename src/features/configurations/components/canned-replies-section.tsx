@@ -33,14 +33,15 @@ export function CannedRepliesSection() {
 	function handleAdd(values: CannedReplyFormValues) {
 		createReply.mutate({
 			workspace_id: workspace.id,
-			name: values.title,
+			name: values.name,
+			shortcut: values.shortcut || undefined,
 			content: values.content,
 		});
 	}
 
 	function handleEdit(values: CannedReplyFormValues) {
 		if (!selectedReply) return;
-		updateReply.mutate({ name: values.title, content: values.content });
+		updateReply.mutate({ name: values.name, shortcut: values.shortcut || undefined, content: values.content });
 		setEditOpen(false);
 		setSelectedReply(null);
 	}
@@ -108,13 +109,13 @@ export function CannedRepliesSection() {
 			<EditCannedReplyModal
 				open={editOpen}
 				onOpenChange={setEditOpen}
-				reply={selectedReply ? { id: selectedReply.id, title: selectedReply.name, shortcut: "", content: selectedReply.content } : null}
+				reply={selectedReply ? { id: selectedReply.id, name: selectedReply.name, shortcut: selectedReply.shortcut ?? "", content: selectedReply.content } : null}
 				onConfirm={handleEdit}
 			/>
 			<DeleteCannedReplyModal
 				open={deleteOpen}
 				onOpenChange={setDeleteOpen}
-				reply={selectedReply ? { id: selectedReply.id, title: selectedReply.name } : null}
+				reply={selectedReply ? { id: selectedReply.id, name: selectedReply.name } : null}
 				onConfirm={handleDelete}
 			/>
 		</>

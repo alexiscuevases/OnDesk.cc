@@ -1,6 +1,7 @@
 export interface Signature {
 	id: string;
-	user_id: string;
+	created_by: string;
+	workspace_id: string;
 	name: string;
 	content: string;
 	is_default: boolean;

@@ -4,7 +4,7 @@ import { type CannedReplyFormValues } from "../schemas/config.schema";
 interface EditCannedReplyModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	reply: { id: string; title: string; shortcut: string; content: string } | null;
+	reply: { id: string; name: string; shortcut: string; content: string } | null;
 	onConfirm: (values: CannedReplyFormValues) => void;
 }
 
@@ -20,7 +20,7 @@ export function EditCannedReplyModal({ open, onOpenChange, reply, onConfirm }: E
 				</DialogHeader>
 				<CannedReplyForm
 					key={reply.id}
-					defaultValues={{ title: reply.title, shortcut: reply.shortcut, content: reply.content }}
+					defaultValues={{ name: reply.name, shortcut: reply.shortcut, content: reply.content }}
 					submitLabel="Save Changes"
 					onSubmit={(values) => {
 						onConfirm(values);

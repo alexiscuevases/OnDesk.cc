@@ -21,11 +21,12 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
   if (!row) return jsonError("Signature not found", 404);
 
   // Signatures are personal — only the owner can access them
-  if (row.user_id !== payload.sub) return jsonError("Forbidden", 403);
+  if (row.created_by !== payload.sub) return jsonError("Forbidden", 403);
 
   const toPublic = (r: typeof row) => ({
     id: r.id,
-    user_id: r.user_id,
+    created_by: r.created_by,
+    workspace_id: r.workspace_id,
     name: r.name,
     content: r.content,
     is_default: r.is_default === 1,

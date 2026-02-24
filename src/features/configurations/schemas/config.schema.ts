@@ -17,8 +17,8 @@ export const teamSchema = z.object({
 export type TeamFormValues = z.infer<typeof teamSchema>;
 
 export const cannedReplySchema = z.object({
-	title: z.string().min(1, "Title is required"),
-	shortcut: z.string().min(1, "Shortcut is required"),
+	name: z.string().min(1, "Name is required"),
+	shortcut: z.string().optional().default(""),
 	content: z.string().min(1, "Content is required"),
 });
 export type CannedReplyFormValues = z.infer<typeof cannedReplySchema>;

@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   email         TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   role          TEXT NOT NULL DEFAULT 'agent',
+  logo_url      TEXT,
   created_at    INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at    INTEGER NOT NULL DEFAULT (unixepoch())
 );
@@ -55,6 +56,8 @@ CREATE TABLE IF NOT EXISTS teams (
   workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   name         TEXT NOT NULL,
   description  TEXT,
+  leader_id    TEXT REFERENCES users(id) ON DELETE SET NULL,
+  logo_url     TEXT,
   created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at   INTEGER NOT NULL DEFAULT (unixepoch())
 );
@@ -79,6 +82,7 @@ CREATE TABLE IF NOT EXISTS companies (
   name         TEXT NOT NULL,
   domain       TEXT,
   description  TEXT,
+  logo_url     TEXT,
   created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at   INTEGER NOT NULL DEFAULT (unixepoch())
 );
@@ -94,6 +98,7 @@ CREATE TABLE IF NOT EXISTS contacts (
   name         TEXT NOT NULL,
   email        TEXT NOT NULL,
   phone        TEXT,
+  logo_url     TEXT,
   created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at   INTEGER NOT NULL DEFAULT (unixepoch()),
   UNIQUE(workspace_id, email)
@@ -147,6 +152,7 @@ CREATE TABLE IF NOT EXISTS canned_replies (
   workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   name         TEXT NOT NULL,
   content      TEXT NOT NULL,
+  shortcut     TEXT,
   created_by   TEXT NOT NULL REFERENCES users(id),
   created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at   INTEGER NOT NULL DEFAULT (unixepoch())
@@ -156,16 +162,18 @@ CREATE INDEX IF NOT EXISTS idx_canned_replies_workspace_id ON canned_replies(wor
 
 -- Agent signatures
 CREATE TABLE IF NOT EXISTS signatures (
-  id      TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  name    TEXT NOT NULL,
-  content TEXT NOT NULL,
-  is_default INTEGER NOT NULL DEFAULT 0,
-  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+  id           TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  created_by   TEXT    NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  workspace_id TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  name         TEXT    NOT NULL,
+  content      TEXT    NOT NULL,
+  is_default   INTEGER NOT NULL DEFAULT 0,
+  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at   INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
-CREATE INDEX IF NOT EXISTS idx_signatures_user_id ON signatures(user_id);
+CREATE INDEX IF NOT EXISTS idx_signatures_created_by   ON signatures(created_by);
+CREATE INDEX IF NOT EXISTS idx_signatures_workspace_id ON signatures(workspace_id);
 
 -- Workspace invitations
 -- status: 'pending' | 'accepted' | 'cancelled'

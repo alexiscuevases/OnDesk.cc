@@ -3,6 +3,7 @@ export interface CannedReply {
 	workspace_id: string;
 	name: string;
 	content: string;
+	shortcut: string | null;
 	created_by: string;
 	created_at: number;
 }
@@ -11,11 +12,13 @@ export interface CreateCannedReplyInput {
 	workspace_id: string;
 	name: string;
 	content: string;
+	shortcut?: string;
 }
 
 export interface UpdateCannedReplyInput {
 	name?: string;
 	content?: string;
+	shortcut?: string | null;
 }
 
 const API_BASE = "/api/canned-replies";

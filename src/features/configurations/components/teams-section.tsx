@@ -34,12 +34,17 @@ export function TeamsSection() {
 			workspace_id: workspace.id,
 			name: values.name,
 			description: values.description || undefined,
+			leader_id: values.leaderId || undefined,
 		});
 	}
 
 	function handleEdit(values: TeamFormValues) {
 		if (!selectedTeam) return;
-		updateTeam.mutate({ name: values.name, description: values.description || undefined });
+		updateTeam.mutate({
+			name: values.name,
+			description: values.description || undefined,
+			leader_id: values.leaderId || undefined,
+		});
 		setEditOpen(false);
 		setSelectedTeam(null);
 	}

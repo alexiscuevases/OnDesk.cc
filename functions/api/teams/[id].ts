@@ -47,10 +47,12 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
     let body: unknown;
     try { body = await request.json(); } catch { return jsonError("Invalid JSON body"); }
 
-    const { name, description } = body as Record<string, unknown>;
+    const { name, description, leader_id, logo_url } = body as Record<string, unknown>;
     await updateTeam(env.DB, teamId, {
       name: typeof name === "string" ? name.trim() : undefined,
       description: typeof description === "string" ? description.trim() : undefined,
+      leader_id: typeof leader_id === "string" ? leader_id : undefined,
+      logo_url: typeof logo_url === "string" ? logo_url.trim() || undefined : undefined,
     });
     const updated = await findTeamById(env.DB, teamId);
     return jsonOk({ team: updated });
