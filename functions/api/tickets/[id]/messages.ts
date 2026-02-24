@@ -7,7 +7,7 @@ import {
   findTicketById, findMessagesByTicket, createTicketMessage, isWorkspaceMember,
   findContactById, findFirstMailboxByWorkspace, updateMailboxTokens,
 } from "../../../_lib/db";
-import { sendGraphMail, refreshAccessToken } from "../../../_lib/graph";
+import { sendGraphMail, replyGraphMail, refreshAccessToken } from "../../../_lib/graph";
 import type { MessageType } from "../../../_lib/types";
 
 const VALID_TYPES: MessageType[] = ["message", "note"];
@@ -83,13 +83,26 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
             });
           }
 
-          await sendGraphMail(
-            token,
-            { name: contact.name, address: contact.email },
-            `Re: ${ticket.subject}`,
-            content.trim(),
-            ticket.email_message_id ?? undefined
-          );
+          if (ticket.graph_message_id) {
+            try {
+              await replyGraphMail(token, ticket.graph_message_id, content.trim());
+            } catch {
+              // Fallback to sendMail if createReply fails (e.g. missing Mail.ReadWrite scope)
+              await sendGraphMail(
+                token,
+                { name: contact.name, address: contact.email },
+                `Re: ${ticket.subject}`,
+                content.trim()
+              );
+            }
+          } else {
+            await sendGraphMail(
+              token,
+              { name: contact.name, address: contact.email },
+              `Re: ${ticket.subject}`,
+              content.trim()
+            );
+          }
         }
       } catch (emailErr) {
         console.error("Failed to send email reply:", emailErr);

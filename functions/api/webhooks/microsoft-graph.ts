@@ -3,6 +3,7 @@ import type { Env } from "../../_lib/types";
 import {
   findMailboxIntegrationBySubscriptionId,
   findEmailTicketByMessageId,
+  findTicketByConversationId,
   updateMailboxTokens,
   updateMailboxSubscription,
   markEmailAsTicket,
@@ -129,21 +130,34 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
         email: senderEmail,
       });
 
-      // 8. Create the ticket
-      const subject = message.subject?.trim() || "(no subject)";
-      const ticket = await createTicket(env.DB, mailbox.workspace_id, {
-        subject,
-        contact_id: contact.id,
-        status: "open",
-        priority: "medium",
-        channel: "email",
-        email_message_id: message.internetMessageId,
-      });
-
-      // 9. Add the email body as the first message
+      // 8. Find existing ticket by conversationId (reply threading) or create new one
       const content = message.body.content || message.bodyPreview;
+      const existingTicket = message.conversationId
+        ? await findTicketByConversationId(env.DB, mailbox.workspace_id, message.conversationId)
+        : null;
+
+      let ticketId: string;
+      if (existingTicket) {
+        // Thread the reply into the existing ticket
+        ticketId = existingTicket.id;
+      } else {
+        // New conversation — create a ticket
+        const subject = message.subject?.trim() || "(no subject)";
+        const ticket = await createTicket(env.DB, mailbox.workspace_id, {
+          subject,
+          contact_id: contact.id,
+          status: "open",
+          priority: "medium",
+          channel: "email",
+          graph_message_id: message.internetMessageId,
+          conversation_id: message.conversationId || undefined,
+        });
+        ticketId = ticket.id;
+      }
+
+      // 9. Add the email body as a message on the ticket
       await createTicketMessage(env.DB, {
-        ticket_id: ticket.id,
+        ticket_id: ticketId,
         author_id: contact.id,
         author_type: "contact",
         type: "message",
@@ -154,7 +168,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
       await markEmailAsTicket(env.DB, {
         mailbox_integration_id: mailbox.id,
         internet_message_id: message.internetMessageId,
-        ticket_id: ticket.id,
+        ticket_id: ticketId,
       });
     } catch (err) {
       // Log but don't throw — we must still return 202

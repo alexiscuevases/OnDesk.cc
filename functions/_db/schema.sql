@@ -111,7 +111,8 @@ CREATE INDEX IF NOT EXISTS idx_contacts_company_id   ON contacts(company_id);
 -- status: 'open' | 'pending' | 'resolved' | 'closed'
 -- priority: 'low' | 'medium' | 'high' | 'urgent'
 -- channel: 'email' | null
--- email_message_id: RFC 2822 Message-ID of the originating email (for In-Reply-To threading)
+-- graph_message_id: Microsoft Graph internal message ID of the originating email (for createReply threading)
+-- conversation_id: Microsoft Graph conversationId to thread replies into the same ticket
 CREATE TABLE IF NOT EXISTS tickets (
   id               TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
   workspace_id     TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
@@ -122,16 +123,18 @@ CREATE TABLE IF NOT EXISTS tickets (
   status           TEXT NOT NULL DEFAULT 'open',
   priority         TEXT NOT NULL DEFAULT 'medium',
   channel          TEXT,
-  email_message_id TEXT,
+  graph_message_id TEXT,
+  conversation_id  TEXT,
   created_at       INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at       INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
-CREATE INDEX IF NOT EXISTS idx_tickets_workspace_id ON tickets(workspace_id);
-CREATE INDEX IF NOT EXISTS idx_tickets_contact_id   ON tickets(contact_id);
-CREATE INDEX IF NOT EXISTS idx_tickets_assignee_id  ON tickets(assignee_id);
-CREATE INDEX IF NOT EXISTS idx_tickets_team_id      ON tickets(team_id);
-CREATE INDEX IF NOT EXISTS idx_tickets_status       ON tickets(status);
+CREATE INDEX IF NOT EXISTS idx_tickets_workspace_id   ON tickets(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_contact_id     ON tickets(contact_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_assignee_id    ON tickets(assignee_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_team_id        ON tickets(team_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_status         ON tickets(status);
+CREATE INDEX IF NOT EXISTS idx_tickets_conversation_id ON tickets(conversation_id);
 
 -- Ticket messages
 -- type: 'message' | 'note' (internal note)

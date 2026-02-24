@@ -538,6 +538,18 @@ export async function findTicketById(
   return result ?? null;
 }
 
+export async function findTicketByConversationId(
+  db: D1Database,
+  workspaceId: string,
+  conversationId: string
+): Promise<TicketRow | null> {
+  const result = await db
+    .prepare("SELECT * FROM tickets WHERE workspace_id = ? AND conversation_id = ? ORDER BY created_at ASC LIMIT 1")
+    .bind(workspaceId, conversationId)
+    .first<TicketRow>();
+  return result ?? null;
+}
+
 export async function createTicket(
   db: D1Database,
   workspaceId: string,
@@ -549,20 +561,21 @@ export async function createTicket(
     status?: TicketStatus;
     priority?: TicketPriority;
     channel?: string;
-    email_message_id?: string;
+    graph_message_id?: string;
+    conversation_id?: string;
   }
 ): Promise<TicketRow> {
   const id = crypto.randomUUID();
   await db
     .prepare(
-      `INSERT INTO tickets (id, workspace_id, contact_id, assignee_id, team_id, subject, status, priority, channel, email_message_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO tickets (id, workspace_id, contact_id, assignee_id, team_id, subject, status, priority, channel, graph_message_id, conversation_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .bind(
       id, workspaceId,
       data.contact_id ?? null, data.assignee_id ?? null, data.team_id ?? null,
       data.subject, data.status ?? "open", data.priority ?? "medium",
-      data.channel ?? null, data.email_message_id ?? null
+      data.channel ?? null, data.graph_message_id ?? null, data.conversation_id ?? null
     )
     .run();
   return (await findTicketById(db, id))!;

@@ -31,7 +31,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 		response_type: "code",
 		redirect_uri: redirectUri,
 		response_mode: "query",
-		scope: "User.Read Mail.Read Mail.Send offline_access",
+		scope: "User.Read Mail.Read Mail.ReadWrite Mail.Send offline_access",
 		state,
 	});
 

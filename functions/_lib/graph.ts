@@ -25,6 +25,7 @@ export interface GraphMessage {
 	body: { content: string; contentType: string };
 	from: { emailAddress: { name: string; address: string } };
 	internetMessageId: string;
+	conversationId: string;
 	receivedDateTime: string;
 }
 
@@ -35,7 +36,7 @@ export async function exchangeCodeForTokens(clientId: string, clientSecret: stri
 		code,
 		redirect_uri: redirectUri,
 		grant_type: "authorization_code",
-		scope: "User.Read Mail.Read Mail.Send offline_access",
+		scope: "User.Read Mail.Read Mail.ReadWrite Mail.Send offline_access",
 	});
 
 	const res = await fetch(TOKEN_ENDPOINT, {
@@ -58,7 +59,7 @@ export async function refreshAccessToken(clientId: string, clientSecret: string,
 		client_secret: clientSecret,
 		refresh_token: refreshToken,
 		grant_type: "refresh_token",
-		scope: "User.Read Mail.Read Mail.Send offline_access",
+		scope: "User.Read Mail.Read Mail.ReadWrite Mail.Send offline_access",
 	});
 
 	const res = await fetch(TOKEN_ENDPOINT, {
@@ -148,6 +149,59 @@ export async function deleteGraphSubscription(accessToken: string, subscriptionI
 	}
 }
 
+// Find a message in the mailbox by its RFC 2822 internetMessageId
+async function findMessageByInternetId(accessToken: string, internetMessageId: string): Promise<string | null> {
+	const filter = encodeURIComponent(`internetMessageId eq '${internetMessageId}'`);
+	const res = await fetch(`${GRAPH_BASE}/me/messages?$filter=${filter}&$select=id&$top=1`, {
+		headers: { Authorization: `Bearer ${accessToken}` },
+	});
+	if (!res.ok) return null;
+	const data = await res.json() as { value: { id: string }[] };
+	return data.value?.[0]?.id ?? null;
+}
+
+export async function replyGraphMail(
+	accessToken: string,
+	internetMessageId: string,
+	bodyHtml: string
+): Promise<void> {
+	// Resolve the stable mailbox message ID from the RFC 2822 internetMessageId
+	const mailboxMessageId = await findMessageByInternetId(accessToken, internetMessageId);
+	if (!mailboxMessageId) {
+		throw new Error(`Message not found in mailbox for internetMessageId: ${internetMessageId}`);
+	}
+
+	const res = await fetch(`${GRAPH_BASE}/me/messages/${mailboxMessageId}/createReply`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			message: {
+				body: { contentType: "HTML", content: bodyHtml },
+			},
+		}),
+	});
+
+	if (!res.ok) {
+		const err = await res.text();
+		throw new Error(`Failed to create reply: ${err}`);
+	}
+
+	const draft = await res.json() as { id: string };
+
+	const sendRes = await fetch(`${GRAPH_BASE}/me/messages/${draft.id}/send`, {
+		method: "POST",
+		headers: { Authorization: `Bearer ${accessToken}` },
+	});
+
+	if (!sendRes.ok) {
+		const err = await sendRes.text();
+		throw new Error(`Failed to send reply: ${err}`);
+	}
+}
+
 export async function sendGraphMail(
 	accessToken: string,
 	to: { name: string; address: string },
@@ -184,7 +238,7 @@ export async function sendGraphMail(
 }
 
 export async function getGraphMessage(accessToken: string, messageId: string): Promise<GraphMessage> {
-	const fields = "id,subject,bodyPreview,body,from,internetMessageId,receivedDateTime";
+	const fields = "id,subject,bodyPreview,body,from,internetMessageId,conversationId,receivedDateTime";
 	const res = await fetch(`${GRAPH_BASE}/me/messages/${messageId}?$select=${fields}`, {
 		headers: { Authorization: `Bearer ${accessToken}` },
 	});
