@@ -3,10 +3,24 @@ import { Send, Paperclip, Eye } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
+import { useSendMessageMutation } from "@/features/tickets/hooks/use-ticket-mutations";
 
-export function TicketReplyBox() {
+interface TicketReplyBoxProps {
+	ticketId: string;
+}
+
+export function TicketReplyBox({ ticketId }: TicketReplyBoxProps) {
 	const [reply, setReply] = useState("");
 	const [isInternal, setIsInternal] = useState(false);
+
+	const sendMessage = useSendMessageMutation(ticketId);
+
+	async function handleSend() {
+		const content = reply.trim();
+		if (!content) return;
+		await sendMessage.mutateAsync({ content, type: isInternal ? "note" : "message" });
+		setReply("");
+	}
 
 	return (
 		<Card className="border-0 shadow-sm">
@@ -40,7 +54,11 @@ export function TicketReplyBox() {
 						<Paperclip className="size-3.5" />
 						Attach
 					</Button>
-					<Button size="sm" className="h-8 gap-1.5 rounded-lg text-xs font-semibold">
+					<Button
+						size="sm"
+						className="h-8 gap-1.5 rounded-lg text-xs font-semibold"
+						onClick={handleSend}
+						disabled={sendMessage.isPending || !reply.trim()}>
 						<Send className="size-3.5" />
 						{isInternal ? "Add Note" : "Send Reply"}
 					</Button>

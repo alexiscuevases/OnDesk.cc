@@ -16,12 +16,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { type OutlookAccount } from "@/lib/data";
 
-interface IntegrationsSectionProps {
-	accounts: OutlookAccount[];
-	setAccounts: React.Dispatch<React.SetStateAction<OutlookAccount[]>>;
-}
-
-export function IntegrationsSection({ accounts, setAccounts }: IntegrationsSectionProps) {
+export function IntegrationsSection() {
+	const [accounts, setAccounts] = useState<OutlookAccount[]>([]);
 	const [disconnectOpen, setDisconnectOpen] = useState(false);
 	const [disconnectTarget, setDisconnectTarget] = useState<OutlookAccount | null>(null);
 

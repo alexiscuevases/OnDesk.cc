@@ -1,15 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import {
-	LayoutDashboard,
-	Ticket,
-	Users,
-	BarChart3,
-	Settings,
-	ChevronDown,
-	ChevronRight,
-	Building2,
-	Plus,
-} from "lucide-react";
+import { LayoutDashboard, Ticket, Users, BarChart3, Settings, ChevronDown, ChevronRight, Building2, Plus } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useWorkspace } from "@/context/workspace-context";
 import { useLogoutMutation } from "@/features/auth/hooks/use-auth-mutations";
@@ -52,7 +42,6 @@ export function WorkspaceSidebar() {
 	const navItems = [
 		{ id: "overview", label: "Overview", icon: LayoutDashboard, badge: null, to: `/w/${slug}/overview` },
 		{ id: "tickets", label: "Tickets", icon: Ticket, badge: null, to: `/w/${slug}/tickets/` },
-		{ id: "agents", label: "Agents", icon: Users, badge: null, to: `/w/${slug}/agents` },
 		{ id: "teams", label: "Teams", icon: Users, badge: null, to: `/w/${slug}/teams` },
 		{ id: "analytics", label: "Analytics", icon: BarChart3, badge: null, to: `/w/${slug}/analytics` },
 		{ id: "settings", label: "Settings", icon: Settings, badge: null, to: `/w/${slug}/settings` },
@@ -78,15 +67,9 @@ export function WorkspaceSidebar() {
 			<SidebarHeader className="p-4">
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<SidebarMenuButton
-							size="lg"
-							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+						<SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
 							{workspace.logo_url ? (
-								<img
-									src={workspace.logo_url}
-									alt={workspace.name}
-									className="size-9 rounded-xl object-cover"
-								/>
+								<img src={workspace.logo_url} alt={workspace.name} className="size-9 rounded-xl object-cover" />
 							) : (
 								<div className="flex aspect-square size-9 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
 									{workspaceInitials}
@@ -94,22 +77,15 @@ export function WorkspaceSidebar() {
 							)}
 							<div className="grid flex-1 text-left text-sm leading-tight">
 								<span className="truncate font-bold tracking-tight">{workspace.name}</span>
-								<span className="truncate text-[11px] text-sidebar-foreground/50">
-									/{workspace.slug}
-								</span>
+								<span className="truncate text-[11px] text-sidebar-foreground/50">/{workspace.slug}</span>
 							</div>
 							<ChevronDown className="size-4 text-sidebar-foreground/40" />
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent className="w-64" side="bottom" align="start" sideOffset={4}>
-						<DropdownMenuLabel className="text-xs text-muted-foreground">
-							Your workspaces
-						</DropdownMenuLabel>
+						<DropdownMenuLabel className="text-xs text-muted-foreground">Your workspaces</DropdownMenuLabel>
 						{workspaces.map((ws) => (
-							<DropdownMenuItem
-								key={ws.id}
-								onClick={() => navigate({ to: "/w/$slug/overview", params: { slug: ws.slug } })}
-								className="gap-2">
+							<DropdownMenuItem key={ws.id} onClick={() => navigate({ to: "/w/$slug/overview", params: { slug: ws.slug } })} className="gap-2">
 								<div className="size-6 rounded-md bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
 									{ws.name.slice(0, 2).toUpperCase()}
 								</div>
@@ -118,9 +94,7 @@ export function WorkspaceSidebar() {
 							</DropdownMenuItem>
 						))}
 						<DropdownMenuSeparator />
-						<DropdownMenuItem
-							onClick={() => navigate({ to: "/workspaces/new" })}
-							className="gap-2 text-muted-foreground">
+						<DropdownMenuItem onClick={() => navigate({ to: "/workspaces/new" })} className="gap-2 text-muted-foreground">
 							<Plus className="size-4" />
 							Create workspace
 						</DropdownMenuItem>
@@ -130,9 +104,7 @@ export function WorkspaceSidebar() {
 
 			<SidebarContent>
 				<SidebarGroup className="px-3">
-					<SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40 mb-1">
-						Menu
-					</SidebarGroupLabel>
+					<SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40 mb-1">Menu</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu className="gap-0.5">
 							{navItems.map((item) => (
@@ -175,9 +147,7 @@ export function WorkspaceSidebar() {
 									</Avatar>
 									<div className="grid flex-1 text-left text-sm leading-tight">
 										<span className="truncate font-semibold text-[13px]">{user?.name ?? "..."}</span>
-										<span className="truncate text-[11px] text-sidebar-foreground/50">
-											{workspace.role}
-										</span>
+										<span className="truncate text-[11px] text-sidebar-foreground/50">{workspace.role}</span>
 									</div>
 									<ChevronDown className="ml-auto size-4 text-sidebar-foreground/40" />
 								</SidebarMenuButton>
@@ -186,9 +156,7 @@ export function WorkspaceSidebar() {
 								<DropdownMenuItem>Profile</DropdownMenuItem>
 								<DropdownMenuItem>Account Settings</DropdownMenuItem>
 								<DropdownMenuSeparator />
-								<DropdownMenuItem
-									onClick={() => logoutMutation.mutate()}
-									disabled={logoutMutation.isPending}>
+								<DropdownMenuItem onClick={() => logoutMutation.mutate()} disabled={logoutMutation.isPending}>
 									{logoutMutation.isPending ? "Signing out..." : "Sign Out"}
 								</DropdownMenuItem>
 							</DropdownMenuContent>

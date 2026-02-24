@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { PriorityBadge } from "@/shared/components/priority-badge";
-import type { TicketPriority } from "@/lib/data";
+import type { TicketPriority } from "@/features/tickets/api/tickets-api";
 
 interface ChangePriorityModalProps {
 	open: boolean;
@@ -11,6 +9,13 @@ interface ChangePriorityModalProps {
 	currentPriority: TicketPriority;
 	onSave: (priority: TicketPriority) => void;
 }
+
+const priorities: { value: TicketPriority; label: string; color: string }[] = [
+	{ value: "urgent", label: "Urgent", color: "bg-destructive/15 text-destructive border-destructive/20" },
+	{ value: "high", label: "High", color: "bg-warning/15 text-warning border-warning/20" },
+	{ value: "medium", label: "Medium", color: "bg-primary/15 text-primary border-primary/20" },
+	{ value: "low", label: "Low", color: "bg-secondary text-secondary-foreground border-border" },
+];
 
 export function ChangePriorityModal({ open, onOpenChange, currentPriority, onSave }: ChangePriorityModalProps) {
 	const [selected, setSelected] = useState<TicketPriority>(currentPriority);
@@ -22,7 +27,6 @@ export function ChangePriorityModal({ open, onOpenChange, currentPriority, onSav
 
 	function handleSave() {
 		onSave(selected);
-		onOpenChange(false);
 	}
 
 	return (
@@ -30,25 +34,27 @@ export function ChangePriorityModal({ open, onOpenChange, currentPriority, onSav
 			<DialogContent className="sm:max-w-sm">
 				<DialogHeader>
 					<DialogTitle className="text-base">Change Priority</DialogTitle>
-					<DialogDescription className="text-xs">Update the priority level for this ticket</DialogDescription>
+					<DialogDescription className="text-xs">Select a priority level for this ticket</DialogDescription>
 				</DialogHeader>
-				<div className="grid gap-3 py-2">
-					{(["low", "medium", "high", "critical"] as TicketPriority[]).map((priority) => (
+				<div className="grid gap-2 py-2">
+					{priorities.map((p) => (
 						<button
-							key={priority}
-							onClick={() => setSelected(priority)}
-							className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
-								selected === priority
-									? "border-primary bg-primary/5"
-									: "border-border hover:border-primary/50 hover:bg-secondary/50"
+							key={p.value}
+							onClick={() => setSelected(p.value)}
+							className={`flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${p.color} ${
+								selected === p.value ? "ring-2 ring-primary" : ""
 							}`}>
-							<PriorityBadge priority={priority} variant="indicator" />
-							{selected === priority && <CheckCircle2 className="size-4 text-primary" />}
+							<div className="flex-1">
+								<p className="text-sm font-medium capitalize">{p.label}</p>
+							</div>
+							{selected === p.value && (
+								<div className="size-2 rounded-full bg-current" />
+							)}
 						</button>
 					))}
 				</div>
 				<DialogFooter className="gap-2">
-					<Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-lg">
+					<Button variant="outline" onClick={() => handleOpenChange(false)} className="rounded-lg">
 						Cancel
 					</Button>
 					<Button onClick={handleSave} className="rounded-lg">

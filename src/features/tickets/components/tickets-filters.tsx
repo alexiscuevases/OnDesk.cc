@@ -39,7 +39,7 @@ export function TicketsFilters({
 					<SelectContent>
 						<SelectItem value="all">All Status</SelectItem>
 						<SelectItem value="open">Open</SelectItem>
-						<SelectItem value="in-progress">In Progress</SelectItem>
+						<SelectItem value="pending">Pending</SelectItem>
 						<SelectItem value="resolved">Resolved</SelectItem>
 						<SelectItem value="closed">Closed</SelectItem>
 					</SelectContent>
@@ -50,7 +50,7 @@ export function TicketsFilters({
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All Priority</SelectItem>
-						<SelectItem value="critical">Critical</SelectItem>
+						<SelectItem value="urgent">Urgent</SelectItem>
 						<SelectItem value="high">High</SelectItem>
 						<SelectItem value="medium">Medium</SelectItem>
 						<SelectItem value="low">Low</SelectItem>

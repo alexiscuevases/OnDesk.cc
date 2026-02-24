@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/shared/components/status-badge";
-import type { TicketStatus } from "@/lib/data";
+import type { TicketStatus } from "@/features/tickets/api/tickets-api";
 
 interface ChangeStatusModalProps {
 	open: boolean;
@@ -11,6 +10,8 @@ interface ChangeStatusModalProps {
 	currentStatus: TicketStatus;
 	onSave: (status: TicketStatus) => void;
 }
+
+const statuses: TicketStatus[] = ["open", "pending", "resolved", "closed"];
 
 export function ChangeStatusModal({ open, onOpenChange, currentStatus, onSave }: ChangeStatusModalProps) {
 	const [selected, setSelected] = useState<TicketStatus>(currentStatus);
@@ -22,7 +23,6 @@ export function ChangeStatusModal({ open, onOpenChange, currentStatus, onSave }:
 
 	function handleSave() {
 		onSave(selected);
-		onOpenChange(false);
 	}
 
 	return (
@@ -30,25 +30,25 @@ export function ChangeStatusModal({ open, onOpenChange, currentStatus, onSave }:
 			<DialogContent className="sm:max-w-sm">
 				<DialogHeader>
 					<DialogTitle className="text-base">Change Status</DialogTitle>
-					<DialogDescription className="text-xs">Update the status for this ticket</DialogDescription>
+					<DialogDescription className="text-xs">Select a new status for this ticket</DialogDescription>
 				</DialogHeader>
-				<div className="grid gap-3 py-2">
-					{(["open", "in-progress", "resolved", "closed"] as TicketStatus[]).map((status) => (
+				<div className="grid gap-2 py-2">
+					{statuses.map((s) => (
 						<button
-							key={status}
-							onClick={() => setSelected(status)}
-							className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
-								selected === status
-									? "border-primary bg-primary/5"
-									: "border-border hover:border-primary/50 hover:bg-secondary/50"
+							key={s}
+							onClick={() => setSelected(s)}
+							className={`flex items-center gap-3 p-3 rounded-lg border transition-all text-left hover:bg-secondary/50 ${
+								selected === s ? "ring-2 ring-primary bg-secondary/50" : ""
 							}`}>
-							<StatusBadge status={status} showIcon size="md" />
-							{selected === status && <CheckCircle2 className="size-4 text-primary" />}
+							<StatusBadge status={s} showIcon size="md" />
+							{selected === s && (
+								<div className="ml-auto size-2 rounded-full bg-primary" />
+							)}
 						</button>
 					))}
 				</div>
 				<DialogFooter className="gap-2">
-					<Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-lg">
+					<Button variant="outline" onClick={() => handleOpenChange(false)} className="rounded-lg">
 						Cancel
 					</Button>
 					<Button onClick={handleSave} className="rounded-lg">

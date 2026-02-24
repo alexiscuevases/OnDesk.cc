@@ -1,14 +1,13 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TeamForm } from "../forms/team-form";
 import { type TeamFormValues } from "../schemas/config.schema";
-import { type Agent } from "@/lib/data";
-import { type ConfigTeam } from "@/types/index";
+import type { WorkspaceMember } from "@/features/users/api/users-api";
 
 interface EditTeamModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	team: ConfigTeam | null;
-	agents: Agent[];
+	team: { id: string; name: string; description: string | null } | null;
+	agents: WorkspaceMember[];
 	onConfirm: (values: TeamFormValues) => void;
 }
 
@@ -26,11 +25,11 @@ export function EditTeamModal({ open, onOpenChange, team, agents, onConfirm }: E
 					key={team.id}
 					defaultValues={{
 						name: team.name,
-						description: team.description,
-						image: team.image,
-						leaderId: team.leaderId || "",
-						memberIds: team.memberIds || [],
-						autoAssign: team.autoAssign,
+						description: team.description ?? "",
+						image: "",
+						leaderId: "",
+						memberIds: [],
+						autoAssign: false,
 					}}
 					agents={agents}
 					submitLabel="Save Changes"

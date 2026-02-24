@@ -3,30 +3,35 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useQuery } from "@tanstack/react-query";
-import { fetchTeams, queryKeys } from "@/lib/queries";
+import { useTeams } from "@/features/teams/hooks/use-team-queries";
+import type { Team } from "@/features/teams/api/teams-api";
 
 interface AssignTeamModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	selectedCount: number;
-	onConfirm: (teamName: string) => void;
+	workspaceId: string;
+	onConfirm: (teamId: string) => void;
 }
 
-export function AssignTeamModal({ open, onOpenChange, selectedCount, onConfirm }: AssignTeamModalProps) {
-	const { data: teams = [] } = useQuery({ queryKey: queryKeys.teams.all, queryFn: fetchTeams });
-	const [selectedTeam, setSelectedTeam] = useState("");
+export function AssignTeamModal({ open, onOpenChange, selectedCount, workspaceId, onConfirm }: AssignTeamModalProps) {
+	const { data: teams = [] } = useTeams(workspaceId);
+	const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
 	const plural = selectedCount > 1;
+
+	function getInitials(name: string) {
+		return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+	}
 
 	function handleConfirm() {
 		if (selectedTeam) {
-			onConfirm(selectedTeam);
-			setSelectedTeam("");
+			onConfirm(selectedTeam.id);
+			setSelectedTeam(null);
 		}
 	}
 
 	function handleOpenChange(open: boolean) {
-		if (!open) setSelectedTeam("");
+		if (!open) setSelectedTeam(null);
 		onOpenChange(open);
 	}
 
@@ -45,16 +50,18 @@ export function AssignTeamModal({ open, onOpenChange, selectedCount, onConfirm }
 							<div
 								key={team.id}
 								className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/50 cursor-pointer"
-								onClick={() => setSelectedTeam(team.name)}>
-								<Checkbox checked={selectedTeam === team.name} className="size-4" />
+								onClick={() => setSelectedTeam(team)}>
+								<Checkbox checked={selectedTeam?.id === team.id} className="size-4" />
 								<Avatar className="size-7 rounded-lg">
 									<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[9px] font-bold">
-										{team.avatar}
+										{getInitials(team.name)}
 									</AvatarFallback>
 								</Avatar>
 								<div className="flex-1 min-w-0">
 									<p className="text-sm font-medium">{team.name}</p>
-									<p className="text-[10px] text-muted-foreground truncate">{team.description}</p>
+									{team.description && (
+										<p className="text-[10px] text-muted-foreground truncate">{team.description}</p>
+									)}
 								</div>
 							</div>
 						))}

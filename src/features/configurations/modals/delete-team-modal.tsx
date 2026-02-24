@@ -8,12 +8,10 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { type ConfigTeam } from "@/types/index";
-
 interface DeleteTeamModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	team: ConfigTeam | null;
+	team: { id: string; name: string } | null;
 	onConfirm: () => void;
 }
 

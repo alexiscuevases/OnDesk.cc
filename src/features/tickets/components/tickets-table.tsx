@@ -8,8 +8,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "@/shared/components/status-badge";
 import { PriorityBadge } from "@/shared/components/priority-badge";
-import { getInitials } from "@/lib/format";
-import type { Ticket } from "@/lib/data";
+import type { Ticket } from "@/features/tickets/api/tickets-api";
+import type { WorkspaceMember } from "@/features/users/api/users-api";
+import type { Team } from "@/features/teams/api/teams-api";
 
 interface TicketsTableProps {
 	tickets: Ticket[];
@@ -20,6 +21,8 @@ interface TicketsTableProps {
 	onOpenTicket: (id: string) => void;
 	onDeleteSingle: (id: string) => void;
 	isLoading?: boolean;
+	members: WorkspaceMember[];
+	teams: Team[];
 }
 
 export function TicketsTable({
@@ -31,7 +34,23 @@ export function TicketsTable({
 	onOpenTicket,
 	onDeleteSingle,
 	isLoading,
+	members,
+	teams,
 }: TicketsTableProps) {
+	function getMemberName(id: string | null) {
+		if (!id) return "—";
+		return members.find((m) => m.id === id)?.name ?? "—";
+	}
+
+	function getTeamName(id: string | null) {
+		if (!id) return null;
+		return teams.find((t) => t.id === id)?.name ?? null;
+	}
+
+	function getInitials(name: string) {
+		return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+	}
+
 	return (
 		<Card className="border-0 shadow-sm overflow-hidden">
 			<CardHeader className="pb-3">
@@ -60,9 +79,6 @@ export function TicketsTable({
 							</TableHead>
 							<TableHead className="w-24 text-[11px] font-semibold uppercase tracking-wider">ID</TableHead>
 							<TableHead className="text-[11px] font-semibold uppercase tracking-wider">Subject</TableHead>
-							<TableHead className="hidden md:table-cell text-[11px] font-semibold uppercase tracking-wider">
-								Requester
-							</TableHead>
 							<TableHead className="hidden lg:table-cell text-[11px] font-semibold uppercase tracking-wider">
 								Team
 							</TableHead>
@@ -75,88 +91,88 @@ export function TicketsTable({
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{tickets.map((ticket) => (
-							<TableRow key={ticket.id} className="hover:bg-secondary/40 transition-colors">
-								<TableCell className="pl-6" onClick={(e) => e.stopPropagation()}>
-									<Checkbox
-										checked={selectedTickets.includes(ticket.id)}
-										onCheckedChange={(checked) => onSelectTicket(ticket.id, checked as boolean)}
-									/>
-								</TableCell>
-								<TableCell
-									className="font-mono text-xs font-semibold text-primary/70 cursor-pointer"
-									onClick={() => onOpenTicket(ticket.id)}>
-									{ticket.id}
-								</TableCell>
-								<TableCell className="cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
-									<div className="max-w-[200px] lg:max-w-[300px]">
-										<p className="text-sm font-medium truncate">{ticket.subject}</p>
-									</div>
-								</TableCell>
-								<TableCell
-									className="hidden md:table-cell cursor-pointer"
-									onClick={() => onOpenTicket(ticket.id)}>
-									<div className="flex items-center gap-2">
-										<Avatar className="size-7">
-											<AvatarFallback className="text-[10px] bg-primary/10 text-primary font-semibold">
-												{getInitials(ticket.requester)}
-											</AvatarFallback>
-										</Avatar>
-										<span className="text-xs text-muted-foreground">{ticket.requester}</span>
-									</div>
-								</TableCell>
-								<TableCell
-									className="hidden lg:table-cell cursor-pointer"
-									onClick={() => onOpenTicket(ticket.id)}>
-									<Badge variant="secondary" className="text-[10px] rounded-full px-2 font-medium">
-										{ticket.team}
-									</Badge>
-								</TableCell>
-								<TableCell
-									className="hidden sm:table-cell cursor-pointer"
-									onClick={() => onOpenTicket(ticket.id)}>
-									<div className="flex items-center gap-2">
-										<Avatar className="size-7">
-											<AvatarFallback className="text-[10px] bg-accent/80 text-accent-foreground font-semibold">
-												{getInitials(ticket.assignee)}
-											</AvatarFallback>
-										</Avatar>
-										<span className="text-xs">{ticket.assignee}</span>
-									</div>
-								</TableCell>
-								<TableCell className="cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
-									<PriorityBadge priority={ticket.priority} />
-								</TableCell>
-								<TableCell className="cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
-									<StatusBadge status={ticket.status} />
-								</TableCell>
-								<TableCell className="pr-6" onClick={(e) => e.stopPropagation()}>
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="ghost" size="icon" className="size-8 rounded-lg">
-												<MoreHorizontal className="size-4" />
-												<span className="sr-only">Actions</span>
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent align="end">
-											<DropdownMenuItem onClick={() => onOpenTicket(ticket.id)}>
-												<Eye className="size-3.5 mr-2" />
-												View
-											</DropdownMenuItem>
-											<DropdownMenuItem
-												className="text-destructive"
-												onClick={() => onDeleteSingle(ticket.id)}>
-												<Trash2 className="size-3.5 mr-2" />
-												Delete
-											</DropdownMenuItem>
-										</DropdownMenuContent>
-									</DropdownMenu>
-								</TableCell>
-							</TableRow>
-						))}
+						{tickets.map((ticket) => {
+							const assigneeName = getMemberName(ticket.assignee_id);
+							const teamName = getTeamName(ticket.team_id);
+							return (
+								<TableRow key={ticket.id} className="hover:bg-secondary/40 transition-colors">
+									<TableCell className="pl-6" onClick={(e) => e.stopPropagation()}>
+										<Checkbox
+											checked={selectedTickets.includes(ticket.id)}
+											onCheckedChange={(checked) => onSelectTicket(ticket.id, checked as boolean)}
+										/>
+									</TableCell>
+									<TableCell
+										className="font-mono text-xs font-semibold text-primary/70 cursor-pointer"
+										onClick={() => onOpenTicket(ticket.id)}>
+										{ticket.id.slice(0, 8)}
+									</TableCell>
+									<TableCell className="cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
+										<div className="max-w-[200px] lg:max-w-[300px]">
+											<p className="text-sm font-medium truncate">{ticket.subject}</p>
+										</div>
+									</TableCell>
+									<TableCell
+										className="hidden lg:table-cell cursor-pointer"
+										onClick={() => onOpenTicket(ticket.id)}>
+										{teamName ? (
+											<Badge variant="secondary" className="text-[10px] rounded-full px-2 font-medium">
+												{teamName}
+											</Badge>
+										) : (
+											<span className="text-xs text-muted-foreground">—</span>
+										)}
+									</TableCell>
+									<TableCell
+										className="hidden sm:table-cell cursor-pointer"
+										onClick={() => onOpenTicket(ticket.id)}>
+										{ticket.assignee_id ? (
+											<div className="flex items-center gap-2">
+												<Avatar className="size-7">
+													<AvatarFallback className="text-[10px] bg-accent/80 text-accent-foreground font-semibold">
+														{getInitials(assigneeName)}
+													</AvatarFallback>
+												</Avatar>
+												<span className="text-xs">{assigneeName}</span>
+											</div>
+										) : (
+											<span className="text-xs text-muted-foreground">Unassigned</span>
+										)}
+									</TableCell>
+									<TableCell className="cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
+										<PriorityBadge priority={ticket.priority} />
+									</TableCell>
+									<TableCell className="cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
+										<StatusBadge status={ticket.status} />
+									</TableCell>
+									<TableCell className="pr-6" onClick={(e) => e.stopPropagation()}>
+										<DropdownMenu>
+											<DropdownMenuTrigger asChild>
+												<Button variant="ghost" size="icon" className="size-8 rounded-lg">
+													<MoreHorizontal className="size-4" />
+													<span className="sr-only">Actions</span>
+												</Button>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent align="end">
+												<DropdownMenuItem onClick={() => onOpenTicket(ticket.id)}>
+													<Eye className="size-3.5 mr-2" />
+													View
+												</DropdownMenuItem>
+												<DropdownMenuItem
+													className="text-destructive"
+													onClick={() => onDeleteSingle(ticket.id)}>
+													<Trash2 className="size-3.5 mr-2" />
+													Delete
+												</DropdownMenuItem>
+											</DropdownMenuContent>
+										</DropdownMenu>
+									</TableCell>
+								</TableRow>
+							);
+						})}
 						{tickets.length === 0 && (
 							<TableRow>
-								<TableCell colSpan={9} className="h-24 text-center text-muted-foreground text-sm">
+								<TableCell colSpan={8} className="h-24 text-center text-muted-foreground text-sm">
 									No tickets found matching your filters.
 								</TableCell>
 							</TableRow>

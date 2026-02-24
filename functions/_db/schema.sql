@@ -48,3 +48,119 @@ CREATE TABLE IF NOT EXISTS workspace_members (
 
 CREATE INDEX IF NOT EXISTS idx_workspace_members_user_id      ON workspace_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_members_workspace_id ON workspace_members(workspace_id);
+
+-- Teams table
+CREATE TABLE IF NOT EXISTS teams (
+  id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  name         TEXT NOT NULL,
+  description  TEXT,
+  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at   INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_teams_workspace_id ON teams(workspace_id);
+
+-- Team members (agent <-> team relationship)
+CREATE TABLE IF NOT EXISTS team_members (
+  id      TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE(team_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_team_members_team_id ON team_members(team_id);
+CREATE INDEX IF NOT EXISTS idx_team_members_user_id ON team_members(user_id);
+
+-- Companies table
+CREATE TABLE IF NOT EXISTS companies (
+  id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  name         TEXT NOT NULL,
+  domain       TEXT,
+  description  TEXT,
+  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at   INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_companies_workspace_id ON companies(workspace_id);
+
+-- Contacts (customers who submit tickets)
+-- A contact belongs to a workspace and optionally to a company
+CREATE TABLE IF NOT EXISTS contacts (
+  id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  company_id   TEXT REFERENCES companies(id) ON DELETE SET NULL,
+  name         TEXT NOT NULL,
+  email        TEXT NOT NULL,
+  phone        TEXT,
+  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE(workspace_id, email)
+);
+
+CREATE INDEX IF NOT EXISTS idx_contacts_workspace_id ON contacts(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_contacts_company_id   ON contacts(company_id);
+
+-- Tickets table
+-- status: 'open' | 'pending' | 'resolved' | 'closed'
+-- priority: 'low' | 'medium' | 'high' | 'urgent'
+CREATE TABLE IF NOT EXISTS tickets (
+  id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  contact_id   TEXT REFERENCES contacts(id) ON DELETE SET NULL,
+  assignee_id  TEXT REFERENCES users(id) ON DELETE SET NULL,
+  team_id      TEXT REFERENCES teams(id) ON DELETE SET NULL,
+  subject      TEXT NOT NULL,
+  status       TEXT NOT NULL DEFAULT 'open',
+  priority     TEXT NOT NULL DEFAULT 'medium',
+  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at   INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_tickets_workspace_id ON tickets(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_contact_id   ON tickets(contact_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_assignee_id  ON tickets(assignee_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_team_id      ON tickets(team_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_status       ON tickets(status);
+
+-- Ticket messages
+-- type: 'message' | 'note' (internal note)
+-- author_type: 'agent' | 'contact'
+CREATE TABLE IF NOT EXISTS ticket_messages (
+  id          TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  ticket_id   TEXT NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+  author_id   TEXT NOT NULL,
+  author_type TEXT NOT NULL DEFAULT 'agent',
+  type        TEXT NOT NULL DEFAULT 'message',
+  content     TEXT NOT NULL,
+  created_at  INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_ticket_messages_ticket_id ON ticket_messages(ticket_id);
+
+-- Canned replies
+CREATE TABLE IF NOT EXISTS canned_replies (
+  id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  name         TEXT NOT NULL,
+  content      TEXT NOT NULL,
+  created_by   TEXT NOT NULL REFERENCES users(id),
+  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at   INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_canned_replies_workspace_id ON canned_replies(workspace_id);
+
+-- Agent signatures
+CREATE TABLE IF NOT EXISTS signatures (
+  id      TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name    TEXT NOT NULL,
+  content TEXT NOT NULL,
+  is_default INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_signatures_user_id ON signatures(user_id);

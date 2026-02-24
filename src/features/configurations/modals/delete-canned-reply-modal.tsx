@@ -8,12 +8,10 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { type CannedReply } from "@/types/index";
-
 interface DeleteCannedReplyModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	reply: CannedReply | null;
+	reply: { id: string; title: string } | null;
 	onConfirm: () => void;
 }
 

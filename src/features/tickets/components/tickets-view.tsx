@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchTickets, queryKeys } from "@/lib/queries";
+import { useWorkspace } from "@/context/workspace-context";
+import { useTickets } from "../hooks/use-ticket-queries";
+import { useDeleteTicketMutation, useUpdateTicketMutation } from "../hooks/use-ticket-mutations";
+import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
+import { useTeams } from "@/features/teams/hooks/use-team-queries";
 import { TicketsFilters } from "./tickets-filters";
 import { TicketsBulkActions } from "./tickets-bulk-actions";
 import { TicketsTable } from "./tickets-table";
@@ -8,51 +11,52 @@ import { DeleteTicketModal } from "../modals/delete-ticket-modal";
 import { AssignAgentModal } from "../modals/assign-agent-modal";
 import { AssignTeamModal } from "../modals/assign-team-modal";
 import { MergeTicketModal } from "../modals/merge-ticket-modal";
-import type { Ticket } from "@/lib/data";
+import type { TicketStatus } from "../api/tickets-api";
 
 export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => void }) {
-	const queryClient = useQueryClient();
+	const { workspace } = useWorkspace();
+	const workspaceId = workspace.id;
+
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
 	const [priorityFilter, setPriorityFilter] = useState<string>("all");
 	const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
 
-	// Modal open/close states only
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [mergeOpen, setMergeOpen] = useState(false);
 	const [assignAgentOpen, setAssignAgentOpen] = useState(false);
 	const [assignTeamOpen, setAssignTeamOpen] = useState(false);
 
-	const { data: tickets = [], isLoading } = useQuery({
-		queryKey: queryKeys.tickets.list({ search, status: statusFilter as Ticket["status"] | "all", priority: priorityFilter as Ticket["priority"] | "all" }),
-		queryFn: () => fetchTickets({ search, status: statusFilter as Ticket["status"] | "all", priority: priorityFilter as Ticket["priority"] | "all" }),
+	const apiFilters = statusFilter !== "all" ? { status: statusFilter as TicketStatus } : {};
+	const { data: tickets = [], isLoading } = useTickets(workspaceId, apiFilters);
+	const { data: allTickets = [] } = useTickets(workspaceId, {});
+	const { data: members = [] } = useWorkspaceMembers(workspaceId);
+	const { data: teams = [] } = useTeams(workspaceId);
+
+	const deleteTicket = useDeleteTicketMutation(workspaceId);
+	const updateTicket = useUpdateTicketMutation("", workspaceId);
+
+	// Client-side search + priority filter (API only filters by status/assignee/team)
+	const filteredTickets = tickets.filter((t) => {
+		const matchesPriority = priorityFilter === "all" || t.priority === priorityFilter;
+		if (!matchesPriority) return false;
+		if (!search) return true;
+		const q = search.toLowerCase();
+		return t.subject.toLowerCase().includes(q) || t.id.toLowerCase().includes(q);
 	});
 
-	// Para stats usamos todos los tickets sin filtros
-	const { data: allTickets = [] } = useQuery({
-		queryKey: queryKeys.tickets.all,
-		queryFn: () => fetchTickets(),
-	});
-
-	const mergeableTickets = tickets.filter((t) => !selectedTickets.includes(t.id));
+	const mergeableTickets = filteredTickets.filter((t) => !selectedTickets.includes(t.id));
 
 	function handleSelectAll(checked: boolean) {
-		setSelectedTickets(checked ? tickets.map((t) => t.id) : []);
+		setSelectedTickets(checked ? filteredTickets.map((t) => t.id) : []);
 	}
 
 	function handleSelectTicket(ticketId: string, checked: boolean) {
 		setSelectedTickets((prev) => (checked ? [...prev, ticketId] : prev.filter((id) => id !== ticketId)));
 	}
 
-	function handleDeleteConfirm() {
-		// Optimistic update: elimina de la cache
-		queryClient.setQueryData<Ticket[]>(queryKeys.tickets.all, (prev = []) =>
-			prev.filter((t) => !selectedTickets.includes(t.id)),
-		);
-		queryClient.setQueryData<Ticket[]>(
-			queryKeys.tickets.list({ search, status: statusFilter as Ticket["status"] | "all", priority: priorityFilter as Ticket["priority"] | "all" }),
-			(prev = []) => prev.filter((t) => !selectedTickets.includes(t.id)),
-		);
+	async function handleDeleteConfirm() {
+		await Promise.all(selectedTickets.map((id) => deleteTicket.mutateAsync(id)));
 		setSelectedTickets([]);
 		setDeleteOpen(false);
 	}
@@ -62,25 +66,22 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 		setDeleteOpen(true);
 	}
 
-	function handleAssignTeamConfirm(teamName: string) {
-		// Optimistic update: actualiza el equipo en la cache
-		const updater = (prev: Ticket[] = []) =>
-			prev.map((t) => (selectedTickets.includes(t.id) ? { ...t, team: teamName } : t));
-		queryClient.setQueryData<Ticket[]>(queryKeys.tickets.all, updater);
-		queryClient.setQueryData<Ticket[]>(
-			queryKeys.tickets.list({ search, status: statusFilter as Ticket["status"] | "all", priority: priorityFilter as Ticket["priority"] | "all" }),
-			updater,
+	async function handleAssignTeamConfirm(teamId: string) {
+		await Promise.all(
+			selectedTickets.map(() => updateTicket.mutateAsync({ team_id: teamId }))
 		);
 		setSelectedTickets([]);
 	}
 
-	function handleAssignAgentConfirm(agentId: string) {
-		console.log("[v0] Assigning agent:", agentId, "to tickets:", selectedTickets);
+	async function handleAssignAgentConfirm(agentId: string) {
+		await Promise.all(
+			selectedTickets.map(() => updateTicket.mutateAsync({ assignee_id: agentId }))
+		);
 		setSelectedTickets([]);
 	}
 
-	function handleMergeConfirm(targetTicketId: string) {
-		console.log("[v0] Merging tickets:", selectedTickets, "into", targetTicketId);
+	function handleMergeConfirm(_targetTicketId: string) {
+		// TODO: implement merge API when available
 		setSelectedTickets([]);
 	}
 
@@ -95,7 +96,7 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 			<div className="grid grid-cols-4 gap-3">
 				{[
 					{ label: "Open", count: allTickets.filter((t) => t.status === "open").length, color: "bg-chart-1" },
-					{ label: "In Progress", count: allTickets.filter((t) => t.status === "in-progress").length, color: "bg-warning" },
+					{ label: "Pending", count: allTickets.filter((t) => t.status === "pending").length, color: "bg-warning" },
 					{ label: "Resolved", count: allTickets.filter((t) => t.status === "resolved").length, color: "bg-success" },
 					{ label: "Closed", count: allTickets.filter((t) => t.status === "closed").length, color: "bg-muted-foreground" },
 				].map((stat) => (
@@ -129,7 +130,7 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 			/>
 
 			<TicketsTable
-				tickets={tickets}
+				tickets={filteredTickets}
 				totalCount={allTickets.length}
 				selectedTickets={selectedTickets}
 				onSelectAll={handleSelectAll}
@@ -137,6 +138,8 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 				onOpenTicket={onOpenTicket}
 				onDeleteSingle={handleDeleteSingle}
 				isLoading={isLoading}
+				members={members}
+				teams={teams}
 			/>
 
 			<DeleteTicketModal
@@ -149,12 +152,14 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 				open={assignAgentOpen}
 				onOpenChange={setAssignAgentOpen}
 				selectedCount={selectedTickets.length}
+				workspaceId={workspaceId}
 				onConfirm={handleAssignAgentConfirm}
 			/>
 			<AssignTeamModal
 				open={assignTeamOpen}
 				onOpenChange={setAssignTeamOpen}
 				selectedCount={selectedTickets.length}
+				workspaceId={workspaceId}
 				onConfirm={handleAssignTeamConfirm}
 			/>
 			<MergeTicketModal

@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/shared/components/status-badge";
-import type { Ticket } from "@/lib/data";
+import type { Ticket } from "@/features/tickets/api/tickets-api";
 
 interface MergeTicketModalProps {
 	open: boolean;
@@ -78,7 +78,7 @@ export function MergeTicketModal({ open, onOpenChange, selectedCount, mergeableT
 											</div>
 											<p className="text-sm font-medium truncate">{ticket.subject}</p>
 											<p className="text-xs text-muted-foreground truncate">
-												{ticket.requester} • {ticket.team}
+												{new Date(ticket.created_at * 1000).toLocaleDateString()}
 											</p>
 										</div>
 										{targetId === ticket.id && (

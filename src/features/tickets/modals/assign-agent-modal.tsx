@@ -4,43 +4,47 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useQuery } from "@tanstack/react-query";
-import { fetchAgents, queryKeys } from "@/lib/queries";
-import type { Agent } from "@/lib/data";
+import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
+import type { WorkspaceMember } from "@/features/users/api/users-api";
 
 interface AssignAgentModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	selectedCount: number;
+	workspaceId: string;
 	onConfirm: (agentId: string) => void;
 }
 
-export function AssignAgentModal({ open, onOpenChange, selectedCount, onConfirm }: AssignAgentModalProps) {
-	const { data: agents = [] } = useQuery({ queryKey: queryKeys.agents.all, queryFn: fetchAgents });
+export function AssignAgentModal({ open, onOpenChange, selectedCount, workspaceId, onConfirm }: AssignAgentModalProps) {
+	const { data: members = [] } = useWorkspaceMembers(workspaceId);
 	const [search, setSearch] = useState("");
-	const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+	const [selectedMember, setSelectedMember] = useState<WorkspaceMember | null>(null);
 	const plural = selectedCount > 1;
 
-	const filteredAgents = agents.filter(
-		(a) =>
-			a.name.toLowerCase().includes(search.toLowerCase()) ||
-			a.email.toLowerCase().includes(search.toLowerCase()),
+	const filtered = members.filter(
+		(m) =>
+			m.name.toLowerCase().includes(search.toLowerCase()) ||
+			m.email.toLowerCase().includes(search.toLowerCase()),
 	);
 
 	function handleConfirm() {
-		if (selectedAgent) {
-			onConfirm(selectedAgent.id);
-			setSelectedAgent(null);
+		if (selectedMember) {
+			onConfirm(selectedMember.id);
+			setSelectedMember(null);
 			setSearch("");
 		}
 	}
 
 	function handleOpenChange(open: boolean) {
 		if (!open) {
-			setSelectedAgent(null);
+			setSelectedMember(null);
 			setSearch("");
 		}
 		onOpenChange(open);
+	}
+
+	function getInitials(name: string) {
+		return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 	}
 
 	return (
@@ -63,37 +67,26 @@ export function AssignAgentModal({ open, onOpenChange, selectedCount, onConfirm 
 						/>
 					</div>
 					<div className="max-h-[300px] overflow-y-auto rounded-lg border">
-						{filteredAgents.length > 0 ? (
+						{filtered.length > 0 ? (
 							<div className="p-1">
-								{filteredAgents.map((agent) => (
+								{filtered.map((member) => (
 									<button
-										key={agent.id}
-										onClick={() => setSelectedAgent(agent)}
+										key={member.id}
+										onClick={() => setSelectedMember(member)}
 										className={`w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/80 transition-colors ${
-											selectedAgent?.id === agent.id ? "bg-secondary" : ""
+											selectedMember?.id === member.id ? "bg-secondary" : ""
 										}`}>
 										<Avatar className="size-8 rounded-lg">
 											<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
-												{agent.initials}
+												{getInitials(member.name)}
 											</AvatarFallback>
 										</Avatar>
 										<div className="flex-1 min-w-0 text-left">
-											<div className="flex items-center gap-2">
-												<p className="text-sm font-medium truncate">{agent.name}</p>
-												<div
-													className={`size-2 rounded-full ${
-														agent.status === "online"
-															? "bg-accent"
-															: agent.status === "away"
-																? "bg-warning"
-																: "bg-muted-foreground"
-													}`}
-												/>
-											</div>
-											<p className="text-xs text-muted-foreground truncate">{agent.role}</p>
-											<p className="text-[10px] text-muted-foreground">{agent.tickets} active tickets</p>
+											<p className="text-sm font-medium truncate">{member.name}</p>
+											<p className="text-xs text-muted-foreground truncate">{member.email}</p>
+											<p className="text-[10px] text-muted-foreground capitalize">{member.workspace_role}</p>
 										</div>
-										{selectedAgent?.id === agent.id && (
+										{selectedMember?.id === member.id && (
 											<CheckCircle2 className="size-4 text-primary shrink-0" />
 										)}
 									</button>
@@ -111,7 +104,7 @@ export function AssignAgentModal({ open, onOpenChange, selectedCount, onConfirm 
 					<Button variant="outline" onClick={() => handleOpenChange(false)} className="rounded-lg">
 						Cancel
 					</Button>
-					<Button onClick={handleConfirm} disabled={!selectedAgent} className="rounded-lg">
+					<Button onClick={handleConfirm} disabled={!selectedMember} className="rounded-lg">
 						Assign Ticket{plural ? "s" : ""}
 					</Button>
 				</DialogFooter>

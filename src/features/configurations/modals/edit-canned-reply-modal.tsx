@@ -1,12 +1,10 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CannedReplyForm } from "../forms/canned-reply-form";
 import { type CannedReplyFormValues } from "../schemas/config.schema";
-import { type CannedReply } from "@/types/index";
-
 interface EditCannedReplyModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	reply: CannedReply | null;
+	reply: { id: string; title: string; shortcut: string; content: string } | null;
 	onConfirm: (values: CannedReplyFormValues) => void;
 }
 

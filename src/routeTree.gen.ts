@@ -24,7 +24,6 @@ import { Route as WSlugTeamsRouteImport } from './routes/w/$slug/teams'
 import { Route as WSlugSettingsRouteImport } from './routes/w/$slug/settings'
 import { Route as WSlugOverviewRouteImport } from './routes/w/$slug/overview'
 import { Route as WSlugAnalyticsRouteImport } from './routes/w/$slug/analytics'
-import { Route as WSlugAgentsRouteImport } from './routes/w/$slug/agents'
 import { Route as WSlugTicketsIndexRouteImport } from './routes/w/$slug/tickets/index'
 import { Route as WSlugTicketsIdRouteImport } from './routes/w/$slug/tickets/$id'
 
@@ -103,11 +102,6 @@ const WSlugAnalyticsRoute = WSlugAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => WSlugRoute,
 } as any)
-const WSlugAgentsRoute = WSlugAgentsRouteImport.update({
-  id: '/agents',
-  path: '/agents',
-  getParentRoute: () => WSlugRoute,
-} as any)
 const WSlugTicketsIndexRoute = WSlugTicketsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -130,7 +124,6 @@ export interface FileRoutesByFullPath {
   '/w/$slug': typeof WSlugRouteWithChildren
   '/workspaces/new': typeof WorkspacesNewRoute
   '/workspaces/': typeof WorkspacesIndexRoute
-  '/w/$slug/agents': typeof WSlugAgentsRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
   '/w/$slug/overview': typeof WSlugOverviewRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
@@ -149,7 +142,6 @@ export interface FileRoutesByTo {
   '/w/$slug': typeof WSlugRouteWithChildren
   '/workspaces/new': typeof WorkspacesNewRoute
   '/workspaces': typeof WorkspacesIndexRoute
-  '/w/$slug/agents': typeof WSlugAgentsRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
   '/w/$slug/overview': typeof WSlugOverviewRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
@@ -169,7 +161,6 @@ export interface FileRoutesById {
   '/w/$slug': typeof WSlugRouteWithChildren
   '/workspaces/new': typeof WorkspacesNewRoute
   '/workspaces/': typeof WorkspacesIndexRoute
-  '/w/$slug/agents': typeof WSlugAgentsRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
   '/w/$slug/overview': typeof WSlugOverviewRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
@@ -191,7 +182,6 @@ export interface FileRouteTypes {
     | '/w/$slug'
     | '/workspaces/new'
     | '/workspaces/'
-    | '/w/$slug/agents'
     | '/w/$slug/analytics'
     | '/w/$slug/overview'
     | '/w/$slug/settings'
@@ -210,7 +200,6 @@ export interface FileRouteTypes {
     | '/w/$slug'
     | '/workspaces/new'
     | '/workspaces'
-    | '/w/$slug/agents'
     | '/w/$slug/analytics'
     | '/w/$slug/overview'
     | '/w/$slug/settings'
@@ -229,7 +218,6 @@ export interface FileRouteTypes {
     | '/w/$slug'
     | '/workspaces/new'
     | '/workspaces/'
-    | '/w/$slug/agents'
     | '/w/$slug/analytics'
     | '/w/$slug/overview'
     | '/w/$slug/settings'
@@ -353,13 +341,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WSlugAnalyticsRouteImport
       parentRoute: typeof WSlugRoute
     }
-    '/w/$slug/agents': {
-      id: '/w/$slug/agents'
-      path: '/agents'
-      fullPath: '/w/$slug/agents'
-      preLoaderRoute: typeof WSlugAgentsRouteImport
-      parentRoute: typeof WSlugRoute
-    }
     '/w/$slug/tickets/': {
       id: '/w/$slug/tickets/'
       path: '/'
@@ -406,7 +387,6 @@ const WSlugTicketsRouteWithChildren = WSlugTicketsRoute._addFileChildren(
 )
 
 interface WSlugRouteChildren {
-  WSlugAgentsRoute: typeof WSlugAgentsRoute
   WSlugAnalyticsRoute: typeof WSlugAnalyticsRoute
   WSlugOverviewRoute: typeof WSlugOverviewRoute
   WSlugSettingsRoute: typeof WSlugSettingsRoute
@@ -415,7 +395,6 @@ interface WSlugRouteChildren {
 }
 
 const WSlugRouteChildren: WSlugRouteChildren = {
-  WSlugAgentsRoute: WSlugAgentsRoute,
   WSlugAnalyticsRoute: WSlugAnalyticsRoute,
   WSlugOverviewRoute: WSlugOverviewRoute,
   WSlugSettingsRoute: WSlugSettingsRoute,

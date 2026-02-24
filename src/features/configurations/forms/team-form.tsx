@@ -13,12 +13,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DialogFooter } from "@/components/ui/dialog";
-import { type Agent } from "@/lib/data";
+import type { WorkspaceMember } from "@/features/users/api/users-api";
 import { teamSchema, type TeamFormValues } from "../schemas/config.schema";
 
 interface TeamFormProps {
 	defaultValues?: Partial<TeamFormValues>;
-	agents: Agent[];
+	agents: WorkspaceMember[];
 	onSubmit: (values: TeamFormValues) => void;
 	onCancel: () => void;
 	submitLabel: string;
@@ -115,7 +115,7 @@ export function TeamForm({ defaultValues, agents, onSubmit, onCancel, submitLabe
 								<SelectContent>
 									{agents.map((agent) => (
 										<SelectItem key={agent.id} value={agent.id}>
-											{agent.name} - {agent.role}
+											{agent.name} - {agent.workspace_role}
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -160,7 +160,7 @@ export function TeamForm({ defaultValues, agents, onSubmit, onCancel, submitLabe
 																	<span className="text-xs">{agent.name}</span>
 																</div>
 																<Badge variant="secondary" className="text-[10px] rounded-full px-1.5 ml-auto">
-																	{agent.role}
+																	{agent.workspace_role}
 																</Badge>
 															</CommandItem>
 														);

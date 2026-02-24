@@ -8,12 +8,10 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { type Signature } from "@/types/index";
-
 interface DeleteSignatureModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	signature: Signature | null;
+	signature: { id: string; name: string } | null;
 	onConfirm: () => void;
 }
 

@@ -25,39 +25,46 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { type Company, type Customer } from "@/lib/data";
-import { nextId } from "@/lib/config-data";
+import { useQueryClient } from "@tanstack/react-query";
+import { useWorkspace } from "@/context/workspace-context";
+import { useCompanies } from "@/features/companies/hooks/use-company-queries";
+import { useCreateCompanyMutation, useUpdateCompanyMutation, useDeleteCompanyMutation } from "@/features/companies/hooks/use-company-mutations";
+import { useContacts, contactQueryKeys } from "@/features/contacts/hooks/use-contact-queries";
+import { apiUpdateContact } from "@/features/contacts/api/contacts-api";
+import type { Company } from "@/features/companies/api/companies-api";
 
-interface UsersCompaniesSectionProps {
-	companies: Company[];
-	setCompanies: React.Dispatch<React.SetStateAction<Company[]>>;
-	customers: Customer[];
-	setCustomers: React.Dispatch<React.SetStateAction<Customer[]>>;
-}
+export function UsersCompaniesSection() {
+	const { workspace } = useWorkspace();
+	const queryClient = useQueryClient();
+	const { data: companies = [] } = useCompanies(workspace.id);
+	const { data: contacts = [] } = useContacts(workspace.id);
+	const createCompany = useCreateCompanyMutation(workspace.id);
+	const deleteCompanyMutation = useDeleteCompanyMutation(workspace.id);
 
-export function UsersCompaniesSection({ companies, setCompanies, customers, setCustomers }: UsersCompaniesSectionProps) {
 	const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
 	const [companyDeleteOpen, setCompanyDeleteOpen] = useState(false);
-	const [companyForm, setCompanyForm] = useState({ name: "", description: "", image: "" });
-	const [selectedCompanyUsers, setSelectedCompanyUsers] = useState<string[]>([]);
-	const [companyUserSelectOpen, setCompanyUserSelectOpen] = useState(false);
+	const [companyForm, setCompanyForm] = useState({ name: "", description: "", domain: "" });
+	const [selectedCompanyContacts, setSelectedCompanyContacts] = useState<string[]>([]);
+	const [companyContactSelectOpen, setCompanyContactSelectOpen] = useState(false);
 	const [editingCompany, setEditingCompany] = useState<Company | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<Company | null>(null);
 
-	const unassignedCustomers = customers.filter((c) => !c.companyId);
+	const updateCompany = useUpdateCompanyMutation(editingCompany?.id ?? "", workspace.id);
+
+	const unassignedContacts = contacts.filter((c) => !c.company_id);
 
 	function openAddCompany() {
 		setEditingCompany(null);
-		setCompanyForm({ name: "", description: "", image: "" });
-		setSelectedCompanyUsers([]);
+		setCompanyForm({ name: "", description: "", domain: "" });
+		setSelectedCompanyContacts([]);
 		setCompanyDialogOpen(true);
 	}
 
 	function openEditCompany(company: Company) {
 		setEditingCompany(company);
-		setCompanyForm({ name: company.name, description: company.description, image: company.image });
-		const companyUserIds = customers.filter((c) => c.companyId === company.id).map((c) => c.id);
-		setSelectedCompanyUsers(companyUserIds);
+		setCompanyForm({ name: company.name, description: company.description ?? "", domain: company.domain ?? "" });
+		const ids = contacts.filter((c) => c.company_id === company.id).map((c) => c.id);
+		setSelectedCompanyContacts(ids);
 		setCompanyDialogOpen(true);
 	}
 
@@ -66,66 +73,52 @@ export function UsersCompaniesSection({ companies, setCompanies, customers, setC
 		setCompanyDeleteOpen(true);
 	}
 
-	function handleSaveCompany() {
+	async function handleSaveCompany() {
 		if (!companyForm.name) return;
-
-		const companyId = editingCompany?.id || nextId("c");
-		const companyImage =
-			companyForm.image ||
-			companyForm.name
-				.split(" ")
-				.map((w) => w[0])
-				.join("")
-				.slice(0, 2)
-				.toUpperCase();
-
 		if (editingCompany) {
-			setCompanies((prev) =>
-				prev.map((c) =>
-					c.id === editingCompany.id
-						? { ...c, name: companyForm.name, description: companyForm.description, image: companyImage, userCount: selectedCompanyUsers.length }
-						: c,
-				),
-			);
-		} else {
-			const newCompany: Company = {
-				id: companyId,
+			updateCompany.mutate({
 				name: companyForm.name,
-				description: companyForm.description,
-				image: companyImage,
-				userCount: selectedCompanyUsers.length,
-				createdAt: new Date().toISOString(),
-			};
-			setCompanies((prev) => [...prev, newCompany]);
+				description: companyForm.description || undefined,
+				domain: companyForm.domain || undefined,
+			});
+			// Reconcile contact assignments
+			const previousIds = contacts.filter((c) => c.company_id === editingCompany.id).map((c) => c.id);
+			const toAssign = selectedCompanyContacts.filter((id) => !previousIds.includes(id));
+			const toUnassign = previousIds.filter((id) => !selectedCompanyContacts.includes(id));
+			await Promise.all([
+				...toAssign.map((id) => apiUpdateContact(id, { company_id: editingCompany.id })),
+				...toUnassign.map((id) => apiUpdateContact(id, { company_id: null })),
+			]);
+			queryClient.invalidateQueries({ queryKey: contactQueryKeys.all(workspace.id) });
+		} else {
+			createCompany.mutate(
+				{
+					workspace_id: workspace.id,
+					name: companyForm.name,
+					description: companyForm.description || undefined,
+					domain: companyForm.domain || undefined,
+				},
+				{
+					onSuccess: async (newCompany) => {
+						await Promise.all(selectedCompanyContacts.map((id) => apiUpdateContact(id, { company_id: newCompany.id })));
+						queryClient.invalidateQueries({ queryKey: contactQueryKeys.all(workspace.id) });
+					},
+				},
+			);
 		}
-
-		setCustomers((prev) =>
-			prev.map((customer) => {
-				if (selectedCompanyUsers.includes(customer.id)) {
-					return { ...customer, companyId, companyName: companyForm.name };
-				} else if (customer.companyId === companyId && !selectedCompanyUsers.includes(customer.id)) {
-					return { ...customer, companyId: undefined, companyName: undefined };
-				}
-				return customer;
-			}),
-		);
-
 		setCompanyDialogOpen(false);
 	}
 
 	function handleDeleteCompany() {
 		if (!deleteTarget) return;
-		setCustomers((prev) => prev.map((c) => (c.companyId === deleteTarget.id ? { ...c, companyId: undefined, companyName: undefined } : c)));
-		setCompanies((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+		deleteCompanyMutation.mutate(deleteTarget.id);
 		setCompanyDeleteOpen(false);
 		setDeleteTarget(null);
 	}
 
-	function assignToCompany(customerId: string, companyId: string) {
-		const company = companies.find((c) => c.id === companyId);
-		if (!company) return;
-		setCustomers((prev) => prev.map((c) => (c.id === customerId ? { ...c, companyId, companyName: company.name } : c)));
-		setCompanies((prev) => prev.map((c) => (c.id === companyId ? { ...c, userCount: c.userCount + 1 } : c)));
+	async function assignContactToCompany(contactId: string, companyId: string) {
+		await apiUpdateContact(contactId, { company_id: companyId });
+		queryClient.invalidateQueries({ queryKey: contactQueryKeys.all(workspace.id) });
 	}
 
 	return (
@@ -134,9 +127,9 @@ export function UsersCompaniesSection({ companies, setCompanies, customers, setC
 				<CardHeader>
 					<div className="flex items-center justify-between">
 						<div>
-							<CardTitle className="text-sm font-semibold">Companies & Users</CardTitle>
+							<CardTitle className="text-sm font-semibold">Companies & Contacts</CardTitle>
 							<CardDescription className="text-xs">
-								{companies.length} companies, {customers.length} users
+								{companies.length} companies, {contacts.length} contacts
 							</CardDescription>
 						</div>
 						<Button size="sm" className="h-8 gap-1.5 rounded-lg text-xs font-semibold" onClick={openAddCompany}>
@@ -152,32 +145,40 @@ export function UsersCompaniesSection({ companies, setCompanies, customers, setC
 								Companies
 							</TabsTrigger>
 							<TabsTrigger value="unassigned" className="text-xs">
-								Unassigned Users
-								{unassignedCustomers.length > 0 && (
+								Unassigned Contacts
+								{unassignedContacts.length > 0 && (
 									<Badge variant="secondary" className="ml-1.5 text-[10px] rounded-full px-1.5">
-										{unassignedCustomers.length}
+										{unassignedContacts.length}
 									</Badge>
 								)}
 							</TabsTrigger>
 						</TabsList>
 						<TabsContent value="companies" className="mt-4 space-y-2">
 							{companies.map((company) => {
-								const companyUsers = customers.filter((c) => c.companyId === company.id);
+								const companyContacts = contacts.filter((c) => c.company_id === company.id);
+								const initials = company.name
+									.split(" ")
+									.map((w) => w[0])
+									.join("")
+									.slice(0, 2)
+									.toUpperCase();
 								return (
 									<div key={company.id} className="rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
 										<div className="flex items-center gap-3 mb-3">
 											<Avatar className="size-10 rounded-lg">
 												<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-bold">
-													{company.image}
+													{initials}
 												</AvatarFallback>
 											</Avatar>
 											<div className="flex-1 min-w-0">
 												<p className="text-sm font-medium">{company.name}</p>
-												<p className="text-[11px] text-muted-foreground truncate">{company.description}</p>
+												{company.description && (
+													<p className="text-[11px] text-muted-foreground truncate">{company.description}</p>
+												)}
 											</div>
 											<div className="text-center shrink-0">
-												<p className="text-sm font-bold">{companyUsers.length}</p>
-												<p className="text-[10px] text-muted-foreground">users</p>
+												<p className="text-sm font-bold">{companyContacts.length}</p>
+												<p className="text-[10px] text-muted-foreground">contacts</p>
 											</div>
 											<div className="flex items-center gap-1 shrink-0">
 												<Button variant="ghost" size="icon" className="size-7 rounded-lg" onClick={() => openEditCompany(company)}>
@@ -194,13 +195,13 @@ export function UsersCompaniesSection({ companies, setCompanies, customers, setC
 												</Button>
 											</div>
 										</div>
-										{companyUsers.length > 0 && (
+										{companyContacts.length > 0 && (
 											<div className="space-y-1 pl-2 border-l-2 border-border/50 ml-5">
-												{companyUsers.map((user) => (
-													<div key={user.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+												{companyContacts.map((contact) => (
+													<div key={contact.id} className="flex items-center gap-2 text-xs text-muted-foreground">
 														<div className="size-1 rounded-full bg-muted-foreground/40" />
-														<span>{user.name}</span>
-														<span className="text-[10px]">({user.email})</span>
+														<span>{contact.name}</span>
+														<span className="text-[10px]">({contact.email})</span>
 													</div>
 												))}
 											</div>
@@ -210,20 +211,20 @@ export function UsersCompaniesSection({ companies, setCompanies, customers, setC
 							})}
 						</TabsContent>
 						<TabsContent value="unassigned" className="mt-4 space-y-2">
-							{unassignedCustomers.length === 0 ? (
+							{unassignedContacts.length === 0 ? (
 								<div className="flex flex-col items-center justify-center py-10 text-center">
 									<CheckCircle2 className="size-8 text-accent mb-2" />
-									<p className="text-sm font-medium">All users assigned</p>
-									<p className="text-[11px] text-muted-foreground">Every user belongs to a company</p>
+									<p className="text-sm font-medium">All contacts assigned</p>
+									<p className="text-[11px] text-muted-foreground">Every contact belongs to a company</p>
 								</div>
 							) : (
-								unassignedCustomers.map((user) => (
+								unassignedContacts.map((contact) => (
 									<div
-										key={user.id}
+										key={contact.id}
 										className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
 										<Avatar className="size-8 rounded-lg">
 											<AvatarFallback className="rounded-lg bg-muted text-muted-foreground text-[11px] font-bold">
-												{user.name
+												{contact.name
 													.split(" ")
 													.map((w) => w[0])
 													.join("")
@@ -232,10 +233,10 @@ export function UsersCompaniesSection({ companies, setCompanies, customers, setC
 											</AvatarFallback>
 										</Avatar>
 										<div className="flex-1 min-w-0">
-											<p className="text-sm font-medium">{user.name}</p>
-											<p className="text-[11px] text-muted-foreground">{user.email}</p>
+											<p className="text-sm font-medium">{contact.name}</p>
+											<p className="text-[11px] text-muted-foreground">{contact.email}</p>
 										</div>
-										<Select onValueChange={(companyId) => assignToCompany(user.id, companyId)}>
+										<Select onValueChange={(companyId) => assignContactToCompany(contact.id, companyId)}>
 											<SelectTrigger className="w-40 h-7 rounded-lg text-[11px]">
 												<SelectValue placeholder="Assign to company" />
 											</SelectTrigger>
@@ -286,38 +287,37 @@ export function UsersCompaniesSection({ companies, setCompanies, customers, setC
 							/>
 						</div>
 						<div className="grid gap-2">
-							<Label htmlFor="company-image" className="text-xs font-medium">
-								Company Initials
+							<Label htmlFor="company-domain" className="text-xs font-medium">
+								Domain
 							</Label>
 							<Input
-								id="company-image"
-								value={companyForm.image}
-								onChange={(e) => setCompanyForm({ ...companyForm, image: e.target.value.slice(0, 2).toUpperCase() })}
-								placeholder="CI"
-								maxLength={2}
+								id="company-domain"
+								value={companyForm.domain}
+								onChange={(e) => setCompanyForm({ ...companyForm, domain: e.target.value })}
+								placeholder="example.com"
 								className="h-9 rounded-lg"
 							/>
 						</div>
 						<div className="grid gap-2">
-							<Label className="text-xs font-medium">Assign Users</Label>
-							<Popover open={companyUserSelectOpen} onOpenChange={setCompanyUserSelectOpen}>
+							<Label className="text-xs font-medium">Assign Contacts</Label>
+							<Popover open={companyContactSelectOpen} onOpenChange={setCompanyContactSelectOpen}>
 								<PopoverTrigger asChild>
 									<Button variant="outline" role="combobox" className="h-auto min-h-9 rounded-lg justify-start text-left font-normal">
 										<div className="flex flex-wrap gap-1 items-center">
-											{selectedCompanyUsers.length === 0 ? (
-												<span className="text-xs text-muted-foreground">Select users...</span>
+											{selectedCompanyContacts.length === 0 ? (
+												<span className="text-xs text-muted-foreground">Select contacts...</span>
 											) : (
-												selectedCompanyUsers.map((userId) => {
-													const user = customers.find((c) => c.id === userId);
-													if (!user) return null;
+												selectedCompanyContacts.map((contactId) => {
+													const contact = contacts.find((c) => c.id === contactId);
+													if (!contact) return null;
 													return (
-														<Badge key={userId} variant="secondary" className="text-[10px] rounded-md px-1.5 py-0.5">
-															{user.name}
+														<Badge key={contactId} variant="secondary" className="text-[10px] rounded-md px-1.5 py-0.5">
+															{contact.name}
 															<button
 																type="button"
 																onClick={(e) => {
 																	e.stopPropagation();
-																	setSelectedCompanyUsers((prev) => prev.filter((id) => id !== userId));
+																	setSelectedCompanyContacts((prev) => prev.filter((id) => id !== contactId));
 																}}
 																className="ml-1 hover:text-destructive">
 																×
@@ -331,25 +331,25 @@ export function UsersCompaniesSection({ companies, setCompanies, customers, setC
 								</PopoverTrigger>
 								<PopoverContent className="w-[300px] p-0" align="start">
 									<Command>
-										<CommandInput placeholder="Search users..." className="h-9 text-xs" />
+										<CommandInput placeholder="Search contacts..." className="h-9 text-xs" />
 										<CommandList>
-											<CommandEmpty className="py-6 text-center text-xs">No users found</CommandEmpty>
+											<CommandEmpty className="py-6 text-center text-xs">No contacts found</CommandEmpty>
 											<CommandGroup>
-												{customers.map((user) => {
-													const isSelected = selectedCompanyUsers.includes(user.id);
+												{contacts.map((contact) => {
+													const isSelected = selectedCompanyContacts.includes(contact.id);
 													return (
 														<CommandItem
-															key={user.id}
+															key={contact.id}
 															onSelect={() => {
-																setSelectedCompanyUsers((prev) =>
-																	isSelected ? prev.filter((id) => id !== user.id) : [...prev, user.id],
+																setSelectedCompanyContacts((prev) =>
+																	isSelected ? prev.filter((id) => id !== contact.id) : [...prev, contact.id],
 																);
 															}}
 															className="text-xs">
 															<Checkbox checked={isSelected} className="mr-2 size-4" />
 															<div className="flex-1">
-																<div className="font-medium">{user.name}</div>
-																<div className="text-[10px] text-muted-foreground">{user.email}</div>
+																<div className="font-medium">{contact.name}</div>
+																<div className="text-[10px] text-muted-foreground">{contact.email}</div>
 															</div>
 														</CommandItem>
 													);
@@ -360,7 +360,7 @@ export function UsersCompaniesSection({ companies, setCompanies, customers, setC
 								</PopoverContent>
 							</Popover>
 							<p className="text-[10px] text-muted-foreground">
-								{selectedCompanyUsers.length} user{selectedCompanyUsers.length !== 1 ? "s" : ""} selected
+								{selectedCompanyContacts.length} contact{selectedCompanyContacts.length !== 1 ? "s" : ""} selected
 							</p>
 						</div>
 					</div>
@@ -380,7 +380,7 @@ export function UsersCompaniesSection({ companies, setCompanies, customers, setC
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete Company?</AlertDialogTitle>
 						<AlertDialogDescription>
-							Are you sure you want to delete {deleteTarget?.name}? All users will be unassigned from this company.
+							Are you sure you want to delete {deleteTarget?.name}? All contacts will be unassigned from this company.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

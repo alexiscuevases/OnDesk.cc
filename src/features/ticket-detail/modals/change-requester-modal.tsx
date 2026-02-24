@@ -4,27 +4,30 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useQuery } from "@tanstack/react-query";
-import { fetchCustomers, queryKeys } from "@/lib/queries";
-import type { Customer } from "@/lib/data";
-import { getInitials } from "@/lib/format";
+import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
+import type { Contact } from "@/features/contacts/api/contacts-api";
 
 interface ChangeRequesterModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	onSave: (customerId: string) => void;
+	workspaceId: string;
+	onSave: (contactId: string) => void;
 }
 
-export function ChangeRequesterModal({ open, onOpenChange, onSave }: ChangeRequesterModalProps) {
-	const { data: customers = [] } = useQuery({ queryKey: queryKeys.customers.all, queryFn: fetchCustomers });
+export function ChangeRequesterModal({ open, onOpenChange, workspaceId, onSave }: ChangeRequesterModalProps) {
+	const { data: contacts = [] } = useContacts(workspaceId);
 	const [search, setSearch] = useState("");
-	const [selected, setSelected] = useState<Customer | null>(null);
+	const [selected, setSelected] = useState<Contact | null>(null);
 
-	const filtered = customers.filter(
+	const filtered = contacts.filter(
 		(c) =>
 			c.name.toLowerCase().includes(search.toLowerCase()) ||
 			c.email.toLowerCase().includes(search.toLowerCase()),
 	);
+
+	function getInitials(name: string) {
+		return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+	}
 
 	function handleSave() {
 		if (selected) {
@@ -49,7 +52,7 @@ export function ChangeRequesterModal({ open, onOpenChange, onSave }: ChangeReque
 				<DialogHeader>
 					<DialogTitle className="text-base">Change Requester</DialogTitle>
 					<DialogDescription className="text-xs">
-						Select a user from your Users & Companies to assign as the ticket requester
+						Select a contact to assign as the ticket requester
 					</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-4 py-2">
@@ -65,26 +68,23 @@ export function ChangeRequesterModal({ open, onOpenChange, onSave }: ChangeReque
 					<div className="max-h-[300px] overflow-y-auto rounded-lg border">
 						{filtered.length > 0 ? (
 							<div className="p-1">
-								{filtered.map((customer) => (
+								{filtered.map((contact) => (
 									<button
-										key={customer.id}
-										onClick={() => setSelected(customer)}
+										key={contact.id}
+										onClick={() => setSelected(contact)}
 										className={`w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/80 transition-colors ${
-											selected?.id === customer.id ? "bg-secondary" : ""
+											selected?.id === contact.id ? "bg-secondary" : ""
 										}`}>
 										<Avatar className="size-8 rounded-lg">
 											<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[10px] font-bold">
-												{getInitials(customer.name)}
+												{getInitials(contact.name)}
 											</AvatarFallback>
 										</Avatar>
 										<div className="flex-1 min-w-0 text-left">
-											<p className="text-sm font-medium truncate">{customer.name}</p>
-											<p className="text-xs text-muted-foreground truncate">{customer.email}</p>
-											{customer.companyName && (
-												<p className="text-[10px] text-muted-foreground truncate">{customer.companyName}</p>
-											)}
+											<p className="text-sm font-medium truncate">{contact.name}</p>
+											<p className="text-xs text-muted-foreground truncate">{contact.email}</p>
 										</div>
-										{selected?.id === customer.id && (
+										{selected?.id === contact.id && (
 											<CheckCircle2 className="size-4 text-primary shrink-0" />
 										)}
 									</button>
@@ -93,7 +93,7 @@ export function ChangeRequesterModal({ open, onOpenChange, onSave }: ChangeReque
 						) : (
 							<div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
 								<User className="size-8 mb-2 opacity-30" />
-								<p className="text-sm">No users found</p>
+								<p className="text-sm">No contacts found</p>
 							</div>
 						)}
 					</div>

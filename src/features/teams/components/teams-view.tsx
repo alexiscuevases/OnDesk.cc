@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Users, Clock, CheckCircle2, Ticket, TrendingUp, Search, X } from "lucide-react";
+import { Users, CheckCircle2, Ticket, TrendingUp, Search, X } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,12 +9,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
-import { fetchTeams, fetchTickets, queryKeys } from "@/lib/queries";
+import { useWorkspace } from "@/context/workspace-context";
+import { useTeams } from "../hooks/use-team-queries";
+import { useTickets } from "@/features/tickets/hooks/use-ticket-queries";
 
 export function TeamsView() {
-	const { data: teams = [] } = useQuery({ queryKey: queryKeys.teams.all, queryFn: fetchTeams });
-	const { data: tickets = [] } = useQuery({ queryKey: queryKeys.tickets.all, queryFn: () => fetchTickets() });
+	const { workspace } = useWorkspace();
+	const { data: teams = [] } = useTeams(workspace.id);
+	const { data: tickets = [] } = useTickets(workspace.id);
 
 	const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -23,9 +25,21 @@ export function TeamsView() {
 
 	const effectiveSelectedTeam = selectedTeam ?? teams[0]?.id ?? null;
 	const selectedTeamData = teams.find((t) => t.id === effectiveSelectedTeam);
-	const teamTickets = selectedTeamData ? tickets.filter((t) => t.team === selectedTeamData.name) : [];
+	const teamTickets = effectiveSelectedTeam ? tickets.filter((t) => t.team_id === effectiveSelectedTeam) : [];
 
-	// Apply filters
+	const resolvedToday = (teamId: string) =>
+		tickets.filter((t) => {
+			if (t.team_id !== teamId || t.status !== "resolved") return false;
+			const today = new Date();
+			const d = new Date(t.updated_at * 1000);
+			return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+		}).length;
+
+	const openCount = (teamId: string) => tickets.filter((t) => t.team_id === teamId && t.status === "open").length;
+
+	const totalResolved = teams.reduce((a, t) => a + resolvedToday(t.id), 0);
+	const totalOpen = teams.reduce((a, t) => a + openCount(t.id), 0);
+
 	const filteredTickets = teamTickets.filter((ticket) => {
 		const matchesSearch =
 			searchQuery === "" ||
@@ -59,7 +73,7 @@ export function TeamsView() {
 						<TrendingUp className="size-5 text-accent" />
 					</div>
 					<div>
-						<p className="text-xl font-bold">{teams.reduce((a, t) => a + t.resolvedToday, 0)}</p>
+						<p className="text-xl font-bold">{totalResolved}</p>
 						<p className="text-[11px] text-muted-foreground">Resolved Today</p>
 					</div>
 				</div>
@@ -68,7 +82,7 @@ export function TeamsView() {
 						<Ticket className="size-5 text-warning" />
 					</div>
 					<div>
-						<p className="text-xl font-bold">{teams.reduce((a, t) => a + t.ticketCount, 0)}</p>
+						<p className="text-xl font-bold">{totalOpen}</p>
 						<p className="text-[11px] text-muted-foreground">Open Tickets</p>
 					</div>
 				</div>
@@ -84,8 +98,16 @@ export function TeamsView() {
 					</CardHeader>
 					<CardContent className="space-y-2">
 						{teams.map((team) => {
-							const resolvePercent = Math.round((team.resolvedToday / (team.ticketCount || 1)) * 100);
-							const isSelected = selectedTeam === team.id;
+							const teamOpen = openCount(team.id);
+							const teamResolved = resolvedToday(team.id);
+							const resolvePercent = Math.round((teamResolved / (teamOpen + teamResolved || 1)) * 100);
+							const isSelected = effectiveSelectedTeam === team.id;
+							const initials = team.name
+								.split(" ")
+								.map((w) => w[0])
+								.join("")
+								.slice(0, 2)
+								.toUpperCase();
 							return (
 								<button
 									key={team.id}
@@ -99,26 +121,28 @@ export function TeamsView() {
 												className={`rounded-lg text-xs font-bold ${
 													isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
 												}`}>
-												{team.avatar}
+												{initials}
 											</AvatarFallback>
 										</Avatar>
 										<div className="flex-1 min-w-0">
 											<p className={`text-xs font-semibold truncate ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
 												{team.name}
 											</p>
-											<p className={`text-[10px] truncate ${isSelected ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-												{team.lead}
-											</p>
+											{team.description && (
+												<p className={`text-[10px] truncate ${isSelected ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+													{team.description}
+												</p>
+											)}
 										</div>
 									</div>
 
-									<div className="grid grid-cols-3 gap-1.5 mb-2">
+									<div className="grid grid-cols-2 gap-1.5 mb-2">
 										<div
 											className={`flex flex-col items-center gap-0.5 rounded-lg p-1.5 ${
 												isSelected ? "bg-primary-foreground/10" : "bg-secondary/60"
 											}`}>
 											<span className={`text-xs font-bold ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
-												{team.ticketCount}
+												{teamOpen}
 											</span>
 											<span className={`text-[9px] ${isSelected ? "text-primary-foreground/70" : "text-muted-foreground"}`}>Open</span>
 										</div>
@@ -127,20 +151,11 @@ export function TeamsView() {
 												isSelected ? "bg-primary-foreground/10" : "bg-secondary/60"
 											}`}>
 											<span className={`text-xs font-bold ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
-												{team.resolvedToday}
+												{teamResolved}
 											</span>
 											<span className={`text-[9px] ${isSelected ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
 												Resolved
 											</span>
-										</div>
-										<div
-											className={`flex flex-col items-center gap-0.5 rounded-lg p-1.5 ${
-												isSelected ? "bg-primary-foreground/10" : "bg-secondary/60"
-											}`}>
-											<span className={`text-xs font-bold ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
-												{team.avgResponseTime}
-											</span>
-											<span className={`text-[9px] ${isSelected ? "text-primary-foreground/70" : "text-muted-foreground"}`}>Avg</span>
 										</div>
 									</div>
 
@@ -188,7 +203,7 @@ export function TeamsView() {
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="all">All Priorities</SelectItem>
-										<SelectItem value="critical">Critical</SelectItem>
+										<SelectItem value="urgent">Urgent</SelectItem>
 										<SelectItem value="high">High</SelectItem>
 										<SelectItem value="medium">Medium</SelectItem>
 										<SelectItem value="low">Low</SelectItem>
@@ -201,7 +216,7 @@ export function TeamsView() {
 									<SelectContent>
 										<SelectItem value="all">All Statuses</SelectItem>
 										<SelectItem value="open">Open</SelectItem>
-										<SelectItem value="in-progress">In Progress</SelectItem>
+										<SelectItem value="pending">Pending</SelectItem>
 										<SelectItem value="resolved">Resolved</SelectItem>
 										<SelectItem value="closed">Closed</SelectItem>
 									</SelectContent>
@@ -216,27 +231,15 @@ export function TeamsView() {
 											key={ticket.id}
 											className="flex items-center justify-between gap-4 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80 cursor-pointer">
 											<div className="flex items-center gap-3 min-w-0 flex-1">
-												<span className="text-[11px] font-mono font-semibold text-primary/70 shrink-0">{ticket.id}</span>
-												<div className="min-w-0 flex-1">
-													<p className="text-sm font-medium truncate">{ticket.subject}</p>
-													<div className="flex items-center gap-2 mt-1">
-														<Avatar className="size-5 rounded-lg">
-															<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[9px] font-bold">
-																{ticket.assignee
-																	.split(" ")
-																	.map((w) => w[0])
-																	.join("")
-																	.slice(0, 2)}
-															</AvatarFallback>
-														</Avatar>
-														<p className="text-[11px] text-muted-foreground truncate">{ticket.assignee}</p>
-													</div>
-												</div>
+												<span className="text-[11px] font-mono font-semibold text-primary/70 shrink-0">
+													{ticket.id.slice(0, 8)}
+												</span>
+												<p className="text-sm font-medium truncate">{ticket.subject}</p>
 											</div>
 											<div className="flex items-center gap-2 shrink-0">
 												<Badge
 													variant={
-														ticket.priority === "critical" ? "destructive" : ticket.priority === "high" ? "default" : "secondary"
+														ticket.priority === "urgent" ? "destructive" : ticket.priority === "high" ? "default" : "secondary"
 													}
 													className={`text-[10px] rounded-full px-2 ${
 														ticket.priority === "high" ? "bg-warning text-warning-foreground" : ""

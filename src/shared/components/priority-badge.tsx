@@ -1,15 +1,16 @@
 import { Badge } from "@/components/ui/badge";
-import type { TicketPriority } from "@/lib/data";
+
+export type TicketPriority = "low" | "medium" | "high" | "urgent";
 
 const badgeStyles: Record<TicketPriority, string> = {
-	critical: "bg-destructive/15 text-destructive border border-destructive/20",
+	urgent: "bg-destructive/15 text-destructive border border-destructive/20",
 	high: "bg-warning/15 text-warning border border-warning/20",
 	medium: "bg-primary/15 text-primary border border-primary/20",
 	low: "bg-secondary text-secondary-foreground border border-border",
 };
 
 const dotColors: Record<TicketPriority, string> = {
-	critical: "bg-destructive",
+	urgent: "bg-destructive",
 	high: "bg-warning",
 	medium: "bg-primary",
 	low: "bg-muted-foreground",

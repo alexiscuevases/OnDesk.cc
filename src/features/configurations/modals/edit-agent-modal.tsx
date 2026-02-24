@@ -1,12 +1,11 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AgentForm } from "../forms/agent-form";
 import { type AgentFormValues } from "../schemas/config.schema";
-import { type Agent } from "@/lib/data";
 
 interface EditAgentModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	agent: Agent | null;
+	agent: { id: string; email?: string; role: string } | null;
 	onConfirm: (values: AgentFormValues) => void;
 }
 
@@ -22,7 +21,7 @@ export function EditAgentModal({ open, onOpenChange, agent, onConfirm }: EditAge
 				</DialogHeader>
 				<AgentForm
 					key={agent.id}
-					defaultValues={{ email: agent.email, role: agent.role as AgentFormValues["role"] }}
+					defaultValues={{ email: agent.email ?? "", role: agent.role as AgentFormValues["role"] }}
 					emailDisabled
 					submitLabel="Save Changes"
 					onSubmit={(values) => {

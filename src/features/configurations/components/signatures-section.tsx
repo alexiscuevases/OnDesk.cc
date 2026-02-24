@@ -5,50 +5,44 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { type Signature } from "@/types/index";
-import { nextId } from "@/lib/config-data";
+import { useSignatures } from "@/features/signatures/hooks/use-signature-queries";
+import {
+	useCreateSignatureMutation,
+	useUpdateSignatureMutation,
+	useDeleteSignatureMutation,
+} from "@/features/signatures/hooks/use-signature-mutations";
+import type { Signature } from "@/features/signatures/api/signatures-api";
 import { type SignatureFormValues } from "../schemas/config.schema";
 import { AddSignatureModal } from "../modals/add-signature-modal";
 import { EditSignatureModal } from "../modals/edit-signature-modal";
 import { DeleteSignatureModal } from "../modals/delete-signature-modal";
 
-interface SignaturesSectionProps {
-	signatures: Signature[];
-	setSignatures: React.Dispatch<React.SetStateAction<Signature[]>>;
-}
+export function SignaturesSection() {
+	const { data: signatures = [] } = useSignatures();
+	const createSignature = useCreateSignatureMutation();
+	const deleteSignature = useDeleteSignatureMutation();
 
-export function SignaturesSection({ signatures, setSignatures }: SignaturesSectionProps) {
 	const [addOpen, setAddOpen] = useState(false);
 	const [editOpen, setEditOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [selectedSig, setSelectedSig] = useState<Signature | null>(null);
 
+	const updateSignature = useUpdateSignatureMutation(selectedSig?.id ?? "");
+
 	function handleAdd(values: SignatureFormValues) {
-		const newSig: Signature = {
-			id: nextId("s"),
-			name: values.name,
-			content: values.content,
-			isDefault: values.isDefault,
-		};
-		setSignatures((prev) => [...prev.map((s) => (values.isDefault ? { ...s, isDefault: false } : s)), newSig]);
+		createSignature.mutate({ name: values.name, content: values.content, is_default: values.isDefault });
 	}
 
 	function handleEdit(values: SignatureFormValues) {
 		if (!selectedSig) return;
-		setSignatures((prev) =>
-			prev.map((s) =>
-				s.id === selectedSig.id
-					? { ...s, name: values.name, content: values.content, isDefault: values.isDefault }
-					: values.isDefault
-						? { ...s, isDefault: false }
-						: s,
-			),
-		);
+		updateSignature.mutate({ name: values.name, content: values.content, is_default: values.isDefault });
+		setEditOpen(false);
+		setSelectedSig(null);
 	}
 
 	function handleDelete() {
 		if (!selectedSig) return;
-		setSignatures((prev) => prev.filter((s) => s.id !== selectedSig.id));
+		deleteSignature.mutate(selectedSig.id);
 		setSelectedSig(null);
 	}
 
@@ -74,7 +68,7 @@ export function SignaturesSection({ signatures, setSignatures }: SignaturesSecti
 								<div className="flex-1 min-w-0">
 									<div className="flex items-center gap-2">
 										<p className="text-sm font-medium">{sig.name}</p>
-										{sig.isDefault && (
+										{sig.is_default && (
 											<Badge variant="secondary" className="text-[10px] rounded-full px-2">
 												Default
 											</Badge>

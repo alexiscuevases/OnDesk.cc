@@ -4,33 +4,36 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useQuery } from "@tanstack/react-query";
-import { fetchAgents, queryKeys } from "@/lib/queries";
-import type { Agent } from "@/lib/data";
+import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
+import type { WorkspaceMember } from "@/features/users/api/users-api";
 
 interface ChangeAssigneeModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
+	workspaceId: string;
 	onSave: (agentId: string) => void;
 }
 
-export function ChangeAssigneeModal({ open, onOpenChange, onSave }: ChangeAssigneeModalProps) {
-	const { data: agents = [] } = useQuery({ queryKey: queryKeys.agents.all, queryFn: fetchAgents });
+export function ChangeAssigneeModal({ open, onOpenChange, workspaceId, onSave }: ChangeAssigneeModalProps) {
+	const { data: members = [] } = useWorkspaceMembers(workspaceId);
 	const [search, setSearch] = useState("");
-	const [selected, setSelected] = useState<Agent | null>(null);
+	const [selected, setSelected] = useState<WorkspaceMember | null>(null);
 
-	const filtered = agents.filter(
-		(a) =>
-			a.name.toLowerCase().includes(search.toLowerCase()) ||
-			a.email.toLowerCase().includes(search.toLowerCase()),
+	const filtered = members.filter(
+		(m) =>
+			m.name.toLowerCase().includes(search.toLowerCase()) ||
+			m.email.toLowerCase().includes(search.toLowerCase()),
 	);
+
+	function getInitials(name: string) {
+		return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+	}
 
 	function handleSave() {
 		if (selected) {
 			onSave(selected.id);
 			setSelected(null);
 			setSearch("");
-			onOpenChange(false);
 		}
 	}
 
@@ -62,35 +65,24 @@ export function ChangeAssigneeModal({ open, onOpenChange, onSave }: ChangeAssign
 					<div className="max-h-[300px] overflow-y-auto rounded-lg border">
 						{filtered.length > 0 ? (
 							<div className="p-1">
-								{filtered.map((agent) => (
+								{filtered.map((member) => (
 									<button
-										key={agent.id}
-										onClick={() => setSelected(agent)}
+										key={member.id}
+										onClick={() => setSelected(member)}
 										className={`w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/80 transition-colors ${
-											selected?.id === agent.id ? "bg-secondary" : ""
+											selected?.id === member.id ? "bg-secondary" : ""
 										}`}>
 										<Avatar className="size-8 rounded-lg">
 											<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
-												{agent.initials}
+												{getInitials(member.name)}
 											</AvatarFallback>
 										</Avatar>
 										<div className="flex-1 min-w-0 text-left">
-											<div className="flex items-center gap-2">
-												<p className="text-sm font-medium truncate">{agent.name}</p>
-												<div
-													className={`size-2 rounded-full ${
-														agent.status === "online"
-															? "bg-accent"
-															: agent.status === "away"
-																? "bg-warning"
-																: "bg-muted-foreground"
-													}`}
-												/>
-											</div>
-											<p className="text-xs text-muted-foreground truncate">{agent.role}</p>
-											<p className="text-[10px] text-muted-foreground">{agent.tickets} active tickets</p>
+											<p className="text-sm font-medium truncate">{member.name}</p>
+											<p className="text-xs text-muted-foreground truncate">{member.email}</p>
+											<p className="text-[10px] text-muted-foreground capitalize">{member.workspace_role}</p>
 										</div>
-										{selected?.id === agent.id && (
+										{selected?.id === member.id && (
 											<CheckCircle2 className="size-4 text-primary shrink-0" />
 										)}
 									</button>

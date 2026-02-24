@@ -1,10 +1,11 @@
 import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { TicketStatus } from "@/lib/data";
+
+export type TicketStatus = "open" | "pending" | "resolved" | "closed";
 
 const statusStyles: Record<TicketStatus, string> = {
 	open: "border-chart-1 text-chart-1 bg-chart-1/10",
-	"in-progress": "border-warning text-warning bg-warning/10",
+	pending: "border-warning text-warning bg-warning/10",
 	resolved: "border-accent text-accent bg-accent/10",
 	closed: "border-muted-foreground text-muted-foreground bg-muted",
 };
@@ -13,7 +14,7 @@ function StatusIcon({ status }: { status: TicketStatus }) {
 	switch (status) {
 		case "open":
 			return <AlertCircle className="size-3.5 text-chart-1" />;
-		case "in-progress":
+		case "pending":
 			return <Clock className="size-3.5 text-warning" />;
 		case "resolved":
 			return <CheckCircle2 className="size-3.5 text-accent" />;

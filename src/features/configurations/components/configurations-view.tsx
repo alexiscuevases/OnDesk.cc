@@ -1,13 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Save, Bell, Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Check, Building2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { fetchAgents, fetchOutlookAccounts, fetchCompanies, fetchCustomers, queryKeys } from "@/lib/queries";
-import type { Agent, OutlookAccount, Company, Customer } from "@/lib/data";
-import { initialTeams, initialCannedReplies, initialSignatures } from "@/lib/config-data";
-import { type ConfigTeam, type CannedReply, type Signature } from "@/types/index";
+import { useState } from "react";
+import { Bell, Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2 } from "lucide-react";
 import { GeneralSection } from "./general-section";
 import { AgentsSection } from "./agents-section";
 import { IntegrationsSection } from "./integrations-section";
@@ -34,43 +28,12 @@ const sections: { id: ConfigSection; label: string; icon: typeof Globe; desc: st
 
 export function ConfigurationsView() {
 	const [activeSection, setActiveSection] = useState<ConfigSection>("general");
-	const [saved, setSaved] = useState(false);
-
-	const { data: fetchedAgents = [] } = useQuery({ queryKey: queryKeys.agents.all, queryFn: fetchAgents });
-	const { data: fetchedOutlookAccounts = [] } = useQuery({ queryKey: queryKeys.outlookAccounts.all, queryFn: fetchOutlookAccounts });
-	const { data: fetchedCompanies = [] } = useQuery({ queryKey: queryKeys.companies.all, queryFn: fetchCompanies });
-	const { data: fetchedCustomers = [] } = useQuery({ queryKey: queryKeys.customers.all, queryFn: fetchCustomers });
-
-	const [agents, setAgents] = useState<Agent[]>([]);
-	const [outlookAccounts, setOutlookAccounts] = useState<OutlookAccount[]>([]);
-	const [configTeams, setConfigTeams] = useState<ConfigTeam[]>(initialTeams);
-	const [cannedReplies, setCannedReplies] = useState<CannedReply[]>(initialCannedReplies);
-	const [signatures, setSignatures] = useState<Signature[]>(initialSignatures);
-	const [companies, setCompanies] = useState<Company[]>([]);
-	const [customers, setCustomers] = useState<Customer[]>([]);
-
-	// Inicializar estado local una sola vez cuando los datos lleguen de la query
-	useEffect(() => { if (fetchedAgents.length > 0) setAgents(fetchedAgents); }, [fetchedAgents]);
-	useEffect(() => { if (fetchedOutlookAccounts.length > 0) setOutlookAccounts(fetchedOutlookAccounts); }, [fetchedOutlookAccounts]);
-	useEffect(() => { if (fetchedCompanies.length > 0) setCompanies(fetchedCompanies); }, [fetchedCompanies]);
-	useEffect(() => { if (fetchedCustomers.length > 0) setCustomers(fetchedCustomers); }, [fetchedCustomers]);
-
-	function handleSave() {
-		setSaved(true);
-		setTimeout(() => setSaved(false), 2000);
-	}
 
 	return (
 		<div className="flex flex-col gap-6">
-			<div className="flex items-center justify-between">
-				<div>
-					<h1 className="text-2xl font-bold tracking-tight text-balance">Settings</h1>
-					<p className="text-sm text-muted-foreground mt-1">Manage your workspace, agents, and integrations</p>
-				</div>
-				<Button onClick={handleSave} className="gap-1.5 rounded-lg text-xs font-semibold h-9">
-					{saved ? <Check className="size-4" /> : <Save className="size-4" />}
-					{saved ? "Saved" : "Save Changes"}
-				</Button>
+			<div>
+				<h1 className="text-2xl font-bold tracking-tight text-balance">Settings</h1>
+				<p className="text-sm text-muted-foreground mt-1">Manage your workspace, agents, and integrations</p>
 			</div>
 
 			<div className="grid gap-6 lg:grid-cols-4">
@@ -102,14 +65,12 @@ export function ConfigurationsView() {
 
 				<div className="lg:col-span-3">
 					{activeSection === "general" && <GeneralSection />}
-					{activeSection === "agents" && <AgentsSection agents={agents} setAgents={setAgents} />}
-					{activeSection === "integrations" && <IntegrationsSection accounts={outlookAccounts} setAccounts={setOutlookAccounts} />}
-					{activeSection === "teams" && <TeamsSection teams={configTeams} setTeams={setConfigTeams} agents={agents} />}
-					{activeSection === "canned-replies" && <CannedRepliesSection replies={cannedReplies} setReplies={setCannedReplies} />}
-					{activeSection === "signatures" && <SignaturesSection signatures={signatures} setSignatures={setSignatures} />}
-					{activeSection === "users-companies" && (
-						<UsersCompaniesSection companies={companies} setCompanies={setCompanies} customers={customers} setCustomers={setCustomers} />
-					)}
+					{activeSection === "agents" && <AgentsSection />}
+					{activeSection === "integrations" && <IntegrationsSection />}
+					{activeSection === "teams" && <TeamsSection />}
+					{activeSection === "canned-replies" && <CannedRepliesSection />}
+					{activeSection === "signatures" && <SignaturesSection />}
+					{activeSection === "users-companies" && <UsersCompaniesSection />}
 					{activeSection === "notifications" && <NotificationsSection />}
 					{activeSection === "security" && <SecuritySection />}
 				</div>

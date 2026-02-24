@@ -1,12 +1,10 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SignatureForm } from "../forms/signature-form";
 import { type SignatureFormValues } from "../schemas/config.schema";
-import { type Signature } from "@/types/index";
-
 interface EditSignatureModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	signature: Signature | null;
+	signature: { id: string; name: string; content: string; is_default: boolean } | null;
 	onConfirm: (values: SignatureFormValues) => void;
 }
 
@@ -22,7 +20,7 @@ export function EditSignatureModal({ open, onOpenChange, signature, onConfirm }:
 				</DialogHeader>
 				<SignatureForm
 					key={signature.id}
-					defaultValues={{ name: signature.name, content: signature.content, isDefault: signature.isDefault }}
+					defaultValues={{ name: signature.name, content: signature.content, isDefault: signature.is_default }}
 					submitLabel="Save Changes"
 					onSubmit={(values) => {
 						onConfirm(values);
