@@ -164,3 +164,23 @@ CREATE TABLE IF NOT EXISTS signatures (
 );
 
 CREATE INDEX IF NOT EXISTS idx_signatures_user_id ON signatures(user_id);
+
+-- Workspace invitations
+-- status: 'pending' | 'accepted' | 'cancelled'
+-- token: secure random value sent in the invitation email link
+CREATE TABLE IF NOT EXISTS workspace_invitations (
+  id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  email        TEXT NOT NULL,
+  role         TEXT NOT NULL DEFAULT 'agent',
+  invited_by   TEXT NOT NULL REFERENCES users(id),
+  token        TEXT NOT NULL UNIQUE,
+  status       TEXT NOT NULL DEFAULT 'pending',
+  expires_at   INTEGER NOT NULL,
+  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE(workspace_id, email)
+);
+
+CREATE INDEX IF NOT EXISTS idx_workspace_invitations_email        ON workspace_invitations(email);
+CREATE INDEX IF NOT EXISTS idx_workspace_invitations_token        ON workspace_invitations(token);
+CREATE INDEX IF NOT EXISTS idx_workspace_invitations_workspace_id ON workspace_invitations(workspace_id);

@@ -1,24 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, X, UserPlus, Clock } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useWorkspace } from "@/context/workspace-context";
-import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
-import { useUpdateMemberRoleMutation, useRemoveMemberMutation } from "@/features/users/hooks/use-user-mutations";
+import { useWorkspaceMembers, useWorkspaceInvitations } from "@/features/users/hooks/use-user-queries";
+import { useUpdateMemberRoleMutation, useRemoveMemberMutation, useInviteAgentMutation, useCancelInvitationMutation } from "@/features/users/hooks/use-user-mutations";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
 import { EditAgentModal } from "../modals/edit-agent-modal";
 import { DeleteAgentModal } from "../modals/delete-agent-modal";
+import { AddAgentModal } from "../modals/add-agent-modal";
+import type { AgentFormValues } from "../schemas/config.schema";
 
 export function AgentsSection() {
 	const { workspace } = useWorkspace();
 	const { data: members = [] } = useWorkspaceMembers(workspace.id);
+	const { data: invitations = [] } = useWorkspaceInvitations(workspace.id);
 	const updateRole = useUpdateMemberRoleMutation(workspace.id);
 	const removeMember = useRemoveMemberMutation(workspace.id);
+	const inviteAgent = useInviteAgentMutation(workspace.id);
+	const cancelInvitation = useCancelInvitationMutation(workspace.id);
 
+	const [addOpen, setAddOpen] = useState(false);
 	const [editOpen, setEditOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [selectedMember, setSelectedMember] = useState<WorkspaceMember | null>(null);
@@ -35,6 +42,25 @@ export function AgentsSection() {
 		setSelectedMember(null);
 	}
 
+	function handleInvite(values: AgentFormValues) {
+		inviteAgent.mutate(
+			{ email: values.email, role: values.role.toLowerCase() },
+			{
+				onSuccess: (data) => {
+					if (data.added) {
+						toast.success("Agent added to workspace");
+					} else {
+						toast.success(`Invitation sent to ${data.email ?? values.email}`);
+					}
+					setAddOpen(false);
+				},
+				onError: (err) => {
+					toast.error(err.message);
+				},
+			}
+		);
+	}
+
 	return (
 		<>
 			<Card className="border-0 shadow-sm">
@@ -44,6 +70,10 @@ export function AgentsSection() {
 							<CardTitle className="text-sm font-semibold">Support Agents</CardTitle>
 							<CardDescription className="text-xs">{members.length} agents in your workspace</CardDescription>
 						</div>
+						<Button size="sm" className="rounded-lg text-xs gap-1.5" onClick={() => setAddOpen(true)}>
+							<UserPlus className="size-3.5" />
+							Invite Agent
+						</Button>
 					</div>
 				</CardHeader>
 				<CardContent>
@@ -97,9 +127,54 @@ export function AgentsSection() {
 							);
 						})}
 					</div>
+
+					{invitations.length > 0 && (
+						<div className="mt-4 space-y-2">
+							<p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+								<Clock className="size-3" />
+								Pending Invitations
+							</p>
+							{invitations.map((invite) => (
+								<div key={invite.id} className="flex items-center gap-3 rounded-xl border border-dashed bg-muted/30 p-3.5">
+									<Avatar className="size-9 rounded-lg">
+										<AvatarFallback className="rounded-lg bg-muted text-muted-foreground text-[11px] font-bold">
+											{invite.email[0].toUpperCase()}
+										</AvatarFallback>
+									</Avatar>
+									<div className="flex-1 min-w-0">
+										<p className="text-sm font-medium truncate">{invite.email}</p>
+										<p className="text-[11px] text-muted-foreground">
+											Expires {new Date(invite.expires_at * 1000).toLocaleDateString()}
+										</p>
+									</div>
+									<Badge variant="outline" className="text-[10px] rounded-full px-2 capitalize">
+										{invite.role}
+									</Badge>
+									<Button
+										variant="ghost"
+										size="icon"
+										className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+										onClick={() =>
+											cancelInvitation.mutate(invite.id, {
+												onSuccess: () => toast.success("Invitation cancelled"),
+												onError: (err) => toast.error(err.message),
+											})
+										}>
+										<X className="size-3" />
+										<span className="sr-only">Cancel invitation</span>
+									</Button>
+								</div>
+							))}
+						</div>
+					)}
 				</CardContent>
 			</Card>
 
+			<AddAgentModal
+				open={addOpen}
+				onOpenChange={setAddOpen}
+				onConfirm={handleInvite}
+			/>
 			<EditAgentModal
 				open={editOpen}
 				onOpenChange={setEditOpen}

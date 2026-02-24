@@ -1,7 +1,7 @@
 import type { PagesFunction } from "@cloudflare/workers-types";
 import type { Env } from "../../_lib/types";
 import { hashPassword } from "../../_lib/crypto";
-import { createUser, findUserByEmail } from "../../_lib/db";
+import { createUser, findUserByEmail, findPendingInvitationByEmail, addWorkspaceMember, updateInvitationStatus } from "../../_lib/db";
 import { jsonCreated, jsonError } from "../../_lib/response";
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
@@ -27,6 +27,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   const passwordHash = await hashPassword(password);
   const user = await createUser(env.DB, name.trim(), email.trim(), passwordHash);
+
+  // Auto-join workspace if there is a pending invitation for this email
+  const now = Math.floor(Date.now() / 1000);
+  const invite = await findPendingInvitationByEmail(env.DB, email.trim());
+  if (invite && invite.expires_at > now) {
+    await addWorkspaceMember(env.DB, invite.workspace_id, user.id, invite.role);
+    await updateInvitationStatus(env.DB, invite.id, "accepted");
+  }
 
   return jsonCreated({
     user: { id: user.id, name: user.name, email: user.email, role: user.role },
