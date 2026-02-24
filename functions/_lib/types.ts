@@ -164,6 +164,7 @@ export interface TicketRow {
   status: TicketStatus;
   priority: TicketPriority;
   channel: string | null;
+  email_message_id: string | null;
   created_at: number;
   updated_at: number;
 }

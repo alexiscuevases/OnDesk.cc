@@ -549,19 +549,20 @@ export async function createTicket(
     status?: TicketStatus;
     priority?: TicketPriority;
     channel?: string;
+    email_message_id?: string;
   }
 ): Promise<TicketRow> {
   const id = crypto.randomUUID();
   await db
     .prepare(
-      `INSERT INTO tickets (id, workspace_id, contact_id, assignee_id, team_id, subject, status, priority, channel)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO tickets (id, workspace_id, contact_id, assignee_id, team_id, subject, status, priority, channel, email_message_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .bind(
       id, workspaceId,
       data.contact_id ?? null, data.assignee_id ?? null, data.team_id ?? null,
       data.subject, data.status ?? "open", data.priority ?? "medium",
-      data.channel ?? null
+      data.channel ?? null, data.email_message_id ?? null
     )
     .run();
   return (await findTicketById(db, id))!;

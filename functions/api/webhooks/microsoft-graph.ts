@@ -137,6 +137,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
         status: "open",
         priority: "medium",
         channel: "email",
+        email_message_id: message.internetMessageId,
       });
 
       // 9. Add the email body as the first message

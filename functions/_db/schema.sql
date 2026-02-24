@@ -111,18 +111,20 @@ CREATE INDEX IF NOT EXISTS idx_contacts_company_id   ON contacts(company_id);
 -- status: 'open' | 'pending' | 'resolved' | 'closed'
 -- priority: 'low' | 'medium' | 'high' | 'urgent'
 -- channel: 'email' | null
+-- email_message_id: RFC 2822 Message-ID of the originating email (for In-Reply-To threading)
 CREATE TABLE IF NOT EXISTS tickets (
-  id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
-  contact_id   TEXT REFERENCES contacts(id) ON DELETE SET NULL,
-  assignee_id  TEXT REFERENCES users(id) ON DELETE SET NULL,
-  team_id      TEXT REFERENCES teams(id) ON DELETE SET NULL,
-  subject      TEXT NOT NULL,
-  status       TEXT NOT NULL DEFAULT 'open',
-  priority     TEXT NOT NULL DEFAULT 'medium',
-  channel      TEXT,
-  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at   INTEGER NOT NULL DEFAULT (unixepoch())
+  id               TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id     TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  contact_id       TEXT REFERENCES contacts(id) ON DELETE SET NULL,
+  assignee_id      TEXT REFERENCES users(id) ON DELETE SET NULL,
+  team_id          TEXT REFERENCES teams(id) ON DELETE SET NULL,
+  subject          TEXT NOT NULL,
+  status           TEXT NOT NULL DEFAULT 'open',
+  priority         TEXT NOT NULL DEFAULT 'medium',
+  channel          TEXT,
+  email_message_id TEXT,
+  created_at       INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at       INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
 CREATE INDEX IF NOT EXISTS idx_tickets_workspace_id ON tickets(workspace_id);

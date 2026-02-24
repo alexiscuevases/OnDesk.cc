@@ -83,7 +83,8 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
             token,
             { name: contact.name, address: contact.email },
             `Re: ${ticket.subject}`,
-            content.trim()
+            content.trim(),
+            ticket.email_message_id ?? undefined
           );
         }
       } catch (emailErr) {

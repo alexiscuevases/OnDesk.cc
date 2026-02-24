@@ -152,22 +152,29 @@ export async function sendGraphMail(
 	accessToken: string,
 	to: { name: string; address: string },
 	subject: string,
-	bodyHtml: string
+	bodyHtml: string,
+	inReplyToMessageId?: string
 ): Promise<void> {
+	const message: Record<string, unknown> = {
+		subject,
+		body: { contentType: "HTML", content: bodyHtml },
+		toRecipients: [{ emailAddress: { name: to.name, address: to.address } }],
+	};
+
+	if (inReplyToMessageId) {
+		message.internetMessageHeaders = [
+			{ name: "In-Reply-To", value: inReplyToMessageId },
+			{ name: "References", value: inReplyToMessageId },
+		];
+	}
+
 	const res = await fetch(`${GRAPH_BASE}/me/sendMail`, {
 		method: "POST",
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({
-			message: {
-				subject,
-				body: { contentType: "HTML", content: bodyHtml },
-				toRecipients: [{ emailAddress: { name: to.name, address: to.address } }],
-			},
-			saveToSentItems: true,
-		}),
+		body: JSON.stringify({ message, saveToSentItems: true }),
 	});
 
 	if (!res.ok) {
