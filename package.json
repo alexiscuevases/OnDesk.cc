@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
+    "deploy": "npm run build && wrangler pages deploy dist",
     "db:create": "wrangler d1 create desk",
     "db:migrate": "wrangler d1 execute desk --remote --file=functions/_db/schema.sql",
     "db:migrate:local": "wrangler d1 execute desk --local --file=functions/_db/schema.sql"

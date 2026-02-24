@@ -105,6 +105,7 @@ CREATE INDEX IF NOT EXISTS idx_contacts_company_id   ON contacts(company_id);
 -- Tickets table
 -- status: 'open' | 'pending' | 'resolved' | 'closed'
 -- priority: 'low' | 'medium' | 'high' | 'urgent'
+-- channel: 'email' | null
 CREATE TABLE IF NOT EXISTS tickets (
   id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
   workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
@@ -114,6 +115,7 @@ CREATE TABLE IF NOT EXISTS tickets (
   subject      TEXT NOT NULL,
   status       TEXT NOT NULL DEFAULT 'open',
   priority     TEXT NOT NULL DEFAULT 'medium',
+  channel      TEXT,
   created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at   INTEGER NOT NULL DEFAULT (unixepoch())
 );
@@ -184,3 +186,35 @@ CREATE TABLE IF NOT EXISTS workspace_invitations (
 CREATE INDEX IF NOT EXISTS idx_workspace_invitations_email        ON workspace_invitations(email);
 CREATE INDEX IF NOT EXISTS idx_workspace_invitations_token        ON workspace_invitations(token);
 CREATE INDEX IF NOT EXISTS idx_workspace_invitations_workspace_id ON workspace_invitations(workspace_id);
+
+-- Mailbox integrations (Microsoft Outlook via Graph API)
+-- Stores OAuth tokens per connected email account per workspace
+CREATE TABLE IF NOT EXISTS mailbox_integrations (
+  id                      TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id            TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  email                   TEXT    NOT NULL,
+  ms_user_id              TEXT    NOT NULL,
+  access_token            TEXT    NOT NULL,
+  refresh_token           TEXT    NOT NULL,
+  token_expires_at        INTEGER NOT NULL,
+  subscription_id         TEXT,
+  subscription_expires_at INTEGER,
+  client_state_secret     TEXT    NOT NULL,
+  created_at              INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE(workspace_id, email)
+);
+
+CREATE INDEX IF NOT EXISTS idx_mailbox_integrations_workspace_id   ON mailbox_integrations(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_mailbox_integrations_subscription_id ON mailbox_integrations(subscription_id);
+
+-- Email deduplication: prevents creating duplicate tickets from the same email
+CREATE TABLE IF NOT EXISTS email_tickets (
+  id                      TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  mailbox_integration_id  TEXT    NOT NULL REFERENCES mailbox_integrations(id) ON DELETE CASCADE,
+  internet_message_id     TEXT    NOT NULL,
+  ticket_id               TEXT    NOT NULL REFERENCES tickets(id),
+  created_at              INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE(mailbox_integration_id, internet_message_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_email_tickets_mailbox_integration_id ON email_tickets(mailbox_integration_id);

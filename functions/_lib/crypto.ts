@@ -31,7 +31,7 @@ export async function hashPassword(password: string): Promise<string> {
   );
 
   const hashBuffer = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt, iterations: 310_000, hash: "SHA-256" },
+    { name: "PBKDF2", salt, iterations: 100_000, hash: "SHA-256" },
     keyMaterial,
     256
   );
@@ -43,7 +43,7 @@ export async function hashPassword(password: string): Promise<string> {
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
-  return `pbkdf2:310000:${saltHex}:${hashHex}`;
+  return `pbkdf2:100000:${saltHex}:${hashHex}`;
 }
 
 /**
@@ -169,7 +169,7 @@ export async function verifyJwt(
   const valid = await crypto.subtle.verify(
     "HMAC",
     key,
-    base64UrlDecode(sigB64),
+    base64UrlDecode(sigB64).buffer as ArrayBuffer,
     enc.encode(`${headerB64}.${payloadB64}`)
   );
 
