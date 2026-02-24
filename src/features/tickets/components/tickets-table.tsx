@@ -48,7 +48,12 @@ export function TicketsTable({
 	}
 
 	function getInitials(name: string) {
-		return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+		return name
+			.split(" ")
+			.map((w) => w[0])
+			.join("")
+			.slice(0, 2)
+			.toUpperCase();
 	}
 
 	return (
@@ -72,19 +77,12 @@ export function TicketsTable({
 					<TableHeader>
 						<TableRow className="bg-secondary/50 hover:bg-secondary/50">
 							<TableHead className="w-12 pl-6">
-								<Checkbox
-									checked={selectedTickets.length === tickets.length && tickets.length > 0}
-									onCheckedChange={onSelectAll}
-								/>
+								<Checkbox checked={selectedTickets.length === tickets.length && tickets.length > 0} onCheckedChange={onSelectAll} />
 							</TableHead>
 							<TableHead className="w-24 text-[11px] font-semibold uppercase tracking-wider">ID</TableHead>
 							<TableHead className="text-[11px] font-semibold uppercase tracking-wider">Subject</TableHead>
-							<TableHead className="hidden lg:table-cell text-[11px] font-semibold uppercase tracking-wider">
-								Team
-							</TableHead>
-							<TableHead className="hidden sm:table-cell text-[11px] font-semibold uppercase tracking-wider">
-								Assignee
-							</TableHead>
+							<TableHead className="hidden lg:table-cell text-[11px] font-semibold uppercase tracking-wider">Team</TableHead>
+							<TableHead className="hidden sm:table-cell text-[11px] font-semibold uppercase tracking-wider">Assignee</TableHead>
 							<TableHead className="text-[11px] font-semibold uppercase tracking-wider">Priority</TableHead>
 							<TableHead className="text-[11px] font-semibold uppercase tracking-wider">Status</TableHead>
 							<TableHead className="w-12 pr-6" />
@@ -112,9 +110,7 @@ export function TicketsTable({
 											<p className="text-sm font-medium truncate">{ticket.subject}</p>
 										</div>
 									</TableCell>
-									<TableCell
-										className="hidden lg:table-cell cursor-pointer"
-										onClick={() => onOpenTicket(ticket.id)}>
+									<TableCell className="hidden lg:table-cell cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
 										{teamName ? (
 											<Badge variant="secondary" className="text-[10px] rounded-full px-2 font-medium">
 												{teamName}
@@ -123,9 +119,7 @@ export function TicketsTable({
 											<span className="text-xs text-muted-foreground">—</span>
 										)}
 									</TableCell>
-									<TableCell
-										className="hidden sm:table-cell cursor-pointer"
-										onClick={() => onOpenTicket(ticket.id)}>
+									<TableCell className="hidden sm:table-cell cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
 										{ticket.assignee_id ? (
 											<div className="flex items-center gap-2">
 												<Avatar className="size-7">
@@ -136,7 +130,7 @@ export function TicketsTable({
 												<span className="text-xs">{assigneeName}</span>
 											</div>
 										) : (
-											<span className="text-xs text-muted-foreground">Unassigned</span>
+											<span className="text-xs text-muted-foreground">—</span>
 										)}
 									</TableCell>
 									<TableCell className="cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
@@ -158,9 +152,7 @@ export function TicketsTable({
 													<Eye className="size-3.5 mr-2" />
 													View
 												</DropdownMenuItem>
-												<DropdownMenuItem
-													className="text-destructive"
-													onClick={() => onDeleteSingle(ticket.id)}>
+												<DropdownMenuItem className="text-destructive" onClick={() => onDeleteSingle(ticket.id)}>
 													<Trash2 className="size-3.5 mr-2" />
 													Delete
 												</DropdownMenuItem>

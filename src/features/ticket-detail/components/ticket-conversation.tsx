@@ -1,10 +1,53 @@
 import { MessageSquare, Eye } from "lucide-react";
 import { format } from "date-fns";
+import { useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { TicketMessage } from "@/features/tickets/api/tickets-api";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
+
+function ShadowHtml({ html }: { html: string }) {
+	const hostRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		const host = hostRef.current;
+		if (!host) return;
+		if (!host.shadowRoot) {
+			host.attachShadow({ mode: "open" });
+		}
+		host.shadowRoot!.innerHTML = `
+			<style>
+				:host { display: block; }
+				* { box-sizing: border-box; }
+				body, p { margin: 0; padding: 0; }
+				p { margin-bottom: 0.5em; }
+				p:last-child { margin-bottom: 0; }
+				a { color: #3b82f6; text-decoration: underline; }
+				ul, ol { padding-left: 1.25em; margin: 0.25em 0; }
+				li { margin-bottom: 0.15em; }
+				blockquote {
+					border-left: 3px solid #d1d5db;
+					margin: 0.5em 0;
+					padding-left: 0.75em;
+					color: #6b7280;
+				}
+				pre {
+					background: #f3f4f6;
+					border-radius: 4px;
+					padding: 0.5em;
+					overflow-x: auto;
+					font-size: 0.8em;
+				}
+				code { font-family: monospace; font-size: 0.875em; }
+				img { max-width: 100%; height: auto; }
+			</style>
+			<div style="font-size:0.875rem;line-height:1.625;color:inherit;">${html}</div>
+		`;
+	}, [html]);
+
+	return <div ref={hostRef} />;
+}
 
 interface TicketConversationProps {
 	messages: TicketMessage[];
@@ -76,7 +119,7 @@ export function TicketConversation({ messages, members }: TicketConversationProp
 													{format(new Date(msg.created_at * 1000), "MMM d, h:mm a")}
 												</span>
 											</div>
-											<p className="text-sm leading-relaxed text-foreground/90">{msg.content}</p>
+											<ShadowHtml html={msg.content} />
 										</div>
 									</div>
 								</div>
