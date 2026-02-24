@@ -61,7 +61,11 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
           findFirstMailboxByWorkspace(env.DB, ticket.workspace_id),
         ]);
 
-        if (contact && mailbox) {
+        if (!contact) {
+          console.error("Email reply skipped: contact not found", ticket.contact_id);
+        } else if (!mailbox) {
+          console.error("Email reply skipped: no mailbox configured for workspace", ticket.workspace_id);
+        } else {
           let token = mailbox.access_token;
           const nowSecs = Math.floor(Date.now() / 1000);
 
@@ -88,7 +92,6 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
           );
         }
       } catch (emailErr) {
-        // Log but don't fail the request — message is already saved
         console.error("Failed to send email reply:", emailErr);
       }
     }
