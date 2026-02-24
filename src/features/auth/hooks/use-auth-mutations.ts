@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/context/auth-context";
 import { apiLogin, apiRegister, apiLogout, apiMe } from "../api/auth-api";
+import { apiGetWorkspaces } from "@/features/workspaces/api/workspaces-api";
 
 export const authQueryKeys = {
 	me: ["auth", "me"] as const,
@@ -15,6 +16,19 @@ export function useCurrentUser() {
 		staleTime: 1000 * 60 * 14, // 14 minutes
 		retry: false,
 	});
+}
+
+async function navigateAfterLogin(
+	navigate: ReturnType<typeof useNavigate>
+): Promise<void> {
+	const workspaces = await apiGetWorkspaces().catch(() => []);
+	if (workspaces.length === 0) {
+		navigate({ to: "/workspaces/new" });
+	} else if (workspaces.length === 1) {
+		navigate({ to: "/w/$slug/overview", params: { slug: workspaces[0].slug } });
+	} else {
+		navigate({ to: "/workspaces" });
+	}
 }
 
 export function useLoginMutation() {
@@ -32,10 +46,10 @@ export function useLoginMutation() {
 			password: string;
 			rememberMe: boolean;
 		}) => apiLogin(email, password, rememberMe),
-		onSuccess: ({ user }) => {
+		onSuccess: async ({ user }) => {
 			setUser(user);
 			queryClient.setQueryData(authQueryKeys.me, user);
-			navigate({ to: "/dashboard/overview" });
+			await navigateAfterLogin(navigate);
 		},
 	});
 }
@@ -55,10 +69,10 @@ export function useRegisterMutation() {
 			email: string;
 			password: string;
 		}) => apiRegister(name, email, password),
-		onSuccess: ({ user }) => {
+		onSuccess: async ({ user }) => {
 			setUser(user);
 			queryClient.setQueryData(authQueryKeys.me, user);
-			navigate({ to: "/dashboard/overview" });
+			await navigateAfterLogin(navigate);
 		},
 	});
 }

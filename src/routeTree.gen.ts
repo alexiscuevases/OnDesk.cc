@@ -9,23 +9,33 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as WorkspacesRouteImport } from './routes/workspaces'
+import { Route as WRouteImport } from './routes/w'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardTicketsRouteImport } from './routes/dashboard/tickets'
-import { Route as DashboardTeamsRouteImport } from './routes/dashboard/teams'
-import { Route as DashboardOverviewRouteImport } from './routes/dashboard/overview'
-import { Route as DashboardConfigurationsRouteImport } from './routes/dashboard/configurations'
-import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard/analytics'
+import { Route as WorkspacesIndexRouteImport } from './routes/workspaces/index'
+import { Route as WorkspacesNewRouteImport } from './routes/workspaces/new'
+import { Route as WSlugRouteImport } from './routes/w/$slug'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthSigninRouteImport } from './routes/auth/signin'
 import { Route as AuthRecoverRouteImport } from './routes/auth/recover'
-import { Route as DashboardTicketsIndexRouteImport } from './routes/dashboard/tickets/index'
-import { Route as DashboardTicketsIdRouteImport } from './routes/dashboard/tickets/$id'
+import { Route as WSlugTicketsRouteImport } from './routes/w/$slug/tickets'
+import { Route as WSlugTeamsRouteImport } from './routes/w/$slug/teams'
+import { Route as WSlugSettingsRouteImport } from './routes/w/$slug/settings'
+import { Route as WSlugOverviewRouteImport } from './routes/w/$slug/overview'
+import { Route as WSlugAnalyticsRouteImport } from './routes/w/$slug/analytics'
+import { Route as WSlugAgentsRouteImport } from './routes/w/$slug/agents'
+import { Route as WSlugTicketsIndexRouteImport } from './routes/w/$slug/tickets/index'
+import { Route as WSlugTicketsIdRouteImport } from './routes/w/$slug/tickets/$id'
 
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const WorkspacesRoute = WorkspacesRouteImport.update({
+  id: '/workspaces',
+  path: '/workspaces',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WRoute = WRouteImport.update({
+  id: '/w',
+  path: '/w',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -38,30 +48,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardTicketsRoute = DashboardTicketsRouteImport.update({
-  id: '/tickets',
-  path: '/tickets',
-  getParentRoute: () => DashboardRoute,
+const WorkspacesIndexRoute = WorkspacesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => WorkspacesRoute,
 } as any)
-const DashboardTeamsRoute = DashboardTeamsRouteImport.update({
-  id: '/teams',
-  path: '/teams',
-  getParentRoute: () => DashboardRoute,
+const WorkspacesNewRoute = WorkspacesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => WorkspacesRoute,
 } as any)
-const DashboardOverviewRoute = DashboardOverviewRouteImport.update({
-  id: '/overview',
-  path: '/overview',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardConfigurationsRoute = DashboardConfigurationsRouteImport.update({
-  id: '/configurations',
-  path: '/configurations',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => DashboardRoute,
+const WSlugRoute = WSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => WRoute,
 } as any)
 const AuthSignupRoute = AuthSignupRouteImport.update({
   id: '/signup',
@@ -78,122 +78,188 @@ const AuthRecoverRoute = AuthRecoverRouteImport.update({
   path: '/recover',
   getParentRoute: () => AuthRoute,
 } as any)
-const DashboardTicketsIndexRoute = DashboardTicketsIndexRouteImport.update({
+const WSlugTicketsRoute = WSlugTicketsRouteImport.update({
+  id: '/tickets',
+  path: '/tickets',
+  getParentRoute: () => WSlugRoute,
+} as any)
+const WSlugTeamsRoute = WSlugTeamsRouteImport.update({
+  id: '/teams',
+  path: '/teams',
+  getParentRoute: () => WSlugRoute,
+} as any)
+const WSlugSettingsRoute = WSlugSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => WSlugRoute,
+} as any)
+const WSlugOverviewRoute = WSlugOverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
+  getParentRoute: () => WSlugRoute,
+} as any)
+const WSlugAnalyticsRoute = WSlugAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => WSlugRoute,
+} as any)
+const WSlugAgentsRoute = WSlugAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => WSlugRoute,
+} as any)
+const WSlugTicketsIndexRoute = WSlugTicketsIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => DashboardTicketsRoute,
+  getParentRoute: () => WSlugTicketsRoute,
 } as any)
-const DashboardTicketsIdRoute = DashboardTicketsIdRouteImport.update({
+const WSlugTicketsIdRoute = WSlugTicketsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => DashboardTicketsRoute,
+  getParentRoute: () => WSlugTicketsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
-  '/dashboard': typeof DashboardRouteWithChildren
+  '/w': typeof WRouteWithChildren
+  '/workspaces': typeof WorkspacesRouteWithChildren
   '/auth/recover': typeof AuthRecoverRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/dashboard/analytics': typeof DashboardAnalyticsRoute
-  '/dashboard/configurations': typeof DashboardConfigurationsRoute
-  '/dashboard/overview': typeof DashboardOverviewRoute
-  '/dashboard/teams': typeof DashboardTeamsRoute
-  '/dashboard/tickets': typeof DashboardTicketsRouteWithChildren
-  '/dashboard/tickets/$id': typeof DashboardTicketsIdRoute
-  '/dashboard/tickets/': typeof DashboardTicketsIndexRoute
+  '/w/$slug': typeof WSlugRouteWithChildren
+  '/workspaces/new': typeof WorkspacesNewRoute
+  '/workspaces/': typeof WorkspacesIndexRoute
+  '/w/$slug/agents': typeof WSlugAgentsRoute
+  '/w/$slug/analytics': typeof WSlugAnalyticsRoute
+  '/w/$slug/overview': typeof WSlugOverviewRoute
+  '/w/$slug/settings': typeof WSlugSettingsRoute
+  '/w/$slug/teams': typeof WSlugTeamsRoute
+  '/w/$slug/tickets': typeof WSlugTicketsRouteWithChildren
+  '/w/$slug/tickets/$id': typeof WSlugTicketsIdRoute
+  '/w/$slug/tickets/': typeof WSlugTicketsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
-  '/dashboard': typeof DashboardRouteWithChildren
+  '/w': typeof WRouteWithChildren
   '/auth/recover': typeof AuthRecoverRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/dashboard/analytics': typeof DashboardAnalyticsRoute
-  '/dashboard/configurations': typeof DashboardConfigurationsRoute
-  '/dashboard/overview': typeof DashboardOverviewRoute
-  '/dashboard/teams': typeof DashboardTeamsRoute
-  '/dashboard/tickets/$id': typeof DashboardTicketsIdRoute
-  '/dashboard/tickets': typeof DashboardTicketsIndexRoute
+  '/w/$slug': typeof WSlugRouteWithChildren
+  '/workspaces/new': typeof WorkspacesNewRoute
+  '/workspaces': typeof WorkspacesIndexRoute
+  '/w/$slug/agents': typeof WSlugAgentsRoute
+  '/w/$slug/analytics': typeof WSlugAnalyticsRoute
+  '/w/$slug/overview': typeof WSlugOverviewRoute
+  '/w/$slug/settings': typeof WSlugSettingsRoute
+  '/w/$slug/teams': typeof WSlugTeamsRoute
+  '/w/$slug/tickets/$id': typeof WSlugTicketsIdRoute
+  '/w/$slug/tickets': typeof WSlugTicketsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
-  '/dashboard': typeof DashboardRouteWithChildren
+  '/w': typeof WRouteWithChildren
+  '/workspaces': typeof WorkspacesRouteWithChildren
   '/auth/recover': typeof AuthRecoverRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/dashboard/analytics': typeof DashboardAnalyticsRoute
-  '/dashboard/configurations': typeof DashboardConfigurationsRoute
-  '/dashboard/overview': typeof DashboardOverviewRoute
-  '/dashboard/teams': typeof DashboardTeamsRoute
-  '/dashboard/tickets': typeof DashboardTicketsRouteWithChildren
-  '/dashboard/tickets/$id': typeof DashboardTicketsIdRoute
-  '/dashboard/tickets/': typeof DashboardTicketsIndexRoute
+  '/w/$slug': typeof WSlugRouteWithChildren
+  '/workspaces/new': typeof WorkspacesNewRoute
+  '/workspaces/': typeof WorkspacesIndexRoute
+  '/w/$slug/agents': typeof WSlugAgentsRoute
+  '/w/$slug/analytics': typeof WSlugAnalyticsRoute
+  '/w/$slug/overview': typeof WSlugOverviewRoute
+  '/w/$slug/settings': typeof WSlugSettingsRoute
+  '/w/$slug/teams': typeof WSlugTeamsRoute
+  '/w/$slug/tickets': typeof WSlugTicketsRouteWithChildren
+  '/w/$slug/tickets/$id': typeof WSlugTicketsIdRoute
+  '/w/$slug/tickets/': typeof WSlugTicketsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/dashboard'
+    | '/w'
+    | '/workspaces'
     | '/auth/recover'
     | '/auth/signin'
     | '/auth/signup'
-    | '/dashboard/analytics'
-    | '/dashboard/configurations'
-    | '/dashboard/overview'
-    | '/dashboard/teams'
-    | '/dashboard/tickets'
-    | '/dashboard/tickets/$id'
-    | '/dashboard/tickets/'
+    | '/w/$slug'
+    | '/workspaces/new'
+    | '/workspaces/'
+    | '/w/$slug/agents'
+    | '/w/$slug/analytics'
+    | '/w/$slug/overview'
+    | '/w/$slug/settings'
+    | '/w/$slug/teams'
+    | '/w/$slug/tickets'
+    | '/w/$slug/tickets/$id'
+    | '/w/$slug/tickets/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/dashboard'
+    | '/w'
     | '/auth/recover'
     | '/auth/signin'
     | '/auth/signup'
-    | '/dashboard/analytics'
-    | '/dashboard/configurations'
-    | '/dashboard/overview'
-    | '/dashboard/teams'
-    | '/dashboard/tickets/$id'
-    | '/dashboard/tickets'
+    | '/w/$slug'
+    | '/workspaces/new'
+    | '/workspaces'
+    | '/w/$slug/agents'
+    | '/w/$slug/analytics'
+    | '/w/$slug/overview'
+    | '/w/$slug/settings'
+    | '/w/$slug/teams'
+    | '/w/$slug/tickets/$id'
+    | '/w/$slug/tickets'
   id:
     | '__root__'
     | '/'
     | '/auth'
-    | '/dashboard'
+    | '/w'
+    | '/workspaces'
     | '/auth/recover'
     | '/auth/signin'
     | '/auth/signup'
-    | '/dashboard/analytics'
-    | '/dashboard/configurations'
-    | '/dashboard/overview'
-    | '/dashboard/teams'
-    | '/dashboard/tickets'
-    | '/dashboard/tickets/$id'
-    | '/dashboard/tickets/'
+    | '/w/$slug'
+    | '/workspaces/new'
+    | '/workspaces/'
+    | '/w/$slug/agents'
+    | '/w/$slug/analytics'
+    | '/w/$slug/overview'
+    | '/w/$slug/settings'
+    | '/w/$slug/teams'
+    | '/w/$slug/tickets'
+    | '/w/$slug/tickets/$id'
+    | '/w/$slug/tickets/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
-  DashboardRoute: typeof DashboardRouteWithChildren
+  WRoute: typeof WRouteWithChildren
+  WorkspacesRoute: typeof WorkspacesRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/workspaces': {
+      id: '/workspaces'
+      path: '/workspaces'
+      fullPath: '/workspaces'
+      preLoaderRoute: typeof WorkspacesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/w': {
+      id: '/w'
+      path: '/w'
+      fullPath: '/w'
+      preLoaderRoute: typeof WRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -210,40 +276,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/tickets': {
-      id: '/dashboard/tickets'
-      path: '/tickets'
-      fullPath: '/dashboard/tickets'
-      preLoaderRoute: typeof DashboardTicketsRouteImport
-      parentRoute: typeof DashboardRoute
+    '/workspaces/': {
+      id: '/workspaces/'
+      path: '/'
+      fullPath: '/workspaces/'
+      preLoaderRoute: typeof WorkspacesIndexRouteImport
+      parentRoute: typeof WorkspacesRoute
     }
-    '/dashboard/teams': {
-      id: '/dashboard/teams'
-      path: '/teams'
-      fullPath: '/dashboard/teams'
-      preLoaderRoute: typeof DashboardTeamsRouteImport
-      parentRoute: typeof DashboardRoute
+    '/workspaces/new': {
+      id: '/workspaces/new'
+      path: '/new'
+      fullPath: '/workspaces/new'
+      preLoaderRoute: typeof WorkspacesNewRouteImport
+      parentRoute: typeof WorkspacesRoute
     }
-    '/dashboard/overview': {
-      id: '/dashboard/overview'
-      path: '/overview'
-      fullPath: '/dashboard/overview'
-      preLoaderRoute: typeof DashboardOverviewRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/configurations': {
-      id: '/dashboard/configurations'
-      path: '/configurations'
-      fullPath: '/dashboard/configurations'
-      preLoaderRoute: typeof DashboardConfigurationsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/analytics': {
-      id: '/dashboard/analytics'
-      path: '/analytics'
-      fullPath: '/dashboard/analytics'
-      preLoaderRoute: typeof DashboardAnalyticsRouteImport
-      parentRoute: typeof DashboardRoute
+    '/w/$slug': {
+      id: '/w/$slug'
+      path: '/$slug'
+      fullPath: '/w/$slug'
+      preLoaderRoute: typeof WSlugRouteImport
+      parentRoute: typeof WRoute
     }
     '/auth/signup': {
       id: '/auth/signup'
@@ -266,19 +318,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRecoverRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/dashboard/tickets/': {
-      id: '/dashboard/tickets/'
-      path: '/'
-      fullPath: '/dashboard/tickets/'
-      preLoaderRoute: typeof DashboardTicketsIndexRouteImport
-      parentRoute: typeof DashboardTicketsRoute
+    '/w/$slug/tickets': {
+      id: '/w/$slug/tickets'
+      path: '/tickets'
+      fullPath: '/w/$slug/tickets'
+      preLoaderRoute: typeof WSlugTicketsRouteImport
+      parentRoute: typeof WSlugRoute
     }
-    '/dashboard/tickets/$id': {
-      id: '/dashboard/tickets/$id'
+    '/w/$slug/teams': {
+      id: '/w/$slug/teams'
+      path: '/teams'
+      fullPath: '/w/$slug/teams'
+      preLoaderRoute: typeof WSlugTeamsRouteImport
+      parentRoute: typeof WSlugRoute
+    }
+    '/w/$slug/settings': {
+      id: '/w/$slug/settings'
+      path: '/settings'
+      fullPath: '/w/$slug/settings'
+      preLoaderRoute: typeof WSlugSettingsRouteImport
+      parentRoute: typeof WSlugRoute
+    }
+    '/w/$slug/overview': {
+      id: '/w/$slug/overview'
+      path: '/overview'
+      fullPath: '/w/$slug/overview'
+      preLoaderRoute: typeof WSlugOverviewRouteImport
+      parentRoute: typeof WSlugRoute
+    }
+    '/w/$slug/analytics': {
+      id: '/w/$slug/analytics'
+      path: '/analytics'
+      fullPath: '/w/$slug/analytics'
+      preLoaderRoute: typeof WSlugAnalyticsRouteImport
+      parentRoute: typeof WSlugRoute
+    }
+    '/w/$slug/agents': {
+      id: '/w/$slug/agents'
+      path: '/agents'
+      fullPath: '/w/$slug/agents'
+      preLoaderRoute: typeof WSlugAgentsRouteImport
+      parentRoute: typeof WSlugRoute
+    }
+    '/w/$slug/tickets/': {
+      id: '/w/$slug/tickets/'
+      path: '/'
+      fullPath: '/w/$slug/tickets/'
+      preLoaderRoute: typeof WSlugTicketsIndexRouteImport
+      parentRoute: typeof WSlugTicketsRoute
+    }
+    '/w/$slug/tickets/$id': {
+      id: '/w/$slug/tickets/$id'
       path: '/$id'
-      fullPath: '/dashboard/tickets/$id'
-      preLoaderRoute: typeof DashboardTicketsIdRouteImport
-      parentRoute: typeof DashboardTicketsRoute
+      fullPath: '/w/$slug/tickets/$id'
+      preLoaderRoute: typeof WSlugTicketsIdRouteImport
+      parentRoute: typeof WSlugTicketsRoute
     }
   }
 }
@@ -297,43 +391,69 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
-interface DashboardTicketsRouteChildren {
-  DashboardTicketsIdRoute: typeof DashboardTicketsIdRoute
-  DashboardTicketsIndexRoute: typeof DashboardTicketsIndexRoute
+interface WSlugTicketsRouteChildren {
+  WSlugTicketsIdRoute: typeof WSlugTicketsIdRoute
+  WSlugTicketsIndexRoute: typeof WSlugTicketsIndexRoute
 }
 
-const DashboardTicketsRouteChildren: DashboardTicketsRouteChildren = {
-  DashboardTicketsIdRoute: DashboardTicketsIdRoute,
-  DashboardTicketsIndexRoute: DashboardTicketsIndexRoute,
+const WSlugTicketsRouteChildren: WSlugTicketsRouteChildren = {
+  WSlugTicketsIdRoute: WSlugTicketsIdRoute,
+  WSlugTicketsIndexRoute: WSlugTicketsIndexRoute,
 }
 
-const DashboardTicketsRouteWithChildren =
-  DashboardTicketsRoute._addFileChildren(DashboardTicketsRouteChildren)
+const WSlugTicketsRouteWithChildren = WSlugTicketsRoute._addFileChildren(
+  WSlugTicketsRouteChildren,
+)
 
-interface DashboardRouteChildren {
-  DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute
-  DashboardConfigurationsRoute: typeof DashboardConfigurationsRoute
-  DashboardOverviewRoute: typeof DashboardOverviewRoute
-  DashboardTeamsRoute: typeof DashboardTeamsRoute
-  DashboardTicketsRoute: typeof DashboardTicketsRouteWithChildren
+interface WSlugRouteChildren {
+  WSlugAgentsRoute: typeof WSlugAgentsRoute
+  WSlugAnalyticsRoute: typeof WSlugAnalyticsRoute
+  WSlugOverviewRoute: typeof WSlugOverviewRoute
+  WSlugSettingsRoute: typeof WSlugSettingsRoute
+  WSlugTeamsRoute: typeof WSlugTeamsRoute
+  WSlugTicketsRoute: typeof WSlugTicketsRouteWithChildren
 }
 
-const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardAnalyticsRoute: DashboardAnalyticsRoute,
-  DashboardConfigurationsRoute: DashboardConfigurationsRoute,
-  DashboardOverviewRoute: DashboardOverviewRoute,
-  DashboardTeamsRoute: DashboardTeamsRoute,
-  DashboardTicketsRoute: DashboardTicketsRouteWithChildren,
+const WSlugRouteChildren: WSlugRouteChildren = {
+  WSlugAgentsRoute: WSlugAgentsRoute,
+  WSlugAnalyticsRoute: WSlugAnalyticsRoute,
+  WSlugOverviewRoute: WSlugOverviewRoute,
+  WSlugSettingsRoute: WSlugSettingsRoute,
+  WSlugTeamsRoute: WSlugTeamsRoute,
+  WSlugTicketsRoute: WSlugTicketsRouteWithChildren,
 }
 
-const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
-  DashboardRouteChildren,
+const WSlugRouteWithChildren = WSlugRoute._addFileChildren(WSlugRouteChildren)
+
+interface WRouteChildren {
+  WSlugRoute: typeof WSlugRouteWithChildren
+}
+
+const WRouteChildren: WRouteChildren = {
+  WSlugRoute: WSlugRouteWithChildren,
+}
+
+const WRouteWithChildren = WRoute._addFileChildren(WRouteChildren)
+
+interface WorkspacesRouteChildren {
+  WorkspacesNewRoute: typeof WorkspacesNewRoute
+  WorkspacesIndexRoute: typeof WorkspacesIndexRoute
+}
+
+const WorkspacesRouteChildren: WorkspacesRouteChildren = {
+  WorkspacesNewRoute: WorkspacesNewRoute,
+  WorkspacesIndexRoute: WorkspacesIndexRoute,
+}
+
+const WorkspacesRouteWithChildren = WorkspacesRoute._addFileChildren(
+  WorkspacesRouteChildren,
 )
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
-  DashboardRoute: DashboardRouteWithChildren,
+  WRoute: WRouteWithChildren,
+  WorkspacesRoute: WorkspacesRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -41,3 +41,34 @@ export interface PublicUser {
   email: string;
   role: string;
 }
+
+// Database row shapes for workspaces
+export interface WorkspaceRow {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  created_by: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface WorkspaceMemberRow {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  role: string;
+  joined_at: number;
+}
+
+// Public workspace shape returned to frontend
+export interface PublicWorkspace {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  role: string; // caller's role in this workspace
+  created_at: number;
+}

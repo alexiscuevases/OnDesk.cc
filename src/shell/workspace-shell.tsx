@@ -1,27 +1,18 @@
-import { useState } from "react";
-import { Outlet, useRouterState } from "@tanstack/react-router";
-import { HelpCircle, Plus } from "lucide-react";
+import { Outlet } from "@tanstack/react-router";
+import { HelpCircle } from "lucide-react";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { NotificationsProvider } from "@/context/notifications-context";
-import { DashboardSidebar } from "./dashboard-sidebar";
+import { WorkspaceSidebar } from "./workspace-sidebar";
 import { GlobalSearch } from "./global-search";
 import { NotificationsPanel } from "./notifications-panel";
-import { NewTicketModal } from "@/features/tickets/modals/new-ticket-modal";
 
-export function DashboardShell() {
-	const routerState = useRouterState();
-	const currentPath = routerState.location.pathname;
-	const [newTicketOpen, setNewTicketOpen] = useState(false);
-
-	const showNewTicketButton =
-		currentPath === "/dashboard/tickets" || currentPath === "/dashboard/tickets/";
-
+export function WorkspaceShell() {
 	return (
 		<NotificationsProvider>
 			<SidebarProvider>
-				<DashboardSidebar />
+				<WorkspaceSidebar />
 				<SidebarInset>
 					<header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b bg-background/80 backdrop-blur-lg px-4">
 						<SidebarTrigger className="-ml-1" />
@@ -32,16 +23,6 @@ export function DashboardShell() {
 								<HelpCircle className="size-4" />
 								<span className="sr-only">Help</span>
 							</Button>
-							{showNewTicketButton && (
-								<Button
-									size="sm"
-									className="h-8 gap-1.5 rounded-lg text-xs font-semibold"
-									onClick={() => setNewTicketOpen(true)}>
-									<Plus className="size-3.5" />
-									New Ticket
-								</Button>
-							)}
-							<NewTicketModal open={newTicketOpen} onOpenChange={setNewTicketOpen} />
 							<NotificationsPanel />
 						</div>
 					</header>

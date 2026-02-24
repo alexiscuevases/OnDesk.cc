@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search, Hash, User, Users } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -10,6 +10,7 @@ export function GlobalSearch() {
 	const [globalSearch, setGlobalSearch] = useState("");
 	const [searchOpen, setSearchOpen] = useState(false);
 	const navigate = useNavigate();
+	const { slug } = useParams({ strict: false });
 
 	const searchResults = {
 		tickets: tickets
@@ -71,7 +72,9 @@ export function GlobalSearch() {
 									<button
 										key={ticket.id}
 										onClick={() => {
-											navigate({ to: "/dashboard/tickets/$id", params: { id: ticket.id } });
+											if (slug) {
+												navigate({ to: "/w/$slug/tickets/$id", params: { slug, id: ticket.id } });
+											}
 											setSearchOpen(false);
 											setGlobalSearch("");
 										}}

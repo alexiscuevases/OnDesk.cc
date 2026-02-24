@@ -5,7 +5,7 @@ export const Route = createFileRoute("/auth")({
 	beforeLoad: async () => {
 		const user = await apiMe();
 		if (user) {
-			throw redirect({ to: "/dashboard/overview" });
+			throw redirect({ to: "/workspaces" });
 		}
 	},
 	component: () => <Outlet />,
