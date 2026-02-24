@@ -978,6 +978,19 @@ export async function findMailboxIntegrationsByWorkspace(
   return result.results ?? [];
 }
 
+export async function findFirstMailboxByWorkspace(
+  db: D1Database,
+  workspaceId: string
+): Promise<MailboxIntegrationRow | null> {
+  const result = await db
+    .prepare(
+      "SELECT * FROM mailbox_integrations WHERE workspace_id = ? ORDER BY created_at ASC LIMIT 1"
+    )
+    .bind(workspaceId)
+    .first<MailboxIntegrationRow>();
+  return result ?? null;
+}
+
 export async function updateMailboxTokens(
   db: D1Database,
   id: string,

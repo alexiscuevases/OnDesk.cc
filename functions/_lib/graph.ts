@@ -148,6 +148,34 @@ export async function deleteGraphSubscription(accessToken: string, subscriptionI
 	}
 }
 
+export async function sendGraphMail(
+	accessToken: string,
+	to: { name: string; address: string },
+	subject: string,
+	bodyHtml: string
+): Promise<void> {
+	const res = await fetch(`${GRAPH_BASE}/me/sendMail`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			message: {
+				subject,
+				body: { contentType: "HTML", content: bodyHtml },
+				toRecipients: [{ emailAddress: { name: to.name, address: to.address } }],
+			},
+			saveToSentItems: true,
+		}),
+	});
+
+	if (!res.ok) {
+		const err = await res.text();
+		throw new Error(`Failed to send email: ${err}`);
+	}
+}
+
 export async function getGraphMessage(accessToken: string, messageId: string): Promise<GraphMessage> {
 	const fields = "id,subject,bodyPreview,body,from,internetMessageId,receivedDateTime";
 	const res = await fetch(`${GRAPH_BASE}/me/messages/${messageId}?$select=${fields}`, {
