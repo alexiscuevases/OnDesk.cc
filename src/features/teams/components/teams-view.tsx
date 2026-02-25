@@ -13,13 +13,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useWorkspace } from "@/context/workspace-context";
 import { useTeams } from "../hooks/use-team-queries";
 import { useTickets } from "@/features/tickets/hooks/use-ticket-queries";
-import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
+import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
+import { useCompanies } from "@/features/companies/hooks/use-company-queries";
 
 export function TeamsView() {
 	const { workspace } = useWorkspace();
 	const { data: teams = [] } = useTeams(workspace.id);
 	const { data: tickets = [] } = useTickets(workspace.id);
-	const { data: members = [] } = useWorkspaceMembers(workspace.id);
+	const { data: contacts = [] } = useContacts(workspace.id);
+	const { data: companies = [] } = useCompanies(workspace.id);
 	const navigate = useNavigate();
 	const { slug } = useParams({ strict: false }) as { slug: string };
 
@@ -256,39 +258,30 @@ export function TeamsView() {
 							{filteredTickets.length > 0 ? (
 								<div className="space-y-2">
 									{filteredTickets.map((ticket) => {
-										const assignee = ticket.assignee_id ? members.find((m) => m.id === ticket.assignee_id) : null;
-										const assigneeInitials = assignee
-											? assignee.name
-													.split(" ")
-													.map((w) => w[0])
-													.join("")
-													.slice(0, 2)
-													.toUpperCase()
-											: null;
+										const contact = ticket.contact_id ? contacts.find((c) => c.id === ticket.contact_id) : null;
+										const companyLogo = contact?.company_id
+											? companies.find((c) => c.id === contact.company_id)?.logo_url ?? undefined
+											: undefined;
+										const contactInitials = contact
+											? contact.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+											: "?";
 										return (
 											<div
 												key={ticket.id}
 												onClick={() => navigate({ to: "/w/$slug/tickets/$id", params: { slug, id: ticket.id } })}
 												className="flex items-center justify-between gap-4 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80 cursor-pointer">
 												<div className="flex items-center gap-3 min-w-0 flex-1">
-													<span className="text-[11px] font-mono font-semibold text-primary/70 shrink-0">
-														{ticket.id.slice(0, 8)}
-													</span>
+													<Avatar className="size-8 rounded-lg shrink-0">
+														<AvatarImage src={companyLogo} className="object-cover rounded-lg" />
+														<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[10px] font-bold">
+															{contactInitials}
+														</AvatarFallback>
+													</Avatar>
 													<div className="min-w-0 flex-1">
 														<p className="text-sm font-medium truncate">{ticket.subject}</p>
-														{assignee ? (
-															<div className="flex items-center gap-1.5 mt-0.5">
-																<Avatar className="size-4 rounded-full">
-																	<AvatarImage src={assignee.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-full" />
-																	<AvatarFallback className="size-4 rounded-full bg-primary text-primary-foreground text-[8px] font-semibold">
-																		{assigneeInitials}
-																	</AvatarFallback>
-																</Avatar>
-																<span className="text-[10px] text-muted-foreground truncate">{assignee.name}</span>
-															</div>
-														) : (
-															<span className="text-[10px] text-muted-foreground/50">Unassigned</span>
-														)}
+														<p className="text-[11px] text-muted-foreground truncate mt-0.5">
+															{contact ? contact.name : "No contact"}
+														</p>
 													</div>
 												</div>
 												<div className="flex items-center gap-2 shrink-0">

@@ -11,6 +11,8 @@ import { PriorityBadge } from "@/shared/components/priority-badge";
 import type { Ticket } from "@/features/tickets/api/tickets-api";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
 import type { Team } from "@/features/teams/api/teams-api";
+import type { Contact } from "@/features/contacts/api/contacts-api";
+import type { Company } from "@/features/companies/api/companies-api";
 
 interface TicketsTableProps {
 	tickets: Ticket[];
@@ -23,6 +25,8 @@ interface TicketsTableProps {
 	isLoading?: boolean;
 	members: WorkspaceMember[];
 	teams: Team[];
+	contacts: Contact[];
+	companies: Company[];
 }
 
 export function TicketsTable({
@@ -36,6 +40,8 @@ export function TicketsTable({
 	isLoading,
 	members,
 	teams,
+	contacts,
+	companies,
 }: TicketsTableProps) {
 	const { workspace } = useWorkspace();
 
@@ -47,6 +53,16 @@ export function TicketsTable({
 	function getTeam(id: string | null) {
 		if (!id) return null;
 		return teams.find((t) => t.id === id) ?? null;
+	}
+
+	function getContact(id: string | null) {
+		if (!id) return null;
+		return contacts.find((c) => c.id === id) ?? null;
+	}
+
+	function getCompanyLogo(companyId: string | null) {
+		if (!companyId) return null;
+		return companies.find((c) => c.id === companyId)?.logo_url ?? null;
 	}
 
 	function getInitials(name: string) {
@@ -82,7 +98,7 @@ export function TicketsTable({
 								<Checkbox checked={selectedTickets.length === tickets.length && tickets.length > 0} onCheckedChange={onSelectAll} />
 							</TableHead>
 							<TableHead className="w-24 text-[11px] font-semibold uppercase tracking-wider">ID</TableHead>
-							<TableHead className="text-[11px] font-semibold uppercase tracking-wider">Subject</TableHead>
+							<TableHead className="text-[11px] font-semibold uppercase tracking-wider">Details</TableHead>
 							<TableHead className="hidden lg:table-cell text-[11px] font-semibold uppercase tracking-wider">Team</TableHead>
 							<TableHead className="hidden sm:table-cell text-[11px] font-semibold uppercase tracking-wider">Assignee</TableHead>
 							<TableHead className="text-[11px] font-semibold uppercase tracking-wider">Priority</TableHead>
@@ -94,6 +110,8 @@ export function TicketsTable({
 						{tickets.map((ticket) => {
 							const assignee = getMember(ticket.assignee_id);
 							const team = getTeam(ticket.team_id);
+							const contact = getContact(ticket.contact_id);
+							const companyLogo = getCompanyLogo(contact?.company_id ?? null);
 							return (
 								<TableRow key={ticket.id} className="hover:bg-secondary/40 transition-colors">
 									<TableCell className="pl-6" onClick={(e) => e.stopPropagation()}>
@@ -108,8 +126,19 @@ export function TicketsTable({
 										{ticket.id.slice(0, 8)}
 									</TableCell>
 									<TableCell className="cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
-										<div className="max-w-[200px] lg:max-w-[300px]">
-											<p className="text-sm font-medium truncate">{ticket.subject}</p>
+										<div className="flex items-center gap-2.5 max-w-70 lg:max-w-95">
+											<Avatar className="size-7 rounded-lg shrink-0">
+												<AvatarImage src={companyLogo ?? undefined} className="object-cover rounded-lg" />
+												<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[10px] font-bold">
+													{contact ? getInitials(contact.name) : "?"}
+												</AvatarFallback>
+											</Avatar>
+											<div className="min-w-0">
+												<p className="text-sm font-medium truncate">{ticket.subject}</p>
+												{contact && (
+													<p className="text-[11px] text-muted-foreground truncate">{contact.name}</p>
+												)}
+											</div>
 										</div>
 									</TableCell>
 									<TableCell className="hidden lg:table-cell cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>

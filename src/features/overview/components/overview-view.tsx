@@ -6,8 +6,13 @@ import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContaine
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
-import { fetchKPIs, fetchTickets, fetchTicketVolumeData, fetchChannelDistribution, queryKeys } from "@/lib/queries";
+import { fetchKPIs, fetchTicketVolumeData, fetchChannelDistribution, queryKeys } from "@/lib/queries";
+import { useTickets } from "@/features/tickets/hooks/use-ticket-queries";
+import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
+import { useCompanies } from "@/features/companies/hooks/use-company-queries";
+import type { Contact } from "@/features/contacts/api/contacts-api";
 
 const kpiIcons = [AlertTriangle, Clock, CheckCircle2, TrendingUp];
 
@@ -20,13 +25,38 @@ const tooltipStyle = {
 	boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
 };
 
-export function OverviewView({ onOpenTicket }: { onOpenTicket: (id: string) => void }) {
+function getInitials(name: string) {
+	return name
+		.split(" ")
+		.map((w) => w[0])
+		.join("")
+		.slice(0, 2)
+		.toUpperCase();
+}
+
+export function OverviewView({
+	workspaceId,
+	onOpenTicket,
+	onViewAll,
+}: {
+	workspaceId: string;
+	onOpenTicket: (id: string) => void;
+	onViewAll: () => void;
+}) {
 	const { data: kpis = [] } = useQuery({ queryKey: queryKeys.kpis.all, queryFn: fetchKPIs });
-	const { data: tickets = [] } = useQuery({ queryKey: queryKeys.tickets.all, queryFn: () => fetchTickets() });
 	const { data: ticketVolumeData = [] } = useQuery({ queryKey: queryKeys.analytics.ticketVolume, queryFn: fetchTicketVolumeData });
 	const { data: channelDistribution = [] } = useQuery({ queryKey: queryKeys.analytics.channelDistribution, queryFn: fetchChannelDistribution });
 
-	const recentTickets = tickets.slice(0, 5);
+	const { data: tickets = [] } = useTickets(workspaceId);
+	const { data: contacts = [] } = useContacts(workspaceId);
+	const { data: companies = [] } = useCompanies(workspaceId);
+
+	const contactMap = Object.fromEntries(contacts.map((c) => [c.id, c as Contact]));
+	const companyMap = Object.fromEntries(companies.map((c) => [c.id, c.logo_url]));
+
+	const recentTickets = [...tickets]
+		.sort((a, b) => b.created_at - a.created_at)
+		.slice(0, 5);
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -146,49 +176,59 @@ export function OverviewView({ onOpenTicket }: { onOpenTicket: (id: string) => v
 						<CardTitle className="text-sm font-semibold">Recent Tickets</CardTitle>
 						<CardDescription className="text-xs">Latest support requests requiring attention</CardDescription>
 					</div>
-					<Button variant="ghost" size="sm" className="text-xs text-primary font-semibold gap-1 hover:text-primary/80">
+					<Button variant="ghost" size="sm" onClick={onViewAll} className="text-xs text-primary font-semibold gap-1 hover:text-primary/80">
 						View All
 						<ExternalLink className="size-3" />
 					</Button>
 				</CardHeader>
 				<CardContent>
 					<div className="space-y-2">
-						{recentTickets.map((ticket) => (
-							<button
-								key={ticket.id}
-								onClick={() => onOpenTicket(ticket.id)}
-								className="flex items-center justify-between gap-4 rounded-xl border border-transparent bg-secondary/40 p-3.5 w-full text-left transition-all hover:border-border hover:bg-secondary/80 hover:shadow-sm">
-								<div className="flex items-center gap-3 min-w-0">
-									<span className="text-[11px] font-mono font-semibold text-primary/70 shrink-0">{ticket.id}</span>
-									<div className="min-w-0">
-										<p className="text-sm font-medium truncate">{ticket.subject}</p>
-										<p className="text-[11px] text-muted-foreground mt-0.5">
-											{ticket.requester} &middot; {ticket.team}
-										</p>
+						{recentTickets.map((ticket) => {
+							const contact = ticket.contact_id ? contactMap[ticket.contact_id] : null;
+							return (
+								<button
+									key={ticket.id}
+									onClick={() => onOpenTicket(ticket.id)}
+									className="flex items-center justify-between gap-4 rounded-xl border border-transparent bg-secondary/40 p-3.5 w-full text-left transition-all hover:border-border hover:bg-secondary/80 hover:shadow-sm">
+									<div className="flex items-center gap-3 min-w-0">
+										<Avatar className="size-8 rounded-lg shrink-0">
+											<AvatarImage src={contact?.logo_url ?? (contact?.company_id ? companyMap[contact.company_id] ?? undefined : undefined)} className="object-cover rounded-lg" />
+											<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[10px] font-bold">
+												{contact ? getInitials(contact.name) : "?"}
+											</AvatarFallback>
+										</Avatar>
+										<div className="min-w-0">
+											<p className="text-sm font-medium truncate">{ticket.subject}</p>
+											<p className="text-[11px] text-muted-foreground mt-0.5">
+												{contact ? contact.name : "No contact"}
+											</p>
+										</div>
 									</div>
-								</div>
-								<div className="flex items-center gap-2 shrink-0">
-									<Badge
-										variant={ticket.priority === "critical" ? "destructive" : ticket.priority === "high" ? "default" : "secondary"}
-										className={`text-[10px] px-2 rounded-full ${ticket.priority === "high" ? "bg-warning text-warning-foreground" : ""}`}>
-										{ticket.priority}
-									</Badge>
-									<Badge
-										variant="outline"
-										className={`text-[10px] px-2 rounded-full ${
-											ticket.status === "open"
-												? "border-chart-1 text-chart-1"
-												: ticket.status === "in-progress"
-													? "border-warning text-warning"
-													: ticket.status === "resolved"
-														? "border-success text-success"
-														: ""
-										}`}>
-										{ticket.status}
-									</Badge>
-								</div>
-							</button>
-						))}
+									<div className="flex items-center gap-2 shrink-0">
+										<Badge
+											variant={ticket.priority === "urgent" ? "destructive" : ticket.priority === "high" ? "default" : "secondary"}
+											className={`text-[10px] px-2 rounded-full ${ticket.priority === "high" ? "bg-warning text-warning-foreground" : ""}`}>
+											{ticket.priority}
+										</Badge>
+										<Badge
+											variant="outline"
+											className={`text-[10px] px-2 rounded-full ${
+												ticket.status === "open"
+													? "border-chart-1 text-chart-1"
+													: ticket.status === "pending"
+														? "border-warning text-warning"
+														: ticket.status === "resolved"
+															? "border-success text-success"
+															: ticket.status === "closed"
+																? "border-muted-foreground text-muted-foreground"
+																: ""
+											}`}>
+											{ticket.status}
+										</Badge>
+									</div>
+								</button>
+							);
+						})}
 					</div>
 				</CardContent>
 			</Card>

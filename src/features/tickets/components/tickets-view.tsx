@@ -7,6 +7,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ticketQueryKeys } from "../hooks/use-ticket-queries";
 import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
 import { useTeams } from "@/features/teams/hooks/use-team-queries";
+import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
+import { useCompanies } from "@/features/companies/hooks/use-company-queries";
 import { TicketsFilters } from "./tickets-filters";
 import { TicketsBulkActions } from "./tickets-bulk-actions";
 import { TicketsTable } from "./tickets-table";
@@ -36,6 +38,8 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 	const { data: allTickets = [] } = useTickets(workspaceId, {});
 	const { data: members = [] } = useWorkspaceMembers(workspaceId);
 	const { data: teams = [] } = useTeams(workspaceId);
+	const { data: contacts = [] } = useContacts(workspaceId);
+	const { data: companies = [] } = useCompanies(workspaceId);
 
 	const deleteTicket = useDeleteTicketMutation(workspaceId);
 
@@ -145,6 +149,8 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 				isLoading={isLoading}
 				members={members}
 				teams={teams}
+				contacts={contacts}
+				companies={companies}
 			/>
 
 			<DeleteTicketModal
