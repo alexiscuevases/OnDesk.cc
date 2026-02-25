@@ -23,7 +23,6 @@ import {
 	Heading1,
 	Heading2,
 	Heading3,
-	X,
 	Heading6,
 	Heading5,
 	Heading4,
@@ -36,15 +35,21 @@ import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
+interface MentionMember {
+	id: string;
+	name: string;
+}
+
 interface TiptapEditorProps {
 	content: string;
 	onChange: (content: string) => void;
 	placeholder?: string;
 	className?: string;
 	minHeight?: string;
+	members?: MentionMember[];
 }
 
-export function TiptapEditor({ content, onChange, placeholder = "Type your message...", className, minHeight = "min-h-[120px]" }: TiptapEditorProps) {
+export function TiptapEditor({ content, onChange, placeholder = "Type your message...", className, minHeight = "min-h-[120px]", members = [] }: TiptapEditorProps) {
 	const [linkDialogOpen, setLinkDialogOpen] = useState(false);
 	const [linkUrl, setLinkUrl] = useState("");
 	const [linkText, setLinkText] = useState("");
@@ -81,92 +86,79 @@ export function TiptapEditor({ content, onChange, placeholder = "Type your messa
 					class: "max-w-full h-auto rounded-lg my-2",
 				},
 			}),
-			Mention.configure({
-				HTMLAttributes: {
-					class: "text-primary bg-primary/10 rounded px-1",
-				},
-				suggestion: {
-					items: ({ query }) => {
-						const agents = ["Sarah Chen", "Michael Rodriguez", "Emma Thompson", "David Kim", "Lisa Anderson"];
-						return agents.filter((agent) => agent.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
-					},
-					render: () => {
-						let component: any;
-						let popup: any;
-
-						return {
-							onStart: (props: any) => {
-								component = document.createElement("div");
-								component.className = "bg-popover border border-border rounded-lg shadow-md p-1 max-h-60 overflow-auto";
-
-								const items = props.items;
-								if (items.length === 0) {
-									component.innerHTML = '<div class="px-2 py-1.5 text-xs text-muted-foreground">No agents found</div>';
-								} else {
-									component.innerHTML = items
-										.map(
-											(item: string) =>
-												`<div class="px-2 py-1.5 text-sm rounded hover:bg-secondary cursor-pointer" data-agent="${item}">${item}</div>`,
-										)
-										.join("");
-
-									component.querySelectorAll("[data-agent]").forEach((el: any, index: number) => {
-										el.addEventListener("click", () => {
-											props.command({ id: index, item: items[index] });
-										});
-									});
-								}
-
-								if (!props.clientRect) {
-									return;
-								}
-
-								popup = document.createElement("div");
-								popup.style.position = "absolute";
-								popup.style.zIndex = "50";
-								popup.appendChild(component);
-								document.body.appendChild(popup);
-
-								const rect = props.clientRect();
-								popup.style.top = `${rect.bottom + window.scrollY}px`;
-								popup.style.left = `${rect.left + window.scrollX}px`;
+			...(members.length > 0
+				? [
+						Mention.configure({
+							HTMLAttributes: {
+								class: "text-primary bg-primary/10 rounded px-1",
+								"data-mention": "true",
 							},
-							onUpdate: (props: any) => {
-								const items = props.items;
-								if (items.length === 0) {
-									component.innerHTML = '<div class="px-2 py-1.5 text-xs text-muted-foreground">No agents found</div>';
-								} else {
-									component.innerHTML = items
-										.map(
-											(item: string) =>
-												`<div class="px-2 py-1.5 text-sm rounded hover:bg-secondary cursor-pointer" data-agent="${item}">${item}</div>`,
-										)
-										.join("");
-
-									component.querySelectorAll("[data-agent]").forEach((el: any, index: number) => {
-										el.addEventListener("click", () => {
-											props.command({ id: index, item: items[index] });
-										});
-									});
-								}
-
-								if (!props.clientRect) {
-									return;
-								}
-
-								const rect = props.clientRect();
-								popup.style.top = `${rect.bottom + window.scrollY}px`;
-								popup.style.left = `${rect.left + window.scrollX}px`;
+							renderHTML({ node }: { node: any }) {
+								return ["span", { class: "text-primary bg-primary/10 rounded px-1", "data-mention": "true", "data-mention-id": node.attrs.id }, `@${node.attrs.label ?? node.attrs.id}`];
 							},
-							onExit: () => {
-								if (popup) {
-									popup.remove();
-								}
+							suggestion: {
+								items: ({ query }: { query: string }) => {
+									return members.filter((m) => m.name.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
+								},
+								render: () => {
+									let component: HTMLDivElement;
+									let popup: HTMLDivElement;
+
+									const buildList = (items: MentionMember[], props: any) => {
+										if (items.length === 0) {
+											component.innerHTML = '<div class="px-2 py-1.5 text-xs text-muted-foreground">No agents found</div>';
+										} else {
+											component.innerHTML = items
+												.map((m) => `<div class="px-2 py-1.5 text-sm rounded hover:bg-secondary cursor-pointer" data-id="${m.id}">${m.name}</div>`)
+												.join("");
+
+											component.querySelectorAll("[data-id]").forEach((el) => {
+												el.addEventListener("click", () => {
+													const id = (el as HTMLElement).dataset.id!;
+													const member = items.find((m) => m.id === id)!;
+													props.command({ id: member.id, label: member.name });
+												});
+											});
+										}
+									};
+
+									return {
+										onStart: (props: any) => {
+											component = document.createElement("div");
+											component.className = "bg-popover border border-border rounded-lg shadow-md p-1 max-h-60 overflow-auto";
+
+											buildList(props.items, props);
+
+											if (!props.clientRect) return;
+
+											popup = document.createElement("div");
+											popup.style.position = "absolute";
+											popup.style.zIndex = "50";
+											popup.appendChild(component);
+											document.body.appendChild(popup);
+
+											const rect = props.clientRect();
+											popup.style.top = `${rect.bottom + window.scrollY}px`;
+											popup.style.left = `${rect.left + window.scrollX}px`;
+										},
+										onUpdate: (props: any) => {
+											buildList(props.items, props);
+
+											if (!props.clientRect) return;
+
+											const rect = props.clientRect();
+											popup.style.top = `${rect.bottom + window.scrollY}px`;
+											popup.style.left = `${rect.left + window.scrollX}px`;
+										},
+										onExit: () => {
+											if (popup) popup.remove();
+										},
+									};
+								},
 							},
-						};
-					},
-				},
-			}),
+						}),
+					]
+				: []),
 		],
 		content,
 		onUpdate: ({ editor }) => {
@@ -269,7 +261,6 @@ export function TiptapEditor({ content, onChange, placeholder = "Type your messa
 
 	const insertImage = () => {
 		if (imageUrl) {
-			console.log("[v0] Inserting image with URL:", imageUrl.substring(0, 50) + "...");
 			editor
 				.chain()
 				.focus()
@@ -279,7 +270,6 @@ export function TiptapEditor({ content, onChange, placeholder = "Type your messa
 				})
 				.createParagraphNear()
 				.run();
-			console.log("[v0] Image inserted successfully");
 		}
 		setImageDialogOpen(false);
 		setImageUrl("");
@@ -449,7 +439,7 @@ export function TiptapEditor({ content, onChange, placeholder = "Type your messa
 					</Button>
 				</div>
 				<EditorContent editor={editor} />
-				<style jsx global>{`
+				<style>{`
 					.ProseMirror p.is-editor-empty:first-child::before {
 						color: hsl(var(--muted-foreground));
 						content: attr(data-placeholder);

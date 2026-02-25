@@ -22,10 +22,7 @@ function ShadowHtml({ html }: { html: string }) {
 		if (!host) return;
 		if (!host.shadowRoot) host.attachShadow({ mode: "open" });
 
-		const doc = new DOMParser().parseFromString(
-			`<div>${decodeHtmlEntities(html)}</div>`,
-			"text/html",
-		);
+		const doc = new DOMParser().parseFromString(`<div>${decodeHtmlEntities(html)}</div>`, "text/html");
 		const root = doc.body.firstElementChild!;
 
 		function wrapInCollapsible(nodes: Node[], anchor: Node) {
@@ -50,7 +47,10 @@ function ShadowHtml({ html }: { html: string }) {
 		if (sigBr) {
 			const trailing: Node[] = [];
 			let cur: Node | null = sigBr.nextSibling;
-			while (cur) { trailing.push(cur); cur = cur.nextSibling; }
+			while (cur) {
+				trailing.push(cur);
+				cur = cur.nextSibling;
+			}
 			if (trailing.length) {
 				for (const n of trailing) n.parentNode!.removeChild(n);
 				wrapInCollapsible(trailing, sigBr);
@@ -79,7 +79,16 @@ function ShadowHtml({ html }: { html: string }) {
 		}
 
 		const shadow = host.shadowRoot!;
-		shadow.innerHTML = root.outerHTML;
+		shadow.innerHTML =
+			`<style>
+				[data-mention] {
+				    color: var(--accent);
+    				background-color: var(--background);
+					border-radius: 4px;
+					padding: 0 4px;
+					font-weight: 500;
+				}
+			</style>` + root.outerHTML;
 
 		// Wire up toggles after innerHTML reset
 		for (const btn of Array.from(shadow.querySelectorAll("[data-quote-toggle]"))) {
@@ -166,9 +175,9 @@ export function TicketConversation({ messages, members, contact }: TicketConvers
 											}`}>
 											<div className="flex items-center gap-2 mb-1.5">
 												<div className="flex flex-col">
-												<span className="text-xs font-semibold">{authorName}</span>
-												{authorEmail && <span className="text-[10px] text-muted-foreground">{authorEmail}</span>}
-											</div>
+													<span className="text-xs font-semibold">{authorName}</span>
+													{authorEmail && <span className="text-[10px] text-muted-foreground">{authorEmail}</span>}
+												</div>
 												{isInternal && (
 													<Badge variant="outline" className="text-[9px] px-1.5 py-0 rounded-full border-warning text-warning">
 														<Eye className="size-2.5 mr-0.5" />

@@ -7,9 +7,10 @@ import { useSendMessageMutation } from "@/features/tickets/hooks/use-ticket-muta
 
 interface TicketReplyBoxProps {
 	ticketId: string;
+	members?: { id: string; name: string }[];
 }
 
-export function TicketReplyBox({ ticketId }: TicketReplyBoxProps) {
+export function TicketReplyBox({ ticketId, members = [] }: TicketReplyBoxProps) {
 	const [reply, setReply] = useState("");
 	const [isInternal, setIsInternal] = useState(false);
 
@@ -48,6 +49,7 @@ export function TicketReplyBox({ ticketId }: TicketReplyBoxProps) {
 					placeholder={isInternal ? "Write an internal note..." : "Type your reply..."}
 					className={isInternal ? "border-warning/30 bg-warning/5" : ""}
 					minHeight="min-h-[96px]"
+					members={members}
 				/>
 				<div className="flex items-center justify-between mt-3">
 					<Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5 text-muted-foreground rounded-lg">
