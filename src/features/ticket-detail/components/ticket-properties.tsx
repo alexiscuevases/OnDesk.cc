@@ -2,7 +2,6 @@ import { Tag, AlertCircle, User, Users, Mail, Calendar, Edit2 } from "lucide-rea
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { PriorityBadge } from "@/shared/components/priority-badge";
@@ -114,15 +113,16 @@ export function TicketProperties({
 							<Button
 								variant="ghost"
 								size="sm"
-								className="h-7 gap-1.5 -mr-2 hover:bg-secondary"
+								className="h-7 gap-2 -mr-2 hover:bg-secondary"
 								onClick={onEditTeam}>
-								{team ? (
-									<Badge variant="secondary" className="text-[10px] rounded-full px-2">
-										{team.name}
-									</Badge>
-								) : (
-									<span className="text-xs text-muted-foreground">No team</span>
-								)}
+								<div className="flex items-center gap-2">
+									<Avatar className="size-5 rounded-md">
+										<AvatarFallback className="rounded-md bg-primary text-primary-foreground text-[8px] font-bold">
+											{team ? getInitials(team.name) : "?"}
+										</AvatarFallback>
+									</Avatar>
+									<span className="text-xs font-medium">{team?.name ?? "No team"}</span>
+								</div>
 								<Edit2 className="size-3 text-muted-foreground" />
 							</Button>
 						</div>
