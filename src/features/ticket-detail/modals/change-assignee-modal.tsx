@@ -3,7 +3,8 @@ import { Search, User, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useWorkspace } from "@/context/workspace-context";
 import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
 
@@ -15,6 +16,7 @@ interface ChangeAssigneeModalProps {
 }
 
 export function ChangeAssigneeModal({ open, onOpenChange, workspaceId, onSave }: ChangeAssigneeModalProps) {
+	const { workspace } = useWorkspace();
 	const { data: members = [] } = useWorkspaceMembers(workspaceId);
 	const [search, setSearch] = useState("");
 	const [selected, setSelected] = useState<WorkspaceMember | null>(null);
@@ -73,6 +75,7 @@ export function ChangeAssigneeModal({ open, onOpenChange, workspaceId, onSave }:
 											selected?.id === member.id ? "bg-secondary" : ""
 										}`}>
 										<Avatar className="size-8 rounded-lg">
+											<AvatarImage src={member.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-lg" />
 											<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
 												{getInitials(member.name)}
 											</AvatarFallback>

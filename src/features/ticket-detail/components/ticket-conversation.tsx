@@ -2,11 +2,13 @@ import { MessageSquare, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { TicketMessage } from "@/features/tickets/api/tickets-api";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
 import type { Contact } from "@/features/contacts/api/contacts-api";
+import type { Workspace } from "@/features/workspaces/api/workspaces-api";
+import type { Company } from "@/features/companies/api/companies-api";
 
 function decodeHtmlEntities(str: string) {
 	const txt = document.createElement("textarea");
@@ -109,9 +111,11 @@ interface TicketConversationProps {
 	messages: TicketMessage[];
 	members: WorkspaceMember[];
 	contact: Contact | null;
+	workspace: Workspace;
+	companies: Company[];
 }
 
-export function TicketConversation({ messages, members, contact }: TicketConversationProps) {
+export function TicketConversation({ messages, members, contact, workspace, companies }: TicketConversationProps) {
 	function getAuthorName(msg: TicketMessage) {
 		if (msg.author_type === "agent") {
 			return members.find((m) => m.id === msg.author_id)?.name ?? "Agent";
@@ -124,6 +128,14 @@ export function TicketConversation({ messages, members, contact }: TicketConvers
 			return members.find((m) => m.id === msg.author_id)?.email ?? null;
 		}
 		return contact?.email ?? null;
+	}
+
+	function getAuthorAvatarSrc(msg: TicketMessage): string | undefined {
+		if (msg.author_type === "agent") {
+			const member = members.find((m) => m.id === msg.author_id);
+			return member?.logo_url ?? workspace.logo_url ?? undefined;
+		}
+		return contact?.logo_url ?? companies.find((c) => c.id === contact?.company_id)?.logo_url ?? undefined;
 	}
 
 	function getInitials(name: string) {
@@ -154,9 +166,11 @@ export function TicketConversation({ messages, members, contact }: TicketConvers
 							const isAgent = msg.author_type === "agent";
 							const authorName = getAuthorName(msg);
 							const authorEmail = getAuthorEmail(msg);
+							const avatarSrc = getAuthorAvatarSrc(msg);
 							return (
 								<div key={msg.id} className={`flex gap-3 ${isInternal ? "opacity-80" : ""}`}>
 									<Avatar className="size-8 rounded-lg shrink-0 mt-0.5">
+										<AvatarImage src={avatarSrc} className="object-cover rounded-lg" />
 										<AvatarFallback
 											className={`rounded-lg text-[10px] font-bold ${
 												isAgent ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"

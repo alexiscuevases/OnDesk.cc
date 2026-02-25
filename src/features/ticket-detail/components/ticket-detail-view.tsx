@@ -6,6 +6,7 @@ import { useUpdateTicketMutation, useDeleteTicketMutation } from "@/features/tic
 import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
 import { useTeams } from "@/features/teams/hooks/use-team-queries";
 import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
+import { useCompanies } from "@/features/companies/hooks/use-company-queries";
 import type { TicketStatus, TicketPriority } from "@/features/tickets/api/tickets-api";
 import { TicketDetailHeader } from "./ticket-detail-header";
 import { TicketConversation } from "./ticket-conversation";
@@ -36,6 +37,7 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 	const { data: members = [] } = useWorkspaceMembers(workspaceId);
 	const { data: teams = [] } = useTeams(workspaceId);
 	const { data: contacts = [] } = useContacts(workspaceId);
+	const { data: companies = [] } = useCompanies(workspaceId);
 
 	const updateTicket = useUpdateTicketMutation(ticketId, workspaceId);
 	const deleteTicket = useDeleteTicketMutation(workspaceId);
@@ -109,7 +111,7 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 
 			<div className="grid gap-6 lg:grid-cols-3">
 				<div className="lg:col-span-2 flex flex-col gap-4">
-					<TicketConversation messages={messages} members={members} contact={contact} />
+					<TicketConversation messages={messages} members={members} contact={contact} workspace={workspace} companies={companies} />
 					<TicketReplyBox ticketId={ticketId} members={members} />
 				</div>
 
@@ -118,6 +120,8 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 					assignee={assignee}
 					team={team}
 					contact={contact}
+					workspace={workspace}
+					companies={companies}
 					onEditStatus={() => setStatusOpen(true)}
 					onEditPriority={() => setPriorityOpen(true)}
 					onEditAssignee={() => setAssigneeOpen(true)}

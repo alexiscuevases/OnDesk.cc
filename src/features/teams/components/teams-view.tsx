@@ -6,7 +6,7 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -134,6 +134,7 @@ export function TeamsView() {
 									}`}>
 									<div className="flex items-center gap-3 mb-2">
 										<Avatar className="size-9 rounded-lg">
+											<AvatarImage src={team.logo_url ?? undefined} className="object-cover rounded-lg" />
 											<AvatarFallback
 												className={`rounded-lg text-xs font-bold ${
 													isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
@@ -278,6 +279,7 @@ export function TeamsView() {
 														{assignee ? (
 															<div className="flex items-center gap-1.5 mt-0.5">
 																<Avatar className="size-4 rounded-full">
+																	<AvatarImage src={assignee.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-full" />
 																	<AvatarFallback className="size-4 rounded-full bg-primary text-primary-foreground text-[8px] font-semibold">
 																		{assigneeInitials}
 																	</AvatarFallback>

@@ -3,8 +3,9 @@ import { Search, User, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
+import { useCompanies } from "@/features/companies/hooks/use-company-queries";
 import type { Contact } from "@/features/contacts/api/contacts-api";
 
 interface ChangeRequesterModalProps {
@@ -16,6 +17,7 @@ interface ChangeRequesterModalProps {
 
 export function ChangeRequesterModal({ open, onOpenChange, workspaceId, onSave }: ChangeRequesterModalProps) {
 	const { data: contacts = [] } = useContacts(workspaceId);
+	const { data: companies = [] } = useCompanies(workspaceId);
 	const [search, setSearch] = useState("");
 	const [selected, setSelected] = useState<Contact | null>(null);
 
@@ -76,6 +78,7 @@ export function ChangeRequesterModal({ open, onOpenChange, workspaceId, onSave }
 											selected?.id === contact.id ? "bg-secondary" : ""
 										}`}>
 										<Avatar className="size-8 rounded-lg">
+											<AvatarImage src={contact.logo_url ?? companies.find((c) => c.id === contact.company_id)?.logo_url ?? undefined} className="object-cover rounded-lg" />
 											<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[10px] font-bold">
 												{getInitials(contact.name)}
 											</AvatarFallback>

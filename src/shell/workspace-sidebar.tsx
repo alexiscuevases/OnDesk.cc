@@ -4,6 +4,7 @@ import { useAuth } from "@/context/auth-context";
 import { useWorkspace } from "@/context/workspace-context";
 import { useLogoutMutation } from "@/features/auth/hooks/use-auth-mutations";
 import { useWorkspaces } from "@/features/workspaces/hooks/use-workspace-queries";
+import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
 import {
 	Sidebar,
 	SidebarContent,
@@ -17,7 +18,7 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -36,6 +37,8 @@ export function WorkspaceSidebar() {
 	const routerState = useRouterState();
 	const currentPath = routerState.location.pathname;
 	const { data: workspaces = [] } = useWorkspaces();
+	const { data: members = [] } = useWorkspaceMembers(workspace.id);
+	const currentMember = members.find((m) => m.id === user?.id) ?? null;
 
 	const slug = workspace.slug;
 
@@ -86,9 +89,13 @@ export function WorkspaceSidebar() {
 						<DropdownMenuLabel className="text-xs text-muted-foreground">Your workspaces</DropdownMenuLabel>
 						{workspaces.map((ws) => (
 							<DropdownMenuItem key={ws.id} onClick={() => navigate({ to: "/w/$slug/overview", params: { slug: ws.slug } })} className="gap-2">
-								<div className="size-6 rounded-md bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-									{ws.name.slice(0, 2).toUpperCase()}
-								</div>
+								{ws.logo_url ? (
+									<img src={ws.logo_url} alt={ws.name} className="size-6 rounded-md object-cover" />
+								) : (
+									<div className="size-6 rounded-md bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+										{ws.name.slice(0, 2).toUpperCase()}
+									</div>
+								)}
 								<span className="flex-1 truncate">{ws.name}</span>
 								{ws.slug === slug && <ChevronRight className="size-3 text-muted-foreground" />}
 							</DropdownMenuItem>
@@ -141,6 +148,7 @@ export function WorkspaceSidebar() {
 									size="lg"
 									className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-lg">
 									<Avatar className="size-8 rounded-lg">
+										<AvatarImage src={currentMember?.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-lg" />
 										<AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
 											{userInitials}
 										</AvatarFallback>

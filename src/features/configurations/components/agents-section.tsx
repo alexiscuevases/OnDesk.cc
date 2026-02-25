@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useWorkspace } from "@/context/workspace-context";
 import { useWorkspaceMembers, useWorkspaceInvitations } from "@/features/users/hooks/use-user-queries";
 import { useUpdateMemberRoleMutation, useRemoveMemberMutation, useInviteAgentMutation, useCancelInvitationMutation } from "@/features/users/hooks/use-user-mutations";
@@ -88,6 +88,7 @@ export function AgentsSection() {
 							return (
 								<div key={member.id} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
 									<Avatar className="size-9 rounded-lg">
+										<AvatarImage src={member.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-lg" />
 										<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[11px] font-bold">
 											{initials}
 										</AvatarFallback>

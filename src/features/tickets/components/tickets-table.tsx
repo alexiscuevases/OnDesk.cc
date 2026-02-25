@@ -1,9 +1,10 @@
 import { MoreHorizontal, Eye, Trash2, SortAsc, ChevronLeft, ChevronRight } from "lucide-react";
+import { useWorkspace } from "@/context/workspace-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "@/shared/components/status-badge";
 import { PriorityBadge } from "@/shared/components/priority-badge";
@@ -36,14 +37,16 @@ export function TicketsTable({
 	members,
 	teams,
 }: TicketsTableProps) {
-	function getMemberName(id: string | null) {
-		if (!id) return "—";
-		return members.find((m) => m.id === id)?.name ?? "—";
+	const { workspace } = useWorkspace();
+
+	function getMember(id: string | null) {
+		if (!id) return null;
+		return members.find((m) => m.id === id) ?? null;
 	}
 
-	function getTeamName(id: string | null) {
+	function getTeam(id: string | null) {
 		if (!id) return null;
-		return teams.find((t) => t.id === id)?.name ?? null;
+		return teams.find((t) => t.id === id) ?? null;
 	}
 
 	function getInitials(name: string) {
@@ -89,8 +92,8 @@ export function TicketsTable({
 					</TableHeader>
 					<TableBody>
 						{tickets.map((ticket) => {
-							const assigneeName = getMemberName(ticket.assignee_id);
-							const teamName = getTeamName(ticket.team_id);
+							const assignee = getMember(ticket.assignee_id);
+							const team = getTeam(ticket.team_id);
 							return (
 								<TableRow key={ticket.id} className="hover:bg-secondary/40 transition-colors">
 									<TableCell className="pl-6" onClick={(e) => e.stopPropagation()}>
@@ -110,28 +113,30 @@ export function TicketsTable({
 										</div>
 									</TableCell>
 									<TableCell className="hidden lg:table-cell cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
-										{teamName ? (
+										{team ? (
 											<div className="flex items-center gap-2">
 												<Avatar className="size-7">
+													<AvatarImage src={team.logo_url ?? undefined} className="object-cover" />
 													<AvatarFallback className="text-[10px] bg-accent/80 text-accent-foreground font-semibold">
-														{getInitials(teamName)}
+														{getInitials(team.name)}
 													</AvatarFallback>
 												</Avatar>
-												<span className="text-xs">{teamName}</span>
+												<span className="text-xs">{team.name}</span>
 											</div>
 										) : (
 											<span className="text-xs text-muted-foreground">—</span>
 										)}
 									</TableCell>
 									<TableCell className="hidden sm:table-cell cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
-										{ticket.assignee_id ? (
+										{assignee ? (
 											<div className="flex items-center gap-2">
 												<Avatar className="size-7">
+													<AvatarImage src={assignee.logo_url ?? workspace.logo_url ?? undefined} className="object-cover" />
 													<AvatarFallback className="text-[10px] bg-accent/80 text-accent-foreground font-semibold">
-														{getInitials(assigneeName)}
+														{getInitials(assignee.name)}
 													</AvatarFallback>
 												</Avatar>
-												<span className="text-xs">{assigneeName}</span>
+												<span className="text-xs">{assignee.name}</span>
 											</div>
 										) : (
 											<span className="text-xs text-muted-foreground">—</span>

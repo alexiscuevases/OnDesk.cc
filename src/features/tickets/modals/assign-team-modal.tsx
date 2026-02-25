@@ -3,7 +3,7 @@ import { Search, Users, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTeams } from "@/features/teams/hooks/use-team-queries";
 import type { Team } from "@/features/teams/api/teams-api";
 
@@ -72,6 +72,7 @@ export function AssignTeamModal({ open, onOpenChange, selectedCount, workspaceId
 											selectedTeam?.id === team.id ? "bg-secondary" : ""
 										}`}>
 										<Avatar className="size-8 rounded-lg">
+											<AvatarImage src={team.logo_url ?? undefined} className="object-cover rounded-lg" />
 											<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
 												{getInitials(team.name)}
 											</AvatarFallback>

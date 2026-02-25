@@ -1,7 +1,7 @@
 import { Tag, AlertCircle, User, Users, Mail, Calendar, Edit2 } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { PriorityBadge } from "@/shared/components/priority-badge";
@@ -10,12 +10,16 @@ import type { Ticket } from "@/features/tickets/api/tickets-api";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
 import type { Team } from "@/features/teams/api/teams-api";
 import type { Contact } from "@/features/contacts/api/contacts-api";
+import type { Workspace } from "@/features/workspaces/api/workspaces-api";
+import type { Company } from "@/features/companies/api/companies-api";
 
 interface TicketPropertiesProps {
 	ticket: Ticket;
 	assignee: WorkspaceMember | null;
 	team: Team | null;
 	contact: Contact | null;
+	workspace: Workspace;
+	companies: Company[];
 	onEditStatus: () => void;
 	onEditPriority: () => void;
 	onEditAssignee: () => void;
@@ -28,6 +32,8 @@ export function TicketProperties({
 	assignee,
 	team,
 	contact,
+	workspace,
+	companies,
 	onEditStatus,
 	onEditPriority,
 	onEditAssignee,
@@ -93,6 +99,7 @@ export function TicketProperties({
 								onClick={onEditAssignee}>
 								<div className="flex items-center gap-2">
 									<Avatar className="size-5 rounded-md">
+										<AvatarImage src={assignee?.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-md" />
 										<AvatarFallback className="rounded-md bg-primary text-primary-foreground text-[8px] font-bold">
 											{assignee ? getInitials(assignee.name) : "?"}
 										</AvatarFallback>
@@ -117,6 +124,7 @@ export function TicketProperties({
 								onClick={onEditTeam}>
 								<div className="flex items-center gap-2">
 									<Avatar className="size-5 rounded-md">
+										<AvatarImage src={team?.logo_url ?? undefined} className="object-cover rounded-md" />
 										<AvatarFallback className="rounded-md bg-primary text-primary-foreground text-[8px] font-bold">
 											{team ? getInitials(team.name) : "?"}
 										</AvatarFallback>
@@ -156,6 +164,7 @@ export function TicketProperties({
 						<>
 							<div className="flex items-center gap-3 mb-3">
 								<Avatar className="size-10 rounded-xl">
+									<AvatarImage src={contact.logo_url ?? companies.find((c) => c.id === contact.company_id)?.logo_url ?? undefined} className="object-cover rounded-xl" />
 									<AvatarFallback className="rounded-xl bg-secondary text-secondary-foreground text-sm font-bold">
 										{getInitials(contact.name)}
 									</AvatarFallback>
