@@ -22,8 +22,75 @@ function ShadowHtml({ html }: { html: string }) {
 		if (!host) return;
 		if (!host.shadowRoot) host.attachShadow({ mode: "open" });
 
-		const decoded = decodeHtmlEntities(html);
-		host.shadowRoot!.innerHTML = `<div>${decoded}</div>`;
+		const doc = new DOMParser().parseFromString(
+			`<div>${decodeHtmlEntities(html)}</div>`,
+			"text/html",
+		);
+		const root = doc.body.firstElementChild!;
+
+		function wrapInCollapsible(nodes: Node[], anchor: Node) {
+			const wrapper = doc.createElement("div");
+			const toggle = doc.createElement("button");
+			const content = doc.createElement("div");
+			toggle.textContent = "··· Show quoted text";
+			toggle.style.cssText =
+				"display:inline-flex;align-items:center;font-size:11px;color:#888;" +
+				"background:transparent;border:1px solid #ddd;border-radius:6px;" +
+				"padding:2px 8px;cursor:pointer;margin-bottom:4px;";
+			content.style.cssText = "display:none;";
+			toggle.setAttribute("data-quote-toggle", "true");
+			content.setAttribute("data-quote-content", "true");
+			for (const n of nodes) content.appendChild(n);
+			wrapper.append(toggle, content);
+			(anchor as Element).replaceWith(wrapper);
+		}
+
+		// 1. Collapse signature + everything after <br id="lineBreakAtBeginningOfSignature">
+		const sigBr = root.querySelector("br#lineBreakAtBeginningOfSignature");
+		if (sigBr) {
+			const trailing: Node[] = [];
+			let cur: Node | null = sigBr.nextSibling;
+			while (cur) { trailing.push(cur); cur = cur.nextSibling; }
+			if (trailing.length) {
+				for (const n of trailing) n.parentNode!.removeChild(n);
+				wrapInCollapsible(trailing, sigBr);
+			} else {
+				sigBr.remove();
+			}
+		}
+
+		// 2. Collapse top-level blockquotes and common email quote wrappers
+		const quoteSelectors = [
+			"blockquote",
+			"[class*='gmail_quote']",
+			"[class*='moz-cite']",
+			"[id*='appendonsend']",
+			"[class*='yahoo_quoted']",
+			"[class*='OutlookMessageHeader']",
+			"[class*='BodyFragment']",
+		].join(",");
+
+		const seen: Element[] = [];
+		for (const el of Array.from(root.querySelectorAll(quoteSelectors))) {
+			if (!seen.some((s) => s.contains(el)) && !el.closest("[data-quote-content]")) {
+				seen.push(el);
+				wrapInCollapsible([el.cloneNode(true)], el);
+			}
+		}
+
+		const shadow = host.shadowRoot!;
+		shadow.innerHTML = root.outerHTML;
+
+		// Wire up toggles after innerHTML reset
+		for (const btn of Array.from(shadow.querySelectorAll("[data-quote-toggle]"))) {
+			const panel = btn.nextElementSibling as HTMLElement;
+			if (!panel) continue;
+			btn.addEventListener("click", () => {
+				const hidden = panel.style.display === "none";
+				panel.style.display = hidden ? "block" : "none";
+				btn.textContent = hidden ? "··· Hide quoted text" : "··· Show quoted text";
+			});
+		}
 	}, [html]);
 
 	return <div ref={hostRef} />;
