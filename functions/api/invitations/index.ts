@@ -5,6 +5,7 @@ import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
 import {
 	findUserByEmail,
+	findUserById,
 	isWorkspaceMember,
 	getWorkspaceMemberRole,
 	addWorkspaceMember,
@@ -12,6 +13,8 @@ import {
 	findPendingInvitationsByWorkspace,
 	findPendingInvitationByWorkspaceAndEmail,
 	updateInvitationStatus,
+	findWorkspaceMemberIds,
+	createNotification,
 } from "../../_lib/db";
 
 const INVITATION_TTL = 60 * 60 * 24 * 7; // 7 days
@@ -71,6 +74,24 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
 
 			// User exists but is not a member → add directly
 			await addWorkspaceMember(env.DB, workspace_id, existingUser.id, role);
+
+			// — Notification: new member joined — notify all existing workspace members
+			const memberIds = await findWorkspaceMemberIds(env.DB, workspace_id);
+			await Promise.all(
+				memberIds
+					.filter((uid) => uid !== existingUser.id)
+					.map((uid) =>
+						createNotification(env.DB, {
+							user_id: uid,
+							workspace_id: workspace_id,
+							type: "ticket",
+							title: "New member joined",
+							description: `${existingUser.name} joined the workspace.`,
+							actor_id: existingUser.id,
+						})
+					)
+			);
+
 			return jsonCreated({ added: true });
 		}
 

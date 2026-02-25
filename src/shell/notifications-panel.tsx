@@ -3,6 +3,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNotifications } from "@/context/notifications-context";
+import { useWorkspace } from "@/context/workspace-context";
+import { useRouter } from "@tanstack/react-router";
+import { useState } from "react";
 import type { Notification } from "@/features/notifications/api/notifications-api";
 
 function formatRelativeTime(timestamp: number): string {
@@ -52,12 +55,25 @@ function NotificationIcon({ type }: { type: Notification["type"] }) {
 	}
 }
 
+const TICKET_TYPES: Notification["type"][] = ["ticket", "assign", "resolved", "message", "sla"];
+
 export function NotificationsPanel() {
 	const { notifications, unreadCount, isLoading, markAllRead, dismissNotification, markAsRead } =
 		useNotifications();
+	const { workspace } = useWorkspace();
+	const router = useRouter();
+	const [open, setOpen] = useState(false);
+
+	function handleNotificationClick(notif: Notification) {
+		markAsRead(notif.id);
+		if (notif.resource_id && TICKET_TYPES.includes(notif.type)) {
+			setOpen(false);
+			router.navigate({ to: "/w/$slug/tickets/$id", params: { slug: workspace.slug, id: notif.resource_id } });
+		}
+	}
 
 	return (
-		<Popover>
+		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button variant="ghost" size="icon" className="relative size-8 rounded-lg">
 					<Bell className="size-4" />
@@ -103,14 +119,14 @@ export function NotificationsPanel() {
 						notifications.map((notif) => (
 							<div
 								key={notif.id}
-								className={`flex items-start gap-3 px-4 py-3 border-b last:border-0 transition-colors cursor-pointer hover:bg-secondary/50 ${
+								className={`flex items-start gap-3 px-4 py-3 border-b last:border-0 transition-colors hover:bg-secondary/50 ${
 									!notif.read ? "bg-primary/5" : ""
-								}`}
-								onClick={() => markAsRead(notif.id)}
+								} ${notif.resource_id && TICKET_TYPES.includes(notif.type) ? "cursor-pointer" : "cursor-default"}`}
+								onClick={() => handleNotificationClick(notif)}
 								role="button"
 								tabIndex={0}
 								onKeyDown={(e) => {
-									if (e.key === "Enter" || e.key === " ") markAsRead(notif.id);
+									if (e.key === "Enter" || e.key === " ") handleNotificationClick(notif);
 								}}>
 								<NotificationIcon type={notif.type} />
 								<div className="flex-1 min-w-0">
