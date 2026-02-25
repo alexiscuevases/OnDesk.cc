@@ -591,6 +591,8 @@ export async function updateTicket(
     assignee_id?: string | null;
     team_id?: string | null;
     contact_id?: string | null;
+    conversation_id?: string | null;
+    channel?: string | null;
   }
 ): Promise<void> {
   const fields: string[] = [];
@@ -601,6 +603,8 @@ export async function updateTicket(
   if (data.assignee_id !== undefined) { fields.push("assignee_id = ?"); values.push(data.assignee_id); }
   if (data.team_id !== undefined) { fields.push("team_id = ?"); values.push(data.team_id); }
   if (data.contact_id !== undefined) { fields.push("contact_id = ?"); values.push(data.contact_id); }
+  if (data.conversation_id !== undefined) { fields.push("conversation_id = ?"); values.push(data.conversation_id); }
+  if (data.channel !== undefined) { fields.push("channel = ?"); values.push(data.channel); }
   if (fields.length === 0) return;
   fields.push("updated_at = unixepoch()");
   values.push(ticketId);

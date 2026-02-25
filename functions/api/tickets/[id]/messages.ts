@@ -54,8 +54,8 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
       await updateTicket(env.DB, ticketId, updates);
     }
 
-    // Send email reply if the ticket came via email and this is not an internal note
-    if (ticket.channel === "email" && msgType === "message" && ticket.contact_id) {
+    // Send email reply if this is not an internal note and the ticket has a contact
+    if (msgType === "message" && ticket.contact_id) {
       try {
         const [contact, mailbox] = await Promise.all([
           findContactById(env.DB, ticket.contact_id),
@@ -85,25 +85,41 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
           }
 
           const lastInbound = await findLastInboundMessageByTicket(env.DB, ticketId);
+          let sentConversationId: string | undefined;
+
           if (lastInbound?.graph_message_id) {
             try {
               await replyGraphMail(token, lastInbound.graph_message_id, content.trim());
             } catch {
               // Fallback to sendMail if createReply fails (e.g. missing Mail.ReadWrite scope)
-              await sendGraphMail(
+              const result = await sendGraphMail(
                 token,
                 { name: contact.name, address: contact.email },
                 `Re: ${ticket.subject}`,
                 content.trim()
               );
+              sentConversationId = result.conversationId;
             }
           } else {
-            await sendGraphMail(
+            // No inbound message: either a manual ticket or first outbound message
+            const emailSubject = ticket.channel === "email"
+              ? `Re: ${ticket.subject}`
+              : ticket.subject;
+            const result = await sendGraphMail(
               token,
               { name: contact.name, address: contact.email },
-              `Re: ${ticket.subject}`,
+              emailSubject,
               content.trim()
             );
+            sentConversationId = result.conversationId;
+          }
+
+          // Persist conversationId + channel so inbound replies thread correctly
+          if (sentConversationId && !ticket.conversation_id) {
+            await updateTicket(env.DB, ticketId, {
+              conversation_id: sentConversationId,
+              channel: "email",
+            });
           }
         }
       } catch (emailErr) {

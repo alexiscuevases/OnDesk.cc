@@ -16,6 +16,9 @@ import { DeleteTicketModal } from "../modals/delete-ticket-modal";
 import { AssignAgentModal } from "../modals/assign-agent-modal";
 import { AssignTeamModal } from "../modals/assign-team-modal";
 import { MergeTicketModal } from "../modals/merge-ticket-modal";
+import { NewTicketModal } from "../modals/new-ticket-modal";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import type { TicketStatus } from "../api/tickets-api";
 
 export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => void }) {
@@ -28,6 +31,7 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 	const [priorityFilter, setPriorityFilter] = useState<string>("all");
 	const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
 
+	const [newTicketOpen, setNewTicketOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
 	const [mergeOpen, setMergeOpen] = useState(false);
 	const [assignAgentOpen, setAssignAgentOpen] = useState(false);
@@ -96,9 +100,15 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 
 	return (
 		<div className="flex flex-col gap-6">
-			<div>
-				<h1 className="text-2xl font-bold tracking-tight text-balance">Tickets</h1>
-				<p className="text-sm text-muted-foreground mt-1">Manage and track all customer support tickets</p>
+			<div className="flex items-start justify-between">
+				<div>
+					<h1 className="text-2xl font-bold tracking-tight text-balance">Tickets</h1>
+					<p className="text-sm text-muted-foreground mt-1">Manage and track all customer support tickets</p>
+				</div>
+				<Button onClick={() => setNewTicketOpen(true)}>
+					<Plus className="size-4" />
+					New Ticket
+				</Button>
 			</div>
 
 			{/* Summary Stats */}
@@ -153,6 +163,7 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 				companies={companies}
 			/>
 
+			<NewTicketModal open={newTicketOpen} onOpenChange={setNewTicketOpen} />
 			<DeleteTicketModal
 				open={deleteOpen}
 				onOpenChange={setDeleteOpen}

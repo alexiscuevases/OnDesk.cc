@@ -6,9 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DialogFooter } from "@/components/ui/dialog";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { newTicketSchema, type NewTicketFormValues } from "../schemas/ticket.schema";
 import { useTeams } from "@/features/teams/hooks/use-team-queries";
 import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
+import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
 
 interface NewTicketFormProps {
 	onSubmit: (values: NewTicketFormValues) => void;
@@ -20,11 +22,14 @@ interface NewTicketFormProps {
 export function NewTicketForm({ onSubmit, onCancel, isPending, workspaceId }: NewTicketFormProps) {
 	const { data: teams = [] } = useTeams(workspaceId);
 	const { data: contacts = [] } = useContacts(workspaceId);
+	const { data: members = [] } = useWorkspaceMembers(workspaceId);
 
 	const form = useForm({
 		defaultValues: {
 			subject: "",
+			body: "",
 			contact_id: "",
+			assignee_id: "",
 			priority: "medium" as const,
 			team_id: "",
 		},
@@ -61,11 +66,26 @@ export function NewTicketForm({ onSubmit, onCancel, isPending, workspaceId }: Ne
 					)}
 				</form.Field>
 
+				<form.Field name="body">
+					{(field) => (
+						<div className="grid gap-2">
+							<Label className="text-xs font-medium">Body</Label>
+							<TiptapEditor
+								content={field.state.value}
+								onChange={field.handleChange}
+								placeholder="Describe the issue in detail..."
+								minHeight="min-h-[120px]"
+								members={members.map((m) => ({ id: m.id, name: m.name }))}
+							/>
+						</div>
+					)}
+				</form.Field>
+
 				<div className="grid grid-cols-2 gap-4">
 					<form.Field name="contact_id">
 						{(field) => (
 							<div className="grid gap-2">
-								<Label className="text-xs font-medium">Requester</Label>
+								<Label className="text-xs font-medium">Contact</Label>
 								<Select value={field.state.value} onValueChange={field.handleChange}>
 									<SelectTrigger className="h-9 rounded-lg text-xs">
 										<SelectValue placeholder="Select contact..." />
@@ -82,6 +102,28 @@ export function NewTicketForm({ onSubmit, onCancel, isPending, workspaceId }: Ne
 						)}
 					</form.Field>
 
+					<form.Field name="assignee_id">
+						{(field) => (
+							<div className="grid gap-2">
+								<Label className="text-xs font-medium">Assignee</Label>
+								<Select value={field.state.value} onValueChange={field.handleChange}>
+									<SelectTrigger className="h-9 rounded-lg text-xs">
+										<SelectValue placeholder="Assign to agent..." />
+									</SelectTrigger>
+									<SelectContent>
+										{members.map((m) => (
+											<SelectItem key={m.id} value={m.id}>
+												{m.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+						)}
+					</form.Field>
+				</div>
+
+				<div className="grid grid-cols-2 gap-4">
 					<form.Field name="priority">
 						{(field) => (
 							<div className="grid gap-2">
@@ -100,27 +142,27 @@ export function NewTicketForm({ onSubmit, onCancel, isPending, workspaceId }: Ne
 							</div>
 						)}
 					</form.Field>
-				</div>
 
-				<form.Field name="team_id">
-					{(field) => (
-						<div className="grid gap-2">
-							<Label className="text-xs font-medium">Team</Label>
-							<Select value={field.state.value} onValueChange={field.handleChange}>
-								<SelectTrigger className="h-9 rounded-lg text-xs">
-									<SelectValue placeholder="Assign to team..." />
-								</SelectTrigger>
-								<SelectContent>
-									{teams.map((t) => (
-										<SelectItem key={t.id} value={t.id}>
-											{t.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-					)}
-				</form.Field>
+					<form.Field name="team_id">
+						{(field) => (
+							<div className="grid gap-2">
+								<Label className="text-xs font-medium">Team</Label>
+								<Select value={field.state.value} onValueChange={field.handleChange}>
+									<SelectTrigger className="h-9 rounded-lg text-xs">
+										<SelectValue placeholder="Assign to team..." />
+									</SelectTrigger>
+									<SelectContent>
+										{teams.map((t) => (
+											<SelectItem key={t.id} value={t.id}>
+												{t.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+						)}
+					</form.Field>
+				</div>
 			</div>
 
 			<DialogFooter>

@@ -5,7 +5,7 @@ interface FormModalProps {
 	onOpenChange: (open: boolean) => void;
 	title: string;
 	description: string;
-	maxWidth?: "sm:max-w-md" | "sm:max-w-lg";
+	maxWidth?: "sm:max-w-md" | "sm:max-w-lg" | "sm:max-w-xl";
 	children: React.ReactNode;
 }
 

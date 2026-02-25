@@ -202,39 +202,62 @@ export async function replyGraphMail(
 	}
 }
 
+export interface SendGraphMailResult {
+	conversationId: string;
+	internetMessageId: string;
+}
+
 export async function sendGraphMail(
 	accessToken: string,
 	to: { name: string; address: string },
 	subject: string,
 	bodyHtml: string,
 	inReplyToMessageId?: string
-): Promise<void> {
-	const message: Record<string, unknown> = {
+): Promise<SendGraphMailResult> {
+	const draftPayload: Record<string, unknown> = {
 		subject,
 		body: { contentType: "HTML", content: bodyHtml },
 		toRecipients: [{ emailAddress: { name: to.name, address: to.address } }],
 	};
 
 	if (inReplyToMessageId) {
-		message.internetMessageHeaders = [
+		draftPayload.internetMessageHeaders = [
 			{ name: "In-Reply-To", value: inReplyToMessageId },
 			{ name: "References", value: inReplyToMessageId },
 		];
 	}
 
-	const res = await fetch(`${GRAPH_BASE}/me/sendMail`, {
+	// Create as draft first so we can read conversationId before sending
+	const createRes = await fetch(`${GRAPH_BASE}/me/messages`, {
 		method: "POST",
 		headers: {
 			Authorization: `Bearer ${accessToken}`,
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({ message, saveToSentItems: true }),
+		body: JSON.stringify(draftPayload),
 	});
 
-	if (!res.ok) {
-		const err = await res.text();
+	if (!createRes.ok) {
+		const err = await createRes.text();
+		throw new Error(`Failed to create draft: ${err}`);
+	}
+
+	const draft = await createRes.json() as { id: string; conversationId: string; internetMessageId: string };
+
+	const sendRes = await fetch(`${GRAPH_BASE}/me/messages/${draft.id}/send`, {
+		method: "POST",
+		headers: { Authorization: `Bearer ${accessToken}` },
+	});
+
+	if (!sendRes.ok) {
+		const err = await sendRes.text();
 		throw new Error(`Failed to send email: ${err}`);
 	}
+
+	return {
+		conversationId: draft.conversationId,
+		internetMessageId: draft.internetMessageId,
+	};
 }
 
 export async function getGraphMessage(accessToken: string, messageId: string): Promise<GraphMessage> {
