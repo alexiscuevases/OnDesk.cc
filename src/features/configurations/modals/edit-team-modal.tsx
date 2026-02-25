@@ -2,17 +2,19 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { TeamForm } from "../forms/team-form";
 import { type TeamFormValues } from "../schemas/config.schema";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
+import { useTeamMembers } from "@/features/teams/hooks/use-team-queries";
+import type { Team } from "@/features/teams/api/teams-api";
 
 interface EditTeamModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	team: { id: string; name: string; description: string | null } | null;
+	team: Team | null;
 	agents: WorkspaceMember[];
 	onConfirm: (values: TeamFormValues) => void;
 }
 
-export function EditTeamModal({ open, onOpenChange, team, agents, onConfirm }: EditTeamModalProps) {
-	if (!team) return null;
+function EditTeamModalInner({ open, onOpenChange, team, agents, onConfirm }: Omit<EditTeamModalProps, "team"> & { team: Team }) {
+	const { data: members = [] } = useTeamMembers(team.id);
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -22,14 +24,13 @@ export function EditTeamModal({ open, onOpenChange, team, agents, onConfirm }: E
 					<DialogDescription>Update team information</DialogDescription>
 				</DialogHeader>
 				<TeamForm
-					key={team.id}
+					key={team.id + members.map((m) => m.id).join(",")}
 					defaultValues={{
 						name: team.name,
 						description: team.description ?? "",
-						image: "",
-						leaderId: "",
-						memberIds: [],
-						autoAssign: false,
+						logoUrl: team.logo_url ?? "",
+						leaderId: team.leader_id ?? "",
+						memberIds: members.map((m) => m.id),
 					}}
 					agents={agents}
 					submitLabel="Save Changes"
@@ -42,4 +43,9 @@ export function EditTeamModal({ open, onOpenChange, team, agents, onConfirm }: E
 			</DialogContent>
 		</Dialog>
 	);
+}
+
+export function EditTeamModal(props: EditTeamModalProps) {
+	if (!props.team) return null;
+	return <EditTeamModalInner {...props} team={props.team} />;
 }

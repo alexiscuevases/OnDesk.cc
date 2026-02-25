@@ -21,10 +21,7 @@ export function AddTeamModal({ open, onOpenChange, agents, onConfirm }: AddTeamM
 				<TeamForm
 					agents={agents}
 					submitLabel="Create Team"
-					onSubmit={(values) => {
-						onConfirm(values);
-						onOpenChange(false);
-					}}
+					onSubmit={(values) => onConfirm(values)}
 					onCancel={() => onOpenChange(false)}
 				/>
 			</DialogContent>

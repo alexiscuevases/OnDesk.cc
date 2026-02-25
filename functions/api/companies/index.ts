@@ -31,7 +31,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
     let body: unknown;
     try { body = await request.json(); } catch { return jsonError("Invalid JSON body"); }
 
-    const { name, domain, description } = body as Record<string, unknown>;
+    const { name, domain, description, logo_url } = body as Record<string, unknown>;
 
     if (typeof name !== "string" || name.trim().length === 0) {
       return jsonError("name is required");
@@ -41,6 +41,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
       name: name.trim(),
       domain: typeof domain === "string" ? domain.trim() || undefined : undefined,
       description: typeof description === "string" ? description.trim() || undefined : undefined,
+      logo_url: typeof logo_url === "string" ? logo_url.trim() || undefined : undefined,
     });
 
     return jsonCreated({ company });

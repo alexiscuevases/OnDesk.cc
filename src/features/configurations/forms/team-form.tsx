@@ -6,13 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DialogFooter } from "@/components/ui/dialog";
+import { LogoUpload } from "@/shared/components";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
 import { teamSchema, type TeamFormValues } from "../schemas/config.schema";
 
@@ -31,10 +31,9 @@ export function TeamForm({ defaultValues, agents, onSubmit, onCancel, submitLabe
 		defaultValues: {
 			name: defaultValues?.name ?? "",
 			description: defaultValues?.description ?? "",
-			image: defaultValues?.image ?? "",
+			logoUrl: defaultValues?.logoUrl ?? "",
 			leaderId: defaultValues?.leaderId ?? "",
 			memberIds: defaultValues?.memberIds ?? [],
-			autoAssign: defaultValues?.autoAssign ?? true,
 		},
 		onSubmit: async ({ value }) => onSubmit(value as TeamFormValues),
 		validators: { onChange: teamSchema },
@@ -48,6 +47,24 @@ export function TeamForm({ defaultValues, agents, onSubmit, onCancel, submitLabe
 				form.handleSubmit();
 			}}>
 			<div className="grid gap-4 py-4">
+				<form.Field name="logoUrl">
+					{(field) => {
+						const nameVal = form.getFieldValue("name");
+						const initials = nameVal
+							? nameVal.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase()
+							: "TM";
+						return (
+							<LogoUpload
+								label="Team Logo"
+								initials={initials}
+								currentUrl={field.state.value || null}
+								folder="teams"
+								onUpload={(url) => field.handleChange(url)}
+							/>
+						);
+					}}
+				</form.Field>
+
 				<form.Field name="name">
 					{(field) => (
 						<div className="grid gap-2">
@@ -81,24 +98,6 @@ export function TeamForm({ defaultValues, agents, onSubmit, onCancel, submitLabe
 								onBlur={field.handleBlur}
 								placeholder="Brief description of the team's responsibilities"
 								className="min-h-20 rounded-lg resize-none"
-							/>
-						</div>
-					)}
-				</form.Field>
-
-				<form.Field name="image">
-					{(field) => (
-						<div className="grid gap-2">
-							<Label htmlFor="team-image" className="text-xs font-medium">
-								Team Initials/Image
-							</Label>
-							<Input
-								id="team-image"
-								value={field.state.value}
-								onChange={(e) => field.handleChange(e.target.value.slice(0, 2).toUpperCase())}
-								placeholder="ES"
-								maxLength={2}
-								className="h-9 rounded-lg"
 							/>
 						</div>
 					)}
@@ -192,24 +191,6 @@ export function TeamForm({ defaultValues, agents, onSubmit, onCancel, submitLabe
 							</div>
 						);
 					}}
-				</form.Field>
-
-				<form.Field name="autoAssign">
-					{(field) => (
-						<div className="flex items-center justify-between pt-2">
-							<div>
-								<Label htmlFor="auto-assign" className="text-xs font-medium">
-									Auto-assign tickets
-								</Label>
-								<p className="text-[10px] text-muted-foreground">Automatically route tickets to this team</p>
-							</div>
-							<Switch
-								id="auto-assign"
-								checked={field.state.value}
-								onCheckedChange={field.handleChange}
-							/>
-						</div>
-					)}
 				</form.Field>
 			</div>
 

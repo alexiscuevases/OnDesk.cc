@@ -9,10 +9,9 @@ export type AgentFormValues = z.infer<typeof agentSchema>;
 export const teamSchema = z.object({
 	name: z.string().min(1, "Team name is required"),
 	description: z.string().optional().default(""),
-	image: z.string().optional().default(""),
+	logoUrl: z.string().optional().default(""),
 	leaderId: z.string().optional().default(""),
 	memberIds: z.array(z.string()).default([]),
-	autoAssign: z.boolean().default(true),
 });
 export type TeamFormValues = z.infer<typeof teamSchema>;
 

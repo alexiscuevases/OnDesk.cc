@@ -1,14 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sun, Moon, Monitor } from "lucide-react";
+import { Sun, Moon, Monitor, Save } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { useWorkspace } from "@/context/workspace-context";
+import { useUpdateWorkspaceMutation } from "@/features/workspaces/hooks/use-workspace-mutations";
+import { LogoUpload } from "@/shared/components";
 
 export function GeneralSection() {
+	const { workspace } = useWorkspace();
+	const updateWorkspace = useUpdateWorkspaceMutation(workspace.slug);
+
+	const [name, setName] = useState(workspace.name);
+	const [logoUrl, setLogoUrl] = useState(workspace.logo_url ?? "");
 	const [theme, setTheme] = useState<"light" | "dark" | "system">("light");
+
+	useEffect(() => {
+		setName(workspace.name);
+		setLogoUrl(workspace.logo_url ?? "");
+	}, [workspace.name, workspace.logo_url]);
 
 	useEffect(() => {
 		const root = document.documentElement;
@@ -18,13 +32,25 @@ export function GeneralSection() {
 			root.classList.remove("dark");
 		} else {
 			const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-			if (prefersDark) {
-				root.classList.add("dark");
-			} else {
-				root.classList.remove("dark");
-			}
+			if (prefersDark) root.classList.add("dark");
+			else root.classList.remove("dark");
 		}
 	}, [theme]);
+
+	function handleSave() {
+		if (!name.trim()) return;
+		updateWorkspace.mutate(
+			{ name: name.trim(), logo_url: logoUrl || undefined },
+			{
+				onSuccess: () => toast.success("Workspace settings saved"),
+				onError: (err) => toast.error(err.message),
+			},
+		);
+	}
+
+	const workspaceInitials = name
+		? name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+		: "WS";
 
 	return (
 		<div className="grid gap-4 md:grid-cols-2">
@@ -34,32 +60,36 @@ export function GeneralSection() {
 					<CardDescription className="text-xs">Basic workspace configuration</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
+					<LogoUpload
+						label="Workspace Logo"
+						initials={workspaceInitials}
+						currentUrl={logoUrl || null}
+						folder="workspaces"
+						onUpload={(url) => setLogoUrl(url)}
+					/>
 					<div className="space-y-2">
 						<Label htmlFor="workspace-name" className="text-xs">
 							Workspace Name
 						</Label>
-						<Input id="workspace-name" defaultValue="SupportDesk 365" className="h-9 rounded-lg" />
+						<Input
+							id="workspace-name"
+							value={name}
+							onChange={(e) => setName(e.target.value)}
+							className="h-9 rounded-lg"
+						/>
 					</div>
 					<div className="space-y-2">
-						<Label htmlFor="workspace-url" className="text-xs">
-							Workspace URL
-						</Label>
-						<Input id="workspace-url" defaultValue="supportdesk-365.microsoft.com" className="h-9 rounded-lg" />
+						<Label className="text-xs text-muted-foreground">Workspace URL</Label>
+						<Input value={workspace.slug} readOnly className="h-9 rounded-lg bg-muted text-muted-foreground" />
 					</div>
-					<div className="space-y-2">
-						<Label className="text-xs">Timezone</Label>
-						<Select defaultValue="utc-5">
-							<SelectTrigger className="h-9 rounded-lg text-xs">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="utc-8">Pacific Time (UTC-8)</SelectItem>
-								<SelectItem value="utc-5">Eastern Time (UTC-5)</SelectItem>
-								<SelectItem value="utc">UTC</SelectItem>
-								<SelectItem value="utc+1">CET (UTC+1)</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
+					<Button
+						size="sm"
+						className="h-8 gap-1.5 rounded-lg text-xs font-semibold"
+						onClick={handleSave}
+						disabled={updateWorkspace.isPending || !name.trim()}>
+						<Save className="size-3.5" />
+						{updateWorkspace.isPending ? "Saving..." : "Save Changes"}
+					</Button>
 				</CardContent>
 			</Card>
 

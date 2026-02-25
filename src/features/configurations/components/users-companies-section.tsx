@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -31,6 +31,7 @@ import { useCompanies } from "@/features/companies/hooks/use-company-queries";
 import { useCreateCompanyMutation, useUpdateCompanyMutation, useDeleteCompanyMutation } from "@/features/companies/hooks/use-company-mutations";
 import { useContacts, contactQueryKeys } from "@/features/contacts/hooks/use-contact-queries";
 import { apiUpdateContact } from "@/features/contacts/api/contacts-api";
+import { LogoUpload } from "@/shared/components";
 import type { Company } from "@/features/companies/api/companies-api";
 
 export function UsersCompaniesSection() {
@@ -43,7 +44,7 @@ export function UsersCompaniesSection() {
 
 	const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
 	const [companyDeleteOpen, setCompanyDeleteOpen] = useState(false);
-	const [companyForm, setCompanyForm] = useState({ name: "", description: "", domain: "" });
+	const [companyForm, setCompanyForm] = useState({ name: "", description: "", domain: "", logoUrl: "" });
 	const [selectedCompanyContacts, setSelectedCompanyContacts] = useState<string[]>([]);
 	const [companyContactSelectOpen, setCompanyContactSelectOpen] = useState(false);
 	const [editingCompany, setEditingCompany] = useState<Company | null>(null);
@@ -55,14 +56,14 @@ export function UsersCompaniesSection() {
 
 	function openAddCompany() {
 		setEditingCompany(null);
-		setCompanyForm({ name: "", description: "", domain: "" });
+		setCompanyForm({ name: "", description: "", domain: "", logoUrl: "" });
 		setSelectedCompanyContacts([]);
 		setCompanyDialogOpen(true);
 	}
 
 	function openEditCompany(company: Company) {
 		setEditingCompany(company);
-		setCompanyForm({ name: company.name, description: company.description ?? "", domain: company.domain ?? "" });
+		setCompanyForm({ name: company.name, description: company.description ?? "", domain: company.domain ?? "", logoUrl: company.logo_url ?? "" });
 		const ids = contacts.filter((c) => c.company_id === company.id).map((c) => c.id);
 		setSelectedCompanyContacts(ids);
 		setCompanyDialogOpen(true);
@@ -80,6 +81,7 @@ export function UsersCompaniesSection() {
 				name: companyForm.name,
 				description: companyForm.description || undefined,
 				domain: companyForm.domain || undefined,
+				logo_url: companyForm.logoUrl || null,
 			});
 			// Reconcile contact assignments
 			const previousIds = contacts.filter((c) => c.company_id === editingCompany.id).map((c) => c.id);
@@ -97,6 +99,7 @@ export function UsersCompaniesSection() {
 					name: companyForm.name,
 					description: companyForm.description || undefined,
 					domain: companyForm.domain || undefined,
+					logo_url: companyForm.logoUrl || undefined,
 				},
 				{
 					onSuccess: async (newCompany) => {
@@ -120,6 +123,10 @@ export function UsersCompaniesSection() {
 		await apiUpdateContact(contactId, { company_id: companyId });
 		queryClient.invalidateQueries({ queryKey: contactQueryKeys.all(workspace.id) });
 	}
+
+	const dialogInitials = companyForm.name
+		? companyForm.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+		: "CO";
 
 	return (
 		<>
@@ -166,6 +173,7 @@ export function UsersCompaniesSection() {
 									<div key={company.id} className="rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
 										<div className="flex items-center gap-3 mb-3">
 											<Avatar className="size-10 rounded-lg">
+												<AvatarImage src={company.logo_url ?? undefined} />
 												<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-bold">
 													{initials}
 												</AvatarFallback>
@@ -263,6 +271,13 @@ export function UsersCompaniesSection() {
 						<DialogDescription>{editingCompany ? "Update company information" : "Create a new company profile"}</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-4 py-4">
+						<LogoUpload
+							label="Company Logo"
+							initials={dialogInitials}
+							currentUrl={companyForm.logoUrl || null}
+							folder="companies"
+							onUpload={(url) => setCompanyForm((f) => ({ ...f, logoUrl: url }))}
+						/>
 						<div className="grid gap-2">
 							<Label htmlFor="company-name" className="text-xs font-medium">
 								Company Name

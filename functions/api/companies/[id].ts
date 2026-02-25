@@ -31,11 +31,12 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
     let body: unknown;
     try { body = await request.json(); } catch { return jsonError("Invalid JSON body"); }
 
-    const { name, domain, description } = body as Record<string, unknown>;
+    const { name, domain, description, logo_url } = body as Record<string, unknown>;
     await updateCompany(env.DB, companyId, {
       name: typeof name === "string" ? name.trim() : undefined,
       domain: typeof domain === "string" ? domain.trim() : undefined,
       description: typeof description === "string" ? description.trim() : undefined,
+      logo_url: logo_url === null ? null : typeof logo_url === "string" ? logo_url.trim() : undefined,
     });
     const updated = await findCompanyById(env.DB, companyId);
     return jsonOk({ company: updated });
