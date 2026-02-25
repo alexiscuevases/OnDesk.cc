@@ -3,7 +3,7 @@ import type { Env } from "../../_lib/types";
 import { verifyJwt } from "../../_lib/crypto";
 import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
-import { findSignaturesByUser, createSignature } from "../../_lib/db";
+import { findSignaturesByUser, createSignature, findWorkspacesByUserId } from "../../_lib/db";
 
 // GET  /api/signatures  — list caller's signatures
 // POST /api/signatures
@@ -29,7 +29,10 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
     if (typeof name !== "string" || name.trim().length === 0) return jsonError("name is required");
     if (typeof content !== "string" || content.trim().length === 0) return jsonError("content is required");
 
-    const signature = await createSignature(env.DB, payload.sub, {
+    const workspaces = await findWorkspacesByUserId(env.DB, payload.sub);
+    if (workspaces.length === 0) return jsonError("No workspace found", 400);
+
+    const signature = await createSignature(env.DB, payload.sub, workspaces[0].id, {
       name: name.trim(),
       content: content.trim(),
       is_default: is_default === true,

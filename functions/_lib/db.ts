@@ -772,6 +772,7 @@ export async function findSignatureById(
 export async function createSignature(
   db: D1Database,
   userId: string,
+  workspaceId: string,
   data: { name: string; content: string; is_default?: boolean }
 ): Promise<PublicSignature> {
   const id = crypto.randomUUID();
@@ -783,8 +784,8 @@ export async function createSignature(
       .run();
   }
   await db
-    .prepare("INSERT INTO signatures (id, created_by, name, content, is_default) VALUES (?, ?, ?, ?, ?)")
-    .bind(id, userId, data.name, data.content, isDefault)
+    .prepare("INSERT INTO signatures (id, created_by, workspace_id, name, content, is_default) VALUES (?, ?, ?, ?, ?, ?)")
+    .bind(id, userId, workspaceId, data.name, data.content, isDefault)
     .run();
   return toPublicSignature((await findSignatureById(db, id))!);
 }
