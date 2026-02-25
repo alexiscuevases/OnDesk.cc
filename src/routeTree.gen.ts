@@ -22,6 +22,7 @@ import { Route as AuthRecoverRouteImport } from './routes/auth/recover'
 import { Route as WSlugTicketsRouteImport } from './routes/w/$slug/tickets'
 import { Route as WSlugTeamsRouteImport } from './routes/w/$slug/teams'
 import { Route as WSlugSettingsRouteImport } from './routes/w/$slug/settings'
+import { Route as WSlugProfileRouteImport } from './routes/w/$slug/profile'
 import { Route as WSlugOverviewRouteImport } from './routes/w/$slug/overview'
 import { Route as WSlugAnalyticsRouteImport } from './routes/w/$slug/analytics'
 import { Route as WSlugTicketsIndexRouteImport } from './routes/w/$slug/tickets/index'
@@ -92,6 +93,11 @@ const WSlugSettingsRoute = WSlugSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => WSlugRoute,
 } as any)
+const WSlugProfileRoute = WSlugProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => WSlugRoute,
+} as any)
 const WSlugOverviewRoute = WSlugOverviewRouteImport.update({
   id: '/overview',
   path: '/overview',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/workspaces/': typeof WorkspacesIndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
   '/w/$slug/overview': typeof WSlugOverviewRoute
+  '/w/$slug/profile': typeof WSlugProfileRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
   '/w/$slug/teams': typeof WSlugTeamsRoute
   '/w/$slug/tickets': typeof WSlugTicketsRouteWithChildren
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/workspaces': typeof WorkspacesIndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
   '/w/$slug/overview': typeof WSlugOverviewRoute
+  '/w/$slug/profile': typeof WSlugProfileRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
   '/w/$slug/teams': typeof WSlugTeamsRoute
   '/w/$slug/tickets/$id': typeof WSlugTicketsIdRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   '/workspaces/': typeof WorkspacesIndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
   '/w/$slug/overview': typeof WSlugOverviewRoute
+  '/w/$slug/profile': typeof WSlugProfileRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
   '/w/$slug/teams': typeof WSlugTeamsRoute
   '/w/$slug/tickets': typeof WSlugTicketsRouteWithChildren
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
     | '/workspaces/'
     | '/w/$slug/analytics'
     | '/w/$slug/overview'
+    | '/w/$slug/profile'
     | '/w/$slug/settings'
     | '/w/$slug/teams'
     | '/w/$slug/tickets'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/workspaces'
     | '/w/$slug/analytics'
     | '/w/$slug/overview'
+    | '/w/$slug/profile'
     | '/w/$slug/settings'
     | '/w/$slug/teams'
     | '/w/$slug/tickets/$id'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/workspaces/'
     | '/w/$slug/analytics'
     | '/w/$slug/overview'
+    | '/w/$slug/profile'
     | '/w/$slug/settings'
     | '/w/$slug/teams'
     | '/w/$slug/tickets'
@@ -327,6 +339,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WSlugSettingsRouteImport
       parentRoute: typeof WSlugRoute
     }
+    '/w/$slug/profile': {
+      id: '/w/$slug/profile'
+      path: '/profile'
+      fullPath: '/w/$slug/profile'
+      preLoaderRoute: typeof WSlugProfileRouteImport
+      parentRoute: typeof WSlugRoute
+    }
     '/w/$slug/overview': {
       id: '/w/$slug/overview'
       path: '/overview'
@@ -389,6 +408,7 @@ const WSlugTicketsRouteWithChildren = WSlugTicketsRoute._addFileChildren(
 interface WSlugRouteChildren {
   WSlugAnalyticsRoute: typeof WSlugAnalyticsRoute
   WSlugOverviewRoute: typeof WSlugOverviewRoute
+  WSlugProfileRoute: typeof WSlugProfileRoute
   WSlugSettingsRoute: typeof WSlugSettingsRoute
   WSlugTeamsRoute: typeof WSlugTeamsRoute
   WSlugTicketsRoute: typeof WSlugTicketsRouteWithChildren
@@ -397,6 +417,7 @@ interface WSlugRouteChildren {
 const WSlugRouteChildren: WSlugRouteChildren = {
   WSlugAnalyticsRoute: WSlugAnalyticsRoute,
   WSlugOverviewRoute: WSlugOverviewRoute,
+  WSlugProfileRoute: WSlugProfileRoute,
   WSlugSettingsRoute: WSlugSettingsRoute,
   WSlugTeamsRoute: WSlugTeamsRoute,
   WSlugTicketsRoute: WSlugTicketsRouteWithChildren,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2 } from "lucide-react";
+import { Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2 } from "lucide-react";
 import { GeneralSection } from "./general-section";
 import { AgentsSection } from "./agents-section";
 import { IntegrationsSection } from "./integrations-section";
@@ -9,10 +9,9 @@ import { TeamsSection } from "./teams-section";
 import { CannedRepliesSection } from "./canned-replies-section";
 import { SignaturesSection } from "./signatures-section";
 import { UsersCompaniesSection } from "./users-companies-section";
-import { NotificationsSection } from "./notifications-section";
 import { SecuritySection } from "./security-section";
 
-type ConfigSection = "general" | "agents" | "integrations" | "teams" | "canned-replies" | "signatures" | "users-companies" | "notifications" | "security";
+type ConfigSection = "general" | "agents" | "integrations" | "teams" | "canned-replies" | "signatures" | "users-companies" | "security";
 
 const sections: { id: ConfigSection; label: string; icon: typeof Globe; desc: string }[] = [
 	{ id: "general", label: "General", icon: Globe, desc: "Workspace settings and branding" },
@@ -22,7 +21,6 @@ const sections: { id: ConfigSection; label: string; icon: typeof Globe; desc: st
 	{ id: "canned-replies", label: "Canned Replies", icon: MessageSquareText, desc: "Quick response templates" },
 	{ id: "signatures", label: "Signatures", icon: FileSignature, desc: "Email signatures for agents" },
 	{ id: "users-companies", label: "Users & Companies", icon: Building2, desc: "Customer management" },
-	{ id: "notifications", label: "Notifications", icon: Bell, desc: "Alert and notification rules" },
 	{ id: "security", label: "Security", icon: Shield, desc: "Authentication and access controls" },
 ];
 
@@ -71,7 +69,6 @@ export function ConfigurationsView() {
 					{activeSection === "canned-replies" && <CannedRepliesSection />}
 					{activeSection === "signatures" && <SignaturesSection />}
 					{activeSection === "users-companies" && <UsersCompaniesSection />}
-					{activeSection === "notifications" && <NotificationsSection />}
 					{activeSection === "security" && <SecuritySection />}
 				</div>
 			</div>

@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Ticket, Users, BarChart3, Settings, ChevronDown, ChevronRight, Building2, Plus } from "lucide-react";
+import { LayoutDashboard, Ticket, Users, BarChart3, Settings, ChevronDown, ChevronRight, Building2, Plus, UserCircle, Palette, LogOut, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useWorkspace } from "@/context/workspace-context";
 import { useLogoutMutation } from "@/features/auth/hooks/use-auth-mutations";
@@ -160,12 +160,36 @@ export function WorkspaceSidebar() {
 									<ChevronDown className="ml-auto size-4 text-sidebar-foreground/40" />
 								</SidebarMenuButton>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent className="w-56" side="top" align="start" sideOffset={4}>
-								<DropdownMenuItem>Profile</DropdownMenuItem>
-								<DropdownMenuItem>Account Settings</DropdownMenuItem>
+							<DropdownMenuContent className="w-60" side="top" align="start" sideOffset={4}>
+								<div className="px-2 py-2.5 border-b mb-1">
+									<p className="text-xs font-semibold truncate">{user?.name ?? "..."}</p>
+									<p className="text-[10px] text-muted-foreground truncate">{user?.email ?? ""}</p>
+								</div>
+								<DropdownMenuItem
+									onClick={() => navigate({ to: "/w/$slug/profile", params: { slug } })}
+									className="gap-2.5 text-xs">
+									<UserCircle className="size-3.5 text-muted-foreground" />
+									Profile
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => navigate({ to: "/w/$slug/profile", params: { slug } })}
+									className="gap-2.5 text-xs">
+									<Palette className="size-3.5 text-muted-foreground" />
+									Appearance
+								</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => navigate({ to: "/w/$slug/profile", params: { slug } })}
+									className="gap-2.5 text-xs">
+									<ShieldCheck className="size-3.5 text-muted-foreground" />
+									Security
+								</DropdownMenuItem>
 								<DropdownMenuSeparator />
-								<DropdownMenuItem onClick={() => logoutMutation.mutate()} disabled={logoutMutation.isPending}>
-									{logoutMutation.isPending ? "Signing out..." : "Sign Out"}
+								<DropdownMenuItem
+									onClick={() => logoutMutation.mutate()}
+									disabled={logoutMutation.isPending}
+									className="gap-2.5 text-xs text-destructive focus:text-destructive">
+									<LogOut className="size-3.5" />
+									{logoutMutation.isPending ? "Signing out..." : "Sign out"}
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
