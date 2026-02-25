@@ -111,7 +111,7 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 
 			<div className="grid gap-6 lg:grid-cols-3">
 				<div className="lg:col-span-2 flex flex-col gap-4">
-					<TicketConversation messages={messages} members={members} contact={contact} workspace={workspace} companies={companies} />
+					<TicketConversation messages={messages} members={members} contacts={contacts} workspace={workspace} companies={companies} />
 					<TicketReplyBox ticketId={ticketId} members={members} />
 				</div>
 

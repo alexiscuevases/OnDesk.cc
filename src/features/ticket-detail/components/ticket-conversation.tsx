@@ -110,24 +110,29 @@ function ShadowHtml({ html }: { html: string }) {
 interface TicketConversationProps {
 	messages: TicketMessage[];
 	members: WorkspaceMember[];
-	contact: Contact | null;
+	contacts: Contact[];
 	workspace: Workspace;
 	companies: Company[];
 }
 
-export function TicketConversation({ messages, members, contact, workspace, companies }: TicketConversationProps) {
+export function TicketConversation({ messages, members, contacts, workspace, companies }: TicketConversationProps) {
+	function getMsgContact(msg: TicketMessage): Contact | null {
+		if (!msg.contact_id) return null;
+		return contacts.find((c) => c.id === msg.contact_id) ?? null;
+	}
+
 	function getAuthorName(msg: TicketMessage) {
 		if (msg.author_type === "agent") {
 			return members.find((m) => m.id === msg.author_id)?.name ?? "Agent";
 		}
-		return contact?.name ?? "Contact";
+		return getMsgContact(msg)?.name ?? "Contact";
 	}
 
 	function getAuthorEmail(msg: TicketMessage) {
 		if (msg.author_type === "agent") {
 			return members.find((m) => m.id === msg.author_id)?.email ?? null;
 		}
-		return contact?.email ?? null;
+		return getMsgContact(msg)?.email ?? null;
 	}
 
 	function getAuthorAvatarSrc(msg: TicketMessage): string | undefined {
@@ -135,7 +140,8 @@ export function TicketConversation({ messages, members, contact, workspace, comp
 			const member = members.find((m) => m.id === msg.author_id);
 			return member?.logo_url ?? workspace.logo_url ?? undefined;
 		}
-		return contact?.logo_url ?? companies.find((c) => c.id === contact?.company_id)?.logo_url ?? undefined;
+		const msgContact = getMsgContact(msg);
+		return msgContact?.logo_url ?? companies.find((c) => c.id === msgContact?.company_id)?.logo_url ?? undefined;
 	}
 
 	function getInitials(name: string) {

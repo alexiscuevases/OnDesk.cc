@@ -19,6 +19,7 @@ export interface Ticket {
 export interface TicketMessage {
 	id: string;
 	ticket_id: string;
+	contact_id: string | null;
 	author_id: string;
 	author_type: AuthorType;
 	type: MessageType;

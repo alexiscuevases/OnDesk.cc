@@ -647,6 +647,7 @@ export async function createTicketMessage(
   db: D1Database,
   data: {
     ticket_id: string;
+    contact_id?: string | null;
     author_id: string;
     author_type: AuthorType;
     type: MessageType;
@@ -657,9 +658,9 @@ export async function createTicketMessage(
   const id = crypto.randomUUID();
   await db
     .prepare(
-      "INSERT INTO ticket_messages (id, ticket_id, author_id, author_type, type, content, graph_message_id) VALUES (?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO ticket_messages (id, ticket_id, contact_id, author_id, author_type, type, content, graph_message_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     )
-    .bind(id, data.ticket_id, data.author_id, data.author_type, data.type, data.content, data.graph_message_id ?? null)
+    .bind(id, data.ticket_id, data.contact_id ?? null, data.author_id, data.author_type, data.type, data.content, data.graph_message_id ?? null)
     .run();
   // bump ticket updated_at
   await db

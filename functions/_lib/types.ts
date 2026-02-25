@@ -218,6 +218,7 @@ export type AuthorType = "agent" | "contact";
 export interface TicketMessageRow {
 	id: string;
 	ticket_id: string;
+	contact_id: string | null;
 	author_id: string;
 	author_type: AuthorType;
 	type: MessageType;
@@ -229,6 +230,7 @@ export interface TicketMessageRow {
 export interface PublicTicketMessage {
 	id: string;
 	ticket_id: string;
+	contact_id: string | null;
 	author_id: string;
 	author_type: AuthorType;
 	type: MessageType;

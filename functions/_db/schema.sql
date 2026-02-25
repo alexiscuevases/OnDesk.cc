@@ -141,6 +141,7 @@ CREATE INDEX IF NOT EXISTS idx_tickets_conversation_id ON tickets(conversation_i
 CREATE TABLE IF NOT EXISTS ticket_messages (
   id               TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
   ticket_id        TEXT NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+  contact_id       TEXT REFERENCES contacts(id) ON DELETE SET NULL,
   author_id        TEXT NOT NULL,
   author_type      TEXT NOT NULL DEFAULT 'agent',
   type             TEXT NOT NULL DEFAULT 'message',
