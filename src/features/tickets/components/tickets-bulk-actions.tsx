@@ -47,7 +47,7 @@ export function TicketsBulkActions({
 							size="sm"
 							className="h-8 gap-1.5 rounded-lg text-xs"
 							onClick={onMerge}
-							disabled={selectedCount < 2}>
+							disabled={selectedCount < 1}>
 							<Merge className="size-3.5" />
 							Merge
 						</Button>

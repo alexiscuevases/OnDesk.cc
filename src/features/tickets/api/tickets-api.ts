@@ -132,6 +132,21 @@ export async function apiGetTicketMessages(ticketId: string): Promise<TicketMess
 	return data.messages;
 }
 
+export async function apiMergeTickets(targetId: string, sourceIds: string[]): Promise<Ticket> {
+	const res = await fetch(`${API_BASE}/${targetId}/merge`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		credentials: "include",
+		body: JSON.stringify({ source_ids: sourceIds }),
+	});
+	if (!res.ok) {
+		const err = (await res.json()) as { error: string };
+		throw new Error(err.error ?? "Failed to merge tickets");
+	}
+	const data = (await res.json()) as { ticket: Ticket };
+	return data.ticket;
+}
+
 export async function apiCreateTicketMessage(
 	ticketId: string,
 	input: CreateMessageInput

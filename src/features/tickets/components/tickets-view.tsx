@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useWorkspace } from "@/context/workspace-context";
 import { useTickets } from "../hooks/use-ticket-queries";
 import { useDeleteTicketMutation } from "../hooks/use-ticket-mutations";
-import { apiUpdateTicket } from "../api/tickets-api";
+import { apiUpdateTicket, apiMergeTickets } from "../api/tickets-api";
 import { useQueryClient } from "@tanstack/react-query";
 import { ticketQueryKeys } from "../hooks/use-ticket-queries";
 import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
@@ -83,9 +83,11 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 		setAssignAgentOpen(false);
 	}
 
-	function handleMergeConfirm(_targetTicketId: string) {
-		// TODO: implement merge API when available
+	async function handleMergeConfirm(targetTicketId: string) {
+		await apiMergeTickets(targetTicketId, selectedTickets);
+		queryClient.invalidateQueries({ queryKey: ticketQueryKeys.all(workspaceId) });
 		setSelectedTickets([]);
+		setMergeOpen(false);
 	}
 
 	return (
