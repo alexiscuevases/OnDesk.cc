@@ -31,10 +31,11 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
     let body: unknown;
     try { body = await request.json(); } catch { return jsonError("Invalid JSON body"); }
 
-    const { name, content } = body as Record<string, unknown>;
+    const { name, content, shortcut } = body as Record<string, unknown>;
     await updateCannedReply(env.DB, replyId, {
       name: typeof name === "string" ? name.trim() : undefined,
       content: typeof content === "string" ? content.trim() : undefined,
+      shortcut: typeof shortcut === "string" ? (shortcut.trim().length > 0 ? shortcut.trim() : null) : undefined,
     });
     const updated = await findCannedReplyById(env.DB, replyId);
     return jsonOk({ canned_reply: updated });

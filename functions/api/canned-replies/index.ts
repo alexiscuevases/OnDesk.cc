@@ -31,7 +31,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
     let body: unknown;
     try { body = await request.json(); } catch { return jsonError("Invalid JSON body"); }
 
-    const { name, content } = body as Record<string, unknown>;
+    const { name, content, shortcut } = body as Record<string, unknown>;
 
     if (typeof name !== "string" || name.trim().length === 0) return jsonError("name is required");
     if (typeof content !== "string" || content.trim().length === 0) return jsonError("content is required");
@@ -39,6 +39,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
     const reply = await createCannedReply(env.DB, workspaceId, payload.sub, {
       name: name.trim(),
       content: content.trim(),
+      shortcut: typeof shortcut === "string" && shortcut.trim().length > 0 ? shortcut.trim() : undefined,
     });
 
     return jsonCreated({ canned_reply: reply });

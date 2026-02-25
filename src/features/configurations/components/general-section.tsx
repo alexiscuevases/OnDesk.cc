@@ -16,13 +16,15 @@ export function GeneralSection() {
 	const updateWorkspace = useUpdateWorkspaceMutation(workspace.slug);
 
 	const [name, setName] = useState(workspace.name);
+	const [description, setDescription] = useState(workspace.description ?? "");
 	const [logoUrl, setLogoUrl] = useState(workspace.logo_url ?? "");
 	const [theme, setTheme] = useState<"light" | "dark" | "system">("light");
 
 	useEffect(() => {
 		setName(workspace.name);
+		setDescription(workspace.description ?? "");
 		setLogoUrl(workspace.logo_url ?? "");
-	}, [workspace.name, workspace.logo_url]);
+	}, [workspace.name, workspace.description, workspace.logo_url]);
 
 	useEffect(() => {
 		const root = document.documentElement;
@@ -40,7 +42,7 @@ export function GeneralSection() {
 	function handleSave() {
 		if (!name.trim()) return;
 		updateWorkspace.mutate(
-			{ name: name.trim(), logo_url: logoUrl || undefined },
+			{ name: name.trim(), description: description.trim() || undefined, logo_url: logoUrl || undefined },
 			{
 				onSuccess: () => toast.success("Workspace settings saved"),
 				onError: (err) => toast.error(err.message),
@@ -79,7 +81,19 @@ export function GeneralSection() {
 						/>
 					</div>
 					<div className="space-y-2">
-						<Label className="text-xs text-muted-foreground">Workspace URL</Label>
+						<Label htmlFor="workspace-description" className="text-xs">
+							Description
+						</Label>
+						<Input
+							id="workspace-description"
+							value={description}
+							onChange={(e) => setDescription(e.target.value)}
+							placeholder="Optional workspace description"
+							className="h-9 rounded-lg"
+						/>
+					</div>
+					<div className="space-y-2">
+						<Label className="text-xs text-muted-foreground">Workspace Slug</Label>
 						<Input value={workspace.slug} readOnly className="h-9 rounded-lg bg-muted text-muted-foreground" />
 					</div>
 					<Button
