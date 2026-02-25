@@ -1,18 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { User, KeyRound, Palette, ShieldCheck, ChevronRight } from "lucide-react";
+import { User, KeyRound, Palette, ShieldCheck, Bell, ChevronRight } from "lucide-react";
 import { ProfileInfoSection } from "./profile-info-section";
 import { AccountSection } from "./account-section";
 import { AppearanceSection } from "./appearance-section";
 import { ProfileSecuritySection } from "./profile-security-section";
+import { ProfileNotificationsSection } from "./profile-notifications-section";
 
-type ProfileSection = "profile" | "account" | "appearance" | "security";
+type ProfileSection = "profile" | "account" | "appearance" | "security" | "notifications";
 
 const sections: { id: ProfileSection; label: string; icon: typeof User; desc: string }[] = [
 	{ id: "profile", label: "Profile", icon: User, desc: "Your name, photo and bio" },
 	{ id: "account", label: "Account", icon: KeyRound, desc: "Email, password and danger zone" },
 	{ id: "appearance", label: "Appearance", icon: Palette, desc: "Theme, density and language" },
+	{ id: "notifications", label: "Notifications", icon: Bell, desc: "Email and push preferences" },
 	{ id: "security", label: "Security", icon: ShieldCheck, desc: "2FA and active sessions" },
 ];
 
@@ -57,6 +59,7 @@ export function ProfileView() {
 					{activeSection === "profile" && <ProfileInfoSection />}
 					{activeSection === "account" && <AccountSection />}
 					{activeSection === "appearance" && <AppearanceSection />}
+					{activeSection === "notifications" && <ProfileNotificationsSection />}
 					{activeSection === "security" && <ProfileSecuritySection />}
 				</div>
 			</div>
