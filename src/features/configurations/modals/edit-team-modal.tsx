@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormModal } from "@/shared/components";
 import { TeamForm } from "../forms/team-form";
 import { type TeamFormValues } from "../schemas/config.schema";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
@@ -17,31 +17,30 @@ function EditTeamModalInner({ open, onOpenChange, team, agents, onConfirm }: Omi
 	const { data: members = [] } = useTeamMembers(team.id);
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Edit Team</DialogTitle>
-					<DialogDescription>Update team information</DialogDescription>
-				</DialogHeader>
-				<TeamForm
-					key={team.id + members.map((m) => m.id).join(",")}
-					defaultValues={{
-						name: team.name,
-						description: team.description ?? "",
-						logoUrl: team.logo_url ?? "",
-						leaderId: team.leader_id ?? "",
-						memberIds: members.map((m) => m.id),
-					}}
-					agents={agents}
-					submitLabel="Save Changes"
-					onSubmit={(values) => {
-						onConfirm(values);
-						onOpenChange(false);
-					}}
-					onCancel={() => onOpenChange(false)}
-				/>
-			</DialogContent>
-		</Dialog>
+		<FormModal
+			open={open}
+			onOpenChange={onOpenChange}
+			title="Edit Team"
+			description="Update team information"
+			maxWidth="sm:max-w-lg">
+			<TeamForm
+				key={team.id + members.map((m) => m.id).join(",")}
+				defaultValues={{
+					name: team.name,
+					description: team.description ?? "",
+					logoUrl: team.logo_url ?? "",
+					leaderId: team.leader_id ?? "",
+					memberIds: members.map((m) => m.id),
+				}}
+				agents={agents}
+				submitLabel="Save Changes"
+				onSubmit={(values) => {
+					onConfirm(values);
+					onOpenChange(false);
+				}}
+				onCancel={() => onOpenChange(false)}
+			/>
+		</FormModal>
 	);
 }
 

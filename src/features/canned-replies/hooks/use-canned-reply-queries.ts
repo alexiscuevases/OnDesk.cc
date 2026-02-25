@@ -1,23 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { createWorkspaceScopedQueryHooks } from "@/lib/crud-hooks";
 import { apiGetCannedReplies, apiGetCannedReply } from "../api/canned-replies-api";
 
-export const cannedReplyQueryKeys = {
-	all: (workspaceId: string) => ["canned-replies", workspaceId] as const,
-	detail: (id: string) => ["canned-replies", id] as const,
-};
+const { queryKeys, useAll, useById } = createWorkspaceScopedQueryHooks(
+	"canned-replies",
+	{ getAll: apiGetCannedReplies, getById: apiGetCannedReply }
+);
 
-export function useCannedReplies(workspaceId: string) {
-	return useQuery({
-		queryKey: cannedReplyQueryKeys.all(workspaceId),
-		queryFn: () => apiGetCannedReplies(workspaceId),
-		staleTime: 1000 * 60 * 5,
-	});
-}
-
-export function useCannedReply(id: string) {
-	return useQuery({
-		queryKey: cannedReplyQueryKeys.detail(id),
-		queryFn: () => apiGetCannedReply(id),
-		staleTime: 1000 * 60 * 5,
-	});
-}
+export const cannedReplyQueryKeys = queryKeys;
+export const useCannedReplies = useAll;
+export const useCannedReply = useById;

@@ -1,10 +1,7 @@
-import type { PagesFunction } from "@cloudflare/workers-types";
-import type { Env } from "../../_lib/types";
-import { verifyJwt } from "../../_lib/crypto";
-import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonError } from "../../_lib/response";
 import { findTicketById, updateTicket, deleteTicket, isWorkspaceMember, findUserById, createNotification } from "../../_lib/db";
 import type { TicketStatus, TicketPriority } from "../../_lib/types";
+import { withAuth } from "../../_lib/middleware";
 
 const VALID_STATUSES: TicketStatus[] = ["open", "pending", "resolved", "closed"];
 const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
@@ -12,15 +9,8 @@ const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
 // GET  /api/tickets/:id
 // PATCH /api/tickets/:id
 // DELETE /api/tickets/:id
-export const onRequest: PagesFunction<Env> = async ({ request, env, params }) => {
-	const cookies = parseCookies(request.headers.get("Cookie"));
-	const accessToken = cookies[ACCESS_TOKEN_COOKIE];
-	if (!accessToken) return jsonError("Not authenticated", 401);
-
-	const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-	if (!payload) return jsonError("Invalid or expired token", 401);
-
-	const ticketId = params.id as string;
+export const onRequest = withAuth<"id">(async ({ request, env, payload, params }) => {
+	const ticketId = params.id;
 	const ticket = await findTicketById(env.DB, ticketId);
 	if (!ticket) return jsonError("Ticket not found", 404);
 
@@ -124,4 +114,4 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
 	}
 
 	return jsonError("Method not allowed", 405);
-};
+});

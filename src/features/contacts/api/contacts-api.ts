@@ -1,3 +1,5 @@
+import { createWorkspaceScopedApi } from "@/lib/crud-api";
+
 export interface Contact {
 	id: string;
 	workspace_id: string;
@@ -25,66 +27,14 @@ export interface UpdateContactInput {
 	logo_url?: string | null;
 }
 
-const API_BASE = "/api/contacts";
+const _api = createWorkspaceScopedApi<Contact, CreateContactInput, UpdateContactInput>({
+	basePath: "/api/contacts",
+	listKey: "contacts",
+	itemKey: "contact",
+});
 
-export async function apiGetContacts(workspaceId: string): Promise<Contact[]> {
-	const res = await fetch(`${API_BASE}?workspace_id=${workspaceId}`, { credentials: "include" });
-	if (!res.ok) {
-		const err = (await res.json()) as { error: string };
-		throw new Error(err.error ?? "Failed to fetch contacts");
-	}
-	const data = (await res.json()) as { contacts: Contact[] };
-	return data.contacts;
-}
-
-export async function apiGetContact(id: string): Promise<Contact> {
-	const res = await fetch(`${API_BASE}/${id}`, { credentials: "include" });
-	if (!res.ok) {
-		const err = (await res.json()) as { error: string };
-		throw new Error(err.error ?? "Contact not found");
-	}
-	const data = (await res.json()) as { contact: Contact };
-	return data.contact;
-}
-
-export async function apiCreateContact(input: CreateContactInput): Promise<Contact> {
-	const { workspace_id, ...body } = input;
-	const res = await fetch(`${API_BASE}?workspace_id=${workspace_id}`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		credentials: "include",
-		body: JSON.stringify(body),
-	});
-	if (!res.ok) {
-		const err = (await res.json()) as { error: string };
-		throw new Error(err.error ?? "Failed to create contact");
-	}
-	const data = (await res.json()) as { contact: Contact };
-	return data.contact;
-}
-
-export async function apiUpdateContact(id: string, input: UpdateContactInput): Promise<Contact> {
-	const res = await fetch(`${API_BASE}/${id}`, {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json" },
-		credentials: "include",
-		body: JSON.stringify(input),
-	});
-	if (!res.ok) {
-		const err = (await res.json()) as { error: string };
-		throw new Error(err.error ?? "Failed to update contact");
-	}
-	const data = (await res.json()) as { contact: Contact };
-	return data.contact;
-}
-
-export async function apiDeleteContact(id: string): Promise<void> {
-	const res = await fetch(`${API_BASE}/${id}`, {
-		method: "DELETE",
-		credentials: "include",
-	});
-	if (!res.ok) {
-		const err = (await res.json()) as { error: string };
-		throw new Error(err.error ?? "Failed to delete contact");
-	}
-}
+export const apiGetContacts = _api.getAll;
+export const apiGetContact = _api.getById;
+export const apiCreateContact = _api.create;
+export const apiUpdateContact = (id: string, input: UpdateContactInput) => _api.update(id, input);
+export const apiDeleteContact = _api.delete;

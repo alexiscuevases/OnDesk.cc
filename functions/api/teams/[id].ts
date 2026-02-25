@@ -1,13 +1,10 @@
-import type { PagesFunction } from "@cloudflare/workers-types";
-import type { Env } from "../../_lib/types";
-import { verifyJwt } from "../../_lib/crypto";
-import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonError } from "../../_lib/response";
 import {
   findTeamById, updateTeam, deleteTeam,
   findTeamMembers, addTeamMember, removeTeamMember,
   isWorkspaceMember, getWorkspaceMemberRole,
 } from "../../_lib/db";
+import { withAuth } from "../../_lib/middleware";
 
 // GET    /api/teams/:id
 // PATCH  /api/teams/:id
@@ -15,15 +12,8 @@ import {
 // GET    /api/teams/:id?members=true  — list team members
 // POST   /api/teams/:id?action=add_member&user_id=
 // POST   /api/teams/:id?action=remove_member&user_id=
-export const onRequest: PagesFunction<Env> = async ({ request, env, params }) => {
-  const cookies = parseCookies(request.headers.get("Cookie"));
-  const accessToken = cookies[ACCESS_TOKEN_COOKIE];
-  if (!accessToken) return jsonError("Not authenticated", 401);
-
-  const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-  if (!payload) return jsonError("Invalid or expired token", 401);
-
-  const teamId = params.id as string;
+export const onRequest = withAuth<"id">(async ({ request, env, params, payload }) => {
+  const teamId = params.id;
   const team = await findTeamById(env.DB, teamId);
   if (!team) return jsonError("Team not found", 404);
 
@@ -85,4 +75,4 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
   }
 
   return jsonError("Method not allowed", 405);
-};
+});

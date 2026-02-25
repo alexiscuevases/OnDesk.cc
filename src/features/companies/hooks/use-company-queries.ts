@@ -1,23 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { createWorkspaceScopedQueryHooks } from "@/lib/crud-hooks";
 import { apiGetCompanies, apiGetCompany } from "../api/companies-api";
 
-export const companyQueryKeys = {
-	all: (workspaceId: string) => ["companies", workspaceId] as const,
-	detail: (id: string) => ["companies", id] as const,
-};
+const { queryKeys, useAll, useById } = createWorkspaceScopedQueryHooks(
+	"companies",
+	{ getAll: apiGetCompanies, getById: apiGetCompany }
+);
 
-export function useCompanies(workspaceId: string) {
-	return useQuery({
-		queryKey: companyQueryKeys.all(workspaceId),
-		queryFn: () => apiGetCompanies(workspaceId),
-		staleTime: 1000 * 60 * 5,
-	});
-}
-
-export function useCompany(id: string) {
-	return useQuery({
-		queryKey: companyQueryKeys.detail(id),
-		queryFn: () => apiGetCompany(id),
-		staleTime: 1000 * 60 * 5,
-	});
-}
+export const companyQueryKeys = queryKeys;
+export const useCompanies = useAll;
+export const useCompany = useById;

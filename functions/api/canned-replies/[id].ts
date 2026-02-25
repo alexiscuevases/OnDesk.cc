@@ -1,22 +1,12 @@
-import type { PagesFunction } from "@cloudflare/workers-types";
-import type { Env } from "../../_lib/types";
-import { verifyJwt } from "../../_lib/crypto";
-import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonError } from "../../_lib/response";
 import { findCannedReplyById, updateCannedReply, deleteCannedReply, isWorkspaceMember } from "../../_lib/db";
+import { withAuth } from "../../_lib/middleware";
 
 // GET    /api/canned-replies/:id
 // PATCH  /api/canned-replies/:id
 // DELETE /api/canned-replies/:id
-export const onRequest: PagesFunction<Env> = async ({ request, env, params }) => {
-  const cookies = parseCookies(request.headers.get("Cookie"));
-  const accessToken = cookies[ACCESS_TOKEN_COOKIE];
-  if (!accessToken) return jsonError("Not authenticated", 401);
-
-  const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-  if (!payload) return jsonError("Invalid or expired token", 401);
-
-  const replyId = params.id as string;
+export const onRequest = withAuth<"id">(async ({ request, env, params, payload }) => {
+  const replyId = params.id;
   const reply = await findCannedReplyById(env.DB, replyId);
   if (!reply) return jsonError("Canned reply not found", 404);
 
@@ -47,4 +37,4 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
   }
 
   return jsonError("Method not allowed", 405);
-};
+});

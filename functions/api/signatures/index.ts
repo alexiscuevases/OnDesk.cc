@@ -1,20 +1,10 @@
-import type { PagesFunction } from "@cloudflare/workers-types";
-import type { Env } from "../../_lib/types";
-import { verifyJwt } from "../../_lib/crypto";
-import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
 import { findSignaturesByUser, createSignature, findWorkspacesByUserId } from "../../_lib/db";
+import { withAuth } from "../../_lib/middleware";
 
 // GET  /api/signatures  — list caller's signatures
 // POST /api/signatures
-export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
-  const cookies = parseCookies(request.headers.get("Cookie"));
-  const accessToken = cookies[ACCESS_TOKEN_COOKIE];
-  if (!accessToken) return jsonError("Not authenticated", 401);
-
-  const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-  if (!payload) return jsonError("Invalid or expired token", 401);
-
+export const onRequest = withAuth(async ({ request, env, payload }) => {
   if (request.method === "GET") {
     const signatures = await findSignaturesByUser(env.DB, payload.sub);
     return jsonOk({ signatures });
@@ -42,4 +32,4 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   return jsonError("Method not allowed", 405);
-};
+});

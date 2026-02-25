@@ -1,23 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { createUserScopedQueryHooks } from "@/lib/crud-hooks";
 import { apiGetSignatures, apiGetSignature } from "../api/signatures-api";
 
-export const signatureQueryKeys = {
-	all: () => ["signatures"] as const,
-	detail: (id: string) => ["signatures", id] as const,
-};
+const { queryKeys, useAll, useById } = createUserScopedQueryHooks(
+	"signatures",
+	{ getAll: apiGetSignatures, getById: apiGetSignature }
+);
 
-export function useSignatures() {
-	return useQuery({
-		queryKey: signatureQueryKeys.all(),
-		queryFn: apiGetSignatures,
-		staleTime: 1000 * 60 * 5,
-	});
-}
-
-export function useSignature(id: string) {
-	return useQuery({
-		queryKey: signatureQueryKeys.detail(id),
-		queryFn: () => apiGetSignature(id),
-		staleTime: 1000 * 60 * 5,
-	});
-}
+export const signatureQueryKeys = queryKeys;
+export const useSignatures = useAll;
+export const useSignature = useById;

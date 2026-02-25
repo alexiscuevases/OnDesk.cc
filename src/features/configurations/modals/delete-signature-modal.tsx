@@ -1,13 +1,5 @@
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmDeleteModal } from "@/shared/components";
+
 interface DeleteSignatureModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
@@ -17,26 +9,13 @@ interface DeleteSignatureModalProps {
 
 export function DeleteSignatureModal({ open, onOpenChange, signature, onConfirm }: DeleteSignatureModalProps) {
 	return (
-		<AlertDialog open={open} onOpenChange={onOpenChange}>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>Delete Signature?</AlertDialogTitle>
-					<AlertDialogDescription>
-						Are you sure you want to delete &quot;{signature?.name}&quot;? This action cannot be undone.
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel className="rounded-lg text-xs">Cancel</AlertDialogCancel>
-					<AlertDialogAction
-						onClick={() => {
-							onConfirm();
-							onOpenChange(false);
-						}}
-						className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-xs">
-						Delete Signature
-					</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
+		<ConfirmDeleteModal
+			open={open}
+			onOpenChange={onOpenChange}
+			title="Delete Signature?"
+			description={<>Are you sure you want to delete &quot;{signature?.name}&quot;? This action cannot be undone.</>}
+			confirmLabel="Delete Signature"
+			onConfirm={onConfirm}
+		/>
 	);
 }

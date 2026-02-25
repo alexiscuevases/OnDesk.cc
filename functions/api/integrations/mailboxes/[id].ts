@@ -1,27 +1,16 @@
-import type { PagesFunction } from "@cloudflare/workers-types";
-import type { Env } from "../../../_lib/types";
-import { verifyJwt } from "../../../_lib/crypto";
-import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../../_lib/cookies";
 import { jsonOk, jsonError } from "../../../_lib/response";
 import {
   isWorkspaceMember,
   findMailboxIntegrationById,
   deleteMailboxIntegration,
-  findMailboxIntegrationsByWorkspace,
   updateMailboxTokens,
 } from "../../../_lib/db";
 import { deleteGraphSubscription, refreshAccessToken } from "../../../_lib/graph";
+import { withAuth } from "../../../_lib/middleware";
 
 // DELETE /api/integrations/mailboxes/:id?workspace_id=
-export const onRequest: PagesFunction<Env> = async ({ request, env, params }) => {
+export const onRequest = withAuth<"id">(async ({ request, env, payload, params }) => {
   if (request.method !== "DELETE") return jsonError("Method not allowed", 405);
-
-  const cookies = parseCookies(request.headers.get("Cookie"));
-  const accessToken = cookies[ACCESS_TOKEN_COOKIE];
-  if (!accessToken) return jsonError("Not authenticated", 401);
-
-  const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-  if (!payload) return jsonError("Invalid or expired token", 401);
 
   const url = new URL(request.url);
   const workspaceId = url.searchParams.get("workspace_id");
@@ -30,7 +19,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
   const member = await isWorkspaceMember(env.DB, workspaceId, payload.sub);
   if (!member) return jsonError("Forbidden", 403);
 
-  const id = params.id as string;
+  const id = params.id;
   const mailbox = await findMailboxIntegrationById(env.DB, id);
   if (!mailbox) return jsonError("Mailbox not found", 404);
   if (mailbox.workspace_id !== workspaceId) return jsonError("Forbidden", 403);
@@ -61,4 +50,4 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
 
   await deleteMailboxIntegration(env.DB, id);
   return jsonOk({ success: true });
-};
+});

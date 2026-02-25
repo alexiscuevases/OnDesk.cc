@@ -1,7 +1,3 @@
-import type { PagesFunction } from "@cloudflare/workers-types";
-import type { Env } from "../../_lib/types";
-import { verifyJwt } from "../../_lib/crypto";
-import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonError } from "../../_lib/response";
 import {
   findWorkspaceBySlug,
@@ -9,21 +5,14 @@ import {
   updateWorkspace,
   deleteWorkspace,
 } from "../../_lib/db";
+import { withAuth } from "../../_lib/middleware";
 
 // GET    /api/workspaces/:slug — get workspace details (must be a member)
 // PATCH  /api/workspaces/:slug — update workspace (must be owner or admin)
 // DELETE /api/workspaces/:slug — delete workspace (must be owner)
-export const onRequest: PagesFunction<Env> = async ({ request, env, params }) => {
-  const cookies = parseCookies(request.headers.get("Cookie"));
-  const accessToken = cookies[ACCESS_TOKEN_COOKIE];
-
-  if (!accessToken) return jsonError("Not authenticated", 401);
-
-  const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-  if (!payload) return jsonError("Invalid or expired token", 401);
-
+export const onRequest = withAuth<"slug">(async ({ request, env, payload, params }) => {
   const userId = payload.sub;
-  const slug = params.slug as string;
+  const slug = params.slug;
 
   const workspace = await findWorkspaceBySlug(env.DB, slug);
   if (!workspace) return jsonError("Workspace not found", 404);
@@ -94,4 +83,4 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
   }
 
   return jsonError("Method not allowed", 405);
-};
+});

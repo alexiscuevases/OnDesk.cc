@@ -1,22 +1,12 @@
-import type { PagesFunction } from "@cloudflare/workers-types";
-import type { Env } from "../../_lib/types";
-import { verifyJwt } from "../../_lib/crypto";
-import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonError } from "../../_lib/response";
 import { findContactById, updateContact, deleteContact, isWorkspaceMember } from "../../_lib/db";
+import { withAuth } from "../../_lib/middleware";
 
 // GET    /api/contacts/:id
 // PATCH  /api/contacts/:id
 // DELETE /api/contacts/:id
-export const onRequest: PagesFunction<Env> = async ({ request, env, params }) => {
-  const cookies = parseCookies(request.headers.get("Cookie"));
-  const accessToken = cookies[ACCESS_TOKEN_COOKIE];
-  if (!accessToken) return jsonError("Not authenticated", 401);
-
-  const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-  if (!payload) return jsonError("Invalid or expired token", 401);
-
-  const contactId = params.id as string;
+export const onRequest = withAuth<"id">(async ({ request, env, params, payload }) => {
+  const contactId = params.id;
   const contact = await findContactById(env.DB, contactId);
   if (!contact) return jsonError("Contact not found", 404);
 
@@ -47,4 +37,4 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
   }
 
   return jsonError("Method not allowed", 405);
-};
+});

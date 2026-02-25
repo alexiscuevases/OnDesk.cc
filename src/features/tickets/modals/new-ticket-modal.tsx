@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormModal } from "@/shared/components";
 import { NewTicketForm } from "../forms/new-ticket-form";
 import { useCreateTicketMutation } from "../hooks/use-ticket-mutations";
 import { useWorkspace } from "@/context/workspace-context";
@@ -25,19 +25,18 @@ export function NewTicketModal({ open, onOpenChange }: NewTicketModalProps) {
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Create New Ticket</DialogTitle>
-					<DialogDescription>Fill in the details below to create a new support ticket.</DialogDescription>
-				</DialogHeader>
-				<NewTicketForm
-					onSubmit={handleSubmit}
-					onCancel={() => onOpenChange(false)}
-					isPending={createTicket.isPending}
-					workspaceId={workspace.id}
-				/>
-			</DialogContent>
-		</Dialog>
+		<FormModal
+			open={open}
+			onOpenChange={onOpenChange}
+			title="Create New Ticket"
+			description="Fill in the details below to create a new support ticket."
+			maxWidth="sm:max-w-lg">
+			<NewTicketForm
+				onSubmit={handleSubmit}
+				onCancel={() => onOpenChange(false)}
+				isPending={createTicket.isPending}
+				workspaceId={workspace.id}
+			/>
+		</FormModal>
 	);
 }

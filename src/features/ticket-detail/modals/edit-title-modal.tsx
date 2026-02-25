@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormModal } from "@/shared/components";
 import { EditTitleForm } from "../forms/edit-title-form";
 import type { EditTitleFormValues } from "../schemas/ticket-detail.schema";
 
@@ -16,18 +16,17 @@ export function EditTitleModal({ open, onOpenChange, currentTitle, onSave }: Edi
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle className="text-base">Edit Ticket Title</DialogTitle>
-					<DialogDescription className="text-xs">Update the title/subject for this ticket</DialogDescription>
-				</DialogHeader>
-				<EditTitleForm
-					defaultTitle={currentTitle}
-					onSubmit={handleSubmit}
-					onCancel={() => onOpenChange(false)}
-				/>
-			</DialogContent>
-		</Dialog>
+		<FormModal
+			open={open}
+			onOpenChange={onOpenChange}
+			title="Edit Ticket Title"
+			description="Update the title/subject for this ticket"
+			maxWidth="sm:max-w-lg">
+			<EditTitleForm
+				defaultTitle={currentTitle}
+				onSubmit={handleSubmit}
+				onCancel={() => onOpenChange(false)}
+			/>
+		</FormModal>
 	);
 }

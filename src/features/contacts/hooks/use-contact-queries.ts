@@ -1,23 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { createWorkspaceScopedQueryHooks } from "@/lib/crud-hooks";
 import { apiGetContacts, apiGetContact } from "../api/contacts-api";
 
-export const contactQueryKeys = {
-	all: (workspaceId: string) => ["contacts", workspaceId] as const,
-	detail: (id: string) => ["contacts", id] as const,
-};
+const { queryKeys, useAll, useById } = createWorkspaceScopedQueryHooks(
+	"contacts",
+	{ getAll: apiGetContacts, getById: apiGetContact }
+);
 
-export function useContacts(workspaceId: string) {
-	return useQuery({
-		queryKey: contactQueryKeys.all(workspaceId),
-		queryFn: () => apiGetContacts(workspaceId),
-		staleTime: 1000 * 60 * 5,
-	});
-}
-
-export function useContact(id: string) {
-	return useQuery({
-		queryKey: contactQueryKeys.detail(id),
-		queryFn: () => apiGetContact(id),
-		staleTime: 1000 * 60 * 5,
-	});
-}
+export const contactQueryKeys = queryKeys;
+export const useContacts = useAll;
+export const useContact = useById;

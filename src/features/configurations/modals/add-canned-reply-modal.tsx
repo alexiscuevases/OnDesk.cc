@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormModal } from "@/shared/components";
 import { CannedReplyForm } from "../forms/canned-reply-form";
 import { type CannedReplyFormValues } from "../schemas/config.schema";
 
@@ -10,21 +10,20 @@ interface AddCannedReplyModalProps {
 
 export function AddCannedReplyModal({ open, onOpenChange, onConfirm }: AddCannedReplyModalProps) {
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Add Canned Reply</DialogTitle>
-					<DialogDescription>Create a reusable response template with variables</DialogDescription>
-				</DialogHeader>
-				<CannedReplyForm
-					submitLabel="Create Reply"
-					onSubmit={(values) => {
-						onConfirm(values);
-						onOpenChange(false);
-					}}
-					onCancel={() => onOpenChange(false)}
-				/>
-			</DialogContent>
-		</Dialog>
+		<FormModal
+			open={open}
+			onOpenChange={onOpenChange}
+			title="Add Canned Reply"
+			description="Create a reusable response template with variables"
+			maxWidth="sm:max-w-lg">
+			<CannedReplyForm
+				submitLabel="Create Reply"
+				onSubmit={(values) => {
+					onConfirm(values);
+					onOpenChange(false);
+				}}
+				onCancel={() => onOpenChange(false)}
+			/>
+		</FormModal>
 	);
 }

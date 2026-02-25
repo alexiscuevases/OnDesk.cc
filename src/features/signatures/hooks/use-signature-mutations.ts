@@ -1,38 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createUserScopedMutationHooks } from "@/lib/crud-hooks";
 import { apiCreateSignature, apiUpdateSignature, apiDeleteSignature } from "../api/signatures-api";
-import { signatureQueryKeys } from "./use-signature-queries";
 import type { CreateSignatureInput, UpdateSignatureInput } from "../api/signatures-api";
+import { signatureQueryKeys } from "./use-signature-queries";
 
-export function useCreateSignatureMutation() {
-	const queryClient = useQueryClient();
+const { useCreate, useUpdate, useDelete } = createUserScopedMutationHooks<
+	unknown,
+	CreateSignatureInput,
+	UpdateSignatureInput
+>(signatureQueryKeys, {
+	create: apiCreateSignature,
+	update: apiUpdateSignature,
+	delete: apiDeleteSignature,
+});
 
-	return useMutation({
-		mutationFn: (input: CreateSignatureInput) => apiCreateSignature(input),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: signatureQueryKeys.all() });
-		},
-	});
-}
-
-export function useUpdateSignatureMutation(signatureId: string) {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: (input: UpdateSignatureInput) => apiUpdateSignature(signatureId, input),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: signatureQueryKeys.all() });
-			queryClient.invalidateQueries({ queryKey: signatureQueryKeys.detail(signatureId) });
-		},
-	});
-}
-
-export function useDeleteSignatureMutation() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: (signatureId: string) => apiDeleteSignature(signatureId),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: signatureQueryKeys.all() });
-		},
-	});
-}
+export const useCreateSignatureMutation = useCreate;
+export const useUpdateSignatureMutation = useUpdate;
+export const useDeleteSignatureMutation = useDelete;

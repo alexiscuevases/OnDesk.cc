@@ -1,24 +1,14 @@
-import type { PagesFunction } from "@cloudflare/workers-types";
-import type { Env } from "../../../_lib/types";
-import { verifyJwt } from "../../../_lib/crypto";
-import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../../_lib/cookies";
 import { jsonOk, jsonError } from "../../../_lib/response";
-import { findTicketById, isWorkspaceMember, deleteTicket } from "../../../_lib/db";
+import { findTicketById, isWorkspaceMember } from "../../../_lib/db";
+import { withAuth } from "../../../_lib/middleware";
 
 // POST /api/tickets/:id/merge
 // Body: { source_ids: string[] }
 // Moves all messages from source tickets into :id, then deletes the sources.
-export const onRequest: PagesFunction<Env> = async ({ request, env, params }) => {
+export const onRequest = withAuth<"id">(async ({ request, env, payload, params }) => {
   if (request.method !== "POST") return jsonError("Method not allowed", 405);
 
-  const cookies = parseCookies(request.headers.get("Cookie"));
-  const accessToken = cookies[ACCESS_TOKEN_COOKIE];
-  if (!accessToken) return jsonError("Not authenticated", 401);
-
-  const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-  if (!payload) return jsonError("Invalid or expired token", 401);
-
-  const targetId = params.id as string;
+  const targetId = params.id;
   const target = await findTicketById(env.DB, targetId);
   if (!target) return jsonError("Target ticket not found", 404);
 
@@ -57,4 +47,4 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
 
   const updated = await findTicketById(env.DB, targetId);
   return jsonOk({ ticket: updated });
-};
+});

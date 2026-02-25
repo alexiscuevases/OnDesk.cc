@@ -1,11 +1,6 @@
-import type { PagesFunction } from "@cloudflare/workers-types";
-import type { Env } from "../../_lib/types";
-import { verifyJwt } from "../../_lib/crypto";
-import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
 import {
 	findUserByEmail,
-	findUserById,
 	isWorkspaceMember,
 	getWorkspaceMemberRole,
 	addWorkspaceMember,
@@ -16,6 +11,7 @@ import {
 	findWorkspaceMemberIds,
 	createNotification,
 } from "../../_lib/db";
+import { withAuth } from "../../_lib/middleware";
 
 const INVITATION_TTL = 60 * 60 * 24 * 7; // 7 days
 const VALID_ROLES = ["owner", "admin", "agent"];
@@ -23,14 +19,7 @@ const VALID_ROLES = ["owner", "admin", "agent"];
 // POST   /api/invitations              — send invitation
 // GET    /api/invitations?workspace_id= — list pending invitations
 // DELETE /api/invitations?id=          — cancel invitation
-export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
-	const cookies = parseCookies(request.headers.get("Cookie"));
-	const accessToken = cookies[ACCESS_TOKEN_COOKIE];
-	if (!accessToken) return jsonError("Not authenticated", 401);
-
-	const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-	if (!payload) return jsonError("Invalid or expired token", 401);
-
+export const onRequest = withAuth(async ({ request, env, payload }) => {
 	const url = new URL(request.url);
 
 	// ── GET: list pending invitations ──────────────────────────────────────────
@@ -154,4 +143,4 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
 	}
 
 	return jsonError("Method not allowed", 405);
-};
+});

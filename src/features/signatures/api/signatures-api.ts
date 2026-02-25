@@ -1,3 +1,5 @@
+import { createUserScopedApi } from "@/lib/crud-api";
+
 export interface Signature {
 	id: string;
 	created_by: string;
@@ -20,68 +22,14 @@ export interface UpdateSignatureInput {
 	is_default?: boolean;
 }
 
-const API_BASE = "/api/signatures";
+const _api = createUserScopedApi<Signature, CreateSignatureInput, UpdateSignatureInput>({
+	basePath: "/api/signatures",
+	listKey: "signatures",
+	itemKey: "signature",
+});
 
-export async function apiGetSignatures(): Promise<Signature[]> {
-	const res = await fetch(API_BASE, { credentials: "include" });
-	if (!res.ok) {
-		const err = (await res.json()) as { error: string };
-		throw new Error(err.error ?? "Failed to fetch signatures");
-	}
-	const data = (await res.json()) as { signatures: Signature[] };
-	return data.signatures;
-}
-
-export async function apiGetSignature(id: string): Promise<Signature> {
-	const res = await fetch(`${API_BASE}/${id}`, { credentials: "include" });
-	if (!res.ok) {
-		const err = (await res.json()) as { error: string };
-		throw new Error(err.error ?? "Signature not found");
-	}
-	const data = (await res.json()) as { signature: Signature };
-	return data.signature;
-}
-
-export async function apiCreateSignature(input: CreateSignatureInput): Promise<Signature> {
-	const res = await fetch(API_BASE, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		credentials: "include",
-		body: JSON.stringify(input),
-	});
-	if (!res.ok) {
-		const err = (await res.json()) as { error: string };
-		throw new Error(err.error ?? "Failed to create signature");
-	}
-	const data = (await res.json()) as { signature: Signature };
-	return data.signature;
-}
-
-export async function apiUpdateSignature(
-	id: string,
-	input: UpdateSignatureInput
-): Promise<Signature> {
-	const res = await fetch(`${API_BASE}/${id}`, {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json" },
-		credentials: "include",
-		body: JSON.stringify(input),
-	});
-	if (!res.ok) {
-		const err = (await res.json()) as { error: string };
-		throw new Error(err.error ?? "Failed to update signature");
-	}
-	const data = (await res.json()) as { signature: Signature };
-	return data.signature;
-}
-
-export async function apiDeleteSignature(id: string): Promise<void> {
-	const res = await fetch(`${API_BASE}/${id}`, {
-		method: "DELETE",
-		credentials: "include",
-	});
-	if (!res.ok) {
-		const err = (await res.json()) as { error: string };
-		throw new Error(err.error ?? "Failed to delete signature");
-	}
-}
+export const apiGetSignatures = _api.getAll;
+export const apiGetSignature = _api.getById;
+export const apiCreateSignature = _api.create;
+export const apiUpdateSignature = (id: string, input: UpdateSignatureInput) => _api.update(id, input);
+export const apiDeleteSignature = _api.delete;

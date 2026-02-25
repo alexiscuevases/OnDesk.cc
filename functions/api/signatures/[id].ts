@@ -1,22 +1,12 @@
-import type { PagesFunction } from "@cloudflare/workers-types";
-import type { Env } from "../../_lib/types";
-import { verifyJwt } from "../../_lib/crypto";
-import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonError } from "../../_lib/response";
-import { findSignatureById, updateSignature, deleteSignature, findSignaturesByUser } from "../../_lib/db";
+import { findSignatureById, updateSignature, deleteSignature } from "../../_lib/db";
+import { withAuth } from "../../_lib/middleware";
 
 // GET    /api/signatures/:id
 // PATCH  /api/signatures/:id
 // DELETE /api/signatures/:id
-export const onRequest: PagesFunction<Env> = async ({ request, env, params }) => {
-  const cookies = parseCookies(request.headers.get("Cookie"));
-  const accessToken = cookies[ACCESS_TOKEN_COOKIE];
-  if (!accessToken) return jsonError("Not authenticated", 401);
-
-  const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-  if (!payload) return jsonError("Invalid or expired token", 401);
-
-  const signatureId = params.id as string;
+export const onRequest = withAuth<"id">(async ({ request, env, params, payload }) => {
+  const signatureId = params.id;
   const row = await findSignatureById(env.DB, signatureId);
   if (!row) return jsonError("Signature not found", 404);
 
@@ -57,4 +47,4 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
   }
 
   return jsonError("Method not allowed", 405);
-};
+});
