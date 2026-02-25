@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { Search, Users, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useTeams } from "@/features/teams/hooks/use-team-queries";
 import type { Team } from "@/features/teams/api/teams-api";
@@ -17,7 +18,12 @@ interface AssignTeamModalProps {
 export function AssignTeamModal({ open, onOpenChange, selectedCount, workspaceId, onConfirm }: AssignTeamModalProps) {
 	const { data: teams = [] } = useTeams(workspaceId);
 	const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+	const [search, setSearch] = useState("");
 	const plural = selectedCount > 1;
+
+	const filtered = teams.filter((t) =>
+		t.name.toLowerCase().includes(search.toLowerCase())
+	);
 
 	function getInitials(name: string) {
 		return name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -27,11 +33,12 @@ export function AssignTeamModal({ open, onOpenChange, selectedCount, workspaceId
 		if (selectedTeam) {
 			onConfirm(selectedTeam.id);
 			setSelectedTeam(null);
+			setSearch("");
 		}
 	}
 
 	function handleOpenChange(open: boolean) {
-		if (!open) setSelectedTeam(null);
+		if (!open) { setSelectedTeam(null); setSearch(""); }
 		onOpenChange(open);
 	}
 
@@ -44,27 +51,49 @@ export function AssignTeamModal({ open, onOpenChange, selectedCount, workspaceId
 						Select which team should handle {selectedCount} ticket{plural ? "s" : ""}
 					</DialogDescription>
 				</DialogHeader>
-				<div className="grid gap-2 py-2">
-					<div className="max-h-[300px] overflow-y-auto rounded-lg border p-2">
-						{teams.map((team) => (
-							<div
-								key={team.id}
-								className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/50 cursor-pointer"
-								onClick={() => setSelectedTeam(team)}>
-								<Checkbox checked={selectedTeam?.id === team.id} className="size-4" />
-								<Avatar className="size-7 rounded-lg">
-									<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[9px] font-bold">
-										{getInitials(team.name)}
-									</AvatarFallback>
-								</Avatar>
-								<div className="flex-1 min-w-0">
-									<p className="text-sm font-medium">{team.name}</p>
-									{team.description && (
-										<p className="text-[10px] text-muted-foreground truncate">{team.description}</p>
-									)}
-								</div>
+				<div className="grid gap-4 py-2">
+					<div className="relative">
+						<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+						<Input
+							placeholder="Search teams..."
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							className="pl-9 h-9 rounded-lg"
+						/>
+					</div>
+					<div className="max-h-[300px] overflow-y-auto rounded-lg border">
+						{filtered.length > 0 ? (
+							<div className="p-1">
+								{filtered.map((team) => (
+									<button
+										key={team.id}
+										onClick={() => setSelectedTeam(team)}
+										className={`w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/80 transition-colors ${
+											selectedTeam?.id === team.id ? "bg-secondary" : ""
+										}`}>
+										<Avatar className="size-8 rounded-lg">
+											<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
+												{getInitials(team.name)}
+											</AvatarFallback>
+										</Avatar>
+										<div className="flex-1 min-w-0 text-left">
+											<p className="text-sm font-medium truncate">{team.name}</p>
+											{team.description && (
+												<p className="text-xs text-muted-foreground truncate">{team.description}</p>
+											)}
+										</div>
+										{selectedTeam?.id === team.id && (
+											<CheckCircle2 className="size-4 text-primary shrink-0" />
+										)}
+									</button>
+								))}
 							</div>
-						))}
+						) : (
+							<div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+								<Users className="size-8 mb-2 opacity-30" />
+								<p className="text-sm">No teams found</p>
+							</div>
+						)}
 					</div>
 				</div>
 				<DialogFooter className="gap-2">

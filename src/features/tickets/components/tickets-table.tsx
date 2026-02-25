@@ -2,7 +2,6 @@ import { MoreHorizontal, Eye, Trash2, SortAsc, ChevronLeft, ChevronRight } from 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -112,9 +111,14 @@ export function TicketsTable({
 									</TableCell>
 									<TableCell className="hidden lg:table-cell cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
 										{teamName ? (
-											<Badge variant="secondary" className="text-[10px] rounded-full px-2 font-medium">
-												{teamName}
-											</Badge>
+											<div className="flex items-center gap-2">
+												<Avatar className="size-7">
+													<AvatarFallback className="text-[10px] bg-accent/80 text-accent-foreground font-semibold">
+														{getInitials(teamName)}
+													</AvatarFallback>
+												</Avatar>
+												<span className="text-xs">{teamName}</span>
+											</div>
 										) : (
 											<span className="text-xs text-muted-foreground">—</span>
 										)}
