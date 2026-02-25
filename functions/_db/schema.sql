@@ -232,3 +232,24 @@ CREATE TABLE IF NOT EXISTS email_tickets (
 );
 
 CREATE INDEX IF NOT EXISTS idx_email_tickets_mailbox_integration_id ON email_tickets(mailbox_integration_id);
+
+-- Notifications
+-- type: 'ticket' | 'assign' | 'sla' | 'resolved' | 'message'
+-- actor_id: user who triggered the notification (null for system events)
+-- resource_id: e.g. ticket id the notification relates to
+CREATE TABLE IF NOT EXISTS notifications (
+  id           TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  user_id      TEXT    NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  workspace_id TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  type         TEXT    NOT NULL,
+  title        TEXT    NOT NULL,
+  description  TEXT    NOT NULL,
+  resource_id  TEXT,
+  actor_id     TEXT    REFERENCES users(id) ON DELETE SET NULL,
+  read         INTEGER NOT NULL DEFAULT 0,
+  created_at   INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id      ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_workspace_id ON notifications(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_read         ON notifications(user_id, read);

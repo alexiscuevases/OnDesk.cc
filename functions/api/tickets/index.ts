@@ -3,7 +3,7 @@ import type { Env } from "../../_lib/types";
 import { verifyJwt } from "../../_lib/crypto";
 import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
-import { isWorkspaceMember, findTicketsByWorkspace, createTicket } from "../../_lib/db";
+import { isWorkspaceMember, findTicketsByWorkspace, createTicket, findUserById, createNotification } from "../../_lib/db";
 import type { TicketStatus, TicketPriority } from "../../_lib/types";
 
 const VALID_STATUSES: TicketStatus[] = ["open", "pending", "resolved", "closed"];
@@ -64,6 +64,20 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
       status: status as TicketStatus | undefined,
       priority: priority as TicketPriority | undefined,
     });
+
+    // — Notification: ticket assigned on creation
+    if (typeof assignee_id === "string" && assignee_id !== payload.sub) {
+      const actor = await findUserById(env.DB, payload.sub);
+      await createNotification(env.DB, {
+        user_id: assignee_id,
+        workspace_id: workspaceId,
+        type: "assign",
+        title: "New ticket assigned to you",
+        description: `${actor?.name ?? "Someone"} assigned ticket "${subject.trim()}" to you.`,
+        resource_id: ticket.id,
+        actor_id: payload.sub,
+      });
+    }
 
     return jsonCreated({ ticket });
   }

@@ -6,7 +6,7 @@ import { jsonOk, jsonCreated, jsonError } from "../../../_lib/response";
 import {
   findTicketById, findMessagesByTicket, createTicketMessage, isWorkspaceMember,
   findContactById, findFirstMailboxByWorkspace, updateMailboxTokens,
-  findLastInboundMessageByTicket, updateTicket,
+  findLastInboundMessageByTicket, updateTicket, findUserById, createNotification,
 } from "../../../_lib/db";
 import { sendGraphMail, replyGraphMail, refreshAccessToken } from "../../../_lib/graph";
 import type { MessageType } from "../../../_lib/types";
@@ -119,6 +119,20 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
       } catch (emailErr) {
         console.error("Failed to send email reply:", emailErr);
       }
+    }
+
+    // — Notification: new message on ticket to the assignee (if not themselves)
+    if (msgType === "message" && ticket.assignee_id && ticket.assignee_id !== payload.sub) {
+      const actor = await findUserById(env.DB, payload.sub);
+      await createNotification(env.DB, {
+        user_id: ticket.assignee_id,
+        workspace_id: ticket.workspace_id,
+        type: "message",
+        title: "New reply on your ticket",
+        description: `${actor?.name ?? "An agent"} replied to "${ticket.subject}".`,
+        resource_id: ticketId,
+        actor_id: payload.sub,
+      });
     }
 
     return jsonCreated({ message });

@@ -1,9 +1,20 @@
-import { Bell, Clock, UserPlus, CheckCircle2, AlertCircle, X } from "lucide-react";
+import { Bell, Clock, UserPlus, CheckCircle2, AlertCircle, MessageSquare, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNotifications } from "@/context/notifications-context";
-import type { Notification } from "@/types";
+import type { Notification } from "@/features/notifications/api/notifications-api";
+
+function formatRelativeTime(timestamp: number): string {
+	const diffMs = Date.now() - timestamp * 1000;
+	const diffMins = Math.floor(diffMs / 60_000);
+	if (diffMins < 1) return "just now";
+	if (diffMins < 60) return `${diffMins}m ago`;
+	const diffHours = Math.floor(diffMins / 60);
+	if (diffHours < 24) return `${diffHours}h ago`;
+	const diffDays = Math.floor(diffHours / 24);
+	return `${diffDays}d ago`;
+}
 
 function NotificationIcon({ type }: { type: Notification["type"] }) {
 	switch (type) {
@@ -25,7 +36,14 @@ function NotificationIcon({ type }: { type: Notification["type"] }) {
 					<CheckCircle2 className="size-4 text-accent" />
 				</div>
 			);
+		case "message":
+			return (
+				<div className="flex size-8 items-center justify-center rounded-lg bg-chart-2/10">
+					<MessageSquare className="size-4 text-chart-2" />
+				</div>
+			);
 		case "ticket":
+		default:
 			return (
 				<div className="flex size-8 items-center justify-center rounded-lg bg-chart-1/10">
 					<AlertCircle className="size-4 text-chart-1" />
@@ -35,7 +53,8 @@ function NotificationIcon({ type }: { type: Notification["type"] }) {
 }
 
 export function NotificationsPanel() {
-	const { notifications, unreadCount, markAllRead, dismissNotification, markAsRead } = useNotifications();
+	const { notifications, unreadCount, isLoading, markAllRead, dismissNotification, markAsRead } =
+		useNotifications();
 
 	return (
 		<Popover>
@@ -71,7 +90,11 @@ export function NotificationsPanel() {
 					)}
 				</div>
 				<div className="max-h-80 overflow-y-auto">
-					{notifications.length === 0 ? (
+					{isLoading ? (
+						<div className="flex items-center justify-center py-10 text-muted-foreground">
+							<p className="text-sm">Loading…</p>
+						</div>
+					) : notifications.length === 0 ? (
 						<div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
 							<Bell className="size-8 mb-2 opacity-20" />
 							<p className="text-sm">No notifications</p>
@@ -92,7 +115,8 @@ export function NotificationsPanel() {
 								<NotificationIcon type={notif.type} />
 								<div className="flex-1 min-w-0">
 									<div className="flex items-center gap-2">
-										<p className={`text-xs font-medium truncate ${!notif.read ? "text-foreground" : "text-muted-foreground"}`}>
+										<p
+											className={`text-xs font-medium truncate ${!notif.read ? "text-foreground" : "text-muted-foreground"}`}>
 											{notif.title}
 										</p>
 										{!notif.read && <div className="size-1.5 rounded-full bg-primary shrink-0" />}
@@ -100,7 +124,9 @@ export function NotificationsPanel() {
 									<p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5 line-clamp-2">
 										{notif.description}
 									</p>
-									<p className="text-[10px] text-muted-foreground/60 mt-1">{notif.time}</p>
+									<p className="text-[10px] text-muted-foreground/60 mt-1">
+										{formatRelativeTime(notif.created_at)}
+									</p>
 								</div>
 								<Button
 									variant="ghost"

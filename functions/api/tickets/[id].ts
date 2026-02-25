@@ -3,7 +3,7 @@ import type { Env } from "../../_lib/types";
 import { verifyJwt } from "../../_lib/crypto";
 import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonError } from "../../_lib/response";
-import { findTicketById, updateTicket, deleteTicket, isWorkspaceMember } from "../../_lib/db";
+import { findTicketById, updateTicket, deleteTicket, isWorkspaceMember, findUserById, createNotification } from "../../_lib/db";
 import type { TicketStatus, TicketPriority } from "../../_lib/types";
 
 const VALID_STATUSES: TicketStatus[] = ["open", "pending", "resolved", "closed"];
@@ -44,6 +44,9 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
       return jsonError(`priority must be one of: ${VALID_PRIORITIES.join(", ")}`);
     }
 
+    const prevAssignee = ticket.assignee_id;
+    const prevStatus = ticket.status;
+
     await updateTicket(env.DB, ticketId, {
       subject: typeof subject === "string" ? subject.trim() : undefined,
       status: status as TicketStatus | undefined,
@@ -54,6 +57,43 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
     });
 
     const updated = await findTicketById(env.DB, ticketId);
+
+    // — Notification: ticket assigned to a different user
+    const newAssigneeId = typeof assignee_id === "string" ? assignee_id : prevAssignee;
+    if (
+      typeof assignee_id === "string" &&
+      assignee_id !== prevAssignee &&
+      assignee_id !== payload.sub
+    ) {
+      const actor = await findUserById(env.DB, payload.sub);
+      await createNotification(env.DB, {
+        user_id: assignee_id,
+        workspace_id: ticket.workspace_id,
+        type: "assign",
+        title: "Ticket assigned to you",
+        description: `${actor?.name ?? "Someone"} assigned ticket "${ticket.subject}" to you.`,
+        resource_id: ticketId,
+        actor_id: payload.sub,
+      });
+    }
+
+    // — Notification: ticket resolved
+    if (status === "resolved" && prevStatus !== "resolved" && prevAssignee && prevAssignee !== payload.sub) {
+      const actor = await findUserById(env.DB, payload.sub);
+      await createNotification(env.DB, {
+        user_id: prevAssignee,
+        workspace_id: ticket.workspace_id,
+        type: "resolved",
+        title: "Ticket resolved",
+        description: `${actor?.name ?? "Someone"} marked ticket "${ticket.subject}" as resolved.`,
+        resource_id: ticketId,
+        actor_id: payload.sub,
+      });
+    }
+
+    // Suppress unused variable warning
+    void newAssigneeId;
+
     return jsonOk({ ticket: updated });
   }
 

@@ -1,11 +1,5 @@
-export interface Notification {
-	id: string;
-	title: string;
-	description: string;
-	time: string;
-	read: boolean;
-	type: "ticket" | "assign" | "sla" | "resolved";
-}
+// Re-export from feature module so all consumers stay in sync
+export type { Notification, NotificationType } from "@/features/notifications/api/notifications-api";
 
 export interface ConfigTeam {
 	id: string;
