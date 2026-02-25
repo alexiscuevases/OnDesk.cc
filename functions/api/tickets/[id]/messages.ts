@@ -6,7 +6,7 @@ import { jsonOk, jsonCreated, jsonError } from "../../../_lib/response";
 import {
   findTicketById, findMessagesByTicket, createTicketMessage, isWorkspaceMember,
   findContactById, findFirstMailboxByWorkspace, updateMailboxTokens,
-  findLastInboundMessageByTicket,
+  findLastInboundMessageByTicket, updateTicket,
 } from "../../../_lib/db";
 import { sendGraphMail, replyGraphMail, refreshAccessToken } from "../../../_lib/graph";
 import type { MessageType } from "../../../_lib/types";
@@ -53,6 +53,16 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
       type: msgType,
       content: content.trim(),
     });
+
+    // When an agent sends a reply (not an internal note) and the ticket is open,
+    // move it to pending and assign it to the responding agent
+    if (msgType === "message" && ticket.status === "open") {
+      const updates: { status: "pending"; assignee_id?: string } = { status: "pending" };
+      if (!ticket.assignee_id) {
+        updates.assignee_id = payload.sub;
+      }
+      await updateTicket(env.DB, ticketId, updates);
+    }
 
     // Send email reply if the ticket came via email and this is not an internal note
     if (ticket.channel === "email" && msgType === "message" && ticket.contact_id) {
