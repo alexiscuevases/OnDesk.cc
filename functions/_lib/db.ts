@@ -610,6 +610,8 @@ export async function updateTicket(
 }
 
 export async function deleteTicket(db: D1Database, ticketId: string): Promise<void> {
+  await db.prepare("DELETE FROM ticket_messages WHERE ticket_id = ?").bind(ticketId).run();
+  await db.prepare("DELETE FROM email_tickets WHERE ticket_id = ?").bind(ticketId).run();
   await db.prepare("DELETE FROM tickets WHERE id = ?").bind(ticketId).run();
 }
 

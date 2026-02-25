@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useWorkspace } from "@/context/workspace-context";
 import { useTickets } from "../hooks/use-ticket-queries";
-import { useDeleteTicketMutation, useUpdateTicketMutation } from "../hooks/use-ticket-mutations";
+import { useDeleteTicketMutation } from "../hooks/use-ticket-mutations";
+import { apiUpdateTicket } from "../api/tickets-api";
+import { useQueryClient } from "@tanstack/react-query";
+import { ticketQueryKeys } from "../hooks/use-ticket-queries";
 import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
 import { useTeams } from "@/features/teams/hooks/use-team-queries";
 import { TicketsFilters } from "./tickets-filters";
@@ -16,6 +19,7 @@ import type { TicketStatus } from "../api/tickets-api";
 export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => void }) {
 	const { workspace } = useWorkspace();
 	const workspaceId = workspace.id;
+	const queryClient = useQueryClient();
 
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -34,7 +38,6 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 	const { data: teams = [] } = useTeams(workspaceId);
 
 	const deleteTicket = useDeleteTicketMutation(workspaceId);
-	const updateTicket = useUpdateTicketMutation("", workspaceId);
 
 	// Client-side search + priority filter (API only filters by status/assignee/team)
 	const filteredTickets = tickets.filter((t) => {
@@ -67,17 +70,17 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 	}
 
 	async function handleAssignTeamConfirm(teamId: string) {
-		await Promise.all(
-			selectedTickets.map(() => updateTicket.mutateAsync({ team_id: teamId }))
-		);
+		await Promise.all(selectedTickets.map((id) => apiUpdateTicket(id, { team_id: teamId })));
+		queryClient.invalidateQueries({ queryKey: ticketQueryKeys.all(workspaceId) });
 		setSelectedTickets([]);
+		setAssignTeamOpen(false);
 	}
 
 	async function handleAssignAgentConfirm(agentId: string) {
-		await Promise.all(
-			selectedTickets.map(() => updateTicket.mutateAsync({ assignee_id: agentId }))
-		);
+		await Promise.all(selectedTickets.map((id) => apiUpdateTicket(id, { assignee_id: agentId })));
+		queryClient.invalidateQueries({ queryKey: ticketQueryKeys.all(workspaceId) });
 		setSelectedTickets([]);
+		setAssignAgentOpen(false);
 	}
 
 	function handleMergeConfirm(_targetTicketId: string) {
