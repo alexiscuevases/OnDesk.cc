@@ -10,6 +10,8 @@ import {
   findOrCreateContact,
   createTicket,
   createTicketMessage,
+  findWorkspaceMemberIds,
+  createNotification,
 } from "../../_lib/db";
 import {
   refreshAccessToken,
@@ -140,6 +142,18 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
       if (existingTicket) {
         // Thread the reply into the existing ticket
         ticketId = existingTicket.id;
+
+        // — Notification: contact replied — notify the assigned agent
+        if (existingTicket.assignee_id) {
+          await createNotification(env.DB, {
+            user_id: existingTicket.assignee_id,
+            workspace_id: mailbox.workspace_id,
+            type: "message",
+            title: "Customer replied",
+            description: `${contact.name} replied to "${existingTicket.subject}".`,
+            resource_id: existingTicket.id,
+          });
+        }
       } else {
         // New conversation — create a ticket
         const subject = message.subject?.trim() || "(no subject)";
@@ -152,6 +166,21 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
           conversation_id: message.conversationId || undefined,
         });
         ticketId = ticket.id;
+
+        // — Notification: new ticket via email — notify all workspace members
+        const memberIds = await findWorkspaceMemberIds(env.DB, mailbox.workspace_id);
+        await Promise.all(
+          memberIds.map((uid) =>
+            createNotification(env.DB, {
+              user_id: uid,
+              workspace_id: mailbox.workspace_id,
+              type: "ticket",
+              title: "New ticket received",
+              description: `${contact.name} opened "${subject}".`,
+              resource_id: ticket.id,
+            })
+          )
+        );
       }
 
       // 9. Add the email body as a message on the ticket

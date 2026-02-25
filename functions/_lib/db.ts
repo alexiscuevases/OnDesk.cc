@@ -1096,6 +1096,17 @@ export async function findEmailTicketByMessageId(
   return result ?? null;
 }
 
+export async function findWorkspaceMemberIds(
+  db: D1Database,
+  workspaceId: string
+): Promise<string[]> {
+  const result = await db
+    .prepare("SELECT user_id FROM workspace_members WHERE workspace_id = ?")
+    .bind(workspaceId)
+    .all<{ user_id: string }>();
+  return (result.results ?? []).map((r) => r.user_id);
+}
+
 // ─── Notifications ────────────────────────────────────────────────────────────
 
 function rowToPublicNotification(row: NotificationRow): PublicNotification {

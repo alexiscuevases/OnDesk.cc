@@ -121,9 +121,10 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
       }
     }
 
+    const actor = await findUserById(env.DB, payload.sub);
+
     // — Notification: new message on ticket to the assignee (if not themselves)
     if (msgType === "message" && ticket.assignee_id && ticket.assignee_id !== payload.sub) {
-      const actor = await findUserById(env.DB, payload.sub);
       await createNotification(env.DB, {
         user_id: ticket.assignee_id,
         workspace_id: ticket.workspace_id,
@@ -133,6 +134,32 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, params }) =>
         resource_id: ticketId,
         actor_id: payload.sub,
       });
+    }
+
+    // — Notification: @mentions — TipTap serializes mentions as:
+    // <span data-mention="true" data-mention-id="<user-id>">@Name</span>
+    const mentionIdPattern = /data-mention-id="([^"]+)"/g;
+    const mentionedIds = new Set<string>();
+    let mentionMatch: RegExpExecArray | null;
+    while ((mentionMatch = mentionIdPattern.exec(content)) !== null) {
+      mentionedIds.add(mentionMatch[1]);
+    }
+    if (mentionedIds.size > 0) {
+      await Promise.all(
+        [...mentionedIds]
+          .filter((uid) => uid !== payload.sub)
+          .map((uid) =>
+            createNotification(env.DB, {
+              user_id: uid,
+              workspace_id: ticket.workspace_id,
+              type: "message",
+              title: "You were mentioned",
+              description: `${actor?.name ?? "An agent"} mentioned you in "${ticket.subject}".`,
+              resource_id: ticketId,
+              actor_id: payload.sub,
+            })
+          )
+      );
     }
 
     return jsonCreated({ message });
