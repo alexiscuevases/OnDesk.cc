@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2 } from "lucide-react";
 import { GeneralSection } from "./general-section";

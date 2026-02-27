@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Plus, Pencil, Trash2, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -125,7 +123,12 @@ export function UsersCompaniesSection() {
 	}
 
 	const dialogInitials = companyForm.name
-		? companyForm.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+		? companyForm.name
+				.split(" ")
+				.map((w) => w[0])
+				.join("")
+				.slice(0, 2)
+				.toUpperCase()
 		: "CO";
 
 	return (
@@ -180,9 +183,7 @@ export function UsersCompaniesSection() {
 											</Avatar>
 											<div className="flex-1 min-w-0">
 												<p className="text-sm font-medium">{company.name}</p>
-												{company.description && (
-													<p className="text-[11px] text-muted-foreground truncate">{company.description}</p>
-												)}
+												{company.description && <p className="text-[11px] text-muted-foreground truncate">{company.description}</p>}
 											</div>
 											<div className="text-center shrink-0">
 												<p className="text-sm font-bold">{companyContacts.length}</p>

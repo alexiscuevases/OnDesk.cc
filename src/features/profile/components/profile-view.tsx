@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { User, KeyRound, Palette, ShieldCheck, Bell, ChevronRight } from "lucide-react";
 import { ProfileInfoSection } from "./profile-info-section";

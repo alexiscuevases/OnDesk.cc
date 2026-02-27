@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Save } from "lucide-react";
 import { toast } from "sonner";
@@ -36,7 +34,12 @@ export function GeneralSection() {
 	}
 
 	const workspaceInitials = name
-		? name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+		? name
+				.split(" ")
+				.map((w) => w[0])
+				.join("")
+				.slice(0, 2)
+				.toUpperCase()
 		: "WS";
 
 	return (
@@ -58,12 +61,7 @@ export function GeneralSection() {
 						<Label htmlFor="workspace-name" className="text-xs">
 							Workspace Name
 						</Label>
-						<Input
-							id="workspace-name"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							className="h-9 rounded-lg"
-						/>
+						<Input id="workspace-name" value={name} onChange={(e) => setName(e.target.value)} className="h-9 rounded-lg" />
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="workspace-description" className="text-xs">

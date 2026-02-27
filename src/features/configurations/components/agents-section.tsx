@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Pencil, Trash2, X, UserPlus, Clock } from "lucide-react";
 import { toast } from "sonner";
@@ -9,7 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useWorkspace } from "@/context/workspace-context";
 import { useWorkspaceMembers, useWorkspaceInvitations } from "@/features/users/hooks/use-user-queries";
-import { useUpdateMemberRoleMutation, useRemoveMemberMutation, useInviteAgentMutation, useCancelInvitationMutation } from "@/features/users/hooks/use-user-mutations";
+import {
+	useUpdateMemberRoleMutation,
+	useRemoveMemberMutation,
+	useInviteAgentMutation,
+	useCancelInvitationMutation,
+} from "@/features/users/hooks/use-user-mutations";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
 import { EditAgentModal } from "../modals/edit-agent-modal";
 import { DeleteAgentModal } from "../modals/delete-agent-modal";
@@ -57,7 +60,7 @@ export function AgentsSection() {
 				onError: (err) => {
 					toast.error(err.message);
 				},
-			}
+			},
 		);
 	}
 
@@ -86,7 +89,9 @@ export function AgentsSection() {
 								.slice(0, 2)
 								.toUpperCase();
 							return (
-								<div key={member.id} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
+								<div
+									key={member.id}
+									className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
 									<Avatar className="size-9 rounded-lg">
 										<AvatarImage src={member.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-lg" />
 										<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[11px] font-bold">
@@ -144,9 +149,7 @@ export function AgentsSection() {
 									</Avatar>
 									<div className="flex-1 min-w-0">
 										<p className="text-sm font-medium truncate">{invite.email}</p>
-										<p className="text-[11px] text-muted-foreground">
-											Expires {new Date(invite.expires_at * 1000).toLocaleDateString()}
-										</p>
+										<p className="text-[11px] text-muted-foreground">Expires {new Date(invite.expires_at * 1000).toLocaleDateString()}</p>
 									</div>
 									<Badge variant="outline" className="text-[10px] rounded-full px-2 capitalize">
 										{invite.role}
@@ -171,11 +174,7 @@ export function AgentsSection() {
 				</CardContent>
 			</Card>
 
-			<AddAgentModal
-				open={addOpen}
-				onOpenChange={setAddOpen}
-				onConfirm={handleInvite}
-			/>
+			<AddAgentModal open={addOpen} onOpenChange={setAddOpen} onConfirm={handleInvite} />
 			<EditAgentModal
 				open={editOpen}
 				onOpenChange={setEditOpen}

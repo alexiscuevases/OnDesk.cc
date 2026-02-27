@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -109,7 +107,11 @@ export function CannedRepliesSection() {
 			<EditCannedReplyModal
 				open={editOpen}
 				onOpenChange={setEditOpen}
-				reply={selectedReply ? { id: selectedReply.id, name: selectedReply.name, shortcut: selectedReply.shortcut ?? "", content: selectedReply.content } : null}
+				reply={
+					selectedReply
+						? { id: selectedReply.id, name: selectedReply.name, shortcut: selectedReply.shortcut ?? "", content: selectedReply.content }
+						: null
+				}
 				onConfirm={handleEdit}
 			/>
 			<DeleteCannedReplyModal

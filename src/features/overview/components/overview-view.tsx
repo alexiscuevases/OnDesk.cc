@@ -1,5 +1,3 @@
-"use client";
-
 import { ArrowDown, ArrowUp, TrendingUp, Clock, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
@@ -34,15 +32,7 @@ function getInitials(name: string) {
 		.toUpperCase();
 }
 
-export function OverviewView({
-	workspaceId,
-	onOpenTicket,
-	onViewAll,
-}: {
-	workspaceId: string;
-	onOpenTicket: (id: string) => void;
-	onViewAll: () => void;
-}) {
+export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspaceId: string; onOpenTicket: (id: string) => void; onViewAll: () => void }) {
 	const { data: kpis = [] } = useQuery({ queryKey: queryKeys.kpis.all, queryFn: fetchKPIs });
 	const { data: ticketVolumeData = [] } = useQuery({ queryKey: queryKeys.analytics.ticketVolume, queryFn: fetchTicketVolumeData });
 	const { data: channelDistribution = [] } = useQuery({ queryKey: queryKeys.analytics.channelDistribution, queryFn: fetchChannelDistribution });
@@ -54,9 +44,7 @@ export function OverviewView({
 	const contactMap = Object.fromEntries(contacts.map((c) => [c.id, c as Contact]));
 	const companyMap = Object.fromEntries(companies.map((c) => [c.id, c.logo_url]));
 
-	const recentTickets = [...tickets]
-		.sort((a, b) => b.created_at - a.created_at)
-		.slice(0, 5);
+	const recentTickets = [...tickets].sort((a, b) => b.created_at - a.created_at).slice(0, 5);
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -192,16 +180,17 @@ export function OverviewView({
 									className="flex items-center justify-between gap-4 rounded-xl border border-transparent bg-secondary/40 p-3.5 w-full text-left transition-all hover:border-border hover:bg-secondary/80 hover:shadow-sm">
 									<div className="flex items-center gap-3 min-w-0">
 										<Avatar className="size-8 rounded-lg shrink-0">
-											<AvatarImage src={contact?.logo_url ?? (contact?.company_id ? companyMap[contact.company_id] ?? undefined : undefined)} className="object-cover rounded-lg" />
+											<AvatarImage
+												src={contact?.logo_url ?? (contact?.company_id ? (companyMap[contact.company_id] ?? undefined) : undefined)}
+												className="object-cover rounded-lg"
+											/>
 											<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[10px] font-bold">
 												{contact ? getInitials(contact.name) : "?"}
 											</AvatarFallback>
 										</Avatar>
 										<div className="min-w-0">
 											<p className="text-sm font-medium truncate">{ticket.subject}</p>
-											<p className="text-[11px] text-muted-foreground mt-0.5">
-												{contact ? contact.name : "No contact"}
-											</p>
+											<p className="text-[11px] text-muted-foreground mt-0.5">{contact ? contact.name : "No contact"}</p>
 										</div>
 									</div>
 									<div className="flex items-center gap-2 shrink-0">

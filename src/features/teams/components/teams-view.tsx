@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Users, CheckCircle2, Ticket, TrendingUp, Search, X, Clock } from "lucide-react";
 import { useNavigate, useParams } from "@tanstack/react-router";
@@ -173,9 +171,7 @@ export function TeamsView() {
 											<span className={`text-xs font-bold ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
 												{teamPending}
 											</span>
-											<span className={`text-[9px] ${isSelected ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-												Pending
-											</span>
+											<span className={`text-[9px] ${isSelected ? "text-primary-foreground/70" : "text-muted-foreground"}`}>Pending</span>
 										</div>
 										<div
 											className={`flex flex-col items-center gap-0.5 rounded-lg p-1.5 ${
@@ -260,10 +256,15 @@ export function TeamsView() {
 									{filteredTickets.map((ticket) => {
 										const contact = ticket.contact_id ? contacts.find((c) => c.id === ticket.contact_id) : null;
 										const companyLogo = contact?.company_id
-											? companies.find((c) => c.id === contact.company_id)?.logo_url ?? undefined
+											? (companies.find((c) => c.id === contact.company_id)?.logo_url ?? undefined)
 											: undefined;
 										const contactInitials = contact
-											? contact.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+											? contact.name
+													.split(" ")
+													.map((w) => w[0])
+													.join("")
+													.slice(0, 2)
+													.toUpperCase()
 											: "?";
 										return (
 											<div

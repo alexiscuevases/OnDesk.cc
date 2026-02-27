@@ -1,16 +1,10 @@
-"use client";
-
 import { useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSignatures } from "@/features/signatures/hooks/use-signature-queries";
-import {
-	useCreateSignatureMutation,
-	useUpdateSignatureMutation,
-	useDeleteSignatureMutation,
-} from "@/features/signatures/hooks/use-signature-mutations";
+import { useCreateSignatureMutation, useUpdateSignatureMutation, useDeleteSignatureMutation } from "@/features/signatures/hooks/use-signature-mutations";
 import type { Signature } from "@/features/signatures/api/signatures-api";
 import { type SignatureFormValues } from "../schemas/config.schema";
 import { AddSignatureModal } from "../modals/add-signature-modal";
