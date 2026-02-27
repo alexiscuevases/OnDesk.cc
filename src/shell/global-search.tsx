@@ -3,40 +3,56 @@ import { Search, Hash, User, Users } from "lucide-react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { tickets, agents, teams } from "@/lib/data";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useWorkspace } from "@/context/workspace-context";
+import { useTickets } from "@/features/tickets/hooks/use-ticket-queries";
+import { useTeams } from "@/features/teams/hooks/use-team-queries";
+import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
+import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
+import { useCompanies } from "@/features/companies/hooks/use-company-queries";
 
 export function GlobalSearch() {
 	const [globalSearch, setGlobalSearch] = useState("");
 	const [searchOpen, setSearchOpen] = useState(false);
 	const navigate = useNavigate();
 	const { slug } = useParams({ strict: false });
+	const { workspace } = useWorkspace();
+	const workspaceId = workspace.id;
+
+	const { data: allTickets = [] } = useTickets(workspaceId);
+	const { data: allTeams = [] } = useTeams(workspaceId);
+	const { data: allMembers = [] } = useWorkspaceMembers(workspaceId);
+	const { data: allContacts = [] } = useContacts(workspaceId);
+	const { data: allCompanies = [] } = useCompanies(workspaceId);
+
+	const q = globalSearch.toLowerCase();
 
 	const searchResults = {
-		tickets: tickets
-			.filter(
-				(t) =>
-					globalSearch &&
-					(t.id.toLowerCase().includes(globalSearch.toLowerCase()) ||
-						t.subject.toLowerCase().includes(globalSearch.toLowerCase()) ||
-						t.requester.toLowerCase().includes(globalSearch.toLowerCase())),
-			)
-			.slice(0, 3),
-		agents: agents
-			.filter(
-				(a) =>
-					globalSearch &&
-					(a.name.toLowerCase().includes(globalSearch.toLowerCase()) ||
-						a.email.toLowerCase().includes(globalSearch.toLowerCase())),
-			)
-			.slice(0, 3),
-		teams: teams
-			.filter((t) => globalSearch && t.name.toLowerCase().includes(globalSearch.toLowerCase()))
-			.slice(0, 3),
+		tickets: allTickets.filter((t) => q && (t.id.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q))).slice(0, 3),
+		agents: allMembers.filter((a) => q && (a.name.toLowerCase().includes(q) || a.email.toLowerCase().includes(q))).slice(0, 3),
+		teams: allTeams.filter((t) => q && t.name.toLowerCase().includes(q)).slice(0, 3),
 	};
 
-	const hasResults =
-		searchResults.tickets.length > 0 || searchResults.agents.length > 0 || searchResults.teams.length > 0;
+	const hasResults = searchResults.tickets.length > 0 || searchResults.agents.length > 0 || searchResults.teams.length > 0;
+
+	function getContact(id: string | null) {
+		if (!id) return null;
+		return allContacts.find((c) => c.id === id) ?? null;
+	}
+
+	function getCompanyLogo(companyId: string | null) {
+		if (!companyId) return null;
+		return allCompanies.find((c) => c.id === companyId)?.logo_url ?? null;
+	}
+
+	function getInitials(name: string) {
+		return name
+			.split(" ")
+			.map((w) => w[0])
+			.join("")
+			.slice(0, 2)
+			.toUpperCase();
+	}
 
 	return (
 		<Popover open={searchOpen && globalSearch.length > 0} onOpenChange={setSearchOpen}>
@@ -55,11 +71,7 @@ export function GlobalSearch() {
 					/>
 				</div>
 			</PopoverTrigger>
-			<PopoverContent
-				className="w-[400px] p-0"
-				align="start"
-				sideOffset={8}
-				onOpenAutoFocus={(e) => e.preventDefault()}>
+			<PopoverContent className="w-[400px] p-0" align="start" sideOffset={8} onOpenAutoFocus={(e) => e.preventDefault()}>
 				{hasResults ? (
 					<div className="max-h-96 overflow-y-auto">
 						{searchResults.tickets.length > 0 && (
@@ -68,26 +80,36 @@ export function GlobalSearch() {
 									<Hash className="size-3" />
 									Tickets
 								</div>
-								{searchResults.tickets.map((ticket) => (
-									<button
-										key={ticket.id}
-										onClick={() => {
-											if (slug) {
-												navigate({ to: "/w/$slug/tickets/$id", params: { slug, id: ticket.id } });
-											}
-											setSearchOpen(false);
-											setGlobalSearch("");
-										}}
-										className="w-full flex items-start gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors text-left">
-										<div className="flex-1 min-w-0">
-											<div className="flex items-center gap-2">
-												<span className="text-xs font-mono font-semibold text-primary/70">{ticket.id}</span>
+								{searchResults.tickets.map((ticket) => {
+									const contact = getContact(ticket.contact_id);
+									const companyLogo = getCompanyLogo(contact?.company_id ?? null);
+									return (
+										<button
+											key={ticket.id}
+											onClick={() => {
+												if (slug) {
+													navigate({ to: "/w/$slug/tickets/$id", params: { slug, id: ticket.id } });
+												}
+												setSearchOpen(false);
+												setGlobalSearch("");
+											}}
+											className="w-full flex items-start gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors text-left">
+											<Avatar className="size-7 rounded-lg mt-0.5">
+												<AvatarImage src={companyLogo ?? undefined} className="object-cover rounded-lg" />
+												<AvatarFallback className="rounded-lg bg-secondary text-foreground text-[10px] font-bold">
+													{contact ? getInitials(contact.name) : "?"}
+												</AvatarFallback>
+											</Avatar>
+											<div className="flex-1 min-w-0">
+												<div className="flex items-center gap-2">
+													<span className="text-xs font-mono font-semibold text-primary/70">{ticket.id}</span>
+												</div>
+												<p className="text-sm font-medium truncate">{ticket.subject}</p>
+												<p className="text-xs text-muted-foreground truncate">{ticket.status}</p>
 											</div>
-											<p className="text-sm font-medium truncate">{ticket.subject}</p>
-											<p className="text-xs text-muted-foreground truncate">{ticket.requester}</p>
-										</div>
-									</button>
-								))}
+										</button>
+									);
+								})}
 							</div>
 						)}
 						{searchResults.agents.length > 0 && (
@@ -97,12 +119,11 @@ export function GlobalSearch() {
 									Agents
 								</div>
 								{searchResults.agents.map((agent) => (
-									<div
-										key={agent.id}
-										className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors">
+									<div key={agent.id} className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors">
 										<Avatar className="size-7 rounded-lg">
+											<AvatarImage src={agent.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-lg" />
 											<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
-												{agent.initials}
+												{agent.name.slice(0, 2).toUpperCase()}
 											</AvatarFallback>
 										</Avatar>
 										<div className="flex-1 min-w-0">
@@ -120,12 +141,11 @@ export function GlobalSearch() {
 									Teams
 								</div>
 								{searchResults.teams.map((team) => (
-									<div
-										key={team.id}
-										className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors">
+									<div key={team.id} className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors">
 										<Avatar className="size-7 rounded-lg">
+											<AvatarImage src={team.logo_url ?? undefined} className="object-cover rounded-lg" />
 											<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[9px] font-bold">
-												{team.avatar}
+												{team.name.slice(0, 2).toUpperCase()}
 											</AvatarFallback>
 										</Avatar>
 										<div className="flex-1 min-w-0">

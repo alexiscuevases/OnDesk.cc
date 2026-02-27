@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { useSendMessageMutation } from "@/features/tickets/hooks/use-ticket-mutations";
+import { useSignatures } from "@/features/signatures/hooks/use-signature-queries";
 
 interface TicketReplyBoxProps {
 	ticketId: string;
@@ -15,6 +16,8 @@ export function TicketReplyBox({ ticketId, members = [] }: TicketReplyBoxProps) 
 	const [isInternal, setIsInternal] = useState(false);
 
 	const sendMessage = useSendMessageMutation(ticketId);
+	const { data: signatures = [] } = useSignatures();
+	const defaultSignature = signatures.find((s) => s.is_default) ?? null;
 
 	async function handleSend() {
 		const content = reply.trim();
@@ -43,14 +46,30 @@ export function TicketReplyBox({ ticketId, members = [] }: TicketReplyBoxProps) 
 						Internal Note
 					</Button>
 				</div>
-				<TiptapEditor
-					content={reply}
-					onChange={setReply}
-					placeholder={isInternal ? "Write an internal note..." : "Type your reply..."}
-					className={isInternal ? "border-warning/30 bg-warning/5" : ""}
-					minHeight="min-h-[96px]"
-					members={members}
-				/>
+				<div className={`rounded-md border ${isInternal ? "border-warning/30" : "border-input"}`}>
+					<TiptapEditor
+						content={reply}
+						onChange={setReply}
+						placeholder={isInternal ? "Write an internal note..." : "Type your reply..."}
+						className={`border-0 rounded-b-none ${isInternal ? "bg-warning/5" : ""}`}
+						minHeight="min-h-[96px]"
+						members={members}
+					/>
+					{!isInternal && defaultSignature && (
+						<>
+							<div className="border-t border-dashed border-muted-foreground/20" />
+							<div className="px-3 py-2 bg-muted/30 rounded-b-md text-xs text-muted-foreground">
+								<p className="font-medium text-[10px] uppercase tracking-wide mb-1 text-muted-foreground/50">
+									Signature · {defaultSignature.name}
+								</p>
+								<div
+									className="prose prose-sm max-w-none text-muted-foreground **:text-muted-foreground"
+									dangerouslySetInnerHTML={{ __html: defaultSignature.content }}
+								/>
+							</div>
+						</>
+					)}
+				</div>
 				<div className="flex items-center justify-between mt-3">
 					<Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5 text-muted-foreground rounded-lg">
 						<Paperclip className="size-3.5" />
