@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
@@ -8,7 +8,7 @@ import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
 import Mention from "@tiptap/extension-mention";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
 	Bold,
 	Italic,
@@ -49,14 +49,160 @@ interface TiptapEditorProps {
 	members?: MentionMember[];
 }
 
-export function TiptapEditor({ content, onChange, placeholder = "Type your message...", className, minHeight = "min-h-[120px]", members = [] }: TiptapEditorProps) {
+// ─── Resizable Image Node View ────────────────────────────────────────────────
+
+function ResizableImageComponent({
+	node,
+	updateAttributes,
+	selected,
+}: {
+	node: any;
+	updateAttributes: (attrs: Record<string, unknown>) => void;
+	selected: boolean;
+}) {
+	const imgRef = useRef<HTMLImageElement>(null);
+	const isResizing = useRef(false);
+	const startX = useRef(0);
+	const startWidth = useRef(0);
+	const float: "left" | "right" | "none" = node.attrs.float ?? "none";
+
+	const onMouseDown = useCallback(
+		(e: React.MouseEvent) => {
+			e.preventDefault();
+			e.stopPropagation();
+			isResizing.current = true;
+			startX.current = e.clientX;
+			startWidth.current = imgRef.current?.offsetWidth ?? (node.attrs.width ? parseInt(node.attrs.width) : 300);
+
+			const onMouseMove = (ev: MouseEvent) => {
+				if (!isResizing.current) return;
+				const delta = ev.clientX - startX.current;
+				const newWidth = Math.max(80, startWidth.current + delta);
+				updateAttributes({ width: `${newWidth}px` });
+			};
+
+			const onMouseUp = () => {
+				isResizing.current = false;
+				window.removeEventListener("mousemove", onMouseMove);
+				window.removeEventListener("mouseup", onMouseUp);
+			};
+
+			window.addEventListener("mousemove", onMouseMove);
+			window.addEventListener("mouseup", onMouseUp);
+		},
+		[node.attrs.width, updateAttributes],
+	);
+
+	const floatStyle: React.CSSProperties =
+		float === "left"
+			? { float: "left", marginRight: "0.75rem", marginBottom: "0.25rem" }
+			: float === "right"
+				? { float: "right", marginLeft: "0.75rem", marginBottom: "0.25rem" }
+				: {};
+
+	return (
+		<NodeViewWrapper
+			style={{
+				...floatStyle,
+				position: "relative",
+				display: float === "none" ? "block" : undefined,
+				width: "fit-content",
+				lineHeight: 0,
+			}}>
+			{selected && (
+				<div contentEditable={false} style={{ position: "absolute", top: 6, left: 6, zIndex: 20, display: "flex", gap: 4, lineHeight: "normal" }}>
+					{(["none", "left", "right"] as const).map((f) => (
+						<button
+							key={f}
+							onMouseDown={(e) => {
+								e.preventDefault();
+								updateAttributes({ float: f });
+							}}
+							style={{
+								padding: "2px 6px",
+								fontSize: 10,
+								borderRadius: 4,
+								border: "none",
+								cursor: "pointer",
+								background: float === f ? "hsl(var(--primary))" : "hsl(var(--secondary))",
+								color: float === f ? "hsl(var(--primary-foreground))" : "hsl(var(--secondary-foreground))",
+								fontWeight: 600,
+							}}>
+							{f === "none" ? "⊡" : f === "left" ? "⬱ L" : "R ⬱"}
+						</button>
+					))}
+				</div>
+			)}
+			<img
+				ref={imgRef}
+				src={node.attrs.src}
+				alt={node.attrs.alt ?? ""}
+				style={{ width: node.attrs.width ?? "auto", height: "auto", display: "block", borderRadius: "0.5rem" }}
+				className={selected ? "ring-2 ring-primary ring-offset-2" : ""}
+				draggable={false}
+			/>
+			{selected && (
+				<div
+					contentEditable={false}
+					onMouseDown={onMouseDown}
+					style={{
+						position: "absolute",
+						right: 0,
+						bottom: 0,
+						width: 14,
+						height: 14,
+						zIndex: 20,
+						cursor: "se-resize",
+						transform: "translate(50%, 50%)",
+						background: "hsl(var(--primary))",
+						borderRadius: 3,
+					}}
+				/>
+			)}
+		</NodeViewWrapper>
+	);
+}
+
+const ResizableImage = Image.extend({
+	addAttributes() {
+		return {
+			...this.parent?.(),
+			width: {
+				default: null,
+				renderHTML: (attrs) => (attrs.width ? { width: attrs.width, style: `width:${attrs.width}` } : {}),
+				parseHTML: (el) => el.getAttribute("width") ?? el.style.width ?? null,
+			},
+			float: {
+				default: "none",
+				renderHTML: (attrs) =>
+					attrs.float && attrs.float !== "none"
+						? { "data-float": attrs.float, style: `float:${attrs.float};margin-${attrs.float === "left" ? "right" : "left"}:0.75rem` }
+						: {},
+				parseHTML: (el) => el.getAttribute("data-float") ?? "none",
+			},
+		};
+	},
+	addNodeView() {
+		return ReactNodeViewRenderer(ResizableImageComponent);
+	},
+});
+
+// ─── TiptapEditor ─────────────────────────────────────────────────────────────
+
+export function TiptapEditor({
+	content,
+	onChange,
+	placeholder = "Type your message...",
+	className,
+	minHeight = "min-h-[120px]",
+	members = [],
+}: TiptapEditorProps) {
 	const [linkDialogOpen, setLinkDialogOpen] = useState(false);
 	const [linkUrl, setLinkUrl] = useState("");
 	const [linkText, setLinkText] = useState("");
 	const [imageDialogOpen, setImageDialogOpen] = useState(false);
 	const [imageUrl, setImageUrl] = useState("");
 	const [imageFile, setImageFile] = useState<File | null>(null);
-
 	const editor = useEditor({
 		extensions: [
 			StarterKit.configure({
@@ -79,12 +225,9 @@ export function TiptapEditor({ content, onChange, placeholder = "Type your messa
 			TextAlign.configure({
 				types: ["heading", "paragraph"],
 			}),
-			Image.configure({
+			ResizableImage.configure({
 				inline: false,
 				allowBase64: true,
-				HTMLAttributes: {
-					class: "max-w-full h-auto rounded-lg my-2",
-				},
 			}),
 			...(members.length > 0
 				? [
@@ -94,7 +237,11 @@ export function TiptapEditor({ content, onChange, placeholder = "Type your messa
 								"data-mention": "true",
 							},
 							renderHTML({ node }: { node: any }) {
-								return ["span", { class: "text-primary bg-primary/10 rounded px-1", "data-mention": "true", "data-mention-id": node.attrs.id }, `@${node.attrs.label ?? node.attrs.id}`];
+								return [
+									"span",
+									{ class: "text-primary bg-primary/10 rounded px-1", "data-mention": "true", "data-mention-id": node.attrs.id },
+									`@${node.attrs.label ?? node.attrs.id}`,
+								];
 							},
 							suggestion: {
 								items: ({ query }: { query: string }) => {
@@ -109,7 +256,10 @@ export function TiptapEditor({ content, onChange, placeholder = "Type your messa
 											component.innerHTML = '<div class="px-2 py-1.5 text-xs text-muted-foreground">No agents found</div>';
 										} else {
 											component.innerHTML = items
-												.map((m) => `<div class="px-2 py-1.5 text-sm rounded hover:bg-secondary cursor-pointer" data-id="${m.id}">${m.name}</div>`)
+												.map(
+													(m) =>
+														`<div class="px-2 py-1.5 text-sm rounded hover:bg-secondary cursor-pointer" data-id="${m.id}">${m.name}</div>`,
+												)
 												.join("");
 
 											component.querySelectorAll("[data-id]").forEach((el) => {
@@ -521,17 +671,22 @@ export function TiptapEditor({ content, onChange, placeholder = "Type your messa
 					}
 
 					.ProseMirror img {
-						display: block;
 						max-width: 100%;
 						height: auto;
 						border-radius: 0.5rem;
-						margin: 0.5rem 0;
 					}
 
-					.ProseMirror img.ProseMirror-selectednode {
-						outline: 2px solid hsl(var(--primary));
-						outline-offset: 2px;
+					.ProseMirror p:has(> span[data-node-view-wrapper]) {
+						overflow: hidden;
 					}
+
+					.ProseMirror::after {
+						content: "";
+						display: table;
+						clear: both;
+					}
+
+
 				`}</style>
 			</div>
 
