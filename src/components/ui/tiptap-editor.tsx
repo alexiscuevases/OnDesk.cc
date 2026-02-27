@@ -8,7 +8,7 @@ import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
 import Mention from "@tiptap/extension-mention";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useImperativeHandle, forwardRef } from "react";
 import {
 	Bold,
 	Italic,
@@ -38,6 +38,11 @@ import { cn } from "@/lib/utils";
 interface MentionMember {
 	id: string;
 	name: string;
+}
+
+export interface TiptapEditorHandle {
+	insertHTML: (html: string) => void;
+	replaceLastWord: (word: string, html: string) => void;
 }
 
 interface TiptapEditorProps {
@@ -189,14 +194,10 @@ const ResizableImage = Image.extend({
 
 // ─── TiptapEditor ─────────────────────────────────────────────────────────────
 
-export function TiptapEditor({
-	content,
-	onChange,
-	placeholder = "Type your message...",
-	className,
-	minHeight = "min-h-[120px]",
-	members = [],
-}: TiptapEditorProps) {
+export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(function TiptapEditor(
+	{ content, onChange, placeholder = "Type your message...", className, minHeight = "min-h-[120px]", members = [] },
+	ref,
+) {
 	const [linkDialogOpen, setLinkDialogOpen] = useState(false);
 	const [linkUrl, setLinkUrl] = useState("");
 	const [linkText, setLinkText] = useState("");
@@ -321,6 +322,29 @@ export function TiptapEditor({
 		},
 	});
 
+	useImperativeHandle(ref, () => ({
+		insertHTML: (html: string) => {
+			if (!editor) return;
+			editor.commands.setContent(html);
+			onChange(editor.getHTML());
+		},
+		replaceLastWord: (word: string, html: string) => {
+			if (!editor) return;
+			const { from } = editor.state.selection;
+			// Find and delete the /word text before cursor, then insert html
+			const textBefore = editor.state.doc.textBetween(0, from, " ");
+			const trigger = `/${word}`;
+			const idx = textBefore.lastIndexOf(trigger);
+			if (idx === -1) return;
+			editor
+				.chain()
+				.deleteRange({ from: idx + 1, to: from })
+				.insertContentAt(idx + 1, html)
+				.run();
+			onChange(editor.getHTML());
+		},
+	}));
+
 	if (!editor) {
 		return null;
 	}
@@ -337,7 +361,7 @@ export function TiptapEditor({
 	const insertLink = () => {
 		if (!linkUrl) return;
 
-		const { from, to, empty } = editor.state.selection;
+		const { to, empty } = editor.state.selection;
 
 		if (!empty) {
 			// There's selected text - add link to it
@@ -800,4 +824,4 @@ export function TiptapEditor({
 			</Dialog>
 		</>
 	);
-}
+});
