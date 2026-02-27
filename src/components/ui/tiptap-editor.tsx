@@ -331,16 +331,16 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(fu
 		replaceLastWord: (word: string, html: string) => {
 			if (!editor) return;
 			const { from } = editor.state.selection;
-			// Find and delete the /word text before cursor, then insert html
-			const textBefore = editor.state.doc.textBetween(0, from, " ");
+			// textBetween uses doc positions starting at 1; the returned string
+			// has the same length as the char span, so string idx + 1 = doc pos
+			const textBefore = editor.state.doc.textBetween(1, from, " ");
+			// word is e.g. "test"; typed trigger in editor is "/test"
 			const trigger = `/${word}`;
 			const idx = textBefore.lastIndexOf(trigger);
 			if (idx === -1) return;
-			editor
-				.chain()
-				.deleteRange({ from: idx + 1, to: from })
-				.insertContentAt(idx + 1, html)
-				.run();
+			// +1 because textBetween started at doc pos 1, +idx gives us the /
+			const deleteFrom = 1 + idx;
+			editor.chain().deleteRange({ from: deleteFrom, to: from }).insertContentAt(deleteFrom, html).run();
 			onChange(editor.getHTML());
 		},
 	}));

@@ -49,9 +49,10 @@ export function TicketReplyBox({ ticketId, members = [] }: TicketReplyBoxProps) 
 			setActiveShortcutWord("");
 			return;
 		}
-		const typed = match[1].toLowerCase();
+		const typed = match[1].toLowerCase(); // e.g. "test" from "/test"
 		setActiveShortcutWord(typed);
-		const matches = cannedReplies.filter((cr) => cr.shortcut && cr.shortcut.toLowerCase().startsWith(typed));
+		// Shortcuts are stored with leading slash e.g. "/test", so compare against "/" + typed
+		const matches = cannedReplies.filter((cr) => cr.shortcut && cr.shortcut.toLowerCase().startsWith("/" + typed));
 		setShortcutSuggestions(matches);
 		setSuggestionIndex(0);
 	}, [reply, cannedReplies]);
