@@ -19,10 +19,23 @@ export function TicketReplyBox({ ticketId, members = [] }: TicketReplyBoxProps) 
 	const { data: signatures = [] } = useSignatures();
 	const defaultSignature = signatures.find((s) => s.is_default) ?? null;
 
+	function normalizeSignatureHtml(html: string): string {
+		const doc = new DOMParser().parseFromString(html, "text/html");
+		doc.body.querySelectorAll("p, h1, h2, h3, h4, h5, h6").forEach((el) => {
+			(el as HTMLElement).style.margin = "0";
+			(el as HTMLElement).style.padding = "0";
+		});
+		return doc.body.innerHTML;
+	}
+
 	async function handleSend() {
 		const content = reply.trim();
 		if (!content) return;
-		await sendMessage.mutateAsync({ content, type: isInternal ? "note" : "message" });
+		const fullContent =
+			!isInternal && defaultSignature
+				? `${content}<div style="margin-top:12px;overflow:hidden;">${normalizeSignatureHtml(defaultSignature.content)}</div>`
+				: content;
+		await sendMessage.mutateAsync({ content: fullContent, type: isInternal ? "note" : "message" });
 		setReply("");
 	}
 
@@ -63,7 +76,7 @@ export function TicketReplyBox({ ticketId, members = [] }: TicketReplyBoxProps) 
 									Signature · {defaultSignature.name}
 								</p>
 								<div
-									className="prose prose-sm max-w-none text-muted-foreground **:text-muted-foreground"
+									className="prose prose-sm max-w-none text-muted-foreground **:text-muted-foreground overflow-hidden"
 									dangerouslySetInnerHTML={{ __html: defaultSignature.content }}
 								/>
 							</div>
