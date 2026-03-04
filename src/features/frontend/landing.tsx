@@ -16,8 +16,51 @@ import {
 	TrendingUp,
 	Sparkles,
 	Play,
+	Shield,
+	Globe,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+
+// ── Scroll-reveal hook ──
+function useInView(options?: IntersectionObserverInit) {
+	const ref = useRef<HTMLElement>(null);
+	const [inView, setInView] = useState(false);
+	useEffect(() => {
+		const el = ref.current;
+		if (!el) return;
+		const obs = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					setInView(true);
+					obs.disconnect();
+				}
+			},
+			{ threshold: 0.15, ...options },
+		);
+		obs.observe(el);
+		return () => obs.disconnect();
+	}, []);
+	return { ref, inView };
+}
+
+// ── Animated counter hook ──
+function useCounter(target: number, duration = 1400, active = false) {
+	const [value, setValue] = useState(0);
+	useEffect(() => {
+		if (!active) return;
+		let start = 0;
+		const step = target / (duration / 16);
+		const id = setInterval(() => {
+			start += step;
+			if (start >= target) {
+				setValue(target);
+				clearInterval(id);
+			} else setValue(Math.floor(start));
+		}, 16);
+		return () => clearInterval(id);
+	}, [target, duration, active]);
+	return value;
+}
 
 // ---------- types ----------
 interface LiveTicket {
@@ -118,27 +161,35 @@ const STATUS_COLORS = {
 
 // ---------- component ----------
 export default function LandingPage() {
-	const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+	const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
 	const [activeFeature, setActiveFeature] = useState(0);
 	const [activeTestimonial, setActiveTestimonial] = useState(0);
 	const [tickets, setTickets] = useState<LiveTicket[]>(INITIAL_TICKETS);
 	const [ticketIdx, setTicketIdx] = useState(0);
 	const [visible, setVisible] = useState(false);
-	const heroRef = useRef<HTMLElement>(null);
+	const heroRef = useRef<HTMLDivElement>(null);
+
+	// Stats section in-view
+	const statsSection = useInView();
+	const statsActive = statsSection.inView;
+	const c80 = useCounter(80, 1200, statsActive);
+	const c50 = useCounter(50, 1400, statsActive);
+	const c95 = useCounter(95, 1300, statsActive);
 
 	// Mount animation
 	useEffect(() => {
-		setVisible(true);
+		const id = requestAnimationFrame(() => setVisible(true));
+		return () => cancelAnimationFrame(id);
 	}, []);
 
-	// Sticky nav — handled by SiteLayout
-
-	// Mouse parallax
+	// Mouse parallax for hero
+	const onMouseMove = useCallback((e: MouseEvent) => {
+		setMousePos({ x: e.clientX, y: e.clientY });
+	}, []);
 	useEffect(() => {
-		const onMove = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
-		window.addEventListener("mousemove", onMove);
-		return () => window.removeEventListener("mousemove", onMove);
-	}, []);
+		window.addEventListener("mousemove", onMouseMove);
+		return () => window.removeEventListener("mousemove", onMouseMove);
+	}, [onMouseMove]);
 
 	// Live ticket feed
 	useEffect(() => {
@@ -169,108 +220,193 @@ export default function LandingPage() {
 	return (
 		<SiteLayout>
 			{/* ── HERO ── */}
-			<section ref={heroRef} className="relative pt-16 pb-20 md:pt-28 md:pb-28 container mx-auto px-4">
-				<div className={`max-w-5xl mx-auto transition-all duration-1000 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-					{/* Badge */}
-					<div className="flex justify-center mb-8">
-						<span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-sm font-medium text-primary animate-in fade-in slide-in-from-bottom-3 duration-700">
-							<Sparkles className="size-3.5" />
-							Now with AI Agents — resolve 80% of tickets automatically
-							<ChevronRight className="size-3.5" />
-						</span>
-					</div>
+			<section className="relative pt-16 pb-20 md:pt-28 md:pb-32 overflow-hidden">
+				{/* Animated gradient mesh background */}
+				<div className="absolute inset-0 pointer-events-none">
+					<div className="absolute inset-0 bg-linear-to-br from-primary/8 via-background to-accent/5" />
+					{/* Mouse-following glow */}
+					<div
+						className="absolute size-150 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/12 blur-[100px] transition-all duration-700 ease-out"
+						style={{ left: mousePos.x, top: mousePos.y }}
+					/>
+					{/* Static ambient orbs */}
+					<div
+						className="absolute top-20 right-[15%] size-72 rounded-full bg-accent/10 blur-[80px] animate-pulse"
+						style={{ animationDuration: "6s" }}
+					/>
+					<div
+						className="absolute bottom-10 left-[10%] size-56 rounded-full bg-primary/8 blur-[70px] animate-pulse"
+						style={{ animationDuration: "8s", animationDelay: "2s" }}
+					/>
+					{/* Subtle grid */}
+					<div
+						className="absolute inset-0 opacity-[0.025]"
+						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "40px 40px" }}
+					/>
+				</div>
 
-					{/* Headline */}
-					<h1 className="text-center text-5xl md:text-[4.5rem] font-bold leading-[1.05] text-balance mb-6">
-						Support at the speed of{" "}
-						<span className="relative inline-block text-primary">
-							AI
-							<span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full opacity-60" />
-						</span>
-					</h1>
-
-					<p className="text-center text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-10 text-pretty">
-						SupportDesk 365 combines intelligent AI agents with Microsoft 365 to triage, route, and resolve customer tickets before your team even
-						clocks in.
-					</p>
-
-					<div className="flex flex-col sm:flex-row justify-center gap-3 mb-16">
-						<Button size="lg" asChild className="group h-12 px-8 text-base">
-							<a href="/signup">
-								Start free — 14 days
-								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
-							</a>
-						</Button>
-						<Button size="lg" variant="outline" asChild className="group h-12 px-8 text-base">
-							<a href="#demo">
-								<Play className="mr-2 size-4" />
-								Watch demo
-							</a>
-						</Button>
-					</div>
-
-					{/* Live ticket feed */}
-					<div className="max-w-2xl mx-auto rounded-2xl border border-border bg-card/80 backdrop-blur-sm overflow-hidden shadow-xl shadow-primary/5">
-						{/* Window chrome */}
-						<div className="flex items-center gap-2 px-4 py-3 bg-muted/40 border-b border-border">
-							<span className="size-3 rounded-full bg-destructive/60" />
-							<span className="size-3 rounded-full bg-warning/60" />
-							<span className="size-3 rounded-full bg-success/60" />
-							<span className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
-								<span className="size-1.5 rounded-full bg-success animate-pulse" />
-								Live ticket feed
+				<div className="container mx-auto px-4">
+					<div
+						ref={heroRef}
+						className={`max-w-5xl mx-auto transition-all duration-1000 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
+						{/* Animated badge */}
+						<div className="flex justify-center mb-8">
+							<span
+								className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all duration-500"
+								style={{
+									background:
+										"linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 8%, transparent), color-mix(in srgb, var(--color-accent) 5%, transparent))",
+									borderColor: "color-mix(in srgb, var(--color-primary) 25%, transparent)",
+									color: "var(--color-primary)",
+								}}>
+								<Sparkles className="size-3.5 animate-pulse" style={{ animationDuration: "2s" }} />
+								Now with AI Agents — resolve 80% of tickets automatically
+								<ChevronRight className="size-3.5" />
 							</span>
 						</div>
-						{/* Ticket rows */}
-						<div className="divide-y divide-border">
-							{tickets.map((t, i) => (
-								<div
-									key={t.id + i}
-									className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-500 ${i === 0 ? "bg-primary/5 animate-in fade-in slide-in-from-top-2 duration-500" : ""}`}>
-									<Ticket className="size-4 shrink-0 text-muted-foreground" />
-									<span className="font-mono text-xs text-muted-foreground w-12 shrink-0">{t.id}</span>
-									<span className="flex-1 truncate text-foreground/90">{t.title}</span>
-									<span
-										className={`hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs border font-medium ${PRIORITY_COLORS[t.priority]}`}>
-										{t.priority}
+
+						{/* Headline with gradient text */}
+						<h1 className="text-center text-5xl md:text-[5rem] font-black leading-[1.02] tracking-tight text-balance mb-6">
+							Support at the{" "}
+							<span
+								className="inline-block"
+								style={{
+									background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
+									WebkitBackgroundClip: "text",
+									WebkitTextFillColor: "transparent",
+									backgroundClip: "text",
+								}}>
+								speed of AI
+							</span>
+						</h1>
+
+						<p
+							className={`text-center text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-10 text-pretty transition-all duration-1000 delay-200 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+							SupportDesk 365 combines intelligent AI agents with Microsoft 365 to triage, route, and resolve customer tickets before your team
+							even clocks in.
+						</p>
+
+						<div
+							className={`flex flex-col sm:flex-row justify-center gap-3 mb-16 transition-all duration-1000 delay-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+							<Button
+								size="lg"
+								asChild
+								className="group relative h-13 px-8 text-base overflow-hidden shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
+								<a href="/signup">
+									<span className="relative z-10 flex items-center gap-2">
+										Start free — 14 days
+										<ArrowRight className="size-4 group-hover:translate-x-1 transition-transform duration-200" />
 									</span>
-									<span className={`text-xs font-medium shrink-0 ${STATUS_COLORS[t.status]}`}>
-										{t.status === "ai-resolving" ? "⚡ AI resolving" : t.status === "resolved" ? "✓ Resolved" : "Open"}
-									</span>
-								</div>
-							))}
+								</a>
+							</Button>
+							<Button
+								size="lg"
+								variant="outline"
+								asChild
+								className="group h-13 px-8 text-base hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+								<a href="#demo">
+									<Play className="mr-2 size-4 group-hover:scale-110 transition-transform" />
+									Watch demo
+								</a>
+							</Button>
+						</div>
+
+						{/* Live ticket feed — glassmorphism card */}
+						<div
+							className={`max-w-2xl mx-auto rounded-2xl border overflow-hidden transition-all duration-1000 delay-500 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+							style={{
+								background: "color-mix(in srgb, var(--color-card) 85%, transparent)",
+								borderColor: "color-mix(in srgb, var(--color-border) 80%, var(--color-primary) 20%)",
+								boxShadow: "0 20px 60px -10px color-mix(in srgb, var(--color-primary) 15%, transparent), 0 4px 20px -4px rgba(0,0,0,0.08)",
+								backdropFilter: "blur(16px)",
+							}}>
+							{/* Window chrome */}
+							<div
+								className="flex items-center gap-2 px-4 py-3 border-b"
+								style={{ background: "color-mix(in srgb, var(--color-muted) 40%, transparent)", borderColor: "var(--color-border)" }}>
+								<span className="size-3 rounded-full bg-red-400/70" />
+								<span className="size-3 rounded-full bg-yellow-400/70" />
+								<span className="size-3 rounded-full bg-green-400/70" />
+								<span className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
+									<span className="size-1.5 rounded-full bg-green-500 animate-pulse" />
+									Live ticket feed
+								</span>
+							</div>
+							{/* Ticket rows */}
+							<div className="divide-y divide-border">
+								{tickets.map((t, i) => (
+									<div
+										key={t.id + i}
+										className={`flex items-center gap-3 px-4 py-3 text-sm transition-all duration-500 ${i === 0 ? "animate-in fade-in slide-in-from-top-2 duration-500" : ""}`}
+										style={i === 0 ? { background: "color-mix(in srgb, var(--color-primary) 4%, transparent)" } : {}}>
+										<Ticket className="size-4 shrink-0 text-muted-foreground" />
+										<span className="font-mono text-xs text-muted-foreground w-12 shrink-0">{t.id}</span>
+										<span className="flex-1 truncate text-foreground/90">{t.title}</span>
+										<span
+											className={`hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs border font-medium ${PRIORITY_COLORS[t.priority]}`}>
+											{t.priority}
+										</span>
+										<span className={`text-xs font-medium shrink-0 ${STATUS_COLORS[t.status]}`}>
+											{t.status === "ai-resolving" ? "⚡ AI resolving" : t.status === "resolved" ? "✓ Resolved" : "Open"}
+										</span>
+									</div>
+								))}
+							</div>
 						</div>
 					</div>
 				</div>
 			</section>
 
 			{/* ── LOGOS MARQUEE ── */}
-			<div className="relative overflow-hidden border-y border-border bg-muted/20 py-6">
-				<p className="text-center text-xs text-muted-foreground mb-4 tracking-widest uppercase">Trusted by leading organizations</p>
-				<div className="flex gap-12 animate-marquee whitespace-nowrap">
+			<div
+				className="relative overflow-hidden border-y border-border py-7"
+				style={{ background: "color-mix(in srgb, var(--color-muted) 20%, transparent)" }}>
+				<p className="text-center text-xs text-muted-foreground mb-5 tracking-[0.2em] uppercase font-medium">Trusted by leading organizations</p>
+				<div className="flex gap-14 animate-marquee whitespace-nowrap">
 					{[...COMPANIES, ...COMPANIES].map((c, i) => (
 						<span
 							key={i}
-							className="text-muted-foreground/50 font-semibold text-sm tracking-wide hover:text-muted-foreground transition-colors cursor-default shrink-0">
+							className="text-muted-foreground/40 font-bold text-sm tracking-wide hover:text-muted-foreground transition-colors duration-300 cursor-default shrink-0 select-none">
 							{c}
 						</span>
 					))}
 				</div>
+				{/* Fade edges */}
+				<div className="absolute inset-y-0 left-0 w-24 bg-linear-to-r from-background to-transparent pointer-events-none" />
+				<div className="absolute inset-y-0 right-0 w-24 bg-linear-to-l from-background to-transparent pointer-events-none" />
 			</div>
 
 			{/* ── STATS ── */}
-			<section className="container mx-auto px-4 py-20">
-				<div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden max-w-5xl mx-auto shadow-sm">
+			<section ref={statsSection.ref as React.RefObject<HTMLElement>} className="container mx-auto px-4 py-20">
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
 					{[
-						{ value: "80%", label: "Faster resolution", icon: Clock },
-						{ value: "50K+", label: "Tickets/month handled", icon: Ticket },
-						{ value: "95%", label: "Customer satisfaction", icon: Star },
-						{ value: "24 / 7", label: "AI always online", icon: Bot },
-					].map(({ value, label, icon: Icon }) => (
-						<div key={label} className="flex flex-col items-center justify-center gap-2 bg-card p-8 group hover:bg-primary/5 transition-colors">
-							<Icon className="size-5 text-primary mb-1 group-hover:scale-110 transition-transform" />
-							<div className="text-4xl font-bold">{value}</div>
-							<div className="text-sm text-muted-foreground text-center">{label}</div>
+						{ value: c80, suffix: "%", label: "Faster resolution", icon: Clock, delay: 0 },
+						{ value: c50, suffix: "K+", label: "Tickets/month handled", icon: Ticket, delay: 100 },
+						{ value: c95, suffix: "%", label: "Customer satisfaction", icon: Star, delay: 200 },
+						{ value: null, display: "24/7", label: "AI always online", icon: Bot, delay: 300 },
+					].map(({ value, suffix, display, label, icon: Icon, delay }) => (
+						<div
+							key={label}
+							className={`group relative flex flex-col items-center justify-center gap-2 rounded-2xl border p-8 overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:shadow-lg cursor-default ${statsActive ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+							style={{
+								background: "var(--color-card)",
+								borderColor: "var(--color-border)",
+								transitionDelay: `${delay}ms`,
+								boxShadow: "0 2px 12px -4px rgba(0,0,0,0.06)",
+							}}>
+							{/* Hover glow */}
+							<div
+								className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+								style={{
+									background:
+										"radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 70%)",
+								}}
+							/>
+							<Icon className="size-5 text-primary mb-1 group-hover:scale-110 transition-transform duration-300 relative z-10" />
+							<div className="text-4xl font-black relative z-10" style={{ fontVariantNumeric: "tabular-nums" }}>
+								{display ?? `${value}${suffix}`}
+							</div>
+							<div className="text-sm text-muted-foreground text-center relative z-10">{label}</div>
 						</div>
 					))}
 				</div>
@@ -279,43 +415,64 @@ export default function LandingPage() {
 			{/* ── INTERACTIVE FEATURES ── */}
 			<section id="features" className="container mx-auto px-4 py-20 md:py-28">
 				<div className="text-center mb-14">
-					<h2 className="text-3xl md:text-5xl font-bold mb-4 text-balance">Built for every part of your support team</h2>
+					<SectionBadge icon={Sparkles} label="Platform" />
+					<h2 className="text-3xl md:text-5xl font-black mb-4 text-balance tracking-tight">Built for every part of your support team</h2>
 					<p className="text-xl text-muted-foreground max-w-2xl mx-auto">Click any tab to explore what makes SupportDesk 365 different.</p>
 				</div>
 				{/* Tab bar */}
 				<div className="flex flex-wrap justify-center gap-2 mb-12">
 					{FEATURES.map((f, i) => {
 						const Icon = f.icon;
+						const isActive = activeFeature === i;
 						return (
 							<button
 								key={f.id}
 								onClick={() => setActiveFeature(i)}
-								className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium border transition-all duration-200 ${activeFeature === i ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20" : "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"}`}>
-								<Icon className="size-4" />
-								{f.label}
+								className={`relative flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium border transition-all duration-300 overflow-hidden ${isActive ? "text-primary-foreground border-primary shadow-lg shadow-primary/30 scale-105" : "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground hover:scale-102"}`}
+								style={isActive ? { background: "var(--color-primary)" } : {}}>
+								{isActive && (
+									<span
+										className="absolute inset-0 animate-pulse rounded-full"
+										style={{ background: "color-mix(in srgb, var(--color-primary) 30%, transparent)" }}
+									/>
+								)}
+								<Icon className="size-4 relative z-10" />
+								<span className="relative z-10">{f.label}</span>
 							</button>
 						);
 					})}
 				</div>
 
 				{/* Feature panel */}
-				<div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
-					<div className="order-2 md:order-1 space-y-5 animate-in fade-in slide-in-from-left-4 duration-500" key={feat.id}>
-						<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
+				<div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+					<div className="order-2 md:order-1 space-y-5 animate-in fade-in slide-in-from-left-6 duration-500" key={feat.id}>
+						<div
+							className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+							style={{
+								background: "color-mix(in srgb, var(--color-primary) 10%, transparent)",
+								border: "1px solid color-mix(in srgb, var(--color-primary) 25%, transparent)",
+								color: "var(--color-primary)",
+							}}>
 							<FeatIcon className="size-3.5" />
 							{feat.label}
 						</div>
-						<h3 className="text-3xl font-bold text-balance leading-snug">{feat.title}</h3>
+						<h3 className="text-3xl md:text-4xl font-black text-balance leading-snug tracking-tight">{feat.title}</h3>
 						<p className="text-muted-foreground leading-relaxed text-lg">{feat.description}</p>
-						<ul className="space-y-2.5">
+						<ul className="space-y-3">
 							{feat.bullets.map((b) => (
-								<li key={b} className="flex items-center gap-2.5 text-sm">
-									<CheckCircle2 className="size-4 text-primary shrink-0" />
-									{b}
+								<li key={b} className="flex items-center gap-3 text-sm group/bullet">
+									<div
+										className="size-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 group-hover/bullet:scale-110"
+										style={{ background: "color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
+										<CheckCircle2 className="size-3 text-primary" />
+									</div>
+									<span className="group-hover/bullet:text-foreground transition-colors text-muted-foreground">{b}</span>
 								</li>
 							))}
 						</ul>
-						<Button asChild className="group mt-2">
+						<Button
+							asChild
+							className="group mt-2 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300">
 							<a href="/signup">
 								Try {feat.label} free
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
@@ -325,7 +482,14 @@ export default function LandingPage() {
 
 					{/* Animated visual */}
 					<div className="order-1 md:order-2" key={feat.id + "-visual"}>
-						<div className="animate-in fade-in zoom-in-95 duration-500 rounded-2xl border border-border bg-card/80 p-6 shadow-xl shadow-primary/5">
+						<div
+							className="animate-in fade-in zoom-in-95 duration-500 rounded-2xl p-6"
+							style={{
+								background: "color-mix(in srgb, var(--color-card) 90%, transparent)",
+								border: "1px solid color-mix(in srgb, var(--color-border) 80%, var(--color-primary) 20%)",
+								boxShadow: "0 24px 64px -12px color-mix(in srgb, var(--color-primary) 12%, transparent), 0 4px 20px -4px rgba(0,0,0,0.06)",
+								backdropFilter: "blur(8px)",
+							}}>
 							{feat.id === "ai" && <AIAgentVisual />}
 							{feat.id === "speed" && <SpeedVisual />}
 							{feat.id === "teams" && <TeamsVisual />}
@@ -336,118 +500,244 @@ export default function LandingPage() {
 			</section>
 
 			{/* ── TESTIMONIALS ── */}
-			<section className="py-20 md:py-28 bg-muted/20 border-y border-border">
-				<div className="container mx-auto px-4">
-					<h2 className="text-center text-3xl md:text-4xl font-bold mb-14 text-balance">What support leaders are saying</h2>
-					<div className="max-w-3xl mx-auto text-center">
-						<div className="relative overflow-hidden min-h-[160px]">
+			<TestimonialsSection activeTestimonial={activeTestimonial} setActiveTestimonial={setActiveTestimonial} />
+
+			{/* ── HOW IT WORKS ── */}
+			<HowItWorksSection />
+
+			{/* ── TRUST BADGES ── */}
+			<TrustSection />
+
+			{/* ── CTA ── */}
+			<CtaSection />
+		</SiteLayout>
+	);
+}
+
+// ── HELPER COMPONENTS ──
+
+function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
+	return (
+		<div className="flex justify-center mb-5">
+			<span
+				className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+				style={{
+					background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
+					border: "1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)",
+					color: "var(--color-primary)",
+				}}>
+				<Icon className="size-3.5" />
+				{label}
+			</span>
+		</div>
+	);
+}
+
+function TestimonialsSection({ activeTestimonial, setActiveTestimonial }: { activeTestimonial: number; setActiveTestimonial: (i: number) => void }) {
+	const { ref, inView } = useInView();
+	return (
+		<section
+			ref={ref}
+			className="py-24 md:py-32 border-y border-border relative overflow-hidden"
+			style={{ background: "color-mix(in srgb, var(--color-muted) 15%, transparent)" }}>
+			{/* Ambient glow */}
+			<div
+				className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-96 rounded-full blur-[120px] pointer-events-none"
+				style={{ background: "color-mix(in srgb, var(--color-primary) 6%, transparent)" }}
+			/>
+			<div className="container mx-auto px-4 relative">
+				<div className={`text-center mb-14 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+					<SectionBadge icon={Star} label="Testimonials" />
+					<h2 className="text-3xl md:text-5xl font-black mb-3 text-balance tracking-tight">What support leaders are saying</h2>
+				</div>
+				<div className={`max-w-3xl mx-auto transition-all duration-700 delay-150 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+					{/* Cards layout */}
+					<div
+						className="relative rounded-3xl p-8 md:p-12 text-center overflow-hidden"
+						style={{ background: "var(--color-card)", border: "1px solid var(--color-border)", boxShadow: "0 20px 60px -12px rgba(0,0,0,0.08)" }}>
+						<div className="relative min-h-40">
 							{TESTIMONIALS.map((t, i) => (
 								<div
 									key={i}
-									className={`absolute inset-0 flex flex-col items-center transition-all duration-500 ${i === activeTestimonial ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}>
-									<div className="flex gap-1 mb-4">
+									className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-600 ${i === activeTestimonial ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-5 scale-98 pointer-events-none"}`}>
+									<div className="flex gap-1 mb-5">
 										{Array.from({ length: t.rating }).map((_, s) => (
-											<Star key={s} className="size-4 fill-primary text-primary" />
+											<Star key={s} className="size-5 fill-primary text-primary" />
 										))}
 									</div>
-									<blockquote className="text-xl md:text-2xl font-medium text-foreground mb-5 text-balance">"{t.quote}"</blockquote>
+									<blockquote className="text-xl md:text-2xl font-semibold text-foreground mb-6 text-balance leading-snug">
+										"{t.quote}"
+									</blockquote>
 									<p className="text-sm text-muted-foreground">
-										<span className="font-semibold text-foreground">{t.author}</span> · {t.role}, {t.company}
+										<span className="font-bold text-foreground">{t.author}</span> · {t.role}, {t.company}
 									</p>
 								</div>
 							))}
 						</div>
-
-						{/* Dots */}
-						<div className="flex justify-center gap-2 mt-8">
-							{TESTIMONIALS.map((_, i) => (
-								<button
-									key={i}
-									onClick={() => setActiveTestimonial(i)}
-									className={`rounded-full transition-all duration-200 ${i === activeTestimonial ? "w-6 h-2 bg-primary" : "size-2 bg-border hover:bg-muted-foreground"}`}
-									aria-label={`Testimonial ${i + 1}`}
-								/>
-							))}
-						</div>
+					</div>
+					{/* Dots */}
+					<div className="flex justify-center gap-2 mt-6">
+						{TESTIMONIALS.map((_, i) => (
+							<button
+								key={i}
+								onClick={() => setActiveTestimonial(i)}
+								className={`rounded-full transition-all duration-300 ${i === activeTestimonial ? "w-8 h-2.5 bg-primary" : "size-2.5 bg-border hover:bg-muted-foreground"}`}
+								aria-label={`Testimonial ${i + 1}`}
+							/>
+						))}
 					</div>
 				</div>
-			</section>
+			</div>
+		</section>
+	);
+}
 
-			{/* ── HOW IT WORKS ── */}
-			<section className="container mx-auto px-4 py-20 md:py-28">
-				<div className="text-center mb-14">
-					<h2 className="text-3xl md:text-4xl font-bold mb-4 text-balance">From ticket to resolution in seconds</h2>
-					<p className="text-xl text-muted-foreground">Three steps. Zero overhead.</p>
-				</div>
-				<div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-8">
-					{[
-						{ step: "01", title: "Ticket arrives", desc: "From email, chat, or Teams. Any channel, instantly captured.", icon: MessageSquare },
-						{
-							step: "02",
-							title: "AI analyzes & acts",
-							desc: "Classifies priority, retrieves context, and drafts or sends a resolution.",
-							icon: Bot,
-						},
-						{
-							step: "03",
-							title: "Human review (if needed)",
-							desc: "Complex cases are flagged and routed to the right agent automatically.",
-							icon: CheckCircle2,
-						},
-					].map(({ step, title, desc, icon: Icon }, i) => (
-						<div key={step} className="relative group">
-							{/* Connector line */}
-							{i < 2 && (
+function HowItWorksSection() {
+	const { ref, inView } = useInView();
+	const steps = [
+		{ step: "01", title: "Ticket arrives", desc: "From email, chat, or Teams. Any channel, instantly captured.", icon: MessageSquare },
+		{ step: "02", title: "AI analyzes & acts", desc: "Classifies priority, retrieves context, and drafts or sends a resolution.", icon: Bot },
+		{ step: "03", title: "Human review (if needed)", desc: "Complex cases are flagged and routed to the right agent automatically.", icon: CheckCircle2 },
+	];
+	return (
+		<section ref={ref} className="container mx-auto px-4 py-24 md:py-32">
+			<div className={`text-center mb-16 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+				<SectionBadge icon={Zap} label="How it works" />
+				<h2 className="text-3xl md:text-5xl font-black mb-4 text-balance tracking-tight">From ticket to resolution in seconds</h2>
+				<p className="text-xl text-muted-foreground">Three steps. Zero overhead.</p>
+			</div>
+			<div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">
+				{steps.map(({ step, title, desc, icon: Icon }, i) => (
+					<div
+						key={step}
+						className={`relative group transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+						style={{ transitionDelay: `${i * 120 + 200}ms` }}>
+						{/* Connector line */}
+						{i < 2 && (
+							<div
+								className="hidden md:block absolute top-10 left-full h-px z-0 bg-linear-to-r from-border to-transparent"
+								style={{ width: "calc(100% - 1.5rem)", transform: "translateX(0.75rem)" }}
+							/>
+						)}
+						<div
+							className="relative z-10 flex flex-col gap-4 p-7 rounded-2xl border transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-xl overflow-hidden"
+							style={{
+								background: "var(--color-card)",
+								borderColor: "var(--color-border)",
+								boxShadow: "0 2px 16px -4px rgba(0,0,0,0.06)",
+							}}>
+							{/* Hover shine */}
+							<div
+								className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+								style={{
+									background:
+										"radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent 70%)",
+								}}
+							/>
+							<div className="flex items-center justify-between relative z-10">
 								<div
-									className="hidden md:block absolute top-8 left-full w-full h-px bg-border z-0 -translate-y-px"
-									style={{ width: "calc(100% - 2rem)" }}
-								/>
-							)}
-							<div className="relative z-10 flex flex-col gap-4 p-6 rounded-2xl border border-border bg-card hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group-hover:-translate-y-1">
-								<div className="flex items-center justify-between">
-									<div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-										<Icon className="size-6 text-primary" />
-									</div>
-									<span className="text-4xl font-black text-muted-foreground/20">{step}</span>
+									className="size-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+									style={{ background: "color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
+									<Icon className="size-6 text-primary" />
 								</div>
-								<h3 className="text-lg font-semibold">{title}</h3>
-								<p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+								<span className="text-5xl font-black" style={{ color: "color-mix(in srgb, var(--color-muted-foreground) 15%, transparent)" }}>
+									{step}
+								</span>
 							</div>
+							<h3 className="text-lg font-bold relative z-10">{title}</h3>
+							<p className="text-sm text-muted-foreground leading-relaxed relative z-10">{desc}</p>
+						</div>
+					</div>
+				))}
+			</div>
+		</section>
+	);
+}
+
+function TrustSection() {
+	const { ref, inView } = useInView();
+	const items = [
+		{ icon: Shield, title: "SOC 2 Type II", desc: "Enterprise-grade security, audited annually." },
+		{ icon: Globe, title: "GDPR Compliant", desc: "Data sovereignty and privacy built in." },
+		{ icon: Zap, title: "99.9% Uptime SLA", desc: "Guaranteed reliability for your support ops." },
+		{ icon: Users, title: "50,000+ Agents", desc: "Trusted by teams of all sizes worldwide." },
+	];
+	return (
+		<section
+			ref={ref}
+			className="border-y border-border py-16"
+			style={{ background: "color-mix(in srgb, var(--color-primary) 3%, var(--color-background))" }}>
+			<div className="container mx-auto px-4">
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+					{items.map(({ icon: Icon, title, desc }, i) => (
+						<div
+							key={title}
+							className={`flex flex-col items-center text-center gap-3 p-5 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+							style={{ transitionDelay: `${i * 80}ms` }}>
+							<div
+								className="size-11 rounded-2xl flex items-center justify-center"
+								style={{ background: "color-mix(in srgb, var(--color-primary) 10%, transparent)" }}>
+								<Icon className="size-5 text-primary" />
+							</div>
+							<p className="font-bold text-sm">{title}</p>
+							<p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
 						</div>
 					))}
 				</div>
-			</section>
+			</div>
+		</section>
+	);
+}
 
-			{/* ── CTA ── */}
-			<section className="container mx-auto px-4 pb-24">
-				<div className="relative max-w-5xl mx-auto rounded-3xl border border-primary/20 bg-card overflow-hidden p-12 md:p-16 text-center shadow-xl shadow-primary/5">
-					{/* Subtle glow blobs */}
-					<div className="absolute -top-20 -right-20 size-64 rounded-full bg-primary/20 blur-3xl opacity-40 pointer-events-none" />
-					<div className="absolute -bottom-20 -left-20 size-64 rounded-full bg-primary/10 blur-3xl opacity-40 pointer-events-none" />
+function CtaSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section ref={ref} className="container mx-auto px-4 py-24">
+			<div
+				className={`relative max-w-5xl mx-auto rounded-3xl overflow-hidden p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
+				style={{
+					background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 80%, var(--color-accent)) 100%)",
+					boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
+				}}>
+				{/* Animated grid overlay */}
+				<div
+					className="absolute inset-0 opacity-[0.07] pointer-events-none"
+					style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "32px 32px" }}
+				/>
+				{/* Glow blobs */}
+				<div className="absolute -top-16 -right-16 size-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+				<div className="absolute -bottom-16 -left-16 size-64 rounded-full bg-white/5 blur-3xl pointer-events-none" />
 
-					<div className="relative">
-						<div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary mb-6">
-							<TrendingUp className="size-3.5" /> Start resolving tickets smarter
-						</div>
-						<h2 className="text-4xl md:text-5xl font-bold mb-5 text-balance">Ready to put support on autopilot?</h2>
-						<p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-pretty">
-							14-day free trial. No credit card. Full Microsoft 365 integration from day one.
-						</p>
-						<div className="flex flex-col sm:flex-row justify-center gap-3">
-							<Button size="lg" asChild className="group h-12 px-8 text-base">
-								<a href="/signup">
-									Start free trial
-									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
-								</a>
-							</Button>
-							<Button size="lg" variant="outline" asChild className="h-12 px-8 text-base">
-								<a href="/signin">Sign in to your account</a>
-							</Button>
-						</div>
+				<div className="relative z-10">
+					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 border border-white/25 text-sm font-medium text-white mb-8">
+						<TrendingUp className="size-3.5" /> Start resolving tickets smarter today
+					</div>
+					<h2 className="text-4xl md:text-6xl font-black mb-5 text-white text-balance tracking-tight">Ready to put support on autopilot?</h2>
+					<p className="text-xl text-white/75 mb-10 max-w-2xl mx-auto text-pretty leading-relaxed">
+						14-day free trial. No credit card. Full Microsoft 365 integration from day one.
+					</p>
+					<div className="flex flex-col sm:flex-row justify-center gap-4">
+						<Button
+							size="lg"
+							asChild
+							className="group h-13 px-8 text-base bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300"
+							style={{ color: "var(--color-primary)" }}>
+							<a href="/signup">
+								Start free trial
+								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
+							</a>
+						</Button>
+						<Button
+							size="lg"
+							variant="outline"
+							asChild
+							className="h-13 px-8 text-base text-white border-white/35 hover:bg-white/10 hover:border-white/60 hover:-translate-y-0.5 transition-all duration-300">
+							<a href="/signin">Sign in to your account</a>
+						</Button>
 					</div>
 				</div>
-			</section>
-		</SiteLayout>
+			</div>
+		</section>
 	);
 }
 

@@ -1,6 +1,67 @@
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Lock, Server, Eye, Globe, Users, CheckCircle2, FileText, Zap, Key, AlertTriangle, Database } from "lucide-react";
 import { SiteLayout } from "./site-layout";
+
+// -- Hooks --
+
+function useInView(options?: IntersectionObserverInit) {
+	const ref = useRef<HTMLDivElement>(null);
+	const [inView, setInView] = useState(false);
+	useEffect(() => {
+		const el = ref.current;
+		if (!el) return;
+		const obs = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					setInView(true);
+					obs.disconnect();
+				}
+			},
+			{ threshold: 0.1, ...options },
+		);
+		obs.observe(el);
+		return () => obs.disconnect();
+	}, []);
+	return { ref, inView };
+}
+
+function useCounter(target: number, duration = 1200, active = false) {
+	const [value, setValue] = useState(0);
+	useEffect(() => {
+		if (!active) return;
+		let start = 0;
+		const step = target / (duration / 16);
+		const id = setInterval(() => {
+			start += step;
+			if (start >= target) {
+				setValue(target);
+				clearInterval(id);
+			} else setValue(Math.floor(start));
+		}, 16);
+		return () => clearInterval(id);
+	}, [target, duration, active]);
+	return value;
+}
+
+function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
+	return (
+		<div className="flex justify-center mb-5">
+			<span
+				className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+				style={{
+					background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
+					border: "1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)",
+					color: "var(--color-primary)",
+				}}>
+				<Icon className="size-3.5" />
+				{label}
+			</span>
+		</div>
+	);
+}
+
+// -- Data --
 
 const CERTIFICATIONS = [
 	{
@@ -9,6 +70,7 @@ const CERTIFICATIONS = [
 		description: "Independently audited annually. Covers security, availability, processing integrity, confidentiality, and privacy.",
 		icon: Shield,
 		badge: "Certified",
+		green: true,
 	},
 	{
 		name: "GDPR",
@@ -16,6 +78,7 @@ const CERTIFICATIONS = [
 		description: "Full compliance with EU data protection regulation. DPA available for all customers. EU data residency included in Enterprise.",
 		icon: Globe,
 		badge: "Compliant",
+		green: true,
 	},
 	{
 		name: "CCPA",
@@ -23,13 +86,15 @@ const CERTIFICATIONS = [
 		description: "Data subject rights fully supported. Deletion, export, and opt-out requests handled within 72 hours.",
 		icon: Eye,
 		badge: "Compliant",
+		green: true,
 	},
 	{
 		name: "ISO 27001",
-		body: "In progress — Q3 2025",
+		body: "In progress  Q3 2025",
 		description: "Information security management system audit underway. Expected certification Q3 2025.",
 		icon: FileText,
 		badge: "In progress",
+		green: false,
 	},
 	{
 		name: "HIPAA",
@@ -37,6 +102,7 @@ const CERTIFICATIONS = [
 		description: "BAA available for healthcare customers. Audit logging, data encryption at rest and in transit, and strict access controls.",
 		icon: Lock,
 		badge: "BAA available",
+		green: true,
 	},
 	{
 		name: "Microsoft 365 Verified",
@@ -44,6 +110,7 @@ const CERTIFICATIONS = [
 		description: "Verified Azure Marketplace app. Reviewed and approved by Microsoft security teams.",
 		icon: CheckCircle2,
 		badge: "Verified",
+		green: true,
 	},
 ];
 
@@ -71,7 +138,7 @@ const INFRASTRUCTURE = [
 	{
 		icon: Eye,
 		title: "Full audit logging",
-		desc: "Every action — ticket view, status change, export, config update — is logged with timestamp, user, IP, and user-agent. Logs retained for 7 years by default.",
+		desc: "Every action  ticket view, status change, export, config update  is logged with timestamp, user, IP, and user-agent. Logs retained for 7 years by default.",
 	},
 	{
 		icon: AlertTriangle,
@@ -88,7 +155,7 @@ const ACCESS_CONTROLS = [
 	"Session timeout and device trust policies",
 	"Least-privilege API token scopes",
 	"Automated anomalous login detection and alerting",
-	"Offboarding automation — deprovisioning in under 60 seconds",
+	"Offboarding automation  deprovisioning in under 60 seconds",
 ];
 
 const DATA_HANDLING = [
@@ -122,210 +189,382 @@ const RESPONSIBLE_DISCLOSURE = [
 	"We do not pursue legal action against good-faith researchers",
 ];
 
+// -- Sections --
+
+function CertificationsSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section className="py-20 md:py-28 border-b border-border" ref={ref}>
+			<div className="container mx-auto px-4">
+				<div className="max-w-3xl mx-auto text-center mb-12">
+					<SectionBadge icon={Shield} label="Compliance" />
+					<h2 className="text-3xl md:text-4xl font-bold mb-3">Certifications & compliance</h2>
+					<p className="text-muted-foreground leading-relaxed">
+						Independently verified by third-party auditors. Full audit reports available to Enterprise customers under NDA.
+					</p>
+				</div>
+				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+					{CERTIFICATIONS.map(({ name, body, description, icon: Icon, badge, green }, i) => (
+						<div
+							key={name}
+							className={`group relative flex flex-col gap-4 p-7 rounded-2xl border border-border bg-card overflow-hidden transition-all duration-700 hover:-translate-y-1 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+							style={{ transitionDelay: `${i * 80}ms` }}>
+							<div
+								className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+								style={{
+									background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 6%, transparent), transparent 70%)",
+								}}
+							/>
+							<div
+								className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+								style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent)" }}
+							/>
+							<div className="flex items-start justify-between gap-3">
+								<div
+									className="size-11 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300"
+									style={{ background: "color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
+									<Icon className="size-5" style={{ color: "var(--color-primary)" }} />
+								</div>
+								<span
+									className={`text-xs px-2.5 py-1 rounded-full font-semibold border shrink-0 ${green ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "bg-amber-500/10 text-amber-600 border-amber-500/20"}`}>
+									{badge}
+								</span>
+							</div>
+							<div>
+								<h3 className="font-bold mb-0.5">{name}</h3>
+								<p className="text-xs font-medium" style={{ color: "var(--color-primary)" }}>
+									{body}
+								</p>
+							</div>
+							<p className="text-sm text-muted-foreground leading-relaxed flex-1">{description}</p>
+						</div>
+					))}
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function InfrastructureSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section
+			className="py-20 md:py-28 border-b border-border"
+			style={{ background: "color-mix(in srgb, var(--color-muted) 40%, var(--color-background))" }}
+			ref={ref}>
+			<div className="container mx-auto px-4">
+				<div className="max-w-3xl mx-auto text-center mb-12">
+					<SectionBadge icon={Server} label="Infrastructure" />
+					<h2 className="text-3xl md:text-4xl font-bold mb-3">Infrastructure security</h2>
+					<p className="text-muted-foreground leading-relaxed">
+						Built on Azure with defense-in-depth. Every layer is hardened and independently audited.
+					</p>
+				</div>
+				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+					{INFRASTRUCTURE.map(({ icon: Icon, title, desc }, i) => (
+						<div
+							key={title}
+							className={`group relative flex flex-col gap-4 p-7 rounded-2xl border border-border bg-card overflow-hidden transition-all duration-700 hover:-translate-y-1 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+							style={{ transitionDelay: `${i * 80}ms` }}>
+							<div
+								className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+								style={{
+									background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 6%, transparent), transparent 70%)",
+								}}
+							/>
+							<div
+								className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+								style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent)" }}
+							/>
+							<div
+								className="size-11 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+								style={{ background: "color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
+								<Icon className="size-5" style={{ color: "var(--color-primary)" }} />
+							</div>
+							<h3 className="font-bold">{title}</h3>
+							<p className="text-sm text-muted-foreground leading-relaxed flex-1">{desc}</p>
+						</div>
+					))}
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function AccessAndDataSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section className="py-20 md:py-28 border-b border-border" ref={ref}>
+			<div className="container mx-auto px-4 max-w-5xl">
+				<div className="grid md:grid-cols-2 gap-16 items-start">
+					<div className={`transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}>
+						<SectionBadge icon={Key} label="Access controls" />
+						<h2 className="text-3xl font-bold mb-4">Access controls</h2>
+						<p className="text-muted-foreground leading-relaxed mb-8">
+							Granular controls so the right people have access to exactly what they need — and nothing more.
+						</p>
+						<ul className="space-y-3">
+							{ACCESS_CONTROLS.map((item, i) => (
+								<li
+									key={item}
+									className={`flex items-start gap-3 text-sm transition-all duration-500 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
+									style={{ transitionDelay: `${200 + i * 60}ms` }}>
+									<CheckCircle2 className="size-4 shrink-0 mt-0.5" style={{ color: "var(--color-primary)" }} />
+									<span className="text-muted-foreground leading-relaxed">{item}</span>
+								</li>
+							))}
+						</ul>
+					</div>
+					<div
+						className={`flex flex-col gap-5 transition-all duration-700 delay-150 ${inView ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"}`}>
+						<SectionBadge icon={Database} label="Data handling" />
+						<h2 className="text-3xl font-bold -mt-2">Data handling</h2>
+						<p className="text-muted-foreground leading-relaxed">Your data belongs to you. Full stop.</p>
+						{DATA_HANDLING.map(({ title, desc, icon: Icon }, i) => (
+							<div
+								key={title}
+								className={`group relative flex gap-4 p-5 rounded-xl border border-border bg-card overflow-hidden transition-all duration-500 ${inView ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"}`}
+								style={{ transitionDelay: `${300 + i * 80}ms` }}>
+								<div
+									className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+									style={{
+										background:
+											"radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 5%, transparent), transparent 70%)",
+									}}
+								/>
+								<div
+									className="size-9 rounded-lg flex items-center justify-center shrink-0"
+									style={{ background: "color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
+									<Icon className="size-4" style={{ color: "var(--color-primary)" }} />
+								</div>
+								<div>
+									<p className="font-semibold text-sm mb-1">{title}</p>
+									<p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+								</div>
+							</div>
+						))}
+					</div>
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function DisclosureSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section
+			className="py-16 border-b border-border"
+			style={{ background: "color-mix(in srgb, var(--color-muted) 40%, var(--color-background))" }}
+			ref={ref}>
+			<div className="container mx-auto px-4 max-w-3xl">
+				<div className={`flex items-start gap-5 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+					<div
+						className="size-12 rounded-xl flex items-center justify-center shrink-0"
+						style={{ background: "color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
+						<AlertTriangle className="size-6" style={{ color: "var(--color-primary)" }} />
+					</div>
+					<div>
+						<h2 className="text-2xl font-bold mb-2">Responsible disclosure</h2>
+						<p className="text-muted-foreground text-sm leading-relaxed mb-5">
+							We take every security report seriously. If you believe you have found a vulnerability in SupportDesk 365, please contact us before
+							disclosing publicly.
+						</p>
+						<ul className="space-y-2.5">
+							{RESPONSIBLE_DISCLOSURE.map((item, i) => (
+								<li
+									key={item}
+									className={`flex items-start gap-2.5 text-sm text-muted-foreground transition-all duration-500 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}
+									style={{ transitionDelay: `${150 + i * 70}ms` }}>
+									<CheckCircle2 className="size-4 shrink-0 mt-0.5" style={{ color: "var(--color-primary)" }} />
+									{item}
+								</li>
+							))}
+						</ul>
+						<div className="mt-6">
+							<Button variant="outline" asChild className="group">
+								<a href="mailto:security@supportdesk365.io">
+									Report a vulnerability
+									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
+								</a>
+							</Button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function SecurityCtaSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section className="py-24 md:py-32" ref={ref}>
+			<div className="container mx-auto px-4">
+				<div
+					className={`relative overflow-hidden rounded-3xl p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+					style={{
+						background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 75%, var(--color-accent)) 100%)",
+						boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
+					}}>
+					<div
+						className="absolute inset-0 pointer-events-none"
+						style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "32px 32px", opacity: 0.07 }}
+					/>
+					<div
+						className="absolute -top-20 -right-20 size-64 rounded-full blur-3xl pointer-events-none"
+						style={{ background: "color-mix(in srgb, var(--color-accent) 30%, transparent)" }}
+					/>
+					<div
+						className="absolute -bottom-20 -left-20 size-64 rounded-full blur-3xl pointer-events-none"
+						style={{ background: "color-mix(in srgb, var(--color-primary) 50%, transparent)" }}
+					/>
+					<div className="relative z-10">
+						<p className="text-white/70 text-sm font-semibold tracking-widest uppercase mb-4">Enterprise teams</p>
+						<h2 className="text-3xl md:text-5xl font-black text-white mb-5 text-balance">Security review for your InfoSec team</h2>
+						<p className="text-white/75 text-lg leading-relaxed max-w-xl mx-auto mb-10">
+							Need a custom security review, DPA, or audit report? Our security team works directly with enterprise customers and their InfoSec
+							teams.
+						</p>
+						<div className="flex flex-col sm:flex-row justify-center gap-4">
+							<Button
+								size="lg"
+								className="h-13 px-8 font-semibold text-base border-0 hover:opacity-90 transition-opacity group"
+								style={{ background: "white", color: "var(--color-primary)" }}
+								asChild>
+								<a href="/contact">
+									Request a review
+									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
+								</a>
+							</Button>
+							<Button
+								size="lg"
+								variant="outline"
+								className="h-13 px-8 font-semibold text-base text-white border-white/35 hover:bg-white/10 hover:border-white/50 transition-all"
+								asChild>
+								<a href="/status">View status page</a>
+							</Button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	);
+}
+
+// -- Page --
+
 export default function SecurityPage() {
+	const [heroVisible, setHeroVisible] = useState(false);
+	const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+
+	useEffect(() => {
+		const id = requestAnimationFrame(() => setHeroVisible(true));
+		return () => cancelAnimationFrame(id);
+	}, []);
+
+	const onMove = useCallback((e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY }), []);
+	useEffect(() => {
+		window.addEventListener("mousemove", onMove);
+		return () => window.removeEventListener("mousemove", onMove);
+	}, [onMove]);
+	const statsRef = useInView();
+	const c9997 = useCounter(9997, 1400, statsRef.inView);
+	const c0 = useCounter(0, 800, statsRef.inView);
+	const c3 = useCounter(3, 900, statsRef.inView);
+
 	return (
 		<SiteLayout>
 			{/* Hero */}
-			<section className="py-20 md:py-28 border-b border-border bg-muted/10">
-				<div className="container mx-auto px-4 text-center max-w-3xl">
-					<div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary mb-6">
-						<Shield className="size-3.5" />
-						SOC 2 Type II · GDPR · HIPAA
+			<section className="relative overflow-hidden py-24 md:py-36 border-b border-border">
+				<div className="absolute inset-0 bg-linear-to-br from-primary/6 via-background to-accent/4" />
+				<div
+					className="absolute size-150 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px] transition-all duration-700 pointer-events-none"
+					style={{ left: mousePos.x, top: mousePos.y, background: "color-mix(in srgb, var(--color-primary) 10%, transparent)" }}
+				/>
+				<div
+					className="absolute inset-0 opacity-[0.025] pointer-events-none"
+					style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "40px 40px" }}
+				/>
+				<div className="relative container mx-auto px-4 text-center max-w-3xl">
+					<div className={`transition-all duration-700 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						<SectionBadge icon={Shield} label="SOC 2 Type II  GDPR  HIPAA" />
 					</div>
-					<h1 className="text-4xl md:text-6xl font-bold mb-5 text-balance">Security you can stake your reputation on</h1>
-					<p className="text-xl text-muted-foreground leading-relaxed text-pretty mb-8">
-						We treat security as a first-class product requirement — not an afterthought. Every layer of SupportDesk 365 is designed to protect your
+					<h1
+						className={`text-4xl md:text-6xl font-black mb-6 text-balance leading-tight transition-all duration-700 delay-100 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						Security you can{" "}
+						<span
+							style={{
+								background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
+								WebkitBackgroundClip: "text",
+								WebkitTextFillColor: "transparent",
+								backgroundClip: "text",
+							}}>
+							stake your reputation on
+						</span>
+					</h1>
+					<p
+						className={`text-xl text-muted-foreground leading-relaxed text-pretty mb-10 transition-all duration-700 delay-200 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						We treat security as a first-class product requirement not an afterthought. Every layer of SupportDesk 365 is designed to protect your
 						customers' data and your team's trust.
 					</p>
-					<div className="flex flex-col sm:flex-row justify-center gap-3">
-						<Button size="lg" asChild className="group h-12 px-8">
+					<div
+						className={`flex flex-col sm:flex-row justify-center gap-3 transition-all duration-700 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						<Button
+							size="lg"
+							asChild
+							className="group h-13 px-8 text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
 							<a href="/contact">
 								Request security review
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 							</a>
 						</Button>
-						<Button size="lg" variant="outline" asChild className="h-12 px-8">
+						<Button
+							size="lg"
+							variant="outline"
+							asChild
+							className="h-13 px-8 text-base hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
 							<a href="mailto:security@supportdesk365.io">Contact security team</a>
 						</Button>
 					</div>
-				</div>
-			</section>
 
-			{/* Trust stats */}
-			<section className="border-b border-border">
-				<div className="container mx-auto px-4">
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border max-w-5xl mx-auto">
+					<div
+						ref={statsRef.ref as React.RefObject<HTMLDivElement>}
+						className={`grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mt-14 transition-all duration-1000 delay-400 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 						{[
-							{ value: "99.97%", label: "Uptime SLA" },
-							{ value: "AES-256", label: "Encryption at rest" },
-							{ value: "0", label: "Data breaches to date" },
-							{ value: "3", label: "Data residency regions" },
-						].map(({ value, label }) => (
+							{ icon: Zap, displayValue: `${(c9997 / 100).toFixed(2)}%`, label: "Uptime SLA" },
+							{ icon: Lock, displayValue: "AES-256", label: "Encryption at rest" },
+							{ icon: Shield, displayValue: `${c0}`, label: "Data breaches to date" },
+							{ icon: Server, displayValue: `${c3}`, label: "Data residency regions" },
+						].map(({ icon: Icon, displayValue, label }, i) => (
 							<div
 								key={label}
-								className="flex flex-col items-center justify-center gap-1 bg-card py-10 text-center hover:bg-primary/5 transition-colors">
-								<div className="text-3xl font-black">{value}</div>
-								<div className="text-sm text-muted-foreground">{label}</div>
+								className={`group relative flex flex-col items-center gap-1.5 py-6 px-4 rounded-2xl border transition-all duration-700 hover:-translate-y-1 hover:shadow-lg overflow-hidden cursor-default ${statsRef.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+								style={{ background: "var(--color-card)", borderColor: "var(--color-border)", transitionDelay: `${i * 80}ms` }}>
+								<div
+									className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+									style={{
+										background:
+											"radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 70%)",
+									}}
+								/>
+								<Icon className="size-4 text-primary mb-0.5 group-hover:scale-110 transition-transform duration-300 relative z-10" />
+								<span
+									className="text-2xl font-black relative z-10"
+									style={{ color: "var(--color-primary)", fontVariantNumeric: "tabular-nums" }}>
+									{displayValue}
+								</span>
+								<span className="text-xs text-muted-foreground relative z-10">{label}</span>
 							</div>
 						))}
 					</div>
 				</div>
 			</section>
-
-			{/* Certifications */}
-			<section className="py-20 md:py-28">
-				<div className="container mx-auto px-4">
-					<div className="max-w-3xl mx-auto text-center mb-12">
-						<h2 className="text-3xl font-bold mb-3">Certifications & compliance</h2>
-						<p className="text-muted-foreground leading-relaxed">
-							Independently verified by third-party auditors. Full audit reports available to Enterprise customers under NDA.
-						</p>
-					</div>
-					<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
-						{CERTIFICATIONS.map(({ name, body, description, icon: Icon, badge }) => (
-							<div
-								key={name}
-								className="flex flex-col gap-4 p-7 rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
-								<div className="flex items-start justify-between gap-3">
-									<div className="size-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-										<Icon className="size-5 text-primary" />
-									</div>
-									<span
-										className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${
-											badge === "Certified" || badge === "Compliant" || badge === "Verified" || badge === "BAA available"
-												? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-												: "bg-amber-500/10 text-amber-600 border-amber-500/20"
-										}`}>
-										{badge}
-									</span>
-								</div>
-								<div>
-									<h3 className="font-bold mb-0.5">{name}</h3>
-									<p className="text-xs text-primary font-medium">{body}</p>
-								</div>
-								<p className="text-sm text-muted-foreground leading-relaxed flex-1">{description}</p>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
-
-			{/* Infrastructure */}
-			<section className="border-y border-border bg-muted/10 py-20 md:py-28">
-				<div className="container mx-auto px-4">
-					<div className="max-w-3xl mx-auto text-center mb-12">
-						<h2 className="text-3xl font-bold mb-3">Infrastructure security</h2>
-						<p className="text-muted-foreground leading-relaxed">
-							Built on Azure with defense-in-depth. Every layer is hardened and independently audited.
-						</p>
-					</div>
-					<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
-						{INFRASTRUCTURE.map(({ icon: Icon, title, desc }) => (
-							<div
-								key={title}
-								className="flex flex-col gap-4 p-7 rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
-								<div className="size-11 rounded-xl bg-primary/10 flex items-center justify-center">
-									<Icon className="size-5 text-primary" />
-								</div>
-								<h3 className="font-bold">{title}</h3>
-								<p className="text-sm text-muted-foreground leading-relaxed flex-1">{desc}</p>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
-
-			{/* Access controls */}
-			<section className="py-20 md:py-28">
-				<div className="container mx-auto px-4 max-w-5xl">
-					<div className="grid md:grid-cols-2 gap-16 items-start">
-						<div>
-							<h2 className="text-3xl font-bold mb-4">Access controls</h2>
-							<p className="text-muted-foreground leading-relaxed mb-8">
-								Granular controls so the right people have access to exactly what they need — and nothing more.
-							</p>
-							<ul className="space-y-3">
-								{ACCESS_CONTROLS.map((item) => (
-									<li key={item} className="flex items-start gap-3 text-sm">
-										<CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" />
-										<span className="text-muted-foreground leading-relaxed">{item}</span>
-									</li>
-								))}
-							</ul>
-						</div>
-						<div className="flex flex-col gap-5">
-							<h2 className="text-3xl font-bold">Data handling</h2>
-							<p className="text-muted-foreground leading-relaxed mb-2">Your data belongs to you. Full stop.</p>
-							{DATA_HANDLING.map(({ title, desc, icon: Icon }) => (
-								<div key={title} className="flex gap-4 p-5 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors">
-									<div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-										<Icon className="size-4 text-primary" />
-									</div>
-									<div>
-										<p className="font-semibold text-sm mb-1">{title}</p>
-										<p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
-				</div>
-			</section>
-
-			{/* Responsible disclosure */}
-			<section className="border-y border-border bg-muted/10 py-16">
-				<div className="container mx-auto px-4 max-w-3xl">
-					<div className="flex items-start gap-5">
-						<div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-							<AlertTriangle className="size-6 text-primary" />
-						</div>
-						<div>
-							<h2 className="text-2xl font-bold mb-2">Responsible disclosure</h2>
-							<p className="text-muted-foreground text-sm leading-relaxed mb-5">
-								We take every security report seriously. If you believe you have found a vulnerability in SupportDesk 365, please contact us
-								before disclosing publicly.
-							</p>
-							<ul className="space-y-2.5">
-								{RESPONSIBLE_DISCLOSURE.map((item) => (
-									<li key={item} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-										<CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" />
-										{item}
-									</li>
-								))}
-							</ul>
-							<div className="mt-6">
-								<Button variant="outline" asChild>
-									<a href="mailto:security@supportdesk365.io">
-										Report a vulnerability
-										<ArrowRight className="ml-2 size-4" />
-									</a>
-								</Button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			{/* CTA */}
-			<section className="py-20">
-				<div className="container mx-auto px-4 text-center max-w-2xl">
-					<h2 className="text-3xl font-bold mb-4">Security review for enterprise teams</h2>
-					<p className="text-muted-foreground mb-8 leading-relaxed">
-						Need a custom security review, DPA, or audit report? Our security team works directly with enterprise customers and their InfoSec teams.
-					</p>
-					<div className="flex flex-col sm:flex-row justify-center gap-3">
-						<Button size="lg" asChild className="group h-12 px-8">
-							<a href="/contact">
-								Request a review
-								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
-							</a>
-						</Button>
-						<Button size="lg" variant="outline" asChild className="h-12 px-8">
-							<a href="/status">View status page</a>
-						</Button>
-					</div>
-				</div>
-			</section>
+			<CertificationsSection />
+			<InfrastructureSection />
+			<AccessAndDataSection />
+			<DisclosureSection />
+			<SecurityCtaSection />
 		</SiteLayout>
 	);
 }

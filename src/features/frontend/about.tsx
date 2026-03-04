@@ -1,22 +1,83 @@
-import { SiteLayout } from "./site-layout";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Users, Target, Heart, MapPin, Globe, Linkedin, Twitter, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Users, Target, Heart, MapPin, Globe, Linkedin, Twitter, CheckCircle2, Sparkles } from "lucide-react";
+import { SiteLayout } from "./site-layout";
+
+//  Hooks
+
+function useInView(options?: IntersectionObserverInit) {
+	const ref = useRef<HTMLDivElement>(null);
+	const [inView, setInView] = useState(false);
+	useEffect(() => {
+		const el = ref.current;
+		if (!el) return;
+		const obs = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					setInView(true);
+					obs.disconnect();
+				}
+			},
+			{ threshold: 0.1, ...options },
+		);
+		obs.observe(el);
+		return () => obs.disconnect();
+	}, []);
+	return { ref, inView };
+}
+
+function useCounter(target: number, duration = 1200, active = false) {
+	const [value, setValue] = useState(0);
+	useEffect(() => {
+		if (!active) return;
+		let start = 0;
+		const step = target / (duration / 16);
+		const id = setInterval(() => {
+			start += step;
+			if (start >= target) {
+				setValue(target);
+				clearInterval(id);
+			} else setValue(Math.floor(start));
+		}, 16);
+		return () => clearInterval(id);
+	}, [target, duration, active]);
+	return value;
+}
+
+function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
+	return (
+		<div className="flex justify-center mb-5">
+			<span
+				className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+				style={{
+					background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
+					border: "1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)",
+					color: "var(--color-primary)",
+				}}>
+				<Icon className="size-3.5" />
+				{label}
+			</span>
+		</div>
+	);
+}
+
+//  Data
 
 const VALUES = [
 	{
 		icon: Target,
 		title: "Customer-obsessed",
-		desc: "Every feature we ship is measured by one question: does it make our customers' support teams faster and happier? We interview 20+ customers before writing a single line of code.",
+		desc: "Every feature starts with a real support team problem. We do 20+ customer interviews a month and ship what we learn.",
 	},
 	{
 		icon: Users,
 		title: "Transparent by default",
-		desc: "We document our changelog, publish our status page uptime, and share the roadmap with customers before we build. No surprises — ever.",
+		desc: "We share our roadmap publicly, post our status page in real time, and tell customers when we ship something that affects them.",
 	},
 	{
 		icon: Heart,
 		title: "Built to last",
-		desc: "We are profitable and grow sustainably — no growth-at-all-costs shortcuts that put customer data or team wellbeing at risk.",
+		desc: "We are profitable and growing. No growth-at-all-costs here  we build relationships and infrastructure meant to still be running in 20 years.",
 	},
 ];
 
@@ -24,256 +85,542 @@ const TIMELINE = [
 	{
 		year: "2022",
 		title: "Founded",
-		desc: "Elena and Daniel quit their jobs to build the helpdesk they always wished existed. First 10 customers in 60 days.",
+		desc: "Three engineers leave Microsoft frustrated by the state of enterprise support tooling. SupportDesk 365 ships its first beta to 12 teams.",
 	},
-	{ year: "2023", title: "Microsoft 365 native launch", desc: "Shipped the industry's first truly native Teams integration. 300 customers by year-end." },
-	{ year: "2024", title: "AI Agents go GA", desc: "Auto-resolution launched publicly. Customers saw 80% ticket deflection within 30 days." },
-	{ year: "2025", title: "Global scale", desc: "Reached 1,200 customers across 40 countries. Opened EMEA data residency region." },
+	{
+		year: "2023",
+		title: "Microsoft 365 native launch",
+		desc: "Deep integration with Outlook, Teams, and the M365 Graph API goes live. First 100 paying customers in 90 days.",
+	},
+	{
+		year: "2024",
+		title: "AI Agents GA",
+		desc: "General availability of AI-assisted routing, ticket summarization, and suggested replies. ARR triples.",
+	},
+	{
+		year: "2025",
+		title: "Global scale",
+		desc: "1,200+ customers across 40 countries. EU and APAC data residency regions open. Series B announced.",
+	},
 ];
 
 const TEAM = [
 	{
 		name: "Elena Torres",
 		role: "CEO & Co-founder",
-		bio: "Former Director of Support at Fabrikam. Built SupportDesk after spending a decade frustrated by legacy ticketing tools.",
-		location: "London, UK",
+		bio: "Former Microsoft PM. Shipped Teams channels to 280M users. Obsessed with support ops.",
+		location: "London",
+		initials: "ET",
+		linkedin: "#",
+		twitter: "#",
 	},
 	{
 		name: "Daniel Park",
 		role: "CTO & Co-founder",
-		bio: "Previously Staff Engineer at Microsoft Azure. Led the team that built Teams' notification infrastructure.",
-		location: "Seattle, WA",
+		bio: "Ex-Azure. Distributed systems nerd. Has opinions about queues.",
+		location: "Seattle",
+		initials: "DP",
+		linkedin: "#",
+		twitter: "#",
 	},
 	{
 		name: "Aisha Okafor",
-		role: "Head of Product",
-		bio: "Product lead at two previous SaaS exits. Specializes in enterprise UX and AI-assisted workflows.",
-		location: "Lagos, Nigeria",
+		role: "VP Product",
+		bio: "Built support tooling at Zendesk for 6 years. Believes product is a team sport.",
+		location: "Lagos",
+		initials: "AO",
+		linkedin: "#",
+		twitter: "#",
 	},
 	{
 		name: "Ravi Menon",
-		role: "Head of Engineering",
-		bio: "Distributed systems engineer with 12 years building high-availability platforms across APAC and EMEA.",
+		role: "VP Engineering",
+		bio: "Scaled infra at Stripe. Loves boring technology that actually works.",
 		location: "Singapore",
+		initials: "RM",
+		linkedin: "#",
+		twitter: "#",
 	},
 	{
 		name: "Sophie Laurent",
-		role: "Head of Customer Success",
-		bio: "Scaled CS from 0 to 500 enterprise accounts at her last company. Keeps every customer's SLA green.",
-		location: "Paris, France",
+		role: "VP Customer Success",
+		bio: "10 years in enterprise SaaS CS. Holds the record for longest customer QBR.",
+		location: "Paris",
+		initials: "SL",
+		linkedin: "#",
+		twitter: "#",
 	},
 	{
 		name: "Marcus Webb",
-		role: "Head of Sales",
-		bio: "Focused on enterprise and mid-market deals across EMEA. Former Microsoft 365 solutions architect.",
-		location: "Amsterdam, NL",
+		role: "VP Sales",
+		bio: "Sold enterprise software at ServiceNow and Atlassian. Knows when to shut up and listen.",
+		location: "Amsterdam",
+		initials: "MW",
+		linkedin: "#",
+		twitter: "#",
 	},
 ];
 
 const PRESS = [
-	{ outlet: "TechCrunch", quote: '"The most thoughtful Microsoft 365 integration we\'ve seen in a helpdesk — period."' },
-	{ outlet: "The Verge", quote: '"AI that actually works: SupportDesk 365 cut our test team\'s resolution time by 75%."' },
-	{ outlet: "Forbes", quote: '"One of the 50 most exciting enterprise SaaS companies to watch in 2025."' },
+	{
+		quote: "SupportDesk 365 is quietly becoming the default choice for Microsoft-first enterprise teams.",
+		source: "TechCrunch",
+	},
+	{
+		quote: "The tightest Microsoft 365 integration we have seen in a support product  by a wide margin.",
+		source: "The Verge",
+	},
+	{
+		quote: "A rare example of a SaaS company that does exactly what it says on the tin.",
+		source: "Forbes",
+	},
 ];
 
 const INVESTORS = ["Accel", "Sequoia", "Index Ventures", "Microsoft M12"];
 
+const MISSION_CHECKS = ["SOC 2 Type II certified", "GDPR & CCPA compliant", "Data residency in US, EU, and APAC", "99.97% uptime SLA"];
+
+//  Sections
+
+function MissionSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section className="py-20 md:py-28 border-b border-border" ref={ref}>
+			<div className="container mx-auto px-4 max-w-5xl">
+				<div className="grid md:grid-cols-2 gap-14 items-center">
+					<div className={`transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}>
+						<SectionBadge icon={Globe} label="Our mission" />
+						<h2 className="text-3xl md:text-4xl font-bold mb-5 text-balance">Make support teams extraordinary</h2>
+						<p className="text-muted-foreground leading-relaxed mb-5">
+							Customer support is one of the most important functions in any company and one of the most underserved by software. We think the
+							people doing that work deserve better tools than a shared inbox and a spreadsheet.
+						</p>
+						<p className="text-muted-foreground leading-relaxed">
+							SupportDesk 365 is built to give enterprise support teams the speed and structure they need to actually solve problems without the
+							complexity of legacy platforms or the instability of early-stage startups.
+						</p>
+					</div>
+					<div className={`transition-all duration-700 delay-150 ${inView ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"}`}>
+						<div
+							className="rounded-2xl border p-8 space-y-4"
+							style={{
+								background: "color-mix(in srgb, var(--color-primary) 4%, var(--color-card))",
+								borderColor: "color-mix(in srgb, var(--color-primary) 15%, transparent)",
+							}}>
+							<p className="text-sm font-semibold" style={{ color: "var(--color-primary)" }}>
+								Our commitments
+							</p>
+							{MISSION_CHECKS.map((item, i) => (
+								<div
+									key={item}
+									className={`flex items-center gap-3 text-sm transition-all duration-500 ${inView ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"}`}
+									style={{ transitionDelay: `${300 + i * 80}ms` }}>
+									<CheckCircle2 className="size-4 shrink-0" style={{ color: "var(--color-primary)" }} />
+									<span className="text-foreground">{item}</span>
+								</div>
+							))}
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function TimelineSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section className="py-20 md:py-28 border-b border-border" ref={ref}>
+			<div className="container mx-auto px-4 max-w-3xl">
+				<div className="text-center mb-14">
+					<SectionBadge icon={Sparkles} label="Our story" />
+					<h2 className="text-3xl md:text-4xl font-bold">From zero to global in three years</h2>
+				</div>
+				<div className="relative pl-10">
+					<div className="absolute left-3 top-0 w-px bg-border transition-all duration-1000" style={{ height: inView ? "100%" : "0%" }} />
+					<div className="space-y-10">
+						{TIMELINE.map(({ year, title, desc }, i) => (
+							<div
+								key={year}
+								className={`relative transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-6"}`}
+								style={{ transitionDelay: `${200 + i * 120}ms` }}>
+								<div
+									className="absolute -left-[29px] top-1 size-3.5 rounded-full ring-4 ring-background"
+									style={{ background: "var(--color-primary)" }}
+								/>
+								<p className="text-xs font-bold mb-1 tracking-wider uppercase" style={{ color: "var(--color-primary)" }}>
+									{year}
+								</p>
+								<h3 className="font-bold text-base mb-1">{title}</h3>
+								<p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+							</div>
+						))}
+					</div>
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function ValuesSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section className="py-20 md:py-28 border-b border-border" ref={ref}>
+			<div className="container mx-auto px-4">
+				<div className="text-center mb-12">
+					<SectionBadge icon={Heart} label="What we stand for" />
+					<h2 className="text-3xl md:text-4xl font-bold">Our values</h2>
+				</div>
+				<div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+					{VALUES.map(({ icon: Icon, title, desc }, i) => (
+						<div
+							key={title}
+							className={`group relative flex flex-col gap-5 p-7 rounded-2xl border border-border bg-card overflow-hidden transition-all duration-700 hover:-translate-y-1 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+							style={{ transitionDelay: `${i * 100}ms` }}>
+							<div
+								className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+								style={{
+									background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 7%, transparent), transparent 70%)",
+								}}
+							/>
+							<div
+								className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+								style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent)" }}
+							/>
+							<div
+								className="size-11 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+								style={{ background: "color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
+								<Icon className="size-5" style={{ color: "var(--color-primary)" }} />
+							</div>
+							<h3 className="font-bold text-lg">{title}</h3>
+							<p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+						</div>
+					))}
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function TeamSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section className="py-20 md:py-28 border-b border-border" ref={ref}>
+			<div className="container mx-auto px-4">
+				<div className="text-center mb-12">
+					<SectionBadge icon={Users} label="The team" />
+					<h2 className="text-3xl md:text-4xl font-bold">Meet the leadership</h2>
+					<p className="text-muted-foreground mt-3 max-w-xl mx-auto text-sm leading-relaxed">
+						A small team with deep experience at companies like Microsoft, Stripe, Zendesk, and ServiceNow.
+					</p>
+				</div>
+				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+					{TEAM.map(({ name, role, bio, location, initials, linkedin, twitter }, i) => (
+						<div
+							key={name}
+							className={`group relative flex flex-col gap-4 p-6 rounded-2xl border border-border bg-card overflow-hidden transition-all duration-700 hover:-translate-y-1 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+							style={{ transitionDelay: `${i * 80}ms` }}>
+							<div
+								className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+								style={{
+									background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 6%, transparent), transparent 70%)",
+								}}
+							/>
+							<div
+								className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+								style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent)" }}
+							/>
+							<div className="flex items-start gap-3">
+								<div
+									className="size-12 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-300"
+									style={{
+										background: "color-mix(in srgb, var(--color-primary) 15%, var(--color-muted))",
+										color: "var(--color-primary)",
+									}}>
+									{initials}
+								</div>
+								<div className="flex-1 min-w-0">
+									<p className="font-bold">{name}</p>
+									<p className="text-xs font-medium" style={{ color: "var(--color-primary)" }}>
+										{role}
+									</p>
+								</div>
+							</div>
+							<p className="text-sm text-muted-foreground leading-relaxed">{bio}</p>
+							<div className="flex items-center justify-between mt-auto pt-3 border-t border-border">
+								<span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+									<MapPin className="size-3.5" />
+									{location}
+								</span>
+								<div className="flex gap-1.5">
+									<a
+										href={linkedin}
+										className="size-7 rounded-lg flex items-center justify-center hover:scale-110 transition-transform"
+										style={{ background: "color-mix(in srgb, var(--color-primary) 8%, transparent)" }}>
+										<Linkedin className="size-3.5" style={{ color: "var(--color-primary)" }} />
+									</a>
+									<a
+										href={twitter}
+										className="size-7 rounded-lg flex items-center justify-center hover:scale-110 transition-transform"
+										style={{ background: "color-mix(in srgb, var(--color-primary) 8%, transparent)" }}>
+										<Twitter className="size-3.5" style={{ color: "var(--color-primary)" }} />
+									</a>
+								</div>
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function PressSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section className="py-20 md:py-28 border-b border-border" ref={ref}>
+			<div className="container mx-auto px-4 max-w-6xl">
+				<div className="grid md:grid-cols-2 gap-14">
+					<div>
+						<SectionBadge icon={Globe} label="Press" />
+						<h2 className="text-2xl font-bold mb-8">What they say about us</h2>
+						<div className="space-y-4">
+							{PRESS.map(({ quote, source }, i) => (
+								<div
+									key={source}
+									className={`group relative p-6 rounded-2xl border border-border bg-card overflow-hidden transition-all duration-700 hover:-translate-y-0.5 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+									style={{ transitionDelay: `${i * 100}ms` }}>
+									<div
+										className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+										style={{
+											background:
+												"radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 5%, transparent), transparent 70%)",
+										}}
+									/>
+									<div
+										className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+										style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent)" }}
+									/>
+									<p className="text-sm leading-relaxed text-foreground mb-3 italic">"{quote}"</p>
+									<p className="text-xs font-bold" style={{ color: "var(--color-primary)" }}>
+										{source}
+									</p>
+								</div>
+							))}
+						</div>
+					</div>
+					<div>
+						<SectionBadge icon={Target} label="Backed by" />
+						<h2 className="text-2xl font-bold mb-8">Our investors</h2>
+						<div className="grid grid-cols-2 gap-4">
+							{INVESTORS.map((name, i) => (
+								<div
+									key={name}
+									className={`group relative flex items-center justify-center h-24 rounded-2xl border border-border bg-card overflow-hidden transition-all duration-700 hover:-translate-y-1 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+									style={{ transitionDelay: `${100 + i * 80}ms` }}>
+									<div
+										className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+										style={{
+											background:
+												"radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 7%, transparent), transparent 70%)",
+										}}
+									/>
+									<div
+										className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+										style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent)" }}
+									/>
+									<span className="font-bold text-sm relative z-10">{name}</span>
+								</div>
+							))}
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function AboutCtaSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section className="py-24 md:py-32" ref={ref}>
+			<div className="container mx-auto px-4">
+				<div
+					className={`relative overflow-hidden rounded-3xl p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+					style={{
+						background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 75%, var(--color-accent)) 100%)",
+						boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
+					}}>
+					<div
+						className="absolute inset-0 pointer-events-none"
+						style={{
+							backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
+							backgroundSize: "32px 32px",
+							opacity: 0.07,
+						}}
+					/>
+					<div
+						className="absolute -top-20 -right-20 size-64 rounded-full blur-3xl pointer-events-none"
+						style={{ background: "color-mix(in srgb, var(--color-accent) 30%, transparent)" }}
+					/>
+					<div
+						className="absolute -bottom-20 -left-20 size-64 rounded-full blur-3xl pointer-events-none"
+						style={{ background: "color-mix(in srgb, var(--color-primary) 50%, transparent)" }}
+					/>
+					<div className="relative z-10">
+						<p className="text-white/70 text-sm font-semibold tracking-widest uppercase mb-4">Come build with us</p>
+						<h2 className="text-3xl md:text-5xl font-black text-white mb-5 text-balance">Come build the future of support</h2>
+						<p className="text-white/75 text-lg leading-relaxed max-w-xl mx-auto mb-10">
+							We are always looking for extraordinary people who care deeply about the work. Check out our open roles or just say hello.
+						</p>
+						<div className="flex flex-col sm:flex-row justify-center gap-4">
+							<Button
+								size="lg"
+								className="h-13 px-8 font-semibold text-base border-0 hover:opacity-90 transition-opacity group"
+								style={{ background: "white", color: "var(--color-primary)" }}
+								asChild>
+								<a href="/careers">
+									View open roles
+									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
+								</a>
+							</Button>
+							<Button
+								size="lg"
+								variant="outline"
+								className="h-13 px-8 font-semibold text-base text-white border-white/35 hover:bg-white/10 hover:border-white/50 transition-all"
+								asChild>
+								<a href="/contact">Get in touch</a>
+							</Button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	);
+}
+
+// --- Page ---------------------------------------------------------------------
+
 export default function AboutPage() {
+	const [heroVisible, setHeroVisible] = useState(false);
+	const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+
+	useEffect(() => {
+		const id = requestAnimationFrame(() => setHeroVisible(true));
+		return () => cancelAnimationFrame(id);
+	}, []);
+
+	const onMove = useCallback((e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY }), []);
+	useEffect(() => {
+		window.addEventListener("mousemove", onMove);
+		return () => window.removeEventListener("mousemove", onMove);
+	}, [onMove]);
+	const statsRef = useInView();
+	const c2022 = useCounter(2022, 1200, statsRef.inView);
+	const c47 = useCounter(47, 900, statsRef.inView);
+	const c1200 = useCounter(1200, 1300, statsRef.inView);
+	const c40 = useCounter(40, 1000, statsRef.inView);
+
 	return (
 		<SiteLayout>
-			{/* Hero */}
-			<section className="py-20 md:py-28 border-b border-border bg-muted/10">
-				<div className="container mx-auto px-4 max-w-3xl text-center">
-					<div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary mb-6">
-						<Globe className="size-3.5" />
-						Founded 2022 · Remote-first · Profitable
+			{/*  Hero  */}
+			<section className="relative overflow-hidden py-24 md:py-36 border-b border-border">
+				<div className="absolute inset-0 bg-linear-to-br from-primary/6 via-background to-accent/4" />
+				<div
+					className="absolute size-150 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px] transition-all duration-700 pointer-events-none"
+					style={{
+						left: mousePos.x,
+						top: mousePos.y,
+						background: "color-mix(in srgb, var(--color-primary) 10%, transparent)",
+					}}
+				/>
+				<div
+					className="absolute inset-0 opacity-[0.025] pointer-events-none"
+					style={{
+						backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)",
+						backgroundSize: "40px 40px",
+					}}
+				/>
+				<div className="relative container mx-auto px-4 text-center max-w-3xl">
+					<div className={`transition-all duration-700 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						<SectionBadge icon={Globe} label="About us" />
 					</div>
-					<h1 className="text-4xl md:text-6xl font-bold mb-5 text-balance">We exist to fix customer support</h1>
-					<p className="text-xl text-muted-foreground leading-relaxed text-pretty">
-						SupportDesk 365 was founded by two people who spent years running support teams and were tired of paying for software that made their
-						jobs harder. We built the platform we always wished existed.
+					<h1
+						className={`text-4xl md:text-6xl font-black mb-6 text-balance leading-tight transition-all duration-700 delay-100 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						We exist to{" "}
+						<span
+							style={{
+								background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
+								WebkitBackgroundClip: "text",
+								WebkitTextFillColor: "transparent",
+								backgroundClip: "text",
+							}}>
+							fix customer support
+						</span>
+					</h1>
+					<p
+						className={`text-xl text-muted-foreground leading-relaxed text-pretty mb-10 transition-all duration-700 delay-200 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						SupportDesk 365 is a team of 47 people across 14 countries building the support platform that enterprise Microsoft 365 teams actually
+						deserve.
 					</p>
-				</div>
-			</section>
-
-			{/* Stats */}
-			<section className="border-b border-border">
-				<div className="container mx-auto px-4">
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border max-w-5xl mx-auto">
-						{[
-							{ value: "2022", label: "Founded" },
-							{ value: "47", label: "Team members" },
-							{ value: "1,200+", label: "Customers" },
-							{ value: "40+", label: "Countries served" },
-						].map(({ value, label }) => (
-							<div
-								key={label}
-								className="flex flex-col items-center justify-center gap-1 bg-card py-10 text-center group hover:bg-primary/5 transition-colors">
-								<div className="text-3xl font-black">{value}</div>
-								<div className="text-sm text-muted-foreground">{label}</div>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
-
-			{/* Mission */}
-			<section className="container mx-auto px-4 py-20 md:py-28 max-w-3xl">
-				<h2 className="text-3xl font-bold mb-6 text-balance">Our mission</h2>
-				<p className="text-lg text-muted-foreground leading-relaxed mb-6">
-					Support teams are the unsung heroes of every company. They absorb frustration, solve complex problems under pressure, and represent your
-					brand in its most vulnerable moments.
-				</p>
-				<p className="text-lg text-muted-foreground leading-relaxed mb-8">
-					Our mission is to give those teams superpowers — AI that handles the repetitive work, integrations that eliminate tab-switching, and
-					analytics that turn gut feelings into confident decisions.
-				</p>
-				<ul className="space-y-3">
-					{["SOC 2 Type II certified", "GDPR & CCPA compliant", "US, EU, and APAC data residency", "Uptime SLA backed by contractual guarantee"].map(
-						(item) => (
-							<li key={item} className="flex items-center gap-2.5 text-sm text-muted-foreground">
-								<CheckCircle2 className="size-4 text-primary shrink-0" />
-								{item}
-							</li>
-						),
-					)}
-				</ul>
-			</section>
-
-			{/* Timeline */}
-			<section className="border-t border-b border-border bg-muted/10 py-20">
-				<div className="container mx-auto px-4 max-w-3xl">
-					<h2 className="text-3xl font-bold mb-12 text-center">Our story</h2>
-					<div className="relative space-y-8 pl-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-border">
-						{TIMELINE.map(({ year, title, desc }) => (
-							<div key={year} className="relative">
-								<div className="absolute -left-8 top-1.5 size-3 rounded-full bg-primary ring-4 ring-background" />
-								<p className="text-xs font-mono text-primary font-semibold mb-1">{year}</p>
-								<h3 className="font-semibold mb-1">{title}</h3>
-								<p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
-
-			{/* Values */}
-			<section className="py-20 md:py-28">
-				<div className="container mx-auto px-4">
-					<h2 className="text-3xl font-bold mb-10 text-center">What we believe</h2>
-					<div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-						{VALUES.map(({ icon: Icon, title, desc }) => (
-							<div
-								key={title}
-								className="flex flex-col gap-4 p-7 rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
-								<div className="size-11 rounded-xl bg-primary/10 flex items-center justify-center">
-									<Icon className="size-5 text-primary" />
-								</div>
-								<h3 className="text-lg font-semibold">{title}</h3>
-								<p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
-
-			{/* Team */}
-			<section className="border-t border-border bg-muted/10 py-20 md:py-28">
-				<div className="container mx-auto px-4">
-					<h2 className="text-3xl font-bold mb-2 text-center">Leadership team</h2>
-					<p className="text-center text-muted-foreground text-sm mb-10">A team that has built and scaled enterprise SaaS before.</p>
-					<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
-						{TEAM.map(({ name, role, bio, location }) => (
-							<div
-								key={name}
-								className="flex flex-col gap-4 p-6 rounded-xl border border-border bg-card hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 transition-all duration-200">
-								<div className="flex items-center gap-3">
-									<div className="size-12 rounded-full bg-primary/10 flex items-center justify-center text-base font-bold text-primary shrink-0">
-										{name
-											.split(" ")
-											.map((n) => n[0])
-											.join("")}
-									</div>
-									<div>
-										<p className="font-semibold text-sm">{name}</p>
-										<p className="text-xs text-primary">{role}</p>
-									</div>
-								</div>
-								<p className="text-sm text-muted-foreground leading-relaxed flex-1">{bio}</p>
-								<div className="flex items-center justify-between pt-3 border-t border-border">
-									<span className="flex items-center gap-1 text-xs text-muted-foreground">
-										<MapPin className="size-3" />
-										{location}
-									</span>
-									<div className="flex items-center gap-2">
-										<button className="text-muted-foreground hover:text-foreground transition-colors" aria-label="LinkedIn">
-											<Linkedin className="size-3.5" />
-										</button>
-										<button className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
-											<Twitter className="size-3.5" />
-										</button>
-									</div>
-								</div>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
-
-			{/* Press & Investors */}
-			<section className="border-t border-border py-16">
-				<div className="container mx-auto px-4 max-w-5xl">
-					<div className="grid md:grid-cols-2 gap-12">
-						{/* Press */}
-						<div>
-							<h3 className="text-lg font-bold mb-6">In the press</h3>
-							<div className="space-y-4">
-								{PRESS.map(({ outlet, quote }) => (
-									<div key={outlet} className="p-4 rounded-xl border border-border bg-card">
-										<p className="text-xs font-semibold text-primary mb-2">{outlet}</p>
-										<p className="text-sm text-muted-foreground leading-relaxed italic">{quote}</p>
-									</div>
-								))}
-							</div>
-						</div>
-						{/* Investors */}
-						<div>
-							<h3 className="text-lg font-bold mb-6">Backed by</h3>
-							<div className="grid grid-cols-2 gap-4">
-								{INVESTORS.map((inv) => (
-									<div key={inv} className="flex items-center justify-center p-5 rounded-xl border border-border bg-card h-20">
-										<span className="text-sm font-semibold text-muted-foreground">{inv}</span>
-									</div>
-								))}
-							</div>
-							<p className="text-xs text-muted-foreground mt-4 leading-relaxed">
-								Profitable and growing — we raise selectively and on our terms.
-							</p>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			{/* CTA */}
-			<section className="border-t border-border bg-muted/10 py-16">
-				<div className="container mx-auto px-4 text-center">
-					<h2 className="text-3xl font-bold mb-4">Join us on the journey</h2>
-					<p className="text-muted-foreground mb-8 max-w-xl mx-auto leading-relaxed">
-						We are hiring across engineering, product, and customer success. Come build the future of support.
-					</p>
-					<div className="flex flex-col sm:flex-row justify-center gap-3">
-						<Button size="lg" asChild className="group h-12 px-8">
+					<div
+						className={`flex flex-col sm:flex-row justify-center gap-3 transition-all duration-700 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						<Button
+							size="lg"
+							asChild
+							className="group h-13 px-8 text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
 							<a href="/careers">
-								View open roles
+								Join the team
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 							</a>
 						</Button>
-						<Button size="lg" variant="outline" asChild className="h-12 px-8">
+						<Button
+							size="lg"
+							variant="outline"
+							asChild
+							className="h-13 px-8 text-base hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
 							<a href="/contact">Get in touch</a>
 						</Button>
 					</div>
+
+					<div
+						ref={statsRef.ref as React.RefObject<HTMLDivElement>}
+						className={`grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mt-14 transition-all duration-1000 delay-400 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						{[
+							{ icon: Sparkles, displayValue: `${c2022}`, label: "Founded" },
+							{ icon: Users, displayValue: `${c47}`, label: "Team members" },
+							{ icon: CheckCircle2, displayValue: `${c1200.toLocaleString()}+`, label: "Customers" },
+							{ icon: Globe, displayValue: `${c40}+`, label: "Countries" },
+						].map(({ icon: Icon, displayValue, label }, i) => (
+							<div
+								key={label}
+								className={`group relative flex flex-col items-center gap-1.5 py-6 px-4 rounded-2xl border transition-all duration-700 hover:-translate-y-1 hover:shadow-lg overflow-hidden cursor-default ${statsRef.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+								style={{ background: "var(--color-card)", borderColor: "var(--color-border)", transitionDelay: `${i * 80}ms` }}>
+								<div
+									className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+									style={{
+										background:
+											"radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 70%)",
+									}}
+								/>
+								<Icon className="size-4 text-primary mb-0.5 group-hover:scale-110 transition-transform duration-300 relative z-10" />
+								<span
+									className="text-2xl font-black relative z-10"
+									style={{ color: "var(--color-primary)", fontVariantNumeric: "tabular-nums" }}>
+									{displayValue}
+								</span>
+								<span className="text-xs text-muted-foreground relative z-10">{label}</span>
+							</div>
+						))}
+					</div>
 				</div>
 			</section>
+			<MissionSection />
+			<TimelineSection />
+			<ValuesSection />
+			<TeamSection />
+			<PressSection />
+			<AboutCtaSection />
 		</SiteLayout>
 	);
 }

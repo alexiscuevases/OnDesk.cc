@@ -1,7 +1,63 @@
 import { SiteLayout } from "./site-layout";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, TrendingDown, Clock, Users, Zap, ChevronRight, Quote, BarChart3, Shield, Globe } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, Star, TrendingDown, Clock, Users, Zap, ChevronRight, Quote, BarChart3, Shield, Globe, TrendingUp } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+
+function useInView(options?: IntersectionObserverInit) {
+	const ref = useRef<HTMLDivElement>(null);
+	const [inView, setInView] = useState(false);
+	useEffect(() => {
+		const el = ref.current;
+		if (!el) return;
+		const obs = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) {
+					setInView(true);
+					obs.disconnect();
+				}
+			},
+			{ threshold: 0.08, ...options },
+		);
+		obs.observe(el);
+		return () => obs.disconnect();
+	}, []);
+	return { ref, inView };
+}
+
+function useCounter(target: number, duration = 1200, active = false) {
+	const [value, setValue] = useState(0);
+	useEffect(() => {
+		if (!active) return;
+		let start = 0;
+		const step = target / (duration / 16);
+		const id = setInterval(() => {
+			start += step;
+			if (start >= target) {
+				setValue(target);
+				clearInterval(id);
+			} else setValue(Math.floor(start));
+		}, 16);
+		return () => clearInterval(id);
+	}, [target, duration, active]);
+	return value;
+}
+
+function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
+	return (
+		<div className="flex justify-center mb-5">
+			<span
+				className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+				style={{
+					background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
+					border: "1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)",
+					color: "var(--color-primary)",
+				}}>
+				<Icon className="size-3.5" />
+				{label}
+			</span>
+		</div>
+	);
+}
 
 const INDUSTRIES = ["All", "Technology", "Retail", "Healthcare", "Finance", "Education"];
 
@@ -139,215 +195,353 @@ const CASE_STUDIES = [
 	},
 ];
 
-const GLOBAL_STATS = [
-	{ value: "1,200+", label: "Customers worldwide" },
-	{ value: "40+", label: "Countries served" },
-	{ value: "73%", label: "Average ticket deflection" },
-	{ value: "4.9/5", label: "Average CSAT rating" },
-];
-
 export default function CustomersPage() {
 	const [activeIndustry, setActiveIndustry] = useState("All");
+	const [heroVisible, setHeroVisible] = useState(false);
+	const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+	const statsRef = useInView();
+	const c1200 = useCounter(1200, 1200, statsRef.inView);
+	const c40 = useCounter(40, 900, statsRef.inView);
+	const c73 = useCounter(73, 1100, statsRef.inView);
+	const c49 = useCounter(49, 1300, statsRef.inView);
+
+	useEffect(() => {
+		const id = requestAnimationFrame(() => setHeroVisible(true));
+		return () => cancelAnimationFrame(id);
+	}, []);
+
+	const onMove = useCallback((e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY }), []);
+	useEffect(() => {
+		window.addEventListener("mousemove", onMove);
+		return () => window.removeEventListener("mousemove", onMove);
+	}, [onMove]);
 
 	const filtered = activeIndustry === "All" ? CASE_STUDIES : CASE_STUDIES.filter((c) => c.industry === activeIndustry);
-
 	const featured = CASE_STUDIES.find((c) => c.featured)!;
 	const rest = filtered.filter((c) => !c.featured || activeIndustry !== "All");
 
 	return (
 		<SiteLayout>
-			{/* Hero */}
-			<section className="py-20 md:py-28 border-b border-border bg-muted/10">
-				<div className="container mx-auto px-4 text-center max-w-3xl">
-					<div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary mb-6">
-						<Star className="size-3.5" />
-						1,200+ teams. Real results.
-					</div>
-					<h1 className="text-4xl md:text-6xl font-bold mb-5 text-balance">Customer stories</h1>
-					<p className="text-xl text-muted-foreground leading-relaxed text-pretty">
-						See how support teams across every industry use SupportDesk 365 to resolve tickets faster, reduce costs, and finally get ahead of the
-						queue.
-					</p>
+			{/* ── HERO ── */}
+			<section className="relative pt-16 pb-20 md:pt-28 md:pb-24 border-b border-border overflow-hidden">
+				<div className="absolute inset-0 pointer-events-none">
+					<div className="absolute inset-0 bg-linear-to-br from-primary/6 via-background to-accent/4" />
+					<div
+						className="absolute size-150 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px] transition-all duration-700 pointer-events-none"
+						style={{ left: mousePos.x, top: mousePos.y, background: "color-mix(in srgb, var(--color-primary) 10%, transparent)" }}
+					/>
+					<div
+						className="absolute inset-0 opacity-[0.025]"
+						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "40px 40px" }}
+					/>
 				</div>
-			</section>
+				<div className="container mx-auto px-4 text-center max-w-3xl relative">
+					<div className={`transition-all duration-1000 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+						<SectionBadge icon={Star} label="1,200+ teams. Real results." />
+						<h1 className="text-5xl md:text-[5rem] font-black mb-5 text-balance tracking-tight" style={{ lineHeight: 1.04 }}>
+							Customer{" "}
+							<span
+								style={{
+									background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
+									WebkitBackgroundClip: "text",
+									WebkitTextFillColor: "transparent",
+									backgroundClip: "text",
+								}}>
+								stories
+							</span>
+						</h1>
+						<p
+							className={`text-xl text-muted-foreground leading-relaxed text-pretty transition-all duration-1000 delay-150 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+							See how support teams across every industry use SupportDesk 365 to resolve tickets faster, reduce costs, and finally get ahead of
+							the queue.
+						</p>
+					</div>
 
-			{/* Global stats strip */}
-			<section className="border-b border-border">
-				<div className="container mx-auto px-4">
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border max-w-5xl mx-auto">
-						{GLOBAL_STATS.map(({ value, label }) => (
+					{/* Stat strip */}
+					<div
+						ref={statsRef.ref as React.RefObject<HTMLDivElement>}
+						className={`grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mt-14 transition-all duration-1000 delay-400 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						{[
+							{ icon: Users, displayValue: `${c1200.toLocaleString()}+`, label: "Customers worldwide" },
+							{ icon: Globe, displayValue: `${c40}+`, label: "Countries served" },
+							{ icon: TrendingUp, displayValue: `${c73}%`, label: "Avg. ticket deflection" },
+							{ icon: Star, displayValue: `${(c49 / 10).toFixed(1)}/5`, label: "Average CSAT rating" },
+						].map(({ icon: Icon, displayValue, label }, i) => (
 							<div
 								key={label}
-								className="flex flex-col items-center justify-center gap-1 bg-card py-10 text-center hover:bg-primary/5 transition-colors">
-								<div className="text-3xl font-black">{value}</div>
-								<div className="text-sm text-muted-foreground">{label}</div>
+								className={`group relative flex flex-col items-center gap-1.5 py-6 px-4 rounded-2xl border transition-all duration-700 hover:-translate-y-1 hover:shadow-lg overflow-hidden cursor-default ${statsRef.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+								style={{ background: "var(--color-card)", borderColor: "var(--color-border)", transitionDelay: `${i * 80}ms` }}>
+								<div
+									className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+									style={{
+										background:
+											"radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 70%)",
+									}}
+								/>
+								<Icon className="size-4 text-primary mb-0.5 group-hover:scale-110 transition-transform duration-300 relative z-10" />
+								<span
+									className="text-2xl font-black relative z-10"
+									style={{ color: "var(--color-primary)", fontVariantNumeric: "tabular-nums" }}>
+									{displayValue}
+								</span>
+								<span className="text-xs text-muted-foreground relative z-10">{label}</span>
 							</div>
 						))}
 					</div>
 				</div>
-			</section>
+			</section>{" "}
+			{activeIndustry === "All" && <FeaturedCaseStudy featured={featured} />}
+			{/* Filter bar + grid */}
+			<CaseStudiesGrid rest={rest} activeIndustry={activeIndustry} setActiveIndustry={setActiveIndustry} />
+			<CustomersCtaSection />
+		</SiteLayout>
+	);
+}
 
-			{/* Featured case study */}
-			{activeIndustry === "All" && (
-				<section className="container mx-auto px-4 py-20 max-w-6xl">
-					<div className="rounded-2xl border border-primary/20 bg-primary/5 overflow-hidden">
-						<div className="grid md:grid-cols-2 gap-0">
-							{/* Left — story */}
-							<div className="p-10 flex flex-col gap-6 border-b md:border-b-0 md:border-r border-primary/10">
-								<div className="flex items-center gap-3">
-									<div
-										className={`size-12 rounded-xl ${featured.color} flex items-center justify-center text-white font-bold text-sm shrink-0`}>
-										{featured.logo}
-									</div>
-									<div>
-										<p className="font-bold">{featured.company}</p>
-										<p className="text-xs text-muted-foreground">
-											{featured.industry} · {featured.plan} plan
-										</p>
-									</div>
-									<span className="ml-auto text-xs px-2.5 py-1 rounded-full bg-primary text-primary-foreground font-semibold">Featured</span>
-								</div>
-								<h2 className="text-2xl font-bold text-balance">{featured.tagline}</h2>
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">The challenge</p>
-									<p className="text-sm text-muted-foreground leading-relaxed">{featured.challenge}</p>
-								</div>
-								<div>
-									<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">The solution</p>
-									<p className="text-sm text-muted-foreground leading-relaxed">{featured.solution}</p>
-								</div>
-								<div className="mt-auto pt-4 border-t border-primary/10">
-									<div className="flex gap-1 mb-3">
-										{Array.from({ length: 5 }).map((_, i) => (
-											<Star key={i} className="size-3.5 fill-primary text-primary" />
-										))}
-									</div>
-									<blockquote className="text-sm text-foreground leading-relaxed mb-3 flex gap-2">
-										<Quote className="size-4 text-primary shrink-0 mt-0.5" />"{featured.quote}"
-									</blockquote>
-									<p className="text-sm font-semibold">{featured.author}</p>
-									<p className="text-xs text-muted-foreground">
-										{featured.role}, {featured.company}
-									</p>
-								</div>
+function FeaturedCaseStudy({ featured }: { featured: (typeof CASE_STUDIES)[0] }) {
+	const { ref, inView } = useInView({ threshold: 0.05 });
+	return (
+		<section ref={ref} className="container mx-auto px-4 py-20 max-w-6xl">
+			<div
+				className={`rounded-3xl border overflow-hidden transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+				style={{
+					borderColor: "color-mix(in srgb, var(--color-primary) 20%, transparent)",
+					background: "color-mix(in srgb, var(--color-primary) 4%, transparent)",
+				}}>
+				<div className="grid md:grid-cols-2 gap-0">
+					{/* Left — story */}
+					<div className="p-10 flex flex-col gap-6" style={{ borderRight: "1px solid color-mix(in srgb, var(--color-primary) 10%, transparent)" }}>
+						<div className="flex items-center gap-3">
+							<div className={`size-12 rounded-xl ${featured.color} flex items-center justify-center text-white font-black text-sm shrink-0`}>
+								{featured.logo}
 							</div>
-
-							{/* Right — metrics */}
-							<div className="p-10 flex flex-col gap-6">
-								<p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Results</p>
-								<div className="grid grid-cols-2 gap-4 flex-1">
-									{featured.results.map(({ metric, label, icon: Icon }) => (
-										<div key={label} className="flex flex-col gap-2 p-5 rounded-xl bg-card border border-border">
-											<Icon className="size-4 text-primary" />
-											<p className="text-3xl font-black">{metric}</p>
-											<p className="text-xs text-muted-foreground leading-snug">{label}</p>
-										</div>
-									))}
-								</div>
-								<Button asChild className="group h-11 w-full mt-auto">
-									<a href="/contact">
-										Get similar results
-										<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
-									</a>
-								</Button>
+							<div>
+								<p className="font-bold">{featured.company}</p>
+								<p className="text-xs text-muted-foreground">
+									{featured.industry} · {featured.plan} plan
+								</p>
 							</div>
+							<span
+								className="ml-auto text-xs px-2.5 py-1 rounded-full font-bold"
+								style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}>
+								Featured
+							</span>
+						</div>
+						<h2 className="text-2xl font-black text-balance leading-snug">{featured.tagline}</h2>
+						<div>
+							<p className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground mb-2">The challenge</p>
+							<p className="text-sm text-muted-foreground leading-relaxed">{featured.challenge}</p>
+						</div>
+						<div>
+							<p className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground mb-2">The solution</p>
+							<p className="text-sm text-muted-foreground leading-relaxed">{featured.solution}</p>
+						</div>
+						<div className="mt-auto pt-4" style={{ borderTop: "1px solid color-mix(in srgb, var(--color-primary) 10%, transparent)" }}>
+							<div className="flex gap-1 mb-3">
+								{Array.from({ length: 5 }).map((_, i) => (
+									<Star key={i} className="size-3.5 fill-primary text-primary" />
+								))}
+							</div>
+							<blockquote className="text-sm text-foreground leading-relaxed mb-3 flex gap-2">
+								<Quote className="size-4 text-primary shrink-0 mt-0.5" />"{featured.quote}"
+							</blockquote>
+							<p className="text-sm font-bold">{featured.author}</p>
+							<p className="text-xs text-muted-foreground">
+								{featured.role}, {featured.company}
+							</p>
 						</div>
 					</div>
-				</section>
-			)}
-
-			{/* Filter bar + grid */}
-			<section className="border-t border-border bg-muted/10 py-16">
-				<div className="container mx-auto px-4">
-					{/* Industry filter */}
-					<div className="flex flex-wrap justify-center gap-2 mb-10">
-						{INDUSTRIES.map((ind) => (
-							<button
-								key={ind}
-								onClick={() => setActiveIndustry(ind)}
-								className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
-									activeIndustry === ind
-										? "bg-primary text-primary-foreground border-primary"
-										: "bg-card border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
-								}`}>
-								{ind}
-							</button>
-						))}
-					</div>
-
-					{/* Cards grid */}
-					<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
-						{rest.map(({ company, industry, logo, color, tagline, results, quote, author, role, plan }) => (
-							<div
-								key={company}
-								className="flex flex-col gap-5 p-6 rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group">
-								{/* Header */}
-								<div className="flex items-center gap-3">
-									<div className={`size-10 rounded-xl ${color} flex items-center justify-center text-white font-bold text-xs shrink-0`}>
-										{logo}
-									</div>
-									<div className="flex-1 min-w-0">
-										<p className="font-semibold text-sm truncate">{company}</p>
-										<p className="text-xs text-muted-foreground">{industry}</p>
-									</div>
-									<span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium shrink-0">
-										{plan}
-									</span>
+					{/* Right — metrics */}
+					<div className="p-10 flex flex-col gap-6">
+						<p className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground">Results</p>
+						<div className="grid grid-cols-2 gap-4 flex-1">
+							{featured.results.map(({ metric, label, icon: Icon }) => (
+								<div
+									key={label}
+									className="group/metric flex flex-col gap-2 p-5 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+									style={{ background: "var(--color-card)", borderColor: "var(--color-border)" }}>
+									<Icon className="size-4" style={{ color: "var(--color-primary)" }} />
+									<p className="text-3xl font-black transition-colors duration-200" style={{ color: "var(--color-primary)" }}>
+										{metric}
+									</p>
+									<p className="text-xs text-muted-foreground leading-snug">{label}</p>
 								</div>
-
-								{/* Tagline */}
-								<h3 className="text-sm font-semibold leading-snug">{tagline}</h3>
-
-								{/* Top 2 metrics */}
-								<div className="grid grid-cols-2 gap-3">
-									{results.slice(0, 2).map(({ metric, label, icon: Icon }) => (
-										<div key={label} className="flex flex-col gap-1.5 p-3 rounded-lg bg-muted/50 border border-border">
-											<Icon className="size-3.5 text-primary" />
-											<p className="text-xl font-black">{metric}</p>
-											<p className="text-[11px] text-muted-foreground leading-snug">{label}</p>
-										</div>
-									))}
-								</div>
-
-								{/* Quote */}
-								<blockquote className="text-xs text-muted-foreground leading-relaxed italic border-l-2 border-primary/30 pl-3 flex-1">
-									"{quote}"
-								</blockquote>
-
-								{/* Author */}
-								<div className="flex items-center justify-between pt-3 border-t border-border">
-									<div>
-										<p className="text-xs font-semibold">{author}</p>
-										<p className="text-[11px] text-muted-foreground">{role}</p>
-									</div>
-									<ChevronRight className="size-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-								</div>
-							</div>
-						))}
+							))}
+						</div>
+						<Button asChild className="group h-12 w-full mt-auto font-bold hover:-translate-y-0.5 transition-transform">
+							<a href="/contact">
+								Get similar results
+								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
+							</a>
+						</Button>
 					</div>
 				</div>
-			</section>
+			</div>
+		</section>
+	);
+}
 
-			{/* CTA */}
-			<section className="py-20 border-t border-border">
-				<div className="container mx-auto px-4 text-center max-w-2xl">
-					<h2 className="text-3xl font-bold mb-4">Ready to write your own story?</h2>
-					<p className="text-muted-foreground mb-8 leading-relaxed">
-						Join 1,200+ support teams that have already transformed how they handle tickets. Start your free trial today — no credit card required.
+function CaseStudiesGrid({
+	rest,
+	activeIndustry,
+	setActiveIndustry,
+}: {
+	rest: typeof CASE_STUDIES;
+	activeIndustry: string;
+	setActiveIndustry: (v: string) => void;
+}) {
+	const { ref, inView } = useInView({ threshold: 0.04 });
+	return (
+		<section ref={ref} className="border-t border-border py-16" style={{ background: "color-mix(in srgb, var(--color-muted) 10%, transparent)" }}>
+			<div className="container mx-auto px-4">
+				{/* Industry filter */}
+				<div className="flex flex-wrap justify-center gap-2 mb-10">
+					{INDUSTRIES.map((ind) => (
+						<button
+							key={ind}
+							onClick={() => setActiveIndustry(ind)}
+							className={`relative px-4 py-1.5 rounded-full text-sm font-semibold border transition-all duration-200 hover:-translate-y-0.5 ${activeIndustry === ind ? "text-primary-foreground shadow-md" : "text-muted-foreground hover:text-foreground"}`}
+							style={
+								activeIndustry === ind
+									? {
+											background: "var(--color-primary)",
+											borderColor: "var(--color-primary)",
+											boxShadow: "0 4px 14px -4px color-mix(in srgb, var(--color-primary) 50%, transparent)",
+										}
+									: { background: "var(--color-card)", borderColor: "var(--color-border)" }
+							}>
+							{ind}
+							{activeIndustry === ind && (
+								<span
+									className="absolute -top-0.5 -right-0.5 size-2 rounded-full animate-pulse"
+									style={{ background: "var(--color-accent)" }}
+								/>
+							)}
+						</button>
+					))}
+				</div>
+				{/* Cards grid */}
+				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+					{rest.map(({ company, industry, logo, color, tagline, results, quote, author, role, plan }, i) => (
+						<div
+							key={company}
+							className={`group relative flex flex-col gap-5 p-6 rounded-2xl border overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-xl ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+							style={{ background: "var(--color-card)", borderColor: "var(--color-border)", transitionDelay: `${i * 70}ms` }}>
+							<div
+								className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+								style={{
+									background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 6%, transparent), transparent 70%)",
+								}}
+							/>
+							<div
+								className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+								style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 28%, transparent)" }}
+							/>
+							{/* Header */}
+							<div className="flex items-center gap-3 relative z-10">
+								<div className={`size-10 rounded-xl ${color} flex items-center justify-center text-white font-black text-xs shrink-0`}>
+									{logo}
+								</div>
+								<div className="flex-1 min-w-0">
+									<p className="font-bold text-sm truncate">{company}</p>
+									<p className="text-xs text-muted-foreground">{industry}</p>
+								</div>
+								<span
+									className="text-xs px-2 py-0.5 rounded-full border font-semibold shrink-0"
+									style={{
+										background: "color-mix(in srgb, var(--color-primary) 10%, transparent)",
+										color: "var(--color-primary)",
+										borderColor: "color-mix(in srgb, var(--color-primary) 25%, transparent)",
+									}}>
+									{plan}
+								</span>
+							</div>
+							{/* Tagline */}
+							<h3 className="text-sm font-bold leading-snug relative z-10 group-hover:text-primary transition-colors duration-200">{tagline}</h3>
+							{/* Top 2 metrics */}
+							<div className="grid grid-cols-2 gap-3 relative z-10">
+								{results.slice(0, 2).map(({ metric, label, icon: Icon }) => (
+									<div
+										key={label}
+										className="flex flex-col gap-1.5 p-3 rounded-xl border transition-all duration-300"
+										style={{
+											background: "color-mix(in srgb, var(--color-primary) 4%, transparent)",
+											borderColor: "color-mix(in srgb, var(--color-primary) 12%, transparent)",
+										}}>
+										<Icon className="size-3.5" style={{ color: "var(--color-primary)" }} />
+										<p className="text-xl font-black" style={{ color: "var(--color-primary)" }}>
+											{metric}
+										</p>
+										<p className="text-[11px] text-muted-foreground leading-snug">{label}</p>
+									</div>
+								))}
+							</div>
+							{/* Quote */}
+							<blockquote
+								className="text-xs text-muted-foreground leading-relaxed italic pl-3 flex-1 relative z-10"
+								style={{ borderLeft: "2px solid color-mix(in srgb, var(--color-primary) 35%, transparent)" }}>
+								"{quote}"
+							</blockquote>
+							{/* Author */}
+							<div className="flex items-center justify-between pt-3 border-t border-border relative z-10">
+								<div>
+									<p className="text-xs font-bold">{author}</p>
+									<p className="text-[11px] text-muted-foreground">{role}</p>
+								</div>
+								<ChevronRight className="size-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
+		</section>
+	);
+}
+
+function CustomersCtaSection() {
+	const { ref, inView } = useInView();
+	return (
+		<section ref={ref} className="container mx-auto px-4 py-20">
+			<div
+				className={`relative max-w-5xl mx-auto rounded-3xl overflow-hidden p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
+				style={{
+					background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 75%, var(--color-accent)) 100%)",
+					boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
+				}}>
+				<div
+					className="absolute inset-0 opacity-[0.07] pointer-events-none"
+					style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "32px 32px" }}
+				/>
+				<div className="absolute -top-16 -right-16 size-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+				<div className="relative z-10">
+					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 border border-white/25 text-sm font-semibold text-white mb-8">
+						<Star className="size-3.5" /> 1,200+ happy teams
+					</div>
+					<h2 className="text-4xl md:text-5xl font-black mb-5 text-white text-balance tracking-tight">Ready to write your own story?</h2>
+					<p className="text-xl text-white/75 mb-10 max-w-xl mx-auto leading-relaxed">
+						Join 1,200+ support teams that have already transformed how they handle tickets. No credit card required.
 					</p>
-					<div className="flex flex-col sm:flex-row justify-center gap-3">
-						<Button size="lg" asChild className="group h-12 px-8">
+					<div className="flex flex-col sm:flex-row gap-3 justify-center">
+						<Button
+							size="lg"
+							asChild
+							className="group h-12 px-8 bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300 font-bold"
+							style={{ color: "var(--color-primary)" }}>
 							<a href="/signup">
 								Start free trial
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 							</a>
 						</Button>
-						<Button size="lg" variant="outline" asChild className="h-12 px-8">
+						<Button
+							size="lg"
+							variant="outline"
+							asChild
+							className="h-12 px-8 text-white border-white/35 hover:bg-white/10 hover:-translate-y-0.5 transition-all duration-300">
 							<a href="/contact">Talk to sales</a>
 						</Button>
 					</div>
 				</div>
-			</section>
-		</SiteLayout>
+			</div>
+		</section>
 	);
 }
