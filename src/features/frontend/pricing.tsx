@@ -2,7 +2,7 @@ import { SiteLayout } from "./site-layout";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, X, Star, Users, Zap, Shield, ChevronDown, Sparkles, TrendingUp, Minus, Plus } from "lucide-react";
 import { useState } from "react";
-import { useInView, useMountVisible, useMouseGlow, SectionBadge, GradientText, CtaDecorations } from "./shared";
+import { useInView, useMountVisible, useMouseGlow, SectionBadge, CtaDecorations } from "./shared";
 
 
 
@@ -693,9 +693,9 @@ function PricingCtaSection() {
 					</p>
 					<div className="flex flex-col sm:flex-row justify-center gap-4">
 						<Button
-							size="lg"
+							size="xl"
 							asChild
-							className="group h-13 px-8 text-base bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300"
+							className="group bg-white hover:bg-white/90"
 							style={{ color: "var(--color-primary)" }}>
 							<a href="/contact">
 								Talk to sales
@@ -703,10 +703,10 @@ function PricingCtaSection() {
 							</a>
 						</Button>
 						<Button
-							size="lg"
+							size="xl"
 							variant="outline"
 							asChild
-							className="h-13 px-8 text-base text-white border-white/35 hover:bg-white/10 hover:border-white/60 hover:-translate-y-0.5 transition-all duration-300">
+							className="text-white border-white/35 hover:bg-white/10 hover:border-white/60">
 							<a href="/auth/signup">Start free trial</a>
 						</Button>
 					</div>

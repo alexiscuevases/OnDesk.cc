@@ -313,7 +313,7 @@ function FeaturedCaseStudy({ featured }: { featured: (typeof CASE_STUDIES)[0] })
 								</div>
 							))}
 						</div>
-						<Button size="lg" asChild className="group h-13 px-8 text-base w-full mt-auto font-bold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
+						<Button size="xl" asChild className="group w-full mt-auto font-bold">
 							<a href="/contact">
 								Get similar results
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
@@ -468,9 +468,9 @@ function CustomersCtaSection() {
 					</p>
 					<div className="flex flex-col sm:flex-row gap-3 justify-center">
 						<Button
-							size="lg"
+							size="xl"
 							asChild
-							className="group h-12 px-8 bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300 font-bold"
+							className="group bg-white hover:bg-white/90 font-bold"
 							style={{ color: "var(--color-primary)" }}>
 							<a href="/auth/signup">
 								Start free trial
@@ -478,10 +478,10 @@ function CustomersCtaSection() {
 							</a>
 						</Button>
 						<Button
-							size="lg"
+							size="xl"
 							variant="outline"
 							asChild
-							className="h-12 px-8 text-white border-white/35 hover:bg-white/10 hover:-translate-y-0.5 transition-all duration-300">
+							className="text-white border-white/35 hover:bg-white/10">
 							<a href="/contact">Talk to sales</a>
 						</Button>
 					</div>

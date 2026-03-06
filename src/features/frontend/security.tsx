@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Lock, Server, Eye, Globe, Users, CheckCircle2, FileText, Zap, Key, AlertTriangle, Database } from "lucide-react";
 import { SiteLayout } from "./site-layout";
-import { useInView, useCounter, useMountVisible, useMouseGlow, SectionBadge, GradientText, CtaDecorations } from "./shared";
+import { useInView, useCounter, useMouseGlow, SectionBadge, CtaDecorations } from "./shared";
 
 
 
@@ -327,13 +327,13 @@ function DisclosureSection() {
 							))}
 						</ul>
 						<div className="flex flex-wrap gap-3 mt-6">
-							<Button size="lg" asChild className="group h-11 px-6 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
+							<Button size="lg" asChild className="group">
 								<a href="mailto:security@supportdesk365.io">
 									Report a vulnerability
 									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 								</a>
 							</Button>
-							<Button size="lg" variant="outline" asChild className="h-11 px-6 hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+							<Button size="lg" variant="outline" asChild className="">
 								<a href="/contact">Talk to our security team</a>
 							</Button>
 						</div>
@@ -361,8 +361,8 @@ function SecurityCtaSection() {
 						</p>
 						<div className="flex flex-col sm:flex-row justify-center gap-4">
 							<Button
-								size="lg"
-								className="h-13 px-8 font-semibold text-base border-0 hover:opacity-90 transition-opacity group"
+								size="xl"
+								className="group font-semibold border-0 hover:opacity-90 transition-opacity"
 								style={{ background: "white", color: "var(--color-primary)" }}
 								asChild>
 								<a href="/contact">
@@ -371,9 +371,9 @@ function SecurityCtaSection() {
 								</a>
 							</Button>
 							<Button
-								size="lg"
+								size="xl"
 								variant="outline"
-								className="h-13 px-8 font-semibold text-base text-white border-white/35 hover:bg-white/10 hover:border-white/50 transition-all"
+								className="font-semibold text-white border-white/35 hover:bg-white/10 hover:border-white/50 transition-all"
 								asChild>
 								<a href="/status">View status page</a>
 							</Button>
@@ -388,10 +388,9 @@ function SecurityCtaSection() {
 // -- Page --
 
 export default function SecurityPage() {
-	const [heroVisible, setHeroVisible] = useState(false);
+	const [heroVisible] = useState(false);
 	const mousePos = useMouseGlow();
 	const statsRef = useInView();
-	const visible = useMountVisible();
 	const c9997 = useCounter(9997, 1400, statsRef.inView);
 	const c0 = useCounter(0, 800, statsRef.inView);
 	const c3 = useCounter(3, 900, statsRef.inView);
@@ -434,19 +433,18 @@ export default function SecurityPage() {
 					<div
 						className={`flex flex-col sm:flex-row justify-center gap-3 transition-all duration-700 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 						<Button
-							size="lg"
+							size="xl"
 							asChild
-							className="group h-13 px-8 text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
+							className="group">
 							<a href="/contact">
 								Request security review
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 							</a>
 						</Button>
 						<Button
-							size="lg"
+							size="xl"
 							variant="outline"
-							asChild
-							className="h-13 px-8 text-base hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+							asChild>
 							<a href="mailto:security@supportdesk365.io">Contact security team</a>
 						</Button>
 					</div>

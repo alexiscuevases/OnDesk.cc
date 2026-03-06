@@ -161,14 +161,14 @@ export default function StatusPage() {
 						<p className="text-xs text-muted-foreground mb-8">Last updated: Feb 27, 2026 at 08:00 UTC</p>
 						<div
 							className={`flex flex-col sm:flex-row justify-center gap-3 transition-all duration-1000 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-							<Button size="lg" asChild className="group h-13 px-8 text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
+							<Button size="xl" asChild className="group">
 								<a href="/contact">
 									<Bell className="mr-2 size-4" />
 									Subscribe to updates
 									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 								</a>
 							</Button>
-							<Button size="lg" variant="outline" asChild className="h-13 px-8 text-base gap-2 hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+							<Button size="xl" variant="outline" asChild className="gap-2">
 								<a href="/help">
 									<RefreshCw className="size-4" />
 									View SLA docs
@@ -404,7 +404,7 @@ function StatusCtaSection() {
 						<Button
 							size="lg"
 							asChild
-							className="group h-12 px-8 bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300 font-bold"
+							className="group px-8 bg-white hover:bg-white/90 font-bold"
 							style={{ color: "var(--color-primary)" }}>
 							<a href="/contact">
 								Subscribe to updates
@@ -415,7 +415,7 @@ function StatusCtaSection() {
 							size="lg"
 							variant="outline"
 							asChild
-							className="h-12 px-8 text-white border-white/35 hover:bg-white/10 hover:-translate-y-0.5 transition-all duration-300">
+							className="px-8 text-white border-white/35 hover:bg-white/10">
 							<a href="/help">View SLA docs</a>
 						</Button>
 					</div>

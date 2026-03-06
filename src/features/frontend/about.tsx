@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Target, Heart, MapPin, Globe, Linkedin, Twitter, CheckCircle2, Sparkles } from "lucide-react";
 import { SiteLayout } from "./site-layout";
-import { useInView, useCounter, useMountVisible, useMouseGlow, SectionBadge, GradientText, CtaDecorations } from "./shared";
+import { useInView, useCounter, useMouseGlow, SectionBadge, CtaDecorations } from "./shared";
 
 
 
@@ -401,8 +401,8 @@ function AboutCtaSection() {
 						</p>
 						<div className="flex flex-col sm:flex-row justify-center gap-4">
 							<Button
-								size="lg"
-								className="h-13 px-8 font-semibold text-base border-0 hover:opacity-90 transition-opacity group"
+								size="xl"
+								className="font-semibold border-0 hover:opacity-90 transition-opacity group"
 								style={{ background: "white", color: "var(--color-primary)" }}
 								asChild>
 								<a href="/careers">
@@ -411,9 +411,9 @@ function AboutCtaSection() {
 								</a>
 							</Button>
 							<Button
-								size="lg"
+								size="xl"
 								variant="outline"
-								className="h-13 px-8 font-semibold text-base text-white border-white/35 hover:bg-white/10 hover:border-white/50 transition-all"
+								className="font-semibold text-white border-white/35 hover:bg-white/10 hover:border-white/50"
 								asChild>
 								<a href="/contact">Get in touch</a>
 							</Button>
@@ -428,9 +428,8 @@ function AboutCtaSection() {
 // --- Page ---------------------------------------------------------------------
 
 export default function AboutPage() {
-	const [heroVisible, setHeroVisible] = useState(false);
+	const [heroVisible] = useState(false);
 	const mousePos = useMouseGlow();
-	const visible = useMountVisible();
 	const statsRef = useInView();
 	const c2022 = useCounter(2022, 1200, statsRef.inView);
 	const c47 = useCounter(47, 900, statsRef.inView);
@@ -482,19 +481,19 @@ export default function AboutPage() {
 					<div
 						className={`flex flex-col sm:flex-row justify-center gap-3 transition-all duration-700 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 						<Button
-							size="lg"
+							size="xl"
 							asChild
-							className="group h-13 px-8 text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
+							className="group">
 							<a href="/careers">
 								Join the team
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 							</a>
 						</Button>
 						<Button
-							size="lg"
+							size="xl"
 							variant="outline"
 							asChild
-							className="h-13 px-8 text-base hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+							className="">
 							<a href="/contact">Get in touch</a>
 						</Button>
 					</div>

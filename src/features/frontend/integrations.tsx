@@ -135,9 +135,9 @@ export default function IntegrationsPage() {
 						</p>
 						<div className={`transition-all duration-1000 delay-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 							<Button
-								size="lg"
+								size="xl"
 								asChild
-								className="group h-12 px-8 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
+								className="group">
 								<a href="/auth/signup">
 									Get started free
 									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
@@ -389,9 +389,9 @@ function IntegrationsCtaSection() {
 					</p>
 					<div className="flex flex-col sm:flex-row justify-center gap-4">
 						<Button
-							size="lg"
+							size="xl"
 							asChild
-							className="group h-12 px-8 text-base bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300"
+							className="group bg-white hover:bg-white/90"
 							style={{ color: "var(--color-primary)" }}>
 							<a href="/contact">
 								Request an integration
@@ -399,10 +399,10 @@ function IntegrationsCtaSection() {
 							</a>
 						</Button>
 						<Button
-							size="lg"
+							size="xl"
 							variant="outline"
 							asChild
-							className="h-12 px-8 text-base text-white border-white/35 hover:bg-white/10 hover:border-white/60 hover:-translate-y-0.5 transition-all duration-300">
+							className="text-white border-white/35 hover:bg-white/10 hover:border-white/60">
 							<a href="/help">
 								<Zap className="mr-2 size-4" />
 								View API docs

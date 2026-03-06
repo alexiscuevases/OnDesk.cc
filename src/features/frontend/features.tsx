@@ -203,19 +203,19 @@ export default function FeaturesPage() {
 						<div
 							className={`flex flex-col sm:flex-row justify-center gap-3 mb-14 transition-all duration-1000 delay-250 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 							<Button
-								size="lg"
+								size="xl"
 								asChild
-								className="group h-13 px-8 text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
+								className="group">
 								<a href="/auth/signup">
 									Start free trial
 									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 								</a>
 							</Button>
 							<Button
-								size="lg"
+								size="xl"
 								variant="outline"
 								asChild
-								className="h-13 px-8 text-base gap-2 hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+								className="gap-2">
 								<a href="#demo">
 									<Play className="size-4 group-hover:scale-110 transition-transform" />
 									Watch demo
@@ -459,9 +459,9 @@ function FeaturesCtaSection() {
 					</p>
 					<div className="flex flex-col sm:flex-row justify-center gap-4">
 						<Button
-							size="lg"
+							size="xl"
 							asChild
-							className="group h-13 px-8 text-base bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300"
+							className="group bg-white hover:bg-white/90"
 							style={{ color: "var(--color-primary)" }}>
 							<a href="/auth/signup">
 								Start free trial
@@ -469,10 +469,10 @@ function FeaturesCtaSection() {
 							</a>
 						</Button>
 						<Button
-							size="lg"
+							size="xl"
 							variant="outline"
 							asChild
-							className="h-13 px-8 text-base text-white border-white/35 hover:bg-white/10 hover:border-white/60 hover:-translate-y-0.5 transition-all duration-300">
+							className="text-white border-white/35 hover:bg-white/10 hover:border-white/60">
 							<a href="/contact">Talk to sales</a>
 						</Button>
 					</div>

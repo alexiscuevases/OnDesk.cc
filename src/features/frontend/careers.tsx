@@ -332,8 +332,8 @@ function CareersCtaSection() {
 						</p>
 						<div className="flex flex-col sm:flex-row justify-center gap-4">
 							<Button
-								size="lg"
-								className="h-13 px-8 font-semibold text-base border-0 hover:opacity-90 transition-opacity group"
+								size="xl"
+								className="font-semibold border-0 hover:opacity-90 transition-opacity group"
 								style={{ background: "white", color: "var(--color-primary)" }}
 								asChild>
 								<a href="/contact">
@@ -342,9 +342,9 @@ function CareersCtaSection() {
 								</a>
 							</Button>
 							<Button
-								size="lg"
+								size="xl"
 								variant="outline"
-								className="h-13 px-8 font-semibold text-base text-white border-white/35 hover:bg-white/10 hover:border-white/50 transition-all"
+								className="font-semibold text-white border-white/35 hover:bg-white/10 hover:border-white/50"
 								asChild>
 								<a href="/about">About us</a>
 							</Button>

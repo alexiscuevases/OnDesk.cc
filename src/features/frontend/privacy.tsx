@@ -258,10 +258,10 @@ export default function PrivacyPage() {
                         This Privacy Policy describes how SupportDesk 365 Ltd. collects, uses, and shares information about you when you use our services.
                     </p>
                     <div className={`flex gap-3 mt-6 transition-all duration-700 delay-400 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-                        <Button size="sm" asChild className="group shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300">
+                        <Button size="sm" asChild className="group">
                             <a href="/contact">Questions? Contact us <ArrowRight className="ml-1.5 size-3.5 group-hover:translate-x-0.5 transition-transform" /></a>
                         </Button>
-                        <Button size="sm" variant="outline" asChild className="hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+                        <Button size="sm" variant="outline" asChild className="">
                             <a href="/security">Security overview</a>
                         </Button>
                     </div>

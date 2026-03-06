@@ -227,9 +227,9 @@ export default function LandingPage() {
 						<div
 							className={`flex flex-col sm:flex-row justify-center gap-3 mb-16 transition-all duration-1000 delay-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 							<Button
-								size="lg"
+								size="xl"
 								asChild
-								className="group relative h-13 px-8 text-base overflow-hidden shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
+								className="group relative overflow-hidden">
 								<a href="/auth/signup">
 									<span className="relative z-10 flex items-center gap-2">
 										Start free — 14 days
@@ -238,10 +238,10 @@ export default function LandingPage() {
 								</a>
 							</Button>
 							<Button
-								size="lg"
+								size="xl"
 								variant="outline"
 								asChild
-								className="group h-13 px-8 text-base hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+								className="group">
 								<a href="#demo">
 									<Play className="mr-2 size-4 group-hover:scale-110 transition-transform" />
 									Watch demo
@@ -410,7 +410,7 @@ export default function LandingPage() {
 						</ul>
 						<Button
 							asChild
-							className="group mt-2 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300">
+							className="group mt-2">
 							<a href="/auth/signup">
 								Try {feat.label} free
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
@@ -629,9 +629,9 @@ function CtaSection() {
 					</p>
 					<div className="flex flex-col sm:flex-row justify-center gap-4">
 						<Button
-							size="lg"
+							size="xl"
 							asChild
-							className="group h-13 px-8 text-base bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300"
+							className="group bg-white hover:bg-white/90"
 							style={{ color: "var(--color-primary)" }}>
 							<a href="/auth/signup">
 								Start free trial
@@ -639,10 +639,10 @@ function CtaSection() {
 							</a>
 						</Button>
 						<Button
-							size="lg"
+							size="xl"
 							variant="outline"
 							asChild
-							className="h-13 px-8 text-base text-white border-white/35 hover:bg-white/10 hover:border-white/60 hover:-translate-y-0.5 transition-all duration-300">
+							className="text-white border-white/35 hover:bg-white/10 hover:border-white/60">
 							<a href="/auth/signin">Sign in to your account</a>
 						</Button>
 					</div>

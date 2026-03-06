@@ -54,13 +54,6 @@ const OFFICES = [
 	{ city: "Seattle", address: "Engineering hub" },
 ];
 
-const TRUST = [
-	{ icon: Clock, stat: "< 4h", label: "Response for sales" },
-	{ icon: Shield, stat: "SOC 2", label: "Type II certified" },
-	{ icon: Users, stat: "1,200+", label: "Customers worldwide" },
-	{ icon: Zap, stat: "99.97%", label: "Uptime SLA" },
-];
-
 const REASONS: Record<string, string> = {
 	sales: "Tell us your team size, current setup, and what you are hoping to solve.",
 	enterprise: "Describe your requirements  SSO, compliance, SLA, or custom contracts.",
@@ -159,10 +152,10 @@ function ContactFormSection({
 									<p className="text-sm text-muted-foreground">We will get back to you within 4 business hours during weekdays.</p>
 								</div>
 								<div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
-									<Button variant="outline" className="flex-1 text-sm hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200" onClick={() => setSubmitted(false)}>
+									<Button variant="outline" className="flex-1 text-sm" onClick={() => setSubmitted(false)}>
 										Send another message
 									</Button>
-									<Button className="flex-1 text-sm shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200" asChild>
+									<Button className="flex-1 text-sm" asChild>
 										<a href="/help">Browse help center</a>
 									</Button>
 								</div>
@@ -228,7 +221,8 @@ function ContactFormSection({
 								</div>
 								<Button
 									type="submit"
-									className="w-full font-semibold h-11 group shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
+									size="lg"
+									className="w-full font-semibold group">
 									Send message
 									<ArrowRight className="ml-2 size-4 group-hover:translate-x-0.5 transition-transform" />
 								</Button>
@@ -332,7 +326,7 @@ function ContactFormSection({
 								variant="outline"
 								size="sm"
 								asChild
-								className="group shrink-0 relative z-10 self-start hover:border-primary/50 hover:bg-primary/5 transition-all duration-200">
+								className="group shrink-0 relative z-10 self-start">
 								<a href="/help">
 									Help Center
 									<ArrowRight className="ml-1.5 size-3.5 group-hover:translate-x-0.5 transition-transform" />
