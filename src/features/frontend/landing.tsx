@@ -292,7 +292,7 @@ export default function LandingPage() {
 								size="lg"
 								asChild
 								className="group relative h-13 px-8 text-base overflow-hidden shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
-								<a href="/signup">
+								<a href="/auth/signup">
 									<span className="relative z-10 flex items-center gap-2">
 										Start free — 14 days
 										<ArrowRight className="size-4 group-hover:translate-x-1 transition-transform duration-200" />
@@ -473,7 +473,7 @@ export default function LandingPage() {
 						<Button
 							asChild
 							className="group mt-2 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300">
-							<a href="/signup">
+							<a href="/auth/signup">
 								Try {feat.label} free
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 							</a>
@@ -722,7 +722,7 @@ function CtaSection() {
 							asChild
 							className="group h-13 px-8 text-base bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300"
 							style={{ color: "var(--color-primary)" }}>
-							<a href="/signup">
+							<a href="/auth/signup">
 								Start free trial
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 							</a>
@@ -732,7 +732,7 @@ function CtaSection() {
 							variant="outline"
 							asChild
 							className="h-13 px-8 text-base text-white border-white/35 hover:bg-white/10 hover:border-white/60 hover:-translate-y-0.5 transition-all duration-300">
-							<a href="/signin">Sign in to your account</a>
+							<a href="/auth/signin">Sign in to your account</a>
 						</Button>
 					</div>
 				</div>

@@ -280,17 +280,17 @@ function PlansSection({ annual }: { annual: boolean }) {
 							style={
 								plan.highlight
 									? {
-											background:
-												"linear-gradient(160deg, color-mix(in srgb, var(--color-primary) 8%, var(--color-card)), var(--color-card))",
-											borderColor: "color-mix(in srgb, var(--color-primary) 50%, transparent)",
-											boxShadow:
-												"0 24px 60px -12px color-mix(in srgb, var(--color-primary) 20%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent)",
-										}
+										background:
+											"linear-gradient(160deg, color-mix(in srgb, var(--color-primary) 8%, var(--color-card)), var(--color-card))",
+										borderColor: "color-mix(in srgb, var(--color-primary) 50%, transparent)",
+										boxShadow:
+											"0 24px 60px -12px color-mix(in srgb, var(--color-primary) 20%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent)",
+									}
 									: {
-											background: "var(--color-card)",
-											borderColor: "var(--color-border)",
-											boxShadow: "0 4px 20px -4px rgba(0,0,0,0.06)",
-										}
+										background: "var(--color-card)",
+										borderColor: "var(--color-border)",
+										boxShadow: "0 4px 20px -4px rgba(0,0,0,0.06)",
+									}
 							}>
 							{/* Glow for highlighted plan */}
 							{plan.highlight && (
@@ -625,7 +625,7 @@ function PricingCtaSection() {
 							variant="outline"
 							asChild
 							className="h-13 px-8 text-base text-white border-white/35 hover:bg-white/10 hover:border-white/60 hover:-translate-y-0.5 transition-all duration-300">
-							<a href="/signup">Start free trial</a>
+							<a href="/auth/signup">Start free trial</a>
 						</Button>
 					</div>
 				</div>

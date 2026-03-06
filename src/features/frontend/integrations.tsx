@@ -193,7 +193,7 @@ export default function IntegrationsPage() {
 								size="lg"
 								asChild
 								className="group h-12 px-8 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
-								<a href="/signup">
+								<a href="/auth/signup">
 									Get started free
 									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 								</a>

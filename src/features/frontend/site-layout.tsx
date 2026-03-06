@@ -77,7 +77,7 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 	}, [pathname]);
 
 	return (
-		<div className="relative min-h-screen bg-background text-foreground overflow-x-hidden flex flex-col">
+		<div className="relative min-h-screen bg-background text-foreground overflow-x-clip flex flex-col">
 			{withBackground && (
 				<>
 					<div
@@ -118,10 +118,10 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 
 					<div className="hidden md:flex items-center gap-3">
 						<Button variant="ghost" size="sm" asChild>
-							<a href="/signin">Log in</a>
+							<a href="/auth/signin">Log in</a>
 						</Button>
 						<Button size="sm" asChild className="group">
-							<a href="/signup">
+							<a href="/auth/signup">
 								Free Trial
 								<ArrowRight className="ml-1.5 size-3.5 group-hover:translate-x-0.5 transition-transform" />
 							</a>
@@ -145,10 +145,10 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 						))}
 						<div className="flex gap-2 pt-3">
 							<Button variant="outline" size="sm" asChild className="flex-1">
-								<a href="/signin">Log in</a>
+								<a href="/auth/signin">Log in</a>
 							</Button>
 							<Button size="sm" asChild className="flex-1">
-								<a href="/signup">Free Trial</a>
+								<a href="/auth/signup">Free Trial</a>
 							</Button>
 						</div>
 					</div>

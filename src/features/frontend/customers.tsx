@@ -368,7 +368,7 @@ function FeaturedCaseStudy({ featured }: { featured: (typeof CASE_STUDIES)[0] })
 								</div>
 							))}
 						</div>
-						<Button asChild className="group h-12 w-full mt-auto font-bold hover:-translate-y-0.5 transition-transform">
+						<Button size="lg" asChild className="group h-13 px-8 text-base w-full mt-auto font-bold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
 							<a href="/contact">
 								Get similar results
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
@@ -404,10 +404,10 @@ function CaseStudiesGrid({
 							style={
 								activeIndustry === ind
 									? {
-											background: "var(--color-primary)",
-											borderColor: "var(--color-primary)",
-											boxShadow: "0 4px 14px -4px color-mix(in srgb, var(--color-primary) 50%, transparent)",
-										}
+										background: "var(--color-primary)",
+										borderColor: "var(--color-primary)",
+										boxShadow: "0 4px 14px -4px color-mix(in srgb, var(--color-primary) 50%, transparent)",
+									}
 									: { background: "var(--color-card)", borderColor: "var(--color-border)" }
 							}>
 							{ind}
@@ -425,8 +425,8 @@ function CaseStudiesGrid({
 					{rest.map(({ company, industry, logo, color, tagline, results, quote, author, role, plan }, i) => (
 						<div
 							key={company}
-							className={`group relative flex flex-col gap-5 p-6 rounded-2xl border overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-xl ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-							style={{ background: "var(--color-card)", borderColor: "var(--color-border)", transitionDelay: `${i * 70}ms` }}>
+							className={`group relative flex flex-col gap-5 p-7 rounded-2xl border overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+							style={{ background: "var(--color-card)", borderColor: "var(--color-border)", boxShadow: "0 2px 16px -4px rgba(0,0,0,0.06)", transitionDelay: `${i * 70}ms` }}>
 							<div
 								className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
 								style={{
@@ -527,7 +527,7 @@ function CustomersCtaSection() {
 							asChild
 							className="group h-12 px-8 bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300 font-bold"
 							style={{ color: "var(--color-primary)" }}>
-							<a href="/signup">
+							<a href="/auth/signup">
 								Start free trial
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 							</a>

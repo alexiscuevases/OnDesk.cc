@@ -264,7 +264,7 @@ export default function FeaturesPage() {
 								size="lg"
 								asChild
 								className="group h-13 px-8 text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
-								<a href="/signup">
+								<a href="/auth/signup">
 									Start free trial
 									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 								</a>
@@ -346,11 +346,10 @@ function FeatureGridSection({ activeTab, setActiveTab, filtered }: { activeTab: 
 						<button
 							key={tab}
 							onClick={() => setActiveTab(tab)}
-							className={`relative px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-300 overflow-hidden ${
-								isActive
-									? "text-primary-foreground border-primary shadow-lg shadow-primary/30 scale-105"
-									: "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground hover:scale-105"
-							}`}
+							className={`relative px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-300 overflow-hidden ${isActive
+								? "text-primary-foreground border-primary shadow-lg shadow-primary/30 scale-105"
+								: "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground hover:scale-105"
+								}`}
 							style={isActive ? { background: "var(--color-primary)" } : {}}>
 							{isActive && (
 								<span
@@ -522,7 +521,7 @@ function FeaturesCtaSection() {
 							asChild
 							className="group h-13 px-8 text-base bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300"
 							style={{ color: "var(--color-primary)" }}>
-							<a href="/signup">
+							<a href="/auth/signup">
 								Start free trial
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 							</a>

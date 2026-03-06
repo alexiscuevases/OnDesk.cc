@@ -204,7 +204,7 @@ export default function ChangelogPage() {
 								size="lg"
 								asChild
 								className="group h-12 px-8 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
-								<a href="/signup">
+								<a href="/auth/signup">
 									Subscribe to updates
 									<Bell className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 								</a>
@@ -222,11 +222,10 @@ export default function ChangelogPage() {
 							<button
 								key={tag}
 								onClick={() => setFilter(tag)}
-								className={`relative px-4 py-1.5 rounded-full text-sm font-semibold border transition-all duration-300 ${
-									filter === tag
-										? "text-primary-foreground border-transparent shadow-lg shadow-primary/25"
-										: "text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
-								}`}
+								className={`relative px-4 py-1.5 rounded-full text-sm font-semibold border transition-all duration-300 ${filter === tag
+									? "text-primary-foreground border-transparent shadow-lg shadow-primary/25"
+									: "text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
+									}`}
 								style={filter === tag ? { background: "var(--color-primary)" } : { background: "var(--color-card)" }}>
 								{tag}
 								{filter === tag && (
@@ -404,7 +403,7 @@ function ChangelogCtaSection() {
 							variant="outline"
 							asChild
 							className="h-12 px-8 text-base text-white border-white/35 hover:bg-white/10 hover:border-white/60 hover:-translate-y-0.5 transition-all duration-300">
-							<a href="/signup">
+							<a href="/auth/signup">
 								<Zap className="mr-2 size-4" />
 								Start free trial
 							</a>
