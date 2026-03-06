@@ -66,12 +66,11 @@ export function MergeTicketModal({ open, onOpenChange, mergeableTickets, onConfi
 									<button
 										key={ticket.id}
 										onClick={() => setTargetId(ticket.id)}
-										className={`w-full flex items-start gap-3 p-2.5 rounded-lg hover:bg-secondary/80 transition-colors text-left ${
-											targetId === ticket.id ? "bg-secondary" : ""
-										}`}>
+										className={`w-full flex items-start gap-3 p-2.5 rounded-lg hover:bg-secondary/80 transition-colors text-left ${targetId === ticket.id ? "bg-secondary" : ""
+											}`}>
 										<div className="flex-1 min-w-0">
 											<div className="flex items-center gap-2 mb-1">
-												<span className="text-xs font-mono font-semibold text-primary/70">{ticket.id}</span>
+												<span className="text-xs font-mono font-semibold text-primary/70">{ticket.number}</span>
 												<StatusBadge status={ticket.status} size="md" />
 											</div>
 											<p className="text-sm font-medium truncate">{ticket.subject}</p>
