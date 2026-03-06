@@ -1,6 +1,6 @@
 import { SiteLayout } from "./site-layout";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
 	Bot,
 	Zap,
@@ -20,65 +20,7 @@ import {
 	Star,
 	Sparkles,
 } from "lucide-react";
-
-// ── Scroll-reveal hook ──
-function useInView(options?: IntersectionObserverInit) {
-	const ref = useRef<HTMLElement>(null);
-	const [inView, setInView] = useState(false);
-	useEffect(() => {
-		const el = ref.current;
-		if (!el) return;
-		const obs = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					setInView(true);
-					obs.disconnect();
-				}
-			},
-			{ threshold: 0.12, ...options },
-		);
-		obs.observe(el);
-		return () => obs.disconnect();
-	}, []);
-	return { ref, inView };
-}
-
-// ── Animated counter hook ──
-function useCounter(target: number, duration = 1200, active = false) {
-	const [value, setValue] = useState(0);
-	useEffect(() => {
-		if (!active) return;
-		let start = 0;
-		const step = target / (duration / 16);
-		const id = setInterval(() => {
-			start += step;
-			if (start >= target) {
-				setValue(target);
-				clearInterval(id);
-			} else setValue(Math.floor(start));
-		}, 16);
-		return () => clearInterval(id);
-	}, [target, duration, active]);
-	return value;
-}
-
-// ── Section badge ──
-function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
-	return (
-		<div className="flex justify-center mb-5">
-			<span
-				className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
-				style={{
-					background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
-					border: "1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)",
-					color: "var(--color-primary)",
-				}}>
-				<Icon className="size-3.5" />
-				{label}
-			</span>
-		</div>
-	);
-}
+import { useInView, useCounter, SectionBadge } from "./shared";
 
 const TABS = ["All", "Automation", "Analytics", "Security", "Channels"];
 

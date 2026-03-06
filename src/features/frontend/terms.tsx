@@ -1,42 +1,8 @@
-﻿import { useState, useEffect, useRef, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { FileText, ArrowRight, Scale, Users, CreditCard, Cpu, BookOpen, EyeOff, Server, Database, AlertTriangle, XCircle, RefreshCw, Gavel, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "./site-layout";
-
-// -- Hooks --
-
-function useInView(options?: IntersectionObserverInit) {
-    const ref = useRef<HTMLDivElement>(null);
-    const [inView, setInView] = useState(false);
-    useEffect(() => {
-        const el = ref.current;
-        if (!el) return;
-        const obs = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) { setInView(true); obs.disconnect(); }
-            },
-            { threshold: 0.1, ...options },
-        );
-        obs.observe(el);
-        return () => obs.disconnect();
-    }, []);
-    return { ref, inView };
-}
-
-function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
-    return (
-        <div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-sm font-medium mb-6"
-            style={{
-                background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
-                borderColor: "color-mix(in srgb, var(--color-primary) 20%, transparent)",
-                color: "var(--color-primary)",
-            }}>
-            <Icon className="size-3.5" />
-            {label}
-        </div>
-    );
-}
+import { useInView, SectionBadge } from "./shared";
 
 // -- Data --
 
@@ -216,7 +182,7 @@ function TermsSection({ section, index }: { section: typeof SECTIONS[number]; in
     const Icon = section.icon;
     return (
         <div
-            ref={ref}
+            ref={ref as React.RefObject<HTMLDivElement>}
             id={section.id}
             className={`scroll-mt-24 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
             style={{ transitionDelay: `${index * 40}ms` }}>

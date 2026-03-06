@@ -1,65 +1,10 @@
-﻿import { useState, useEffect, useRef, useCallback } from "react";
+﻿import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Lock, Server, Eye, Globe, Users, CheckCircle2, FileText, Zap, Key, AlertTriangle, Database } from "lucide-react";
 import { SiteLayout } from "./site-layout";
+import { useInView, useCounter, useMountVisible, useMouseGlow, SectionBadge, GradientText, CtaDecorations } from "./shared";
 
-// -- Hooks --
 
-function useInView(options?: IntersectionObserverInit) {
-	const ref = useRef<HTMLDivElement>(null);
-	const [inView, setInView] = useState(false);
-	useEffect(() => {
-		const el = ref.current;
-		if (!el) return;
-		const obs = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					setInView(true);
-					obs.disconnect();
-				}
-			},
-			{ threshold: 0.1, ...options },
-		);
-		obs.observe(el);
-		return () => obs.disconnect();
-	}, []);
-	return { ref, inView };
-}
-
-function useCounter(target: number, duration = 1200, active = false) {
-	const [value, setValue] = useState(0);
-	useEffect(() => {
-		if (!active) return;
-		let start = 0;
-		const step = target / (duration / 16);
-		const id = setInterval(() => {
-			start += step;
-			if (start >= target) {
-				setValue(target);
-				clearInterval(id);
-			} else setValue(Math.floor(start));
-		}, 16);
-		return () => clearInterval(id);
-	}, [target, duration, active]);
-	return value;
-}
-
-function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
-	return (
-		<div className="flex justify-center mb-5">
-			<span
-				className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
-				style={{
-					background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
-					border: "1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)",
-					color: "var(--color-primary)",
-				}}>
-				<Icon className="size-3.5" />
-				{label}
-			</span>
-		</div>
-	);
-}
 
 // -- Data --
 
@@ -405,23 +350,8 @@ function SecurityCtaSection() {
 		<section className="py-24 md:py-32" ref={ref}>
 			<div className="container mx-auto px-4">
 				<div
-					className={`relative overflow-hidden rounded-3xl p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-					style={{
-						background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 75%, var(--color-accent)) 100%)",
-						boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
-					}}>
-					<div
-						className="absolute inset-0 pointer-events-none"
-						style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "32px 32px", opacity: 0.07 }}
-					/>
-					<div
-						className="absolute -top-20 -right-20 size-64 rounded-full blur-3xl pointer-events-none"
-						style={{ background: "color-mix(in srgb, var(--color-accent) 30%, transparent)" }}
-					/>
-					<div
-						className="absolute -bottom-20 -left-20 size-64 rounded-full blur-3xl pointer-events-none"
-						style={{ background: "color-mix(in srgb, var(--color-primary) 50%, transparent)" }}
-					/>
+					className={`cta-gradient relative overflow-hidden rounded-3xl p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+					<CtaDecorations />
 					<div className="relative z-10">
 						<p className="text-white/70 text-sm font-semibold tracking-widest uppercase mb-4">Enterprise teams</p>
 						<h2 className="text-3xl md:text-5xl font-black text-white mb-5 text-balance">Security review for your InfoSec team</h2>
@@ -459,19 +389,9 @@ function SecurityCtaSection() {
 
 export default function SecurityPage() {
 	const [heroVisible, setHeroVisible] = useState(false);
-	const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
-
-	useEffect(() => {
-		const id = requestAnimationFrame(() => setHeroVisible(true));
-		return () => cancelAnimationFrame(id);
-	}, []);
-
-	const onMove = useCallback((e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY }), []);
-	useEffect(() => {
-		window.addEventListener("mousemove", onMove);
-		return () => window.removeEventListener("mousemove", onMove);
-	}, [onMove]);
+	const mousePos = useMouseGlow();
 	const statsRef = useInView();
+	const visible = useMountVisible();
 	const c9997 = useCounter(9997, 1400, statsRef.inView);
 	const c0 = useCounter(0, 800, statsRef.inView);
 	const c3 = useCounter(3, 900, statsRef.inView);

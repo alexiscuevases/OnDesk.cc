@@ -18,45 +18,8 @@ import {
 	ArrowRight,
 	Video,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
-
-function useInView(options?: IntersectionObserverInit) {
-	const ref = useRef<HTMLDivElement>(null);
-	const [inView, setInView] = useState(false);
-	useEffect(() => {
-		const el = ref.current;
-		if (!el) return;
-		const obs = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					setInView(true);
-					obs.disconnect();
-				}
-			},
-			{ threshold: 0.08, ...options },
-		);
-		obs.observe(el);
-		return () => obs.disconnect();
-	}, []);
-	return { ref, inView };
-}
-
-function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
-	return (
-		<div className="flex justify-center mb-5">
-			<span
-				className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
-				style={{
-					background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
-					border: "1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)",
-					color: "var(--color-primary)",
-				}}>
-				<Icon className="size-3.5" />
-				{label}
-			</span>
-		</div>
-	);
-}
+import { useState } from "react";
+import { useInView, SectionBadge } from "./shared";
 
 interface Article {
 	title: string;

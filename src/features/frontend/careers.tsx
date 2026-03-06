@@ -1,65 +1,8 @@
-﻿import { useState, useEffect, useRef, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Globe, Heart, Zap, TrendingUp, BookOpen, Monitor, Clock, Users, Star, ChevronRight } from "lucide-react";
 import { SiteLayout } from "./site-layout";
-
-// -- Hooks --
-
-function useInView(options?: IntersectionObserverInit) {
-	const ref = useRef<HTMLDivElement>(null);
-	const [inView, setInView] = useState(false);
-	useEffect(() => {
-		const el = ref.current;
-		if (!el) return;
-		const obs = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					setInView(true);
-					obs.disconnect();
-				}
-			},
-			{ threshold: 0.1, ...options },
-		);
-		obs.observe(el);
-		return () => obs.disconnect();
-	}, []);
-	return { ref, inView };
-}
-
-function useCounter(target: number, duration = 1200, active = false) {
-	const [value, setValue] = useState(0);
-	useEffect(() => {
-		if (!active) return;
-		let start = 0;
-		const step = target / (duration / 16);
-		const id = setInterval(() => {
-			start += step;
-			if (start >= target) {
-				setValue(target);
-				clearInterval(id);
-			} else setValue(Math.floor(start));
-		}, 16);
-		return () => clearInterval(id);
-	}, [target, duration, active]);
-	return value;
-}
-
-function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
-	return (
-		<div className="flex justify-center mb-5">
-			<span
-				className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
-				style={{
-					background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
-					border: "1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)",
-					color: "var(--color-primary)",
-				}}>
-				<Icon className="size-3.5" />
-				{label}
-			</span>
-		</div>
-	);
-}
+import { useInView, useCounter, SectionBadge } from "./shared";
 
 // -- Data --
 
@@ -238,8 +181,8 @@ function OpenRolesSection({ activeDept, setActiveDept }: { activeDept: string; s
 								key={dept}
 								onClick={() => setActiveDept(dept)}
 								className={`relative px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-300 overflow-hidden ${isActive
-										? "text-primary-foreground border-primary shadow-lg shadow-primary/30 scale-105"
-										: "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground hover:scale-105"
+									? "text-primary-foreground border-primary shadow-lg shadow-primary/30 scale-105"
+									: "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground hover:scale-105"
 									}`}
 								style={isActive ? { background: "var(--color-primary)" } : {}}>
 								{isActive && (

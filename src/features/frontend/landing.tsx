@@ -1,4 +1,5 @@
 import { SiteLayout } from "./site-layout";
+import { useInView, useCounter, useMountVisible, useMouseGlow, SectionBadge, GradientText, CtaDecorations } from "./shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,48 +20,9 @@ import {
 	Shield,
 	Globe,
 } from "lucide-react";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
-// ── Scroll-reveal hook ──
-function useInView(options?: IntersectionObserverInit) {
-	const ref = useRef<HTMLElement>(null);
-	const [inView, setInView] = useState(false);
-	useEffect(() => {
-		const el = ref.current;
-		if (!el) return;
-		const obs = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					setInView(true);
-					obs.disconnect();
-				}
-			},
-			{ threshold: 0.15, ...options },
-		);
-		obs.observe(el);
-		return () => obs.disconnect();
-	}, []);
-	return { ref, inView };
-}
 
-// ── Animated counter hook ──
-function useCounter(target: number, duration = 1400, active = false) {
-	const [value, setValue] = useState(0);
-	useEffect(() => {
-		if (!active) return;
-		let start = 0;
-		const step = target / (duration / 16);
-		const id = setInterval(() => {
-			start += step;
-			if (start >= target) {
-				setValue(target);
-				clearInterval(id);
-			} else setValue(Math.floor(start));
-		}, 16);
-		return () => clearInterval(id);
-	}, [target, duration, active]);
-	return value;
-}
 
 // ---------- types ----------
 interface LiveTicket {
@@ -161,12 +123,12 @@ const STATUS_COLORS = {
 
 // ---------- component ----------
 export default function LandingPage() {
-	const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+	const mousePos = useMouseGlow();
+	const visible = useMountVisible();
 	const [activeFeature, setActiveFeature] = useState(0);
 	const [activeTestimonial, setActiveTestimonial] = useState(0);
 	const [tickets, setTickets] = useState<LiveTicket[]>(INITIAL_TICKETS);
 	const [ticketIdx, setTicketIdx] = useState(0);
-	const [visible, setVisible] = useState(false);
 	const heroRef = useRef<HTMLDivElement>(null);
 
 	// Stats section in-view
@@ -175,21 +137,6 @@ export default function LandingPage() {
 	const c80 = useCounter(80, 1200, statsActive);
 	const c50 = useCounter(50, 1400, statsActive);
 	const c95 = useCounter(95, 1300, statsActive);
-
-	// Mount animation
-	useEffect(() => {
-		const id = requestAnimationFrame(() => setVisible(true));
-		return () => cancelAnimationFrame(id);
-	}, []);
-
-	// Mouse parallax for hero
-	const onMouseMove = useCallback((e: MouseEvent) => {
-		setMousePos({ x: e.clientX, y: e.clientY });
-	}, []);
-	useEffect(() => {
-		window.addEventListener("mousemove", onMouseMove);
-		return () => window.removeEventListener("mousemove", onMouseMove);
-	}, [onMouseMove]);
 
 	// Live ticket feed
 	useEffect(() => {
@@ -268,16 +215,7 @@ export default function LandingPage() {
 						{/* Headline with gradient text */}
 						<h1 className="text-center text-5xl md:text-[5rem] font-black leading-[1.02] tracking-tight text-balance mb-6">
 							Support at the{" "}
-							<span
-								className="inline-block"
-								style={{
-									background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
-									WebkitBackgroundClip: "text",
-									WebkitTextFillColor: "transparent",
-									backgroundClip: "text",
-								}}>
-								speed of AI
-							</span>
+							<GradientText>speed of AI</GradientText>
 						</h1>
 
 						<p
@@ -516,23 +454,6 @@ export default function LandingPage() {
 
 // ── HELPER COMPONENTS ──
 
-function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
-	return (
-		<div className="flex justify-center mb-5">
-			<span
-				className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
-				style={{
-					background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
-					border: "1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)",
-					color: "var(--color-primary)",
-				}}>
-				<Icon className="size-3.5" />
-				{label}
-			</span>
-		</div>
-	);
-}
-
 function TestimonialsSection({ activeTestimonial, setActiveTestimonial }: { activeTestimonial: number; setActiveTestimonial: (i: number) => void }) {
 	const { ref, inView } = useInView();
 	return (
@@ -694,19 +615,9 @@ function CtaSection() {
 	return (
 		<section ref={ref} className="container mx-auto px-4 py-24">
 			<div
-				className={`relative max-w-5xl mx-auto rounded-3xl overflow-hidden p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
-				style={{
-					background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 80%, var(--color-accent)) 100%)",
-					boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
-				}}>
-				{/* Animated grid overlay */}
-				<div
-					className="absolute inset-0 opacity-[0.07] pointer-events-none"
-					style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "32px 32px" }}
-				/>
-				{/* Glow blobs */}
-				<div className="absolute -top-16 -right-16 size-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-				<div className="absolute -bottom-16 -left-16 size-64 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+				className={`cta-gradient relative max-w-5xl mx-auto rounded-3xl overflow-hidden p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}>
+				<CtaDecorations />
+
 
 				<div className="relative z-10">
 					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 border border-white/25 text-sm font-medium text-white mb-8">

@@ -1,47 +1,10 @@
 import { SiteLayout } from "./site-layout";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, X, Star, Users, Zap, Shield, ChevronDown, Sparkles, TrendingUp, Minus, Plus } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
+import { useInView, useMountVisible, useMouseGlow, SectionBadge, GradientText, CtaDecorations } from "./shared";
 
-// ── Scroll-reveal hook ──
-function useInView(options?: IntersectionObserverInit) {
-	const ref = useRef<HTMLElement>(null);
-	const [inView, setInView] = useState(false);
-	useEffect(() => {
-		const el = ref.current;
-		if (!el) return;
-		const obs = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					setInView(true);
-					obs.disconnect();
-				}
-			},
-			{ threshold: 0.1, ...options },
-		);
-		obs.observe(el);
-		return () => obs.disconnect();
-	}, []);
-	return { ref, inView };
-}
 
-// ── Section badge ──
-function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
-	return (
-		<div className="flex justify-center mb-5">
-			<span
-				className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
-				style={{
-					background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
-					border: "1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)",
-					color: "var(--color-primary)",
-				}}>
-				<Icon className="size-3.5" />
-				{label}
-			</span>
-		</div>
-	);
-}
 
 // ── Pricing data ──
 // Price is per agent per month (USD)
@@ -260,19 +223,8 @@ function AgentCounter({ agents, setAgents }: { agents: number; setAgents: (n: nu
 export default function PricingPage() {
 	const [annual, setAnnual] = useState(false);
 	const [agents, setAgents] = useState(10);
-	const [visible, setVisible] = useState(false);
-	const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
-
-	useEffect(() => {
-		const id = requestAnimationFrame(() => setVisible(true));
-		return () => cancelAnimationFrame(id);
-	}, []);
-
-	useEffect(() => {
-		const onMove = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
-		window.addEventListener("mousemove", onMove);
-		return () => window.removeEventListener("mousemove", onMove);
-	}, []);
+	const visible = useMountVisible();
+	const mousePos = useMouseGlow();
 
 	return (
 		<SiteLayout>
@@ -728,18 +680,8 @@ function PricingCtaSection() {
 	return (
 		<section ref={ref} className="container mx-auto px-4 py-24">
 			<div
-				className={`relative max-w-5xl mx-auto rounded-3xl overflow-hidden p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
-				style={{
-					background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 75%, var(--color-accent)) 100%)",
-					boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
-				}}>
-				{/* Grid overlay */}
-				<div
-					className="absolute inset-0 opacity-[0.07] pointer-events-none"
-					style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "32px 32px" }}
-				/>
-				<div className="absolute -top-16 -right-16 size-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-				<div className="absolute -bottom-16 -left-16 size-64 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+				className={`cta-gradient relative max-w-5xl mx-auto rounded-3xl overflow-hidden p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}>
+				<CtaDecorations />
 
 				<div className="relative z-10">
 					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 border border-white/25 text-sm font-medium text-white mb-8">

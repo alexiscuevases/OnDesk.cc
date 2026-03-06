@@ -1,43 +1,8 @@
 import { SiteLayout } from "./site-layout";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Clock, Sparkles, Rss } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
-
-function useInView(options?: IntersectionObserverInit) {
-	const ref = useRef<HTMLDivElement>(null);
-	const [inView, setInView] = useState(false);
-	useEffect(() => {
-		const el = ref.current;
-		if (!el) return;
-		const obs = new IntersectionObserver(
-			([entry]) => {
-				if (entry.isIntersecting) {
-					setInView(true);
-					obs.disconnect();
-				}
-			},
-			{ threshold: 0.1, ...options },
-		);
-		obs.observe(el);
-		return () => obs.disconnect();
-	}, []);
-	return { ref, inView };
-}
-
-function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
-	return (
-		<div
-			className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-sm font-medium mb-6"
-			style={{
-				background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
-				borderColor: "color-mix(in srgb, var(--color-primary) 20%, transparent)",
-				color: "var(--color-primary)",
-			}}>
-			<Icon className="size-3.5" />
-			{label}
-		</div>
-	);
-}
+import { useState, useEffect } from "react";
+import { useInView, SectionBadge } from "./shared";
 
 type Tag = "AI" | "Product" | "Guide" | "Microsoft 365" | "Customer Success";
 
