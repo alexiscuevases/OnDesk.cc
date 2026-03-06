@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Target, Heart, MapPin, Globe, Linkedin, Twitter, CheckCircle2, Sparkles } from "lucide-react";
 import { SiteLayout } from "./site-layout";
@@ -428,7 +428,11 @@ function AboutCtaSection() {
 // --- Page ---------------------------------------------------------------------
 
 export default function AboutPage() {
-	const [heroVisible] = useState(false);
+	const [heroVisible, setHeroVisible] = useState(false);
+	useEffect(() => {
+		const id = requestAnimationFrame(() => setHeroVisible(true));
+		return () => cancelAnimationFrame(id);
+	}, []);
 	const mousePos = useMouseGlow();
 	const statsRef = useInView();
 	const c2022 = useCounter(2022, 1200, statsRef.inView);

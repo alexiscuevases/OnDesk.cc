@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Lock, Server, Eye, Globe, Users, CheckCircle2, FileText, Zap, Key, AlertTriangle, Database } from "lucide-react";
 import { SiteLayout } from "./site-layout";
@@ -388,7 +388,11 @@ function SecurityCtaSection() {
 // -- Page --
 
 export default function SecurityPage() {
-	const [heroVisible] = useState(false);
+	const [heroVisible, setHeroVisible] = useState(false);
+	useEffect(() => {
+		const id = requestAnimationFrame(() => setHeroVisible(true));
+		return () => cancelAnimationFrame(id);
+	}, []);
 	const mousePos = useMouseGlow();
 	const statsRef = useInView();
 	const c9997 = useCounter(9997, 1400, statsRef.inView);
