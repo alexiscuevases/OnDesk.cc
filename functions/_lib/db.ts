@@ -520,7 +520,7 @@ export async function findTicketsByWorkspace(
   if (filters.team_id) { conditions.push("t.team_id = ?"); values.push(filters.team_id); }
   const result = await db
     .prepare(
-      `SELECT id, workspace_id, contact_id, assignee_id, team_id, subject, status, priority, created_at, updated_at
+      `SELECT id, workspace_id, contact_id, assignee_id, team_id, number, subject, status, priority, created_at, updated_at
        FROM tickets t WHERE ${conditions.join(" AND ")} ORDER BY t.created_at DESC`
     )
     .bind(...values)
@@ -566,14 +566,21 @@ export async function createTicket(
   }
 ): Promise<TicketRow> {
   const id = crypto.randomUUID();
+  // Compute next sequential number for this workspace
+  const row = await db
+    .prepare("SELECT COALESCE(MAX(number), 0) + 1 AS next FROM tickets WHERE workspace_id = ?")
+    .bind(workspaceId)
+    .first<{ next: number }>();
+  const number = row?.next ?? 1;
   await db
     .prepare(
-      `INSERT INTO tickets (id, workspace_id, contact_id, assignee_id, team_id, subject, status, priority, channel, conversation_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO tickets (id, workspace_id, contact_id, assignee_id, team_id, number, subject, status, priority, channel, conversation_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .bind(
       id, workspaceId,
       data.contact_id ?? null, data.assignee_id ?? null, data.team_id ?? null,
+      number,
       data.subject, data.status ?? "open", data.priority ?? "medium",
       data.channel ?? null, data.conversation_id ?? null
     )

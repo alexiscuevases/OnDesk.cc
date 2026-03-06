@@ -118,6 +118,7 @@ CREATE TABLE IF NOT EXISTS tickets (
   contact_id       TEXT REFERENCES contacts(id) ON DELETE SET NULL,
   assignee_id      TEXT REFERENCES users(id) ON DELETE SET NULL,
   team_id          TEXT REFERENCES teams(id) ON DELETE SET NULL,
+  number           INTEGER NOT NULL DEFAULT 0,
   subject          TEXT NOT NULL,
   status           TEXT NOT NULL DEFAULT 'open',
   priority         TEXT NOT NULL DEFAULT 'medium',
@@ -133,6 +134,7 @@ CREATE INDEX IF NOT EXISTS idx_tickets_assignee_id    ON tickets(assignee_id);
 CREATE INDEX IF NOT EXISTS idx_tickets_team_id        ON tickets(team_id);
 CREATE INDEX IF NOT EXISTS idx_tickets_status         ON tickets(status);
 CREATE INDEX IF NOT EXISTS idx_tickets_conversation_id ON tickets(conversation_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_tickets_workspace_number ON tickets(workspace_id, number);
 
 -- Ticket messages
 -- type: 'message' | 'note' (internal note)

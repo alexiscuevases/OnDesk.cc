@@ -21,7 +21,7 @@ export function TicketDetailHeader({ ticket, onBack, onEditTitle, onDelete }: Ti
 			</Button>
 			<div className="flex-1 min-w-0">
 				<div className="flex items-center gap-2 mb-1">
-					<span className="text-xs font-mono font-semibold text-primary/70">{ticket.id.slice(0, 8)}</span>
+					<span className="text-xs font-mono font-semibold text-primary/70"><span className="text-muted-foreground">#</span>{ticket.number}</span>
 					<StatusBadge status={ticket.status} showIcon size="md" />
 				</div>
 				<button

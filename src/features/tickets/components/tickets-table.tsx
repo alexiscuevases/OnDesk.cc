@@ -123,7 +123,7 @@ export function TicketsTable({
 									<TableCell
 										className="font-mono text-xs font-semibold text-primary/70 cursor-pointer"
 										onClick={() => onOpenTicket(ticket.id)}>
-										{ticket.id.slice(0, 8)}
+										<span className="text-muted-foreground">#</span>{ticket.number}
 									</TableCell>
 									<TableCell className="cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
 										<div className="flex items-center gap-2.5 max-w-70 lg:max-w-95">

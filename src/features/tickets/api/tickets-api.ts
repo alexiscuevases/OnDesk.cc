@@ -9,6 +9,7 @@ export interface Ticket {
 	contact_id: string | null;
 	assignee_id: string | null;
 	team_id: string | null;
+	number: number;
 	subject: string;
 	status: TicketStatus;
 	priority: TicketPriority;
