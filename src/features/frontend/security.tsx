@@ -381,12 +381,15 @@ function DisclosureSection() {
 								</li>
 							))}
 						</ul>
-						<div className="mt-6">
-							<Button variant="outline" asChild className="group">
+						<div className="flex flex-wrap gap-3 mt-6">
+							<Button size="lg" asChild className="group h-11 px-6 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
 								<a href="mailto:security@supportdesk365.io">
 									Report a vulnerability
 									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 								</a>
+							</Button>
+							<Button size="lg" variant="outline" asChild className="h-11 px-6 hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+								<a href="/contact">Talk to our security team</a>
 							</Button>
 						</div>
 					</div>

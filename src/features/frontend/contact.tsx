@@ -197,7 +197,13 @@ function ContactFormSection({
 			<div className="container mx-auto px-4 max-w-5xl">
 				<div className="grid md:grid-cols-[1.2fr_1fr] gap-10 items-start">
 					{/* Left: Form or Success */}
-					<div className={`transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}>
+					<div
+						className={`relative rounded-2xl border p-7 transition-all duration-700 ${inView ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"}`}
+						style={{
+							background: "var(--color-card)",
+							borderColor: "color-mix(in srgb, var(--color-primary) 15%, var(--color-border))",
+							boxShadow: "0 8px 40px -8px color-mix(in srgb, var(--color-primary) 8%, transparent)",
+						}}>
 						{submitted ? (
 							<div className="flex flex-col items-center justify-center text-center gap-5 py-16 px-6 rounded-2xl border border-border bg-card">
 								<div
@@ -210,10 +216,10 @@ function ContactFormSection({
 									<p className="text-sm text-muted-foreground">We will get back to you within 4 business hours during weekdays.</p>
 								</div>
 								<div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
-									<Button variant="outline" className="flex-1 text-sm" onClick={() => setSubmitted(false)}>
+									<Button variant="outline" className="flex-1 text-sm hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200" onClick={() => setSubmitted(false)}>
 										Send another message
 									</Button>
-									<Button className="flex-1 text-sm" asChild>
+									<Button className="flex-1 text-sm shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200" asChild>
 										<a href="/help">Browse help center</a>
 									</Button>
 								</div>
@@ -279,8 +285,7 @@ function ContactFormSection({
 								</div>
 								<Button
 									type="submit"
-									className="w-full font-semibold h-11 group"
-									style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}>
+									className="w-full font-semibold h-11 group shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300">
 									Send message
 									<ArrowRight className="ml-2 size-4 group-hover:translate-x-0.5 transition-transform" />
 								</Button>
@@ -299,7 +304,13 @@ function ContactFormSection({
 					<div
 						className={`flex flex-col gap-4 transition-all duration-700 delay-150 ${inView ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"}`}>
 						{/* Offices */}
-						<div className="rounded-xl border border-border bg-card p-5">
+						<div
+							className="rounded-xl p-5"
+							style={{
+								background: "var(--color-card)",
+								border: "1px solid color-mix(in srgb, var(--color-primary) 12%, var(--color-border))",
+								boxShadow: "0 2px 12px -4px color-mix(in srgb, var(--color-primary) 6%, transparent)",
+							}}>
 							<p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Offices</p>
 							<div className="space-y-3">
 								{OFFICES.map(({ city, address }) => (
@@ -315,7 +326,13 @@ function ContactFormSection({
 						</div>
 
 						{/* Response time */}
-						<div className="rounded-xl border border-border bg-card p-5">
+						<div
+							className="rounded-xl p-5"
+							style={{
+								background: "var(--color-card)",
+								border: "1px solid color-mix(in srgb, var(--color-primary) 12%, var(--color-border))",
+								boxShadow: "0 2px 12px -4px color-mix(in srgb, var(--color-primary) 6%, transparent)",
+							}}>
 							<div className="flex items-center gap-2 mb-2">
 								<Clock className="size-4" style={{ color: "var(--color-primary)" }} />
 								<p className="text-sm font-semibold">Response times</p>
@@ -340,20 +357,42 @@ function ContactFormSection({
 							</ul>
 						</div>
 
-						{/* Help center promo */}
+						{/* Help center promo – styled like /integrations SecuritySection */}
 						<div
-							className="rounded-xl p-5 text-sm flex flex-col gap-2"
+							className="relative rounded-2xl border overflow-hidden p-5 flex flex-col gap-4 transition-all duration-700"
 							style={{
-								background: "color-mix(in srgb, var(--color-primary) 8%, transparent)",
-								border: "1px solid color-mix(in srgb, var(--color-primary) 15%, transparent)",
+								background: "linear-gradient(120deg, color-mix(in srgb, var(--color-primary) 6%, var(--color-card)), var(--color-card))",
+								borderColor: "color-mix(in srgb, var(--color-primary) 25%, transparent)",
+								boxShadow: "0 4px 30px -6px color-mix(in srgb, var(--color-primary) 10%, transparent)",
 							}}>
-							<p className="font-semibold" style={{ color: "var(--color-primary)" }}>
-								Looking for quick answers?
-							</p>
-							<p className="text-xs text-muted-foreground">Browse 200+ articles in our help center before reaching out.</p>
-							<Button size="sm" variant="outline" className="mt-1 self-start" asChild>
+							{/* Dot grid */}
+							<div
+								className="absolute inset-0 opacity-[0.03] pointer-events-none"
+								style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "28px 28px" }}
+							/>
+							{/* Icon */}
+							<div
+								className="size-12 rounded-xl flex items-center justify-center shrink-0 relative z-10"
+								style={{
+									background: "color-mix(in srgb, var(--color-primary) 12%, transparent)",
+									boxShadow: "0 0 0 1px color-mix(in srgb, var(--color-primary) 22%, transparent)",
+								}}>
+								<Zap className="size-6 text-primary" />
+							</div>
+							{/* Text */}
+							<div className="flex-1 relative z-10">
+								<p className="font-bold text-sm mb-1">Looking for quick answers?</p>
+								<p className="text-xs text-muted-foreground leading-relaxed">Browse 200+ articles in our help center before reaching out.</p>
+							</div>
+							{/* CTA */}
+							<Button
+								variant="outline"
+								size="sm"
+								asChild
+								className="group shrink-0 relative z-10 self-start hover:border-primary/50 hover:bg-primary/5 transition-all duration-200">
 								<a href="/help">
-									Help Center <ArrowRight className="ml-1.5 size-3.5" />
+									Help Center
+									<ArrowRight className="ml-1.5 size-3.5 group-hover:translate-x-0.5 transition-transform" />
 								</a>
 							</Button>
 						</div>

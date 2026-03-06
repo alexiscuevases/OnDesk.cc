@@ -231,27 +231,27 @@ function OpenRolesSection({ activeDept, setActiveDept }: { activeDept: string; s
 
 				{/* Filter pills */}
 				<div className="flex flex-wrap justify-center gap-2 mb-10">
-					{allDepts.map((dept) => (
-						<button
-							key={dept}
-							onClick={() => setActiveDept(dept)}
-							className="px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-200"
-							style={
-								activeDept === dept
-									? {
-											background: "var(--color-primary)",
-											color: "white",
-											borderColor: "var(--color-primary)",
-										}
-									: {
-											background: "transparent",
-											color: "var(--color-muted-foreground)",
-											borderColor: "var(--color-border)",
-										}
-							}>
-							{dept}
-						</button>
-					))}
+					{allDepts.map((dept) => {
+						const isActive = activeDept === dept;
+						return (
+							<button
+								key={dept}
+								onClick={() => setActiveDept(dept)}
+								className={`relative px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-300 overflow-hidden ${isActive
+										? "text-primary-foreground border-primary shadow-lg shadow-primary/30 scale-105"
+										: "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground hover:scale-105"
+									}`}
+								style={isActive ? { background: "var(--color-primary)" } : {}}>
+								{isActive && (
+									<span
+										className="absolute inset-0 rounded-full animate-pulse"
+										style={{ background: "color-mix(in srgb, var(--color-primary) 25%, transparent)" }}
+									/>
+								)}
+								<span className="relative z-10">{dept}</span>
+							</button>
+						);
+					})}
 				</div>
 
 				<div className="space-y-10">
