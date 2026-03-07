@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Paperclip, Eye, MessageSquareQuote, Search } from "lucide-react";
+import { Send, Eye, MessageSquareQuote, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TiptapEditor, type TiptapEditorHandle } from "@/components/ui/tiptap-editor";
@@ -8,6 +8,7 @@ import { useSendMessageMutation } from "@/features/tickets/hooks/use-ticket-muta
 import { useSignatures } from "@/features/signatures/hooks/use-signature-queries";
 import { useCannedReplies } from "@/features/canned-replies/hooks/use-canned-reply-queries";
 import { useWorkspace } from "@/context/workspace-context";
+import { TicketAIAssistant } from "./ticket-ai-assistant";
 
 interface TicketReplyBoxProps {
 	ticketId: string;
@@ -178,10 +179,10 @@ export function TicketReplyBox({ ticketId, members = [] }: TicketReplyBoxProps) 
 				</div>
 				<div className="flex items-center justify-between mt-3">
 					<div className="flex items-center gap-1">
-						<Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5 text-muted-foreground rounded-lg">
-							<Paperclip className="size-3.5" />
-							Attach
-						</Button>
+						<TicketAIAssistant 
+							ticketId={ticketId} 
+							onInsertContent={(content) => editorRef.current?.insertHTML(content)} 
+						/>
 						<Popover open={cannedOpen} onOpenChange={setCannedOpen}>
 							<PopoverTrigger asChild>
 								<Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5 text-muted-foreground rounded-lg">
