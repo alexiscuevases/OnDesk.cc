@@ -156,7 +156,7 @@ export default function StatusPage() {
 						</h1>
 						<p
 							className={`text-xl text-muted-foreground text-pretty mb-3 leading-relaxed transition-all duration-1000 delay-150 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							Real-time status and 90-day uptime history for all SupportDesk 365 services.
+							Real-time status and 90-day uptime history for all OnDesk.cc services.
 						</p>
 						<p className="text-xs text-muted-foreground mb-8">Last updated: Feb 27, 2026 at 08:00 UTC</p>
 						<div

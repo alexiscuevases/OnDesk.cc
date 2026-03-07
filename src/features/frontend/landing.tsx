@@ -72,7 +72,7 @@ const FEATURES = [
 
 const TESTIMONIALS = [
 	{
-		quote: "SupportDesk 365 cut our average resolution time from 4 hours to 18 minutes. The AI agents are genuinely impressive.",
+		quote: "OnDesk.cc cut our average resolution time from 4 hours to 18 minutes. The AI agents are genuinely impressive.",
 		author: "Sarah Chen",
 		role: "Head of Customer Success",
 		company: "Contoso Ltd.",
@@ -220,7 +220,7 @@ export default function LandingPage() {
 
 						<p
 							className={`text-center text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-10 text-pretty transition-all duration-1000 delay-200 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							SupportDesk 365 combines intelligent AI agents with Microsoft 365 to triage, route, and resolve customer tickets before your team
+							OnDesk.cc combines intelligent AI agents with Microsoft 365 to triage, route, and resolve customer tickets before your team
 							even clocks in.
 						</p>
 
@@ -355,7 +355,7 @@ export default function LandingPage() {
 				<div className="text-center mb-14">
 					<SectionBadge icon={Sparkles} label="Platform" />
 					<h2 className="text-3xl md:text-5xl font-black mb-4 text-balance tracking-tight">Built for every part of your support team</h2>
-					<p className="text-xl text-muted-foreground max-w-2xl mx-auto">Click any tab to explore what makes SupportDesk 365 different.</p>
+					<p className="text-xl text-muted-foreground max-w-2xl mx-auto">Click any tab to explore what makes OnDesk.cc different.</p>
 				</div>
 				{/* Tab bar */}
 				<div className="flex flex-wrap justify-center gap-2 mb-12">

@@ -309,7 +309,7 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 					<div
 						className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground"
 						style={{ borderTop: "1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border))" }}>
-						<span>© 2025 SupportDesk 365. All rights reserved.</span>
+						<span>© 2025 OnDesk.cc. All rights reserved.</span>
 						<span>Microsoft 365 is a trademark of Microsoft Corporation.</span>
 					</div>
 				</div>

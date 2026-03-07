@@ -60,8 +60,8 @@ export const initialCannedReplies: CannedReply[] = [
 ];
 
 export const initialSignatures: Signature[] = [
-	{ id: "s1", name: "Default Signature", isDefault: true, content: "Best regards,\\n{{agent_name}}\\nSupportDesk 365 | {{team_name}}" },
-	{ id: "s2", name: "Formal Signature", isDefault: false, content: "Kind regards,\\n{{agent_name}}\\n{{agent_role}} | SupportDesk 365" },
+	{ id: "s1", name: "Default Signature", isDefault: true, content: "Best regards,\\n{{agent_name}}\\nOnDesk.cc | {{team_name}}" },
+	{ id: "s2", name: "Formal Signature", isDefault: false, content: "Kind regards,\\n{{agent_name}}\\n{{agent_role}} | OnDesk.cc" },
 ];
 
 let _idCounter = 100;

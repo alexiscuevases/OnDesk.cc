@@ -196,7 +196,7 @@ export default function FeaturesPage() {
 						</h1>
 						<p
 							className={`text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-10 text-pretty transition-all duration-1000 delay-150 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							From AI-powered automation to enterprise security, every capability in SupportDesk 365 is designed to help your team resolve more,
+							From AI-powered automation to enterprise security, every capability in OnDesk.cc is designed to help your team resolve more,
 							faster.
 						</p>
 

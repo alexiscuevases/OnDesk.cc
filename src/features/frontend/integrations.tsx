@@ -55,7 +55,7 @@ const INTEGRATIONS = [
 		description: "Extend AI capabilities and connect to thousands of apps with no code.",
 		items: [
 			{ name: "Azure OpenAI", desc: "Power AI agents with your own Azure OpenAI deployment for data sovereignty.", badge: "Enterprise", logo: "🤖" },
-			{ name: "Zapier", desc: "Connect SupportDesk 365 to 6,000+ apps via Zapier workflows.", badge: null, logo: "⚡" },
+			{ name: "Zapier", desc: "Connect OnDesk.cc to 6,000+ apps via Zapier workflows.", badge: null, logo: "⚡" },
 			{ name: "Power Automate", desc: "Trigger Microsoft Power Automate flows from ticket events.", badge: "Native", logo: "🔄" },
 		],
 	},
@@ -131,7 +131,7 @@ export default function IntegrationsPage() {
 						</h1>
 						<p
 							className={`text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed text-pretty mb-10 transition-all duration-1000 delay-150 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							SupportDesk 365 plugs into the tools your team already uses — starting with a deep, native Microsoft 365 integration.
+							OnDesk.cc plugs into the tools your team already uses — starting with a deep, native Microsoft 365 integration.
 						</p>
 						<div className={`transition-all duration-1000 delay-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 							<Button

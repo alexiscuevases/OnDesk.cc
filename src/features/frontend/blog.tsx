@@ -23,7 +23,7 @@ const POSTS: Post[] = [
 		slug: "ai-agents-resolve-80-percent",
 		title: "How AI agents resolve 80% of tickets without human intervention",
 		excerpt:
-			"A deep dive into the classification, context-retrieval, and reply-generation pipeline that powers SupportDesk 365 AI Agents — and the edge cases we had to solve.",
+			"A deep dive into the classification, context-retrieval, and reply-generation pipeline that powers OnDesk.cc AI Agents — and the edge cases we had to solve.",
 		author: "Daniel Park",
 		role: "CTO",
 		date: "Feb 18, 2025",
@@ -66,7 +66,7 @@ const POSTS: Post[] = [
 		slug: "self-service-portal-launch",
 		title: "Building a self-service portal your customers will actually use",
 		excerpt:
-			"Most self-service portals fail because they are hard to find and harder to search. Here is what we learned building the portal feature for SupportDesk 365.",
+			"Most self-service portals fail because they are hard to find and harder to search. Here is what we learned building the portal feature for OnDesk.cc.",
 		author: "Aisha Okafor",
 		role: "Head of Product",
 		date: "Jan 21, 2025",
@@ -154,7 +154,7 @@ export default function BlogPage() {
 						</h1>
 						<p
 							className={`text-xl text-muted-foreground text-pretty leading-relaxed transition-all duration-1000 delay-150 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							Insights on AI support, customer success, and Microsoft 365 — straight from the team building SupportDesk 365.
+							Insights on AI support, customer success, and Microsoft 365 — straight from the team building OnDesk.cc.
 						</p>
 					</div>
 				</div>

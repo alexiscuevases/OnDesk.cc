@@ -12,7 +12,7 @@ const SECTIONS = [
         title: "Acceptance of terms",
         icon: Scale,
         body: [
-            `By accessing or using SupportDesk 365 (the "Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Service.`,
+            `By accessing or using OnDesk.cc (the "Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Service.`,
             "These Terms apply to all visitors, users, and others who access or use the Service. By using the Service on behalf of a company or other legal entity, you represent that you have the authority to bind that entity to these Terms.",
         ],
     },
@@ -56,7 +56,7 @@ const SECTIONS = [
         title: "Intellectual property",
         icon: BookOpen,
         body: [
-            `The Service and its original content, features, and functionality are and will remain the exclusive property of SupportDesk 365 Ltd. and its licensors. The Service is protected by copyright, trademark, and other intellectual property laws.`,
+            `The Service and its original content, features, and functionality are and will remain the exclusive property of OnDesk.cc Ltd. and its licensors. The Service is protected by copyright, trademark, and other intellectual property laws.`,
             `You retain ownership of all content you submit, post, or display on or through the Service ("Customer Content"). By submitting Customer Content, you grant us a worldwide, non-exclusive, royalty-free license to use, process, and display such content solely to provide the Service.`,
         ],
     },
@@ -101,7 +101,7 @@ const SECTIONS = [
         title: "Limitation of liability",
         icon: Scale,
         body: [
-            "TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL SUPPORTDESK 365 LTD. BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR DAMAGES FOR LOSS OF PROFITS, REVENUE, DATA, GOODWILL, OR OTHER INTANGIBLE LOSSES.",
+            "TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL OnDesk.cc LTD. BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR DAMAGES FOR LOSS OF PROFITS, REVENUE, DATA, GOODWILL, OR OTHER INTANGIBLE LOSSES.",
             "OUR TOTAL LIABILITY TO YOU FOR ANY CLAIM ARISING FROM OR RELATING TO THESE TERMS OR THE SERVICE SHALL NOT EXCEED THE GREATER OF (A) THE AMOUNT PAID BY YOU IN THE 12 MONTHS PRECEDING THE CLAIM OR (B) ONE HUNDRED US DOLLARS ($100).",
         ],
     },
@@ -140,7 +140,7 @@ const SECTIONS = [
         body: [
             "If you have any questions about these Terms, please contact us at legal@supportdesk365.com or at:",
             [
-                "SupportDesk 365 Ltd.",
+                "OnDesk.cc Ltd.",
                 "123 Innovation Way",
                 "London, EC2A 4NE",
                 "United Kingdom",
@@ -268,10 +268,10 @@ export default function TermsPage() {
                             Last updated: <span className="font-medium text-foreground">February 1, 2025</span>
                         </p>
                         <span className="text-border"></span>
-                        <p className="text-muted-foreground text-sm">SupportDesk 365 Ltd.</p>
+                        <p className="text-muted-foreground text-sm">OnDesk.cc Ltd.</p>
                     </div>
                     <p className={`text-base text-muted-foreground mt-4 leading-relaxed max-w-2xl transition-all duration-700 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-                        Please read these Terms of Service carefully before using SupportDesk 365. These Terms constitute a legally binding agreement between you and SupportDesk 365 Ltd.
+                        Please read these Terms of Service carefully before using OnDesk.cc. These Terms constitute a legally binding agreement between you and OnDesk.cc Ltd.
                     </p>
                     <div className={`flex gap-3 mt-6 transition-all duration-700 delay-400 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
                         <Button size="sm" asChild className="group">

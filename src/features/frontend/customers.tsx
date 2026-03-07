@@ -16,14 +16,14 @@ const CASE_STUDIES = [
 		challenge:
 			"Fabrikam's IT support team was drowning in repetitive Microsoft 365 license and onboarding tickets. Agents spent 60% of their time on issues that had identical resolutions.",
 		solution:
-			"Deployed SupportDesk 365's AI agents to auto-resolve password resets, license requests, and onboarding checklists. Integrated directly with their Azure AD and Teams channels.",
+			"Deployed OnDesk.cc's AI agents to auto-resolve password resets, license requests, and onboarding checklists. Integrated directly with their Azure AD and Teams channels.",
 		results: [
 			{ metric: "59%", label: "Reduction in headcount needed", icon: Users },
 			{ metric: "4 min", label: "Average resolution time", icon: Clock },
 			{ metric: "94%", label: "CSAT score", icon: Star },
 			{ metric: "$420K", label: "Annual cost savings", icon: TrendingDown },
 		],
-		quote: "We evaluated six tools. SupportDesk 365 was the only one that had a truly native Microsoft Teams experience — not just a webhook bolted on.",
+		quote: "We evaluated six tools. OnDesk.cc was the only one that had a truly native Microsoft Teams experience — not just a webhook bolted on.",
 		author: "Marcus Rivera",
 		role: "IT Director",
 		plan: "Enterprise",
@@ -37,7 +37,7 @@ const CASE_STUDIES = [
 		tagline: "Customer support scaled 4× without adding headcount",
 		challenge: "A peak-season surge doubled inbound customer tickets. The team had no way to predict volume or automatically route by urgency.",
 		solution:
-			"Used SupportDesk 365's predictive routing, SLA breach alerts, and canned responses powered by AI to handle peak load without hiring seasonal agents.",
+			"Used OnDesk.cc's predictive routing, SLA breach alerts, and canned responses powered by AI to handle peak load without hiring seasonal agents.",
 		results: [
 			{ metric: "4×", label: "Volume handled, same team size", icon: TrendingDown },
 			{ metric: "98%", label: "SLA compliance during peak", icon: Shield },
@@ -66,7 +66,7 @@ const CASE_STUDIES = [
 			{ metric: "73%", label: "Faster compliance reporting", icon: BarChart3 },
 			{ metric: "91%", label: "Agent satisfaction score", icon: Star },
 		],
-		quote: "In healthcare, a data breach is existential. SupportDesk 365 gave us the controls and audit trails that legacy tools never could.",
+		quote: "In healthcare, a data breach is existential. OnDesk.cc gave us the controls and audit trails that legacy tools never could.",
 		author: "Dr. Sandra Lin",
 		role: "CISO",
 		plan: "Enterprise",
@@ -103,7 +103,7 @@ const CASE_STUDIES = [
 		challenge:
 			"Fourteen regional offices each managed their own ticket queues in different tools. Cross-region escalations fell through the cracks regularly.",
 		solution:
-			"Consolidated all queues into SupportDesk 365 with region-aware routing, automatic escalation paths, and a shared analytics dashboard for regional managers.",
+			"Consolidated all queues into OnDesk.cc with region-aware routing, automatic escalation paths, and a shared analytics dashboard for regional managers.",
 		results: [
 			{ metric: "14→1", label: "Queues unified into one", icon: Users },
 			{ metric: "0", label: "Cross-region escalation failures in 6 months", icon: Shield },
@@ -197,7 +197,7 @@ export default function CustomersPage() {
 						</h1>
 						<p
 							className={`text-xl text-muted-foreground leading-relaxed text-pretty transition-all duration-1000 delay-150 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							See how support teams across every industry use SupportDesk 365 to resolve tickets faster, reduce costs, and finally get ahead of
+							See how support teams across every industry use OnDesk.cc to resolve tickets faster, reduce costs, and finally get ahead of
 							the queue.
 						</p>
 					</div>

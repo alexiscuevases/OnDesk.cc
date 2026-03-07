@@ -30,7 +30,7 @@ const TIMELINE = [
 	{
 		year: "2022",
 		title: "Founded",
-		desc: "Three engineers leave Microsoft frustrated by the state of enterprise support tooling. SupportDesk 365 ships its first beta to 12 teams.",
+		desc: "Three engineers leave Microsoft frustrated by the state of enterprise support tooling. OnDesk.cc ships its first beta to 12 teams.",
 	},
 	{
 		year: "2023",
@@ -108,7 +108,7 @@ const TEAM = [
 
 const PRESS = [
 	{
-		quote: "SupportDesk 365 is quietly becoming the default choice for Microsoft-first enterprise teams.",
+		quote: "OnDesk.cc is quietly becoming the default choice for Microsoft-first enterprise teams.",
 		source: "TechCrunch",
 	},
 	{
@@ -141,7 +141,7 @@ function MissionSection() {
 							people doing that work deserve better tools than a shared inbox and a spreadsheet.
 						</p>
 						<p className="text-muted-foreground leading-relaxed">
-							SupportDesk 365 is built to give enterprise support teams the speed and structure they need to actually solve problems without the
+							OnDesk.cc is built to give enterprise support teams the speed and structure they need to actually solve problems without the
 							complexity of legacy platforms or the instability of early-stage startups.
 						</p>
 					</div>
@@ -479,7 +479,7 @@ export default function AboutPage() {
 					</h1>
 					<p
 						className={`text-xl text-muted-foreground leading-relaxed text-pretty mb-10 transition-all duration-700 delay-200 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						SupportDesk 365 is a team of 47 people across 14 countries building the support platform that enterprise Microsoft 365 teams actually
+						OnDesk.cc is a team of 47 people across 14 countries building the support platform that enterprise Microsoft 365 teams actually
 						deserve.
 					</p>
 					<div

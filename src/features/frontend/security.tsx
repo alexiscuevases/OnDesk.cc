@@ -312,7 +312,7 @@ function DisclosureSection() {
 					<div>
 						<h2 className="text-2xl font-bold mb-2">Responsible disclosure</h2>
 						<p className="text-muted-foreground text-sm leading-relaxed mb-5">
-							We take every security report seriously. If you believe you have found a vulnerability in SupportDesk 365, please contact us before
+							We take every security report seriously. If you believe you have found a vulnerability in OnDesk.cc, please contact us before
 							disclosing publicly.
 						</p>
 						<ul className="space-y-2.5">
@@ -431,7 +431,7 @@ export default function SecurityPage() {
 					</h1>
 					<p
 						className={`text-xl text-muted-foreground leading-relaxed text-pretty mb-10 transition-all duration-700 delay-200 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						We treat security as a first-class product requirement not an afterthought. Every layer of SupportDesk 365 is designed to protect your
+						We treat security as a first-class product requirement not an afterthought. Every layer of OnDesk.cc is designed to protect your
 						customers' data and your team's trust.
 					</p>
 					<div

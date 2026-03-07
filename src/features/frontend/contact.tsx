@@ -14,7 +14,7 @@ const CONTACT_OPTIONS = [
 	{
 		icon: MessageSquare,
 		title: "Sales",
-		desc: "Talk to our sales team about pricing, plans, and whether SupportDesk 365 is the right fit for your team.",
+		desc: "Talk to our sales team about pricing, plans, and whether OnDesk.cc is the right fit for your team.",
 		detail: "sales@supportdesk365.com",
 		badge: "Replies in < 4 hours",
 		badgeStyle: {
@@ -394,7 +394,7 @@ export default function ContactPage() {
 					</h1>
 					<p
 						className={`text-xl text-muted-foreground leading-relaxed text-pretty transition-all duration-700 delay-200 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						Whether you are evaluating SupportDesk 365, scaling an existing plan, or just have a question we would love to hear from you.
+						Whether you are evaluating OnDesk.cc, scaling an existing plan, or just have a question we would love to hear from you.
 					</p>
 
 					<div

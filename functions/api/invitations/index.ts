@@ -110,11 +110,11 @@ export const onRequest = withAuth(async ({ request, env, payload }) => {
 					Authorization: `Bearer ${resendKey}`,
 				},
 				body: JSON.stringify({
-					from: "SupportDesk 365 <no-reply@supportdesk365.app>",
+					from: "OnDesk.cc <no-reply@supportdesk365.app>",
 					to: [normalizedEmail],
 					subject: "You've been invited to join a workspace",
 					html: `
-            <p>You've been invited to join a workspace on <strong>SupportDesk 365</strong> as <strong>${role}</strong>.</p>
+            <p>You've been invited to join a workspace on <strong>OnDesk.cc</strong> as <strong>${role}</strong>.</p>
             <p><a href="${inviteUrl}" style="background:#000;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block;">Accept Invitation</a></p>
             <p>This invitation expires in 7 days. If you did not expect this, you can ignore this email.</p>
           `,

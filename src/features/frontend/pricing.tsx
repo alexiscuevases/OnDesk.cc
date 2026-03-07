@@ -55,7 +55,7 @@ const LOGOS = ["Contoso", "Fabrikam", "Northwind", "Tailwind", "Adventure Works"
 
 const TESTIMONIALS = [
 	{
-		quote: "We evaluated six tools. SupportDesk 365 was the only one that had a real Microsoft Teams native experience — not just a webhook.",
+		quote: "We evaluated six tools. OnDesk.cc was the only one that had a real Microsoft Teams native experience — not just a webhook.",
 		author: "Marcus Rivera",
 		role: "IT Director",
 		company: "Fabrikam Inc.",

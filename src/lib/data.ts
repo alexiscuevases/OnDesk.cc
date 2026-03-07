@@ -1,4 +1,4 @@
-// Mock data for the SupportDesk 365 dashboard
+// Mock data for the OnDesk.cc dashboard
 
 export type TicketStatus = "open" | "in-progress" | "resolved" | "closed";
 export type TicketPriority = "low" | "medium" | "high" | "critical";

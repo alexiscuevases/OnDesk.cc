@@ -15,7 +15,7 @@ const SECTIONS = [
             "We collect information you provide directly to us, such as when you create an account, submit a support ticket, or contact us. This includes:",
             [
                 "Account information: name, email address, company name, and password.",
-                "Ticket content: messages, attachments, and metadata submitted through SupportDesk 365.",
+                "Ticket content: messages, attachments, and metadata submitted through OnDesk.cc.",
                 "Usage data: log files, IP addresses, browser type, pages viewed, and actions taken within the platform.",
                 "Payment information: processed securely by Stripe; we do not store raw card numbers.",
             ],
@@ -29,7 +29,7 @@ const SECTIONS = [
         body: [
             "We use the information we collect to:",
             [
-                "Provide, maintain, and improve SupportDesk 365.",
+                "Provide, maintain, and improve OnDesk.cc.",
                 "Process transactions and send related information, including confirmations and invoices.",
                 "Send technical notices, updates, security alerts, and support messages.",
                 "Respond to your comments and questions.",
@@ -100,7 +100,7 @@ const SECTIONS = [
         title: "Cookies",
         icon: Cookie,
         body: [
-            "We use cookies and similar tracking technologies to operate and improve our services. You can control cookies through your browser settings. Disabling cookies may limit certain features of SupportDesk 365.",
+            "We use cookies and similar tracking technologies to operate and improve our services. You can control cookies through your browser settings. Disabling cookies may limit certain features of OnDesk.cc.",
             "We use:",
             [
                 "Strictly necessary cookies: required for core platform functionality.",
@@ -126,7 +126,7 @@ const SECTIONS = [
             "If you have any questions about this Privacy Policy, please contact us:",
             [
                 "Email: privacy@supportdesk365.com",
-                "Post: SupportDesk 365, Data Protection Office, 123 Innovation Way, London, EC2A 4NE, United Kingdom",
+                "Post: OnDesk.cc, Data Protection Office, 123 Innovation Way, London, EC2A 4NE, United Kingdom",
             ],
             "For EU residents, our Data Protection Officer can be reached at dpo@supportdesk365.com.",
         ],
@@ -252,10 +252,10 @@ export default function PrivacyPage() {
                             Last updated: <span className="font-medium text-foreground">February 1, 2025</span>
                         </p>
                         <span className="text-border"></span>
-                        <p className="text-muted-foreground text-sm">SupportDesk 365 Ltd.</p>
+                        <p className="text-muted-foreground text-sm">OnDesk.cc Ltd.</p>
                     </div>
                     <p className={`text-base text-muted-foreground mt-4 leading-relaxed max-w-2xl transition-all duration-700 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-                        This Privacy Policy describes how SupportDesk 365 Ltd. collects, uses, and shares information about you when you use our services.
+                        This Privacy Policy describes how OnDesk.cc Ltd. collects, uses, and shares information about you when you use our services.
                     </p>
                     <div className={`flex gap-3 mt-6 transition-all duration-700 delay-400 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
                         <Button size="sm" asChild className="group">

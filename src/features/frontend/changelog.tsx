@@ -81,9 +81,9 @@ const RELEASES = [
 		date: "September 2024",
 		tag: "Major",
 		icon: Shield,
-		headline: "SupportDesk 365 v3 — rebuilt from the ground up",
+		headline: "OnDesk.cc v3 — rebuilt from the ground up",
 		changes: [
-			{ type: "new", text: "SupportDesk 365 v3 — rebuilt UI with new design system" },
+			{ type: "new", text: "OnDesk.cc v3 — rebuilt UI with new design system" },
 			{ type: "new", text: "AI Agents v1 — automated triage and first response" },
 			{ type: "new", text: "Microsoft 365 native integration (Teams, Outlook, Azure AD, SharePoint)" },
 			{ type: "new", text: "Enterprise: customer-managed encryption keys" },

@@ -42,7 +42,7 @@ const CATEGORIES: Category[] = [
 		description: "Onboarding, workspace setup, and first steps.",
 		count: 18,
 		articles: [
-			{ title: "Creating your SupportDesk 365 account", href: "#", popular: true },
+			{ title: "Creating your OnDesk.cc account", href: "#", popular: true },
 			{ title: "Connecting Microsoft 365 to your workspace", href: "#", popular: true },
 			{ title: "Inviting your team and setting roles", href: "#" },
 			{ title: "Importing existing tickets from Zendesk / Freshdesk", href: "#" },
