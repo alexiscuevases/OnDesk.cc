@@ -20,14 +20,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import {
-	fetchTicketVolumeData,
-	fetchResponseTimeData,
-	fetchCsatTrendData,
-	fetchTeamPerformanceData,
-	fetchPriorityBreakdown,
-	fetchHourlyTicketData,
-	queryKeys,
-} from "@/lib/queries";
+	apiGetTicketVolumeData,
+	apiGetResponseTimeData,
+	apiGetCsatTrendData,
+	apiGetTeamPerformanceData,
+	apiGetPriorityBreakdown,
+	apiGetHourlyTicketData,
+	analyticsQueryKeys,
+} from "../api/analytics-api";
 
 const tooltipStyle = {
 	backgroundColor: "var(--color-card)",
@@ -39,12 +39,12 @@ const tooltipStyle = {
 };
 
 export function AnalyticsView() {
-	const { data: ticketVolumeData = [] } = useQuery({ queryKey: queryKeys.analytics.ticketVolume, queryFn: fetchTicketVolumeData });
-	const { data: responseTimeData = [] } = useQuery({ queryKey: queryKeys.analytics.responseTime, queryFn: fetchResponseTimeData });
-	const { data: csatTrendData = [] } = useQuery({ queryKey: queryKeys.analytics.csatTrend, queryFn: fetchCsatTrendData });
-	const { data: teamPerformanceData = [] } = useQuery({ queryKey: queryKeys.analytics.teamPerformance, queryFn: fetchTeamPerformanceData });
-	const { data: priorityBreakdown = [] } = useQuery({ queryKey: queryKeys.analytics.priorityBreakdown, queryFn: fetchPriorityBreakdown });
-	const { data: hourlyTicketData = [] } = useQuery({ queryKey: queryKeys.analytics.hourlyTickets, queryFn: fetchHourlyTicketData });
+	const { data: ticketVolumeData = [] } = useQuery({ queryKey: analyticsQueryKeys.ticketVolume, queryFn: apiGetTicketVolumeData });
+	const { data: responseTimeData = [] } = useQuery({ queryKey: analyticsQueryKeys.responseTime, queryFn: apiGetResponseTimeData });
+	const { data: csatTrendData = [] } = useQuery({ queryKey: analyticsQueryKeys.csatTrend, queryFn: apiGetCsatTrendData });
+	const { data: teamPerformanceData = [] } = useQuery({ queryKey: analyticsQueryKeys.teamPerformance, queryFn: apiGetTeamPerformanceData });
+	const { data: priorityBreakdown = [] } = useQuery({ queryKey: analyticsQueryKeys.priorityBreakdown, queryFn: apiGetPriorityBreakdown });
+	const { data: hourlyTicketData = [] } = useQuery({ queryKey: analyticsQueryKeys.hourlyTickets, queryFn: apiGetHourlyTicketData });
 
 	return (
 		<div className="flex flex-col gap-6">

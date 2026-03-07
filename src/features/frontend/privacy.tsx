@@ -92,7 +92,7 @@ const SECTIONS = [
                 "Data portability  receive a copy of your data in a structured, machine-readable format.",
                 "Withdraw consent at any time where processing is based on consent.",
             ],
-            "To exercise these rights, contact us at privacy@supportdesk365.com. We will respond within 30 days.",
+            "To exercise these rights, contact us at privacy@ondesk.cc. We will respond within 30 days.",
         ],
     },
     {
@@ -125,10 +125,10 @@ const SECTIONS = [
         body: [
             "If you have any questions about this Privacy Policy, please contact us:",
             [
-                "Email: privacy@supportdesk365.com",
+                "Email: privacy@ondesk.cc",
                 "Post: OnDesk.cc, Data Protection Office, 123 Innovation Way, London, EC2A 4NE, United Kingdom",
             ],
-            "For EU residents, our Data Protection Officer can be reached at dpo@supportdesk365.com.",
+            "For EU residents, our Data Protection Officer can be reached at dpo@ondesk.cc.",
         ],
     },
 ];
@@ -296,7 +296,7 @@ export default function PrivacyPage() {
                             style={{ background: "color-mix(in srgb, var(--color-primary) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
                             <p className="font-semibold text-xs" style={{ color: "var(--color-primary)" }}>Questions about privacy?</p>
                             <p className="text-xs text-muted-foreground">Contact our Data Protection Officer.</p>
-                            <a href="mailto:dpo@supportdesk365.com" className="text-xs font-medium hover:underline" style={{ color: "var(--color-primary)" }}>dpo@supportdesk365.com</a>
+                            <a href="mailto:dpo@ondesk.cc" className="text-xs font-medium hover:underline" style={{ color: "var(--color-primary)" }}>dpo@ondesk.cc</a>
                         </div>
                     </aside>
 

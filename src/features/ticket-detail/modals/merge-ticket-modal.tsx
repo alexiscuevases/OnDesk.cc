@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/shared/components/status-badge";
-import type { Ticket } from "@/lib/data";
+import type { Ticket } from "@/features/tickets/api/tickets-api";
 
 interface MergeTicketModalProps {
 	open: boolean;

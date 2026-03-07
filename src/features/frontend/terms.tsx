@@ -75,7 +75,7 @@ const SECTIONS = [
         icon: Server,
         body: [
             "We aim to provide 99.9% monthly uptime for the Service, as described in our Service Level Agreement. Scheduled maintenance windows are excluded from uptime calculations and will be communicated at least 48 hours in advance.",
-            "In the event of a service outage, our status page (status.supportdesk365.com) will be updated in real time. Credits for downtime below the SLA threshold are available to customers on Professional and Enterprise plans upon request.",
+            "In the event of a service outage, our status page (ondesk.cc/status) will be updated in real time. Credits for downtime below the SLA threshold are available to customers on Professional and Enterprise plans upon request.",
         ],
     },
     {
@@ -138,7 +138,7 @@ const SECTIONS = [
         title: "Contact",
         icon: Mail,
         body: [
-            "If you have any questions about these Terms, please contact us at legal@supportdesk365.com or at:",
+            "If you have any questions about these Terms, please contact us at legal@ondesk.cc or at:",
             [
                 "OnDesk.cc Ltd.",
                 "123 Innovation Way",
@@ -312,7 +312,7 @@ export default function TermsPage() {
                             style={{ background: "color-mix(in srgb, var(--color-primary) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
                             <p className="font-semibold text-xs" style={{ color: "var(--color-primary)" }}>Legal questions?</p>
                             <p className="text-xs text-muted-foreground">Contact our legal team directly.</p>
-                            <a href="mailto:legal@supportdesk365.com" className="text-xs font-medium hover:underline" style={{ color: "var(--color-primary)" }}>legal@supportdesk365.com</a>
+                            <a href="mailto:legal@ondesk.cc" className="text-xs font-medium hover:underline" style={{ color: "var(--color-primary)" }}>legal@ondesk.cc</a>
                         </div>
                     </aside>
 

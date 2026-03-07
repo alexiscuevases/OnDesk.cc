@@ -15,7 +15,7 @@ const CONTACT_OPTIONS = [
 		icon: MessageSquare,
 		title: "Sales",
 		desc: "Talk to our sales team about pricing, plans, and whether OnDesk.cc is the right fit for your team.",
-		detail: "sales@supportdesk365.com",
+		detail: "sales@ondesk.cc",
 		badge: "Replies in < 4 hours",
 		badgeStyle: {
 			background: "color-mix(in srgb, #22c55e 12%, transparent)",
@@ -27,7 +27,7 @@ const CONTACT_OPTIONS = [
 		icon: Phone,
 		title: "Enterprise",
 		desc: "Dedicated support for teams of 50+ with custom contracts, SSO, compliance reviews, and SLA guarantees.",
-		detail: "enterprise@supportdesk365.com",
+		detail: "enterprise@ondesk.cc",
 		badge: "Dedicated team",
 		badgeStyle: {
 			background: "color-mix(in srgb, var(--color-primary) 10%, transparent)",
@@ -39,7 +39,7 @@ const CONTACT_OPTIONS = [
 		icon: Mail,
 		title: "Press",
 		desc: "Media inquiries, logo requests, and press kit. We are happy to provide interviews, quotes, and company data.",
-		detail: "press@supportdesk365.com",
+		detail: "press@ondesk.cc",
 		badge: "Replies in < 24 hours",
 		badgeStyle: {
 			background: "color-mix(in srgb, var(--color-muted) 80%, transparent)",

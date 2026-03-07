@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
-import { fetchKPIs, fetchTicketVolumeData, fetchChannelDistribution, queryKeys } from "@/lib/queries";
+import { apiGetKPIs, apiGetTicketVolumeData, apiGetChannelDistribution, overviewQueryKeys } from "../api/overview-api";
 import { useTickets } from "@/features/tickets/hooks/use-ticket-queries";
 import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
 import { useCompanies } from "@/features/companies/hooks/use-company-queries";
@@ -33,9 +33,9 @@ function getInitials(name: string) {
 }
 
 export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspaceId: string; onOpenTicket: (id: string) => void; onViewAll: () => void }) {
-	const { data: kpis = [] } = useQuery({ queryKey: queryKeys.kpis.all, queryFn: fetchKPIs });
-	const { data: ticketVolumeData = [] } = useQuery({ queryKey: queryKeys.analytics.ticketVolume, queryFn: fetchTicketVolumeData });
-	const { data: channelDistribution = [] } = useQuery({ queryKey: queryKeys.analytics.channelDistribution, queryFn: fetchChannelDistribution });
+	const { data: kpis = [] } = useQuery({ queryKey: overviewQueryKeys.kpis.all, queryFn: apiGetKPIs });
+	const { data: ticketVolumeData = [] } = useQuery({ queryKey: overviewQueryKeys.ticketVolume, queryFn: apiGetTicketVolumeData });
+	const { data: channelDistribution = [] } = useQuery({ queryKey: overviewQueryKeys.channelDistribution, queryFn: apiGetChannelDistribution });
 
 	const { data: tickets = [] } = useTickets(workspaceId);
 	const { data: contacts = [] } = useContacts(workspaceId);
