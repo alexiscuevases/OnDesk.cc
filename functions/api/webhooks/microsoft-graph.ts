@@ -186,7 +186,6 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
       // 9. Add the email body as a message on the ticket
       await createTicketMessage(env.DB, {
         ticket_id: ticketId,
-        contact_id: contact.id,
         author_id: contact.id,
         author_type: "contact",
         type: "message",

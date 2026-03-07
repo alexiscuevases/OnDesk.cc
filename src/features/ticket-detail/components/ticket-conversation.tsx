@@ -117,8 +117,8 @@ interface TicketConversationProps {
 
 export function TicketConversation({ messages, members, contacts, workspace, companies }: TicketConversationProps) {
 	function getMsgContact(msg: TicketMessage): Contact | null {
-		if (!msg.contact_id) return null;
-		return contacts.find((c) => c.id === msg.contact_id) ?? null;
+		if (msg.author_type !== "contact" || !msg.author_id) return null;
+		return contacts.find((c) => c.id === msg.author_id) ?? null;
 	}
 
 	function getAuthorName(msg: TicketMessage) {
