@@ -174,42 +174,40 @@ export function TicketConversation({ messages, members, contacts, workspace, com
 							const authorEmail = getAuthorEmail(msg);
 							const avatarSrc = getAuthorAvatarSrc(msg);
 							return (
-								<div key={msg.id} className={`flex gap-3 ${isInternal ? "opacity-80" : ""}`}>
-									<Avatar className="size-8 rounded-lg shrink-0 mt-0.5">
-										<AvatarImage src={avatarSrc} className="object-cover rounded-lg" />
-										<AvatarFallback
-											className={`rounded-lg text-[10px] font-bold ${
-												isAgent ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-											}`}>
-											{getInitials(authorName)}
-										</AvatarFallback>
-									</Avatar>
-									<div className="flex-1 min-w-0">
-										<div
-											className={`rounded-xl p-3.5 ${
-												isInternal
-													? "bg-warning/10 border border-warning/20 border-dashed"
-													: isAgent
-														? "bg-primary/5 border border-primary/10"
-														: "bg-secondary/60 border border-border"
-											}`}>
-											<div className="flex items-center gap-2 mb-1.5">
-												<div className="flex flex-col">
-													<span className="text-xs font-semibold">{authorName}</span>
-													{authorEmail && <span className="text-[10px] text-muted-foreground">{authorEmail}</span>}
-												</div>
-												{isInternal && (
-													<Badge variant="outline" className="text-[9px] px-1.5 py-0 rounded-full border-warning text-warning">
-														<Eye className="size-2.5 mr-0.5" />
-														Internal
-													</Badge>
-												)}
-												<span className="text-[10px] text-muted-foreground ml-auto">
-													{format(new Date(msg.created_at * 1000), "MMM d, h:mm a")}
-												</span>
+								<div key={msg.id} className={isInternal ? "opacity-80" : ""}>
+									<div
+										className={`rounded-xl p-3.5 ${
+											isInternal
+												? "bg-warning/10 border border-warning/20 border-dashed"
+												: isAgent
+													? "bg-primary/5 border border-primary/10"
+													: "bg-secondary/60 border border-border"
+										}`}>
+										<div className="flex items-center gap-2.5 mb-2.5">
+											<Avatar className="size-8 rounded-lg shrink-0">
+												<AvatarImage src={avatarSrc} className="object-cover rounded-lg" />
+												<AvatarFallback
+													className={`rounded-lg text-[10px] font-bold ${
+														isAgent ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+													}`}>
+													{getInitials(authorName)}
+												</AvatarFallback>
+											</Avatar>
+											<div className="flex flex-col">
+												<span className="text-xs font-semibold">{authorName}</span>
+												{authorEmail && <span className="text-[10px] text-muted-foreground">{authorEmail}</span>}
 											</div>
-											<ShadowHtml html={msg.content} />
+											{isInternal && (
+												<Badge variant="outline" className="text-[9px] px-1.5 py-0 rounded-full border-warning text-warning ml-1">
+													<Eye className="size-2.5 mr-0.5" />
+													Internal
+												</Badge>
+											)}
+											<span className="text-[10px] text-muted-foreground ml-auto">
+												{format(new Date(msg.created_at * 1000), "MMM d, h:mm a")}
+											</span>
 										</div>
+										<ShadowHtml html={msg.content} />
 									</div>
 								</div>
 							);
