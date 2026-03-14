@@ -10,20 +10,24 @@ import {
 	SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { streamTicketAI, plainTextToHtml, type AIChatMessage } from "@/features/tickets/api/ticket-ai-api";
 
 interface TicketAIAssistantProps {
 	ticketId: string;
 	onInsertContent?: (content: string) => void;
 }
 
-export function TicketAIAssistant({ onInsertContent }: TicketAIAssistantProps) {
+const INITIAL_MESSAGE = {
+	role: "assistant" as const,
+	content: "Hello! I'm your AI super-assistant 🚀\nI can read this ticket's history and help you craft the perfect reply, summarize a long thread, or extract action items.",
+};
+
+
+export function TicketAIAssistant({ ticketId, onInsertContent }: TicketAIAssistantProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [prompt, setPrompt] = useState("");
-	const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
-		{ 
-            role: "assistant", 
-            content: "Hello! I'm your AI super-assistant 🚀\nI can read this ticket's history and help you craft the perfect reply, summarize a long thread, or extract action items." 
-        }
+	const [messages, setMessages] = useState<AIChatMessage[]>([
+		INITIAL_MESSAGE,
 	]);
 	const [isLoading, setIsLoading] = useState(false);
 	const scrollRef = useRef<HTMLDivElement>(null);
@@ -36,29 +40,51 @@ export function TicketAIAssistant({ onInsertContent }: TicketAIAssistantProps) {
 
 	const handleSend = async (customPrompt?: string) => {
 		const textToSend = customPrompt || prompt;
-        if (!textToSend.trim()) return;
-		
-		setMessages((prev) => [...prev, { role: "user", content: textToSend.trim() }]);
+		if (!textToSend.trim() || isLoading) return;
+
+		// Build new chat history including the user message
+		const userMessage = { role: "user" as const, content: textToSend.trim() };
+		const nextMessages = [...messages, userMessage];
+
+		setMessages(nextMessages);
 		if (!customPrompt) setPrompt("");
 		setIsLoading(true);
 
-		// Simulate AI delay
-		setTimeout(() => {
-			let aiResponse = "";
-			const lowerMsg = textToSend.toLowerCase();
-			if (lowerMsg.includes("summari") || lowerMsg.includes("resum")) {
-				aiResponse = "<strong>Ticket Summary:</strong><br/>The customer is inquiring about the status of their refund for order #12345. It seems the returned package arrived at the warehouse 3 days ago, but no action has been taken yet.<br/><br/><strong>Suggested Action:</strong> Escalate to billing or manually trigger the refund.";
-			} else if (lowerMsg.includes("draft") || lowerMsg.includes("respond") || lowerMsg.includes("respuest")) {
-				aiResponse = "Hi there,<br><br>I've checked on your order #12345. Good news! We received your return on [Date]. I have just initiated your refund, which should appear in your account within 3-5 business days.<br><br>Let me know if you need anything else!<br><br>Best,";
-			} else if (lowerMsg.includes("extract")) {
-                aiResponse = "<strong>Action Items:</strong><ul><li>Verify return status for #12345 in the warehouse system.</li><li>Initiate Stripe refund of $49.99.</li><li>Reply to customer confirming the timeline.</li></ul>";
-            } else {
-				aiResponse = "I'm ready to help. You can tell me exactly what you want to write or ask me to summarize the thread!";
-			}
-			
-			setMessages((prev) => [...prev, { role: "assistant", content: aiResponse }]);
+		// Placeholder for the streaming assistant reply
+		const assistantPlaceholder = { role: "assistant" as const, content: "" };
+		setMessages((prev) => [...prev, assistantPlaceholder]);
+
+		try {
+			// Send chat history (excluding the initial greeting) to the backend
+			const history = nextMessages.slice(1); // Remove the system greeting from context
+			let accumulated = "";
+
+			await streamTicketAI(ticketId, history, (token) => {
+				accumulated += token;
+				// Update the last message (the streaming placeholder) in real time
+				setMessages((prev) => {
+					const updated = [...prev];
+					updated[updated.length - 1] = {
+						role: "assistant",
+						content: accumulated,
+					};
+					return updated;
+				});
+			});
+		} catch (err) {
+			const errorMsg = err instanceof Error ? err.message : "Unknown error";
+			// Replace the placeholder with an error message
+			setMessages((prev) => {
+				const updated = [...prev];
+				updated[updated.length - 1] = {
+					role: "assistant",
+					content: `⚠️ Something went wrong: ${errorMsg}`,
+				};
+				return updated;
+			});
+		} finally {
 			setIsLoading(false);
-		}, 1500); // slightly longer for premium feel
+		}
 	};
 
 	return (
@@ -109,49 +135,52 @@ export function TicketAIAssistant({ onInsertContent }: TicketAIAssistantProps) {
 									dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, '<br/>') }}
 								/>
 								
-                                {msg.role === "assistant" && i > 0 && onInsertContent && (
+                                {msg.role === "assistant" && i > 0 && msg.content && onInsertContent && (
 									<Button 
                                         variant="outline" 
                                         size="sm" 
                                         className="h-7 text-[10px] gap-1.5 rounded-full px-3"
-										onClick={() => {
-											onInsertContent(msg.content);
+									    onClick={() => {
+											// Convert LLM plain text to structured HTML before inserting into TipTap
+											onInsertContent(plainTextToHtml(msg.content));
 											setIsOpen(false);
 										}}
 									>
                                         <CopyPlus className="size-3" />
-										Insert into reply
+									    Insert into reply
 									</Button>
 								)}
 							</div>
 						</div>
 					))}
 					
-                    {isLoading && (
+                    {/* Typing indicator shown while waiting for the first tokens */}
+                    {isLoading && messages[messages.length - 1]?.content === "" && (
 						<div className="flex gap-3 justify-start">
                             <Avatar className="h-8 w-8 shrink-0 rounded-lg border shadow-sm">
                                 <AvatarFallback className="bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-600">
                                     <Bot className="size-4 animate-pulse" />
                                 </AvatarFallback>
                             </Avatar>
-							<div className="bg-muted/50 border border-border/50 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5 h-10 w-fit">
+						    <div className="bg-muted/50 border border-border/50 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5 h-10 w-fit">
 								<div className="w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-50 animate-bounce" />
 								<div className="w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-50 animate-bounce [animation-delay:-0.15s]" />
 								<div className="w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-50 animate-bounce [animation-delay:-0.3s]" />
-							</div>
+						    </div>
 						</div>
 					)}
 				</div>
 				
 				<div className="p-4 bg-background/80 backdrop-blur-md border-t border-border/50">
-                    {/* Quick actions row */}
+                    {/* Quick action chips shown only at the start of a conversation */}
                     {messages.length === 1 && (
                         <div className="flex gap-2 mb-3 overflow-x-auto pb-1 custom-scrollbar hide-scrollbars whitespace-nowrap">
                             <Button 
                                 variant="secondary" 
                                 size="sm" 
                                 className="h-7 text-[11px] rounded-full px-3 gap-1.5 bg-muted/60 hover:bg-muted"
-                                onClick={() => handleSend("Summarize this thread")}
+                                onClick={() => handleSend("Summarize this ticket thread")}
+                                disabled={isLoading}
                             >
                                 <History className="size-3" />
                                 Summarize thread
@@ -160,7 +189,8 @@ export function TicketAIAssistant({ onInsertContent }: TicketAIAssistantProps) {
                                 variant="secondary" 
                                 size="sm" 
                                 className="h-7 text-[11px] rounded-full px-3 gap-1.5 bg-muted/60 hover:bg-muted"
-                                onClick={() => handleSend("Draft a polite response")}
+                                onClick={() => handleSend("Draft a polite professional response to the customer")}
+                                disabled={isLoading}
                             >
                                 <MessageSquareText className="size-3" />
                                 Draft reply
@@ -169,7 +199,8 @@ export function TicketAIAssistant({ onInsertContent }: TicketAIAssistantProps) {
                                 variant="secondary" 
                                 size="sm" 
                                 className="h-7 text-[11px] rounded-full px-3 gap-1.5 bg-muted/60 hover:bg-muted"
-                                onClick={() => handleSend("Extract action items")}
+                                onClick={() => handleSend("Extract action items from this ticket")}
+                                disabled={isLoading}
                             >
                                 <RefreshCcw className="size-3" />
                                 Action items

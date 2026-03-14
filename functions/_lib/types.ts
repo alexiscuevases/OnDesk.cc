@@ -2,6 +2,8 @@
 export interface Env {
 	DB: D1Database;
 	STORAGE: R2Bucket;
+	// Workers AI binding - provides access to Cloudflare's AI models
+	AI: Ai;
 	JWT_SECRET: string;
 	MS_CLIENT_ID: string;
 	MS_CLIENT_SECRET: string;

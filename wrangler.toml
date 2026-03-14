@@ -9,3 +9,6 @@ database_id = "5ad5172b-ee5b-49ac-bde7-a8303f3dd57f"
 [[r2_buckets]]
 binding = "STORAGE"
 bucket_name = "desk"
+
+[ai]
+binding = "AI"
