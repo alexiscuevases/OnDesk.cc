@@ -33,39 +33,41 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
 	const ticketMessages = await findMessagesByTicket(env.DB, ticketId);
 
 	// Format the ticket conversation into a readable block for the system prompt
-	const conversationBlock = ticketMessages.length > 0
-		? ticketMessages
-				.map((m) => {
-					const author = m.author_type === "agent" ? "Agent" : "Customer";
-					const type = m.type === "note" ? " [internal note]" : "";
-					return `[${author}${type}]: ${m.content}`;
-				})
-				.join("\n\n")
-		: "No messages yet.";
+	const conversationBlock =
+		ticketMessages.length > 0
+			? ticketMessages
+					.map((m) => {
+						const author = m.author_type === "agent" ? "Agent" : "Customer";
+						const type = m.type === "note" ? " [internal note]" : "";
+						return `[${author}${type}]: ${m.content}`;
+					})
+					.join("\n\n")
+			: "No messages yet.";
 
 	// Build a detailed system prompt grounding the AI in the real ticket context
-	const systemPrompt = `You are an expert customer support AI assistant embedded inside a helpdesk platform.
-You MUST base all your answers on the ticket context provided below. Never invent information.
+	const systemPrompt = `
+		You are an expert customer support AI assistant embedded inside a helpdesk platform.
+		You MUST base all your answers on the ticket context provided below. Never invent information.
 
----
-TICKET CONTEXT
-- Subject: ${ticket.subject}
-- Status: ${ticket.status}
-- Priority: ${ticket.priority}
-- Channel: ${ticket.channel ?? "unknown"}
-- Created: ${new Date(ticket.created_at * 1000).toISOString()}
----
+		---
+		TICKET CONTEXT
+		- Subject: ${ticket.subject}
+		- Status: ${ticket.status}
+		- Priority: ${ticket.priority}
+		- Channel: ${ticket.channel ?? "unknown"}
+		- Created: ${new Date(ticket.created_at * 1000).toISOString()}
+		---
 
-CONVERSATION HISTORY:
-${conversationBlock}
+		CONVERSATION HISTORY:
+		${conversationBlock}
 
----
-Instructions:
-- If asked to summarize, provide a concise summary of the issue and current state.
-- If asked to draft a reply, write a professional and empathetic response to the customer. Output only the email body, no subject line.
-- If asked to extract action items, list clear, actionable tasks in a bullet list.
-- Always respond in plain text. Do NOT use markdown headers (#). You may use **bold**, bullet lists, and line breaks.
-- Keep responses concise and focused.`;
+		---
+		Instructions:
+		- If asked to summarize, provide a concise summary of the issue and current state.
+		- If asked to draft a reply, write a professional and empathetic response to the customer. Output only the email body, no subject line.
+		- If asked to extract action items, list clear, actionable tasks in a bullet list.
+		- Always respond in plain text. Do NOT use markdown headers (#). You may use **bold**, bullet lists, and line breaks.
+		- Keep responses concise and focused.`;
 
 	// Shape messages for the LLM: system prompt first, then the assistant chat history
 	const llmMessages = [

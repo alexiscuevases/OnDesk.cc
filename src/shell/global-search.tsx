@@ -102,7 +102,7 @@ export function GlobalSearch() {
 											</Avatar>
 											<div className="flex-1 min-w-0">
 												<div className="flex items-center gap-2">
-													<span className="text-xs font-mono font-semibold text-primary/70">{ticket.id}</span>
+													<span className="text-xs font-mono font-semibold text-primary/70">{ticket.number}</span>
 												</div>
 												<p className="text-sm font-medium truncate">{ticket.subject}</p>
 												<p className="text-xs text-muted-foreground truncate">{ticket.status}</p>

@@ -12,6 +12,7 @@ import type { Team } from "@/features/teams/api/teams-api";
 import type { Contact } from "@/features/contacts/api/contacts-api";
 import type { Workspace } from "@/features/workspaces/api/workspaces-api";
 import type { Company } from "@/features/companies/api/companies-api";
+import { TicketAiStatePanel } from "./ticket-ai-state-panel";
 
 interface TicketPropertiesProps {
 	ticket: Ticket;
@@ -202,6 +203,8 @@ export function TicketProperties({
 					)}
 				</CardContent>
 			</Card>
+
+			<TicketAiStatePanel ticketId={ticket.id} />
 
 			{/* Activity Timeline */}
 			<Card className="border-0 shadow-sm">

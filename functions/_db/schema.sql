@@ -254,3 +254,69 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id      ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_workspace_id ON notifications(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_read         ON notifications(user_id, read);
+
+-- ─── AI Agents ────────────────────────────────────────────────────────────────
+
+-- AI Agents: workspace-owned bot entities that handle tickets automatically
+-- status: 'active' | 'inactive'
+CREATE TABLE IF NOT EXISTS ai_agents (
+  id                   TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id         TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  name                 TEXT    NOT NULL,
+  description          TEXT,
+  status               TEXT    NOT NULL DEFAULT 'active',
+  system_prompt        TEXT,
+  confidence_threshold REAL    NOT NULL DEFAULT 0.5,
+  max_auto_replies     INTEGER NOT NULL DEFAULT 0,
+  created_by           TEXT    NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  created_at           INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at           INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_agents_workspace_id ON ai_agents(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_ai_agents_status       ON ai_agents(workspace_id, status);
+
+-- Assigns an AI agent to one or more mailboxes (many-to-many)
+CREATE TABLE IF NOT EXISTS ai_agent_mailboxes (
+  id                     TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  ai_agent_id            TEXT    NOT NULL REFERENCES ai_agents(id) ON DELETE CASCADE,
+  mailbox_integration_id TEXT    NOT NULL REFERENCES mailbox_integrations(id) ON DELETE CASCADE,
+  enabled                INTEGER NOT NULL DEFAULT 1,
+  created_at             INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE(ai_agent_id, mailbox_integration_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_agent_mailboxes_agent_id   ON ai_agent_mailboxes(ai_agent_id);
+CREATE INDEX IF NOT EXISTS idx_ai_agent_mailboxes_mailbox_id ON ai_agent_mailboxes(mailbox_integration_id);
+
+-- Tracks AI handling state per ticket
+-- escalated: 1 = human intervention required; AI stops responding
+CREATE TABLE IF NOT EXISTS ai_ticket_state (
+  id              TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  ticket_id       TEXT    NOT NULL REFERENCES tickets(id) ON DELETE CASCADE UNIQUE,
+  ai_agent_id     TEXT    NOT NULL REFERENCES ai_agents(id) ON DELETE CASCADE,
+  reply_count     INTEGER NOT NULL DEFAULT 0,
+  escalated       INTEGER NOT NULL DEFAULT 0,
+  escalated_at    INTEGER,
+  escalation_note TEXT,
+  created_at      INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at      INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_ticket_state_ticket_id   ON ai_ticket_state(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_ai_ticket_state_agent_id    ON ai_ticket_state(ai_agent_id);
+CREATE INDEX IF NOT EXISTS idx_ai_ticket_state_escalated   ON ai_ticket_state(escalated);
+
+-- Audit log for all AI agent actions on tickets
+-- action: 'auto_reply' | 'escalate' | 'status_change' | 'note_added' | 'routed'
+CREATE TABLE IF NOT EXISTS ai_action_logs (
+  id          TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  ticket_id   TEXT    NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+  ai_agent_id TEXT    NOT NULL REFERENCES ai_agents(id) ON DELETE CASCADE,
+  action      TEXT    NOT NULL,
+  metadata    TEXT,
+  created_at  INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_action_logs_ticket_id   ON ai_action_logs(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_ai_action_logs_agent_id    ON ai_action_logs(ai_agent_id);

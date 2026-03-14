@@ -12,12 +12,15 @@ import {
   createTicketMessage,
   findWorkspaceMemberIds,
   createNotification,
+  findActiveAgentForMailbox,
+  findTicketById,
 } from "../../_lib/db";
 import {
   refreshAccessToken,
   getGraphMessage,
   renewGraphSubscription,
 } from "../../_lib/graph";
+import { runAiAgentPipeline } from "../../_lib/ai-agent-pipeline";
 
 interface GraphNotification {
   subscriptionId: string;
@@ -34,7 +37,7 @@ interface GraphNotificationPayload {
 }
 
 // POST /api/webhooks/microsoft-graph
-export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil }) => {
   // Type 1: Subscription validation handshake
   const url = new URL(request.url);
   const validationToken = url.searchParams.get("validationToken");
@@ -199,6 +202,25 @@ export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
         internet_message_id: message.internetMessageId,
         ticket_id: ticketId,
       });
+
+      // 11. AI Agent routing — check if this mailbox has an active agent
+      const aiAgent = await findActiveAgentForMailbox(env.DB, mailbox.id);
+      if (aiAgent) {
+        const ticket = await findTicketById(env.DB, ticketId);
+        if (ticket) {
+          // waitUntil keeps the Worker alive after the 202 response is sent
+          waitUntil(
+            runAiAgentPipeline(env, {
+              ticket,
+              mailbox,
+              aiAgent,
+              inboundMessage: message,
+              contact,
+              isNewTicket: !existingTicket,
+            }).catch((err) => console.error("AI agent pipeline error:", err))
+          );
+        }
+      }
     } catch (err) {
       // Log but don't throw — we must still return 202
       console.error("Error processing Graph notification:", err);

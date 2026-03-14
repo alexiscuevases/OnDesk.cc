@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2 } from "lucide-react";
+import { Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2, Bot } from "lucide-react";
 import { GeneralSection } from "./general-section";
 import { AgentsSection } from "./agents-section";
 import { IntegrationsSection } from "./integrations-section";
@@ -8,12 +8,14 @@ import { CannedRepliesSection } from "./canned-replies-section";
 import { SignaturesSection } from "./signatures-section";
 import { UsersCompaniesSection } from "./users-companies-section";
 import { SecuritySection } from "./security-section";
+import { AiAgentsSection } from "@/features/ai-agents/components/ai-agents-section";
 
-type ConfigSection = "general" | "agents" | "integrations" | "teams" | "canned-replies" | "signatures" | "users-companies" | "security";
+type ConfigSection = "general" | "agents" | "ai-agents" | "integrations" | "teams" | "canned-replies" | "signatures" | "users-companies" | "security";
 
 const sections: { id: ConfigSection; label: string; icon: typeof Globe; desc: string }[] = [
 	{ id: "general", label: "General", icon: Globe, desc: "Workspace settings and branding" },
 	{ id: "agents", label: "Agents", icon: UserCog, desc: "Manage support agents and roles" },
+	{ id: "ai-agents", label: "AI Agents", icon: Bot, desc: "Automated ticket handling" },
 	{ id: "integrations", label: "Integrations", icon: Plug, desc: "Connected services and APIs" },
 	{ id: "teams", label: "Teams", icon: Users, desc: "Team structure and auto-assignment" },
 	{ id: "canned-replies", label: "Canned Replies", icon: MessageSquareText, desc: "Quick response templates" },
@@ -62,6 +64,7 @@ export function ConfigurationsView() {
 				<div className="lg:col-span-3">
 					{activeSection === "general" && <GeneralSection />}
 					{activeSection === "agents" && <AgentsSection />}
+					{activeSection === "ai-agents" && <AiAgentsSection />}
 					{activeSection === "integrations" && <IntegrationsSection />}
 					{activeSection === "teams" && <TeamsSection />}
 					{activeSection === "canned-replies" && <CannedRepliesSection />}
