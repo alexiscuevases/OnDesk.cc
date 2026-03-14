@@ -1,11 +1,11 @@
-import { jsonOk, jsonError } from "../../_lib/response";
+import { jsonOk, jsonError } from "../../../_lib/response";
 import {
   findWorkspaceBySlug,
   getWorkspaceMemberRole,
   updateWorkspace,
   deleteWorkspace,
-} from "../../_lib/db";
-import { withAuth } from "../../_lib/middleware";
+} from "../../../_lib/db";
+import { withAuth } from "../../../_lib/middleware";
 
 // GET    /api/workspaces/:slug — get workspace details (must be a member)
 // PATCH  /api/workspaces/:slug — update workspace (must be owner or admin)

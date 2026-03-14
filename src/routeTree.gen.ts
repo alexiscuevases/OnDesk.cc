@@ -38,6 +38,7 @@ import { Route as WSlugTeamsRouteImport } from './routes/w/$slug/teams'
 import { Route as WSlugSettingsRouteImport } from './routes/w/$slug/settings'
 import { Route as WSlugProfileRouteImport } from './routes/w/$slug/profile'
 import { Route as WSlugOverviewRouteImport } from './routes/w/$slug/overview'
+import { Route as WSlugMarketplaceRouteImport } from './routes/w/$slug/marketplace'
 import { Route as WSlugAnalyticsRouteImport } from './routes/w/$slug/analytics'
 import { Route as WSlugTicketsIndexRouteImport } from './routes/w/$slug/tickets/index'
 import { Route as WSlugTicketsIdRouteImport } from './routes/w/$slug/tickets/$id'
@@ -187,6 +188,11 @@ const WSlugOverviewRoute = WSlugOverviewRouteImport.update({
   path: '/overview',
   getParentRoute: () => WSlugRoute,
 } as any)
+const WSlugMarketplaceRoute = WSlugMarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => WSlugRoute,
+} as any)
 const WSlugAnalyticsRoute = WSlugAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/workspaces/new': typeof WorkspacesNewRoute
   '/workspaces/': typeof WorkspacesIndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
+  '/w/$slug/marketplace': typeof WSlugMarketplaceRoute
   '/w/$slug/overview': typeof WSlugOverviewRoute
   '/w/$slug/profile': typeof WSlugProfileRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
@@ -262,6 +269,7 @@ export interface FileRoutesByTo {
   '/workspaces/new': typeof WorkspacesNewRoute
   '/workspaces': typeof WorkspacesIndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
+  '/w/$slug/marketplace': typeof WSlugMarketplaceRoute
   '/w/$slug/overview': typeof WSlugOverviewRoute
   '/w/$slug/profile': typeof WSlugProfileRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
@@ -296,6 +304,7 @@ export interface FileRoutesById {
   '/workspaces/new': typeof WorkspacesNewRoute
   '/workspaces/': typeof WorkspacesIndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
+  '/w/$slug/marketplace': typeof WSlugMarketplaceRoute
   '/w/$slug/overview': typeof WSlugOverviewRoute
   '/w/$slug/profile': typeof WSlugProfileRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
@@ -332,6 +341,7 @@ export interface FileRouteTypes {
     | '/workspaces/new'
     | '/workspaces/'
     | '/w/$slug/analytics'
+    | '/w/$slug/marketplace'
     | '/w/$slug/overview'
     | '/w/$slug/profile'
     | '/w/$slug/settings'
@@ -365,6 +375,7 @@ export interface FileRouteTypes {
     | '/workspaces/new'
     | '/workspaces'
     | '/w/$slug/analytics'
+    | '/w/$slug/marketplace'
     | '/w/$slug/overview'
     | '/w/$slug/profile'
     | '/w/$slug/settings'
@@ -398,6 +409,7 @@ export interface FileRouteTypes {
     | '/workspaces/new'
     | '/workspaces/'
     | '/w/$slug/analytics'
+    | '/w/$slug/marketplace'
     | '/w/$slug/overview'
     | '/w/$slug/profile'
     | '/w/$slug/settings'
@@ -633,6 +645,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WSlugOverviewRouteImport
       parentRoute: typeof WSlugRoute
     }
+    '/w/$slug/marketplace': {
+      id: '/w/$slug/marketplace'
+      path: '/marketplace'
+      fullPath: '/w/$slug/marketplace'
+      preLoaderRoute: typeof WSlugMarketplaceRouteImport
+      parentRoute: typeof WSlugRoute
+    }
     '/w/$slug/analytics': {
       id: '/w/$slug/analytics'
       path: '/analytics'
@@ -687,6 +706,7 @@ const WSlugTicketsRouteWithChildren = WSlugTicketsRoute._addFileChildren(
 
 interface WSlugRouteChildren {
   WSlugAnalyticsRoute: typeof WSlugAnalyticsRoute
+  WSlugMarketplaceRoute: typeof WSlugMarketplaceRoute
   WSlugOverviewRoute: typeof WSlugOverviewRoute
   WSlugProfileRoute: typeof WSlugProfileRoute
   WSlugSettingsRoute: typeof WSlugSettingsRoute
@@ -696,6 +716,7 @@ interface WSlugRouteChildren {
 
 const WSlugRouteChildren: WSlugRouteChildren = {
   WSlugAnalyticsRoute: WSlugAnalyticsRoute,
+  WSlugMarketplaceRoute: WSlugMarketplaceRoute,
   WSlugOverviewRoute: WSlugOverviewRoute,
   WSlugProfileRoute: WSlugProfileRoute,
   WSlugSettingsRoute: WSlugSettingsRoute,

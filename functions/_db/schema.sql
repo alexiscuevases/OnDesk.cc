@@ -320,3 +320,44 @@ CREATE TABLE IF NOT EXISTS ai_action_logs (
 
 CREATE INDEX IF NOT EXISTS idx_ai_action_logs_ticket_id   ON ai_action_logs(ticket_id);
 CREATE INDEX IF NOT EXISTS idx_ai_action_logs_agent_id    ON ai_action_logs(ai_agent_id);
+-- ─── Marketplace & Tools ──────────────────────────────────────────────────
+
+-- Products: available integrations/tools in the marketplace
+CREATE TABLE IF NOT EXISTS products (
+  id              TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  name            TEXT    NOT NULL,
+  description     TEXT,
+  logo_url        TEXT,
+  auth_type       TEXT    NOT NULL, -- 'none' | 'api_key'
+  actions         TEXT    NOT NULL, -- JSON array of actions: [{ name, description, endpoint, method, parameters }]
+  is_public       INTEGER NOT NULL DEFAULT 1,
+  created_by      TEXT    NOT NULL REFERENCES users(id),
+  created_at      INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at      INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Workspace Products: installed products per workspace
+CREATE TABLE IF NOT EXISTS workspace_products (
+  id              TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id    TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  product_id      TEXT    NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  configuration   TEXT,    -- JSON object with API keys, tokens, etc.
+  status          TEXT    NOT NULL DEFAULT 'enabled', -- 'enabled' | 'disabled'
+  installed_at    INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at      INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE(workspace_id, product_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_workspace_products_workspace_id ON workspace_products(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_workspace_products_product_id   ON workspace_products(product_id);
+
+-- Agent Tools: assigned tools (from workspace products) to specific agents
+CREATE TABLE IF NOT EXISTS agent_tools (
+  id                    TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  ai_agent_id           TEXT    NOT NULL REFERENCES ai_agents(id) ON DELETE CASCADE,
+  workspace_product_id  TEXT    NOT NULL REFERENCES workspace_products(id) ON DELETE CASCADE,
+  created_at            INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE(ai_agent_id, workspace_product_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_tools_agent_id ON agent_tools(ai_agent_id);

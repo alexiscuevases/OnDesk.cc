@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Ticket, Users, BarChart3, Settings, ChevronDown, ChevronRight, Building2, Plus, UserCircle, Palette, LogOut, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Ticket, Users, BarChart3, Settings, ChevronDown, ChevronRight, Building2, Plus, UserCircle, Palette, LogOut, ShieldCheck, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useWorkspace } from "@/context/workspace-context";
 import { useLogoutMutation } from "@/features/auth/hooks/use-auth-mutations";
@@ -47,6 +47,7 @@ export function WorkspaceSidebar() {
 		{ id: "tickets", label: "Tickets", icon: Ticket, badge: null, to: `/w/${slug}/tickets/` },
 		{ id: "teams", label: "Teams", icon: Users, badge: null, to: `/w/${slug}/teams` },
 		{ id: "analytics", label: "Analytics", icon: BarChart3, badge: null, to: `/w/${slug}/analytics` },
+		{ id: "marketplace", label: "Marketplace", icon: ShoppingCart, badge: null, to: `/w/${slug}/marketplace` },
 		{ id: "settings", label: "Settings", icon: Settings, badge: null, to: `/w/${slug}/settings` },
 	];
 

@@ -4,6 +4,13 @@ interface CrudApiConfig {
 	itemKey: string;
 }
 
+export async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+	return fetch(url, {
+		...options,
+		credentials: "include",
+	});
+}
+
 async function handleResponse<T>(res: Response, errorMessage: string): Promise<T> {
 	if (!res.ok) {
 		const err = (await res.json()) as { error: string };

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bot, Pencil, Trash2, Mail, Plus, RefreshCw } from "lucide-react";
+import { Bot, Pencil, Trash2, Mail, Plus, RefreshCw, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,9 @@ import type { AiAgent } from "../api/ai-agents-api";
 import { CreateAiAgentModal } from "../modals/create-ai-agent-modal";
 import { EditAiAgentModal } from "../modals/edit-ai-agent-modal";
 import { ManageMailboxesModal } from "../modals/manage-mailboxes-modal";
+import { ManageToolsModal } from "../modals/manage-tools-modal";
+import { useAgentTools, useAssignTool, useRemoveTool } from "../hooks/use-agent-tools";
+import { useWorkspaceProducts } from "@/features/marketplace/hooks/useWorkspaceProducts";
 
 function AgentMailboxesRow({
   workspaceId,
@@ -85,10 +88,48 @@ function AgentMailboxesRow({
   );
 }
 
+function AgentToolsRow({
+  agent,
+  allProducts,
+}: {
+  agent: AiAgent;
+  allProducts: ReturnType<typeof useWorkspaceProducts>["data"];
+}) {
+  const [open, setOpen] = useState(false);
+  const { data: tools = [] } = useAgentTools(agent.id);
+
+  const assign = useAssignTool(agent.id);
+  const remove = useRemoveTool(agent.id);
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-7 gap-1.5 text-[11px] rounded-lg"
+        onClick={() => setOpen(true)}>
+        <Wrench className="size-3" />
+        {tools.length > 0 ? `${tools.length} tool${tools.length > 1 ? "s" : ""}` : "Assign tools"}
+      </Button>
+
+      <ManageToolsModal
+        open={open}
+        onOpenChange={setOpen}
+        agent={agent}
+        assignedTools={tools}
+        allWorkspaceProducts={allProducts ?? []}
+        onAssign={(id) => assign.mutate(id, { onError: (err) => toast.error(err.message) })}
+        onUnassign={(id) => remove.mutate(id, { onError: (err) => toast.error(err.message) })}
+      />
+    </>
+  );
+}
+
 export function AiAgentsSection() {
   const { workspace } = useWorkspace();
   const { data: agents = [], isLoading } = useAiAgents(workspace.id);
   const { data: mailboxes = [] } = useMailboxes(workspace.id);
+  const { data: workspaceProducts = [] } = useWorkspaceProducts(workspace.slug);
 
   const createAgent = useCreateAiAgent(workspace.id);
   const deleteAgent = useDeleteAiAgent(workspace.id);
@@ -198,6 +239,10 @@ export function AiAgentsSection() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    <AgentToolsRow
+                      agent={agent}
+                      allProducts={workspaceProducts}
+                    />
                     <AgentMailboxesRow
                       workspaceId={workspace.id}
                       agent={agent}

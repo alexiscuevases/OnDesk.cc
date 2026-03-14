@@ -1,7 +1,7 @@
-import { withWorkspace } from "../../_lib/middleware";
-import { jsonOk, jsonError } from "../../_lib/response";
-import { findAiAgentById, findMailboxesForAgent, updateAiAgent, deleteAiAgent, isWorkspaceMember, getWorkspaceMemberRole } from "../../_lib/db";
-import type { AiAgentStatus } from "../../_lib/types";
+import { withWorkspace } from "../../../_lib/middleware";
+import { jsonOk, jsonError } from "../../../_lib/response";
+import { findAiAgentById, findMailboxesForAgent, updateAiAgent, deleteAiAgent, isWorkspaceMember, getWorkspaceMemberRole } from "../../../_lib/db";
+import type { AiAgentStatus } from "../../../_lib/types";
 
 const VALID_STATUSES: AiAgentStatus[] = ["active", "inactive"];
 
