@@ -30,6 +30,7 @@ import { CreateAiAgentModal } from "../modals/create-ai-agent-modal";
 import { EditAiAgentModal } from "../modals/edit-ai-agent-modal";
 import { ManageMailboxesModal } from "../modals/manage-mailboxes-modal";
 import { ManageToolsModal } from "../modals/manage-tools-modal";
+import { TestAiAgentModal } from "../modals/test-ai-agent-modal";
 import { useAgentTools, useAssignTool, useRemoveTool } from "../hooks/use-agent-tools";
 import { useWorkspaceProducts } from "@/features/marketplace/hooks/useWorkspaceProducts";
 
@@ -137,6 +138,7 @@ export function AiAgentsSection() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [testOpen, setTestOpen] = useState(false);
   const [selected, setSelected] = useState<AiAgent | null>(null);
 
   const updateAgent = useUpdateAiAgent(workspace.id, selected?.id ?? "");
@@ -239,6 +241,17 @@ export function AiAgentsSection() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 gap-1.5 text-[11px] rounded-lg border border-primary/20 text-primary hover:bg-primary/10"
+                      onClick={() => {
+                        setSelected(agent);
+                        setTestOpen(true);
+                      }}>
+                      <Bot className="size-3" />
+                      Test
+                    </Button>
                     <AgentToolsRow
                       agent={agent}
                       allProducts={workspaceProducts}
@@ -287,11 +300,20 @@ export function AiAgentsSection() {
         open={editOpen}
         onOpenChange={(v) => {
           setEditOpen(v);
-          if (!v) setSelected(null);
+          if (!v && !testOpen && !deleteOpen) setSelected(null);
         }}
         agent={selected}
         onConfirm={handleUpdate}
         isPending={updateAgent.isPending}
+      />
+
+      <TestAiAgentModal
+        open={testOpen}
+        onOpenChange={(v) => {
+          setTestOpen(v);
+          if (!v && !editOpen && !deleteOpen) setSelected(null);
+        }}
+        agent={selected}
       />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
