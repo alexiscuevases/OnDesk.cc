@@ -28,6 +28,7 @@ export const onRequest = withAuth<"slug">(async ({ request, env, payload, params
         slug: workspace.slug,
         description: workspace.description,
         logo_url: workspace.logo_url,
+        workspace_prompt: workspace.workspace_prompt,
         role: memberRole,
         created_at: workspace.created_at,
       },
@@ -46,8 +47,8 @@ export const onRequest = withAuth<"slug">(async ({ request, env, payload, params
       return jsonError("Invalid JSON body");
     }
 
-    const { name, description, logo_url } = body as Record<string, unknown>;
-    const updates: { name?: string; description?: string; logo_url?: string } = {};
+    const { name, description, logo_url, workspace_prompt } = body as Record<string, unknown>;
+    const updates: { name?: string; description?: string; logo_url?: string; workspace_prompt?: string | null } = {};
 
     if (typeof name === "string" && name.trim().length >= 2) {
       updates.name = name.trim();
@@ -57,6 +58,10 @@ export const onRequest = withAuth<"slug">(async ({ request, env, payload, params
     }
     if (typeof logo_url === "string") {
       updates.logo_url = logo_url.trim();
+    }
+    if (typeof workspace_prompt === "string") {
+      const trimmed = workspace_prompt.trim();
+      updates.workspace_prompt = trimmed.length > 0 ? trimmed : null;
     }
 
     await updateWorkspace(env.DB, workspace.id, updates);
@@ -68,6 +73,7 @@ export const onRequest = withAuth<"slug">(async ({ request, env, payload, params
         slug: updated!.slug,
         description: updated!.description,
         logo_url: updated!.logo_url,
+        workspace_prompt: updated!.workspace_prompt,
         role: memberRole,
         created_at: updated!.created_at,
       },

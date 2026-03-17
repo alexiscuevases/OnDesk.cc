@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS workspaces (
   slug        TEXT NOT NULL UNIQUE,
   description TEXT,
   logo_url    TEXT,
+  workspace_prompt TEXT,
   created_by  TEXT NOT NULL REFERENCES users(id),
   created_at  INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at  INTEGER NOT NULL DEFAULT (unixepoch())

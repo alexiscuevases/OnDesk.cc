@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useWorkspace } from "@/context/workspace-context";
 import { useUpdateWorkspaceMutation } from "@/features/workspaces/hooks/use-workspace-mutations";
 import { LogoUpload } from "@/shared/components";
@@ -16,16 +17,23 @@ export function GeneralSection() {
 	const [name, setName] = useState(workspace.name);
 	const [description, setDescription] = useState(workspace.description ?? "");
 	const [logoUrl, setLogoUrl] = useState(workspace.logo_url ?? "");
+	const [workspacePrompt, setWorkspacePrompt] = useState(workspace.workspace_prompt ?? "");
 	useEffect(() => {
 		setName(workspace.name);
 		setDescription(workspace.description ?? "");
 		setLogoUrl(workspace.logo_url ?? "");
-	}, [workspace.name, workspace.description, workspace.logo_url]);
+		setWorkspacePrompt(workspace.workspace_prompt ?? "");
+	}, [workspace.name, workspace.description, workspace.logo_url, workspace.workspace_prompt]);
 
 	function handleSave() {
 		if (!name.trim()) return;
 		updateWorkspace.mutate(
-			{ name: name.trim(), description: description.trim() || undefined, logo_url: logoUrl || undefined },
+			{
+				name: name.trim(),
+				description: description.trim() || undefined,
+				logo_url: logoUrl || undefined,
+				workspace_prompt: workspacePrompt.trim(),
+			},
 			{
 				onSuccess: () => toast.success("Workspace settings saved"),
 				onError: (err) => toast.error(err.message),
@@ -78,6 +86,21 @@ export function GeneralSection() {
 					<div className="space-y-2">
 						<Label className="text-xs text-muted-foreground">Workspace Slug</Label>
 						<Input value={workspace.slug} readOnly className="h-9 rounded-lg bg-muted text-muted-foreground" />
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="workspace-prompt" className="text-xs">
+							Workspace Prompt
+						</Label>
+						<p className="text-[11px] text-muted-foreground leading-relaxed">
+							General context/instructions that will be injected into the AI agent pipeline for this workspace.
+						</p>
+						<Textarea
+							id="workspace-prompt"
+							value={workspacePrompt}
+							onChange={(e) => setWorkspacePrompt(e.target.value)}
+							placeholder="e.g. We are Acme SaaS. Our tone is friendly but professional. Escalate any billing/refund topics. Use product terms: Workspace, Ticket, Agent..."
+							className="min-h-32 rounded-lg"
+						/>
 					</div>
 					<Button
 						size="sm"

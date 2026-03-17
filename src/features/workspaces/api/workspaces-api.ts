@@ -4,6 +4,7 @@ export interface Workspace {
 	slug: string;
 	description: string | null;
 	logo_url: string | null;
+	workspace_prompt: string | null;
 	role: string;
 	created_at: number;
 }
@@ -54,7 +55,7 @@ export async function apiCreateWorkspace(input: CreateWorkspaceInput): Promise<W
 
 export async function apiUpdateWorkspace(
 	slug: string,
-	input: { name?: string; description?: string; logo_url?: string }
+	input: { name?: string; description?: string; logo_url?: string; workspace_prompt?: string }
 ): Promise<Workspace> {
 	const res = await fetch(`${API_BASE}/${slug}`, {
 		method: "PATCH",

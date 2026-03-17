@@ -1,5 +1,5 @@
 import { jsonError } from "../../../_lib/response";
-import { findTicketById, findMessagesByTicket, isWorkspaceMember } from "../../../_lib/db";
+import { findTicketById, findMessagesByTicket, isWorkspaceMember, findWorkspaceById } from "../../../_lib/db";
 import { withAuth } from "../../../_lib/middleware";
 
 // POST /api/tickets/:id/ai
@@ -31,6 +31,7 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
 
 	// Load the full conversation history from D1 to build context
 	const ticketMessages = await findMessagesByTicket(env.DB, ticketId);
+	const workspace = await findWorkspaceById(env.DB, ticket.workspace_id);
 
 	// Format the ticket conversation into a readable block for the system prompt
 	const conversationBlock =
@@ -48,6 +49,8 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
 	const systemPrompt = `
 		You are an expert customer support AI assistant embedded inside a helpdesk platform.
 		You MUST base all your answers on the ticket context provided below. Never invent information.
+
+		${workspace?.workspace_prompt ? `---\nWORKSPACE PROMPT (additional context)\n${workspace.workspace_prompt}\n` : ""}
 
 		---
 		TICKET CONTEXT

@@ -17,6 +17,7 @@ export const updateWorkspaceSchema = z.object({
 	name: z.string().min(2).max(100).optional(),
 	description: z.string().max(500).optional(),
 	logo_url: z.string().url().optional().or(z.literal("")),
+	workspace_prompt: z.string().max(10_000).optional(),
 });
 
 export type UpdateWorkspaceValues = z.infer<typeof updateWorkspaceSchema>;

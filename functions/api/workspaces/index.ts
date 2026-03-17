@@ -26,7 +26,7 @@ export const onRequest = withAuth(async ({ request, env, payload }) => {
       return jsonError("Invalid JSON body");
     }
 
-    const { name, slug, description, logo_url } = body as Record<string, unknown>;
+    const { name, slug, description, logo_url, workspace_prompt } = body as Record<string, unknown>;
 
     if (typeof name !== "string" || name.trim().length < 2) {
       return jsonError("Name must be at least 2 characters");
@@ -47,6 +47,8 @@ export const onRequest = withAuth(async ({ request, env, payload }) => {
         slug,
         description: typeof description === "string" ? description.trim() || undefined : undefined,
         logo_url: typeof logo_url === "string" ? logo_url.trim() || undefined : undefined,
+        workspace_prompt:
+          typeof workspace_prompt === "string" ? workspace_prompt.trim() || undefined : undefined,
       },
       userId
     );
@@ -58,8 +60,25 @@ export const onRequest = withAuth(async ({ request, env, payload }) => {
 });
 
 function toPublic(
-  w: { id: string; name: string; slug: string; description: string | null; logo_url: string | null; created_at: number },
+  w: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    logo_url: string | null;
+    workspace_prompt?: string | null;
+    created_at: number;
+  },
   role: string
 ) {
-  return { id: w.id, name: w.name, slug: w.slug, description: w.description, logo_url: w.logo_url, role, created_at: w.created_at };
+  return {
+    id: w.id,
+    name: w.name,
+    slug: w.slug,
+    description: w.description,
+    logo_url: w.logo_url,
+    workspace_prompt: w.workspace_prompt ?? null,
+    role,
+    created_at: w.created_at,
+  };
 }

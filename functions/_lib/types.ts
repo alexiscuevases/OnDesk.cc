@@ -57,6 +57,7 @@ export interface WorkspaceRow {
 	slug: string;
 	description: string | null;
 	logo_url: string | null;
+	workspace_prompt: string | null;
 	created_by: string;
 	created_at: number;
 	updated_at: number;
@@ -77,6 +78,7 @@ export interface PublicWorkspace {
 	slug: string;
 	description: string | null;
 	logo_url: string | null;
+	workspace_prompt: string | null;
 	role: string; // caller's role in this workspace
 	created_at: number;
 }

@@ -14,6 +14,7 @@ import {
 	updateMailboxTokens,
 	findLastInboundMessageByTicket,
 	findAgentTools,
+	findWorkspaceById,
 } from "./db";
 import { refreshAccessToken, replyGraphMail, sendGraphMail } from "./graph";
 
@@ -71,6 +72,8 @@ async function triggerEscalation(env: Env, ticket: TicketRow, aiAgent: AiAgentRo
 export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promise<void> {
 	const { ticket, mailbox, aiAgent, contact } = ctx;
 
+	const workspace = await findWorkspaceById(env.DB, ticket.workspace_id);
+
 	// 1. Load or create ai_ticket_state
 	let state = await findAiTicketState(env.DB, ticket.id);
 	if (!state) {
@@ -116,6 +119,7 @@ export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promis
 	// 7. Build system prompt using centralized utility
 	const systemPrompt = buildFullSystemPrompt({
 		agentName: aiAgent.name,
+		workspacePrompt: workspace?.workspace_prompt ?? null,
 		agentSystemPrompt: aiAgent.system_prompt,
 		ticket: {
 			subject: ticket.subject,
@@ -134,6 +138,12 @@ export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promis
 			// but pass what we have; enrichment can be added when company join is available
 			company: null,
 		},
+		workspace: workspace
+			? {
+					name: workspace.name,
+					description: workspace.description,
+				}
+			: undefined,
 		toolsSection,
 		conversationBlock,
 	});

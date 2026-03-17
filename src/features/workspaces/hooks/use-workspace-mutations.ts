@@ -21,7 +21,7 @@ export function useUpdateWorkspaceMutation(slug: string) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: (input: { name?: string; description?: string; logo_url?: string }) =>
+		mutationFn: (input: { name?: string; description?: string; logo_url?: string; workspace_prompt?: string }) =>
 			apiUpdateWorkspace(slug, input),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.all });

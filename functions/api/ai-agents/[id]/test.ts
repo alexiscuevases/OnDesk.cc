@@ -1,7 +1,8 @@
 import { withWorkspace } from "../../../_lib/middleware";
 import { jsonOk, jsonError } from "../../../_lib/response";
-import { findAiAgentById, findAgentTools, getWorkspaceMemberRole } from "../../../_lib/db";
+import { findAiAgentById, findAgentTools, findWorkspaceById, getWorkspaceMemberRole } from "../../../_lib/db";
 import { parseStructuredTokens, executeAction, buildToolsSection, buildFullSystemPrompt } from "../../../_lib/ai-agent-testing-utils"; // We'll create this to share logic
+import type { ParsedAgentOutput } from "../../../_lib/ai-agent-testing-utils";
 
 // POST /api/ai-agents/:id/test?workspace_id=
 export const onRequest = withWorkspace<"id">(async ({ request, env, payload, params, workspaceId }) => {
@@ -15,6 +16,9 @@ export const onRequest = withWorkspace<"id">(async ({ request, env, payload, par
 	const agent = await findAiAgentById(env.DB, agentId);
 	if (!agent) return jsonError("AI agent not found", 404);
 	if (agent.workspace_id !== workspaceId) return jsonError("Forbidden", 403);
+
+	const workspace = await findWorkspaceById(env.DB, workspaceId);
+	if (!workspace) return jsonError("Workspace not found", 404);
 
 	let body: { message: string, history: {role: string, content: string}[] };
 	try {
@@ -37,11 +41,17 @@ export const onRequest = withWorkspace<"id">(async ({ request, env, payload, par
 	// Build full system prompt using centralized utility
 	const systemPrompt = buildFullSystemPrompt({
 		agentName: agent.name,
+		workspacePrompt: workspace.workspace_prompt ?? null,
 		agentSystemPrompt: agent.system_prompt,
+		workspace: {
+			name: workspace.name,
+			description: workspace.description,
+		},
 		toolsSection,
 		conversationBlock: history.length > 0 
 			? history.map(m => `[${m.role}]: ${m.content}`).join("\n\n")
 			: "No history."
+
 	});
 
 	const messages = [
@@ -57,7 +67,13 @@ export const onRequest = withWorkspace<"id">(async ({ request, env, payload, par
 	const MAX_ACTIONS = 10;
 	let actionCount = 0;
 	const executedActions = new Set<string>();
-	const traces = [];
+	type StepTrace = {
+		type: "execute" | "escalate" | "reply";
+		rawText: string;
+		parsed: ParsedAgentOutput;
+		toolResult: unknown;
+	};
+	const traces: StepTrace[] = [];
 
 	try {
 		while (true) {
@@ -75,8 +91,8 @@ export const onRequest = withWorkspace<"id">(async ({ request, env, payload, par
 			const parsed = parseStructuredTokens(rawText);
             
             // Record this step for the frontend visualization
-            const stepTrace = {
-                type: parsed.action ? "execute" : (parsed.escalate ? "escalate" : "reply") as "execute" | "escalate" | "reply",
+            const stepTrace: StepTrace = {
+                type: parsed.action ? "execute" : (parsed.escalate ? "escalate" : "reply"),
                 rawText: rawText,
                 parsed: parsed,
                 toolResult: null as unknown

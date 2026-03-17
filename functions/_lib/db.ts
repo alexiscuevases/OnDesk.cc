@@ -112,7 +112,7 @@ export async function findWorkspacesByUserId(
 ): Promise<PublicWorkspace[]> {
   const result = await db
     .prepare(
-      `SELECT w.id, w.name, w.slug, w.description, w.logo_url, w.created_at, wm.role
+      `SELECT w.id, w.name, w.slug, w.description, w.logo_url, w.workspace_prompt, w.created_at, wm.role
        FROM workspaces w
        JOIN workspace_members wm ON wm.workspace_id = w.id
        WHERE wm.user_id = ?
@@ -130,6 +130,14 @@ export async function findWorkspaceBySlug(
   const result = await db
     .prepare("SELECT * FROM workspaces WHERE slug = ? LIMIT 1")
     .bind(slug)
+    .first<WorkspaceRow>();
+  return result ?? null;
+}
+
+export async function findWorkspaceById(db: D1Database, id: string): Promise<WorkspaceRow | null> {
+  const result = await db
+    .prepare("SELECT * FROM workspaces WHERE id = ? LIMIT 1")
+    .bind(id)
     .first<WorkspaceRow>();
   return result ?? null;
 }
@@ -161,16 +169,16 @@ export async function isWorkspaceMember(
 
 export async function createWorkspace(
   db: D1Database,
-  data: { name: string; slug: string; description?: string; logo_url?: string },
+  data: { name: string; slug: string; description?: string; logo_url?: string; workspace_prompt?: string },
   userId: string
 ): Promise<WorkspaceRow> {
   const id = crypto.randomUUID();
   const memberId = crypto.randomUUID();
   await db
     .prepare(
-      "INSERT INTO workspaces (id, name, slug, description, logo_url, created_by) VALUES (?, ?, ?, ?, ?, ?)"
+      "INSERT INTO workspaces (id, name, slug, description, logo_url, workspace_prompt, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)"
     )
-    .bind(id, data.name, data.slug, data.description ?? null, data.logo_url ?? null, userId)
+    .bind(id, data.name, data.slug, data.description ?? null, data.logo_url ?? null, data.workspace_prompt ?? null, userId)
     .run();
   // Add creator as owner
   await db
@@ -185,13 +193,14 @@ export async function createWorkspace(
 export async function updateWorkspace(
   db: D1Database,
   workspaceId: string,
-  data: { name?: string; description?: string; logo_url?: string }
+  data: { name?: string; description?: string; logo_url?: string; workspace_prompt?: string | null }
 ): Promise<void> {
   const fields: string[] = [];
   const values: (string | null)[] = [];
   if (data.name !== undefined) { fields.push("name = ?"); values.push(data.name); }
   if (data.description !== undefined) { fields.push("description = ?"); values.push(data.description); }
   if (data.logo_url !== undefined) { fields.push("logo_url = ?"); values.push(data.logo_url); }
+  if (data.workspace_prompt !== undefined) { fields.push("workspace_prompt = ?"); values.push(data.workspace_prompt); }
   if (fields.length === 0) return;
   fields.push("updated_at = unixepoch()");
   values.push(workspaceId);
