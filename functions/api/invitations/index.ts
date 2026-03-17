@@ -77,8 +77,8 @@ export const onRequest = withAuth(async ({ request, env, payload }) => {
 							title: "New member joined",
 							description: `${existingUser.name} joined the workspace.`,
 							actor_id: existingUser.id,
-						})
-					)
+						}),
+					),
 			);
 
 			return jsonCreated({ added: true });
@@ -110,7 +110,7 @@ export const onRequest = withAuth(async ({ request, env, payload }) => {
 					Authorization: `Bearer ${resendKey}`,
 				},
 				body: JSON.stringify({
-					from: "OnDesk.cc <no-reply@supportdesk365.app>",
+					from: "OnDesk.cc <no-reply@ondesk.cc>",
 					to: [normalizedEmail],
 					subject: "You've been invited to join a workspace",
 					html: `

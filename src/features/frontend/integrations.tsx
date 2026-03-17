@@ -69,7 +69,7 @@ const BADGE_STYLES: Record<string, string> = {
 
 const HOW_IT_WORKS = [
 	{ step: "01", title: "Connect in one click", desc: "Authorize the integration from your dashboard — no developer required for most tools." },
-	{ step: "02", title: "Map your data", desc: "Choose which fields, channels, or projects sync between SupportDesk and your tool." },
+	{ step: "02", title: "Map your data", desc: "Choose which fields, channels, or projects sync between OnDesk and your tool." },
 	{ step: "03", title: "Go live instantly", desc: "Events flow in real time. Everything is logged and auditable from day one." },
 ];
 
@@ -134,10 +134,7 @@ export default function IntegrationsPage() {
 							OnDesk.cc plugs into the tools your team already uses — starting with a deep, native Microsoft 365 integration.
 						</p>
 						<div className={`transition-all duration-1000 delay-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							<Button
-								size="xl"
-								asChild
-								className="group">
+							<Button size="xl" asChild className="group">
 								<a href="/auth/signup">
 									Get started free
 									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
@@ -388,21 +385,13 @@ function IntegrationsCtaSection() {
 						Our REST API and webhook system lets you connect to any platform. Enterprise customers get dedicated integration engineering support.
 					</p>
 					<div className="flex flex-col sm:flex-row justify-center gap-4">
-						<Button
-							size="xl"
-							asChild
-							className="group bg-white hover:bg-white/90"
-							style={{ color: "var(--color-primary)" }}>
+						<Button size="xl" asChild className="group bg-white hover:bg-white/90" style={{ color: "var(--color-primary)" }}>
 							<a href="/contact">
 								Request an integration
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 							</a>
 						</Button>
-						<Button
-							size="xl"
-							variant="outline"
-							asChild
-							className="text-white border-white/35 hover:bg-white/10 hover:border-white/60">
+						<Button size="xl" variant="outline" asChild className="text-white border-white/35 hover:bg-white/10 hover:border-white/60">
 							<a href="/help">
 								<Zap className="mr-2 size-4" />
 								View API docs

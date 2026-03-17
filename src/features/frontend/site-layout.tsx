@@ -93,17 +93,14 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 
 			{/* ── NAVBAR ── */}
 			<header
-				className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled
-						? "backdrop-blur-xl shadow-lg"
-						: "bg-transparent"
-					}`}
+				className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? "backdrop-blur-xl shadow-lg" : "bg-transparent"}`}
 				style={
 					scrolled
 						? {
-							background: "color-mix(in srgb, var(--color-background) 85%, transparent)",
-							borderBottom: "1px solid color-mix(in srgb, var(--color-primary) 12%, var(--color-border))",
-							boxShadow: "0 4px 24px -4px color-mix(in srgb, var(--color-primary) 8%, transparent)",
-						}
+								background: "color-mix(in srgb, var(--color-background) 85%, transparent)",
+								borderBottom: "1px solid color-mix(in srgb, var(--color-primary) 12%, var(--color-border))",
+								boxShadow: "0 4px 24px -4px color-mix(in srgb, var(--color-primary) 8%, transparent)",
+							}
 						: undefined
 				}>
 				<nav className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -118,7 +115,7 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 							<Headset className="size-5 text-primary-foreground" />
 						</div>
 						<div className="flex flex-col leading-none">
-							<span className="text-base font-bold tracking-tight">SupportDesk</span>
+							<span className="text-base font-bold tracking-tight">OnDesk</span>
 							<span className="text-[10px] text-muted-foreground">Microsoft 365</span>
 						</div>
 					</a>
@@ -132,11 +129,7 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 									key={label}
 									href={href}
 									className="relative px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 group"
-									style={
-										isActive
-											? { color: "var(--color-primary)" }
-											: { color: "var(--color-muted-foreground)" }
-									}>
+									style={isActive ? { color: "var(--color-primary)" } : { color: "var(--color-muted-foreground)" }}>
 									{/* Hover bg */}
 									<span
 										className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
@@ -199,7 +192,11 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 								className="text-sm py-2.5 px-3 rounded-lg border-b border-border/40 last:border-0 transition-all duration-200"
 								style={
 									pathname === href
-										? { color: "var(--color-primary)", fontWeight: 500, background: "color-mix(in srgb, var(--color-primary) 6%, transparent)" }
+										? {
+												color: "var(--color-primary)",
+												fontWeight: 500,
+												background: "color-mix(in srgb, var(--color-primary) 6%, transparent)",
+											}
 										: { color: "var(--color-muted-foreground)" }
 								}>
 								{label}
@@ -209,10 +206,7 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 							<Button variant="outline" size="sm" asChild className="flex-1 hover:border-primary/40 hover:text-primary transition-all">
 								<a href="/auth/signin">Log in</a>
 							</Button>
-							<Button
-								size="sm"
-								asChild
-								className="flex-1 shadow-md shadow-primary/20 hover:shadow-primary/30">
+							<Button size="sm" asChild className="flex-1 shadow-md shadow-primary/20 hover:shadow-primary/30">
 								<a href="/auth/signup">Free Trial</a>
 							</Button>
 						</div>
@@ -234,7 +228,10 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 				{/* Background */}
 				<div
 					className="absolute inset-0 pointer-events-none"
-					style={{ background: "linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 3%, transparent) 0%, color-mix(in srgb, var(--color-muted) 8%, transparent) 100%)" }}
+					style={{
+						background:
+							"linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 3%, transparent) 0%, color-mix(in srgb, var(--color-muted) 8%, transparent) 100%)",
+					}}
 				/>
 
 				{/* Dot grid decoration */}
@@ -263,7 +260,7 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 									<Headset className="size-4 text-primary-foreground" />
 								</div>
 								<div className="flex flex-col leading-none">
-									<span className="text-sm font-bold tracking-tight">SupportDesk</span>
+									<span className="text-sm font-bold tracking-tight">OnDesk</span>
 									<span className="text-[10px] text-muted-foreground">Microsoft 365</span>
 								</div>
 							</a>
@@ -275,9 +272,7 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 						{/* Link columns */}
 						{FOOTER_COLS.map((col) => (
 							<div key={col.heading}>
-								<h4
-									className="font-semibold text-xs uppercase tracking-widest mb-4"
-									style={{ color: "var(--color-primary)" }}>
+								<h4 className="font-semibold text-xs uppercase tracking-widest mb-4" style={{ color: "var(--color-primary)" }}>
 									{col.heading}
 								</h4>
 								<ul className="space-y-2.5">
@@ -291,7 +286,9 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 														? { color: "var(--color-foreground)", fontWeight: 500 }
 														: { color: "var(--color-muted-foreground)" }
 												}
-												onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--color-primary)"; }}
+												onMouseEnter={(e) => {
+													(e.currentTarget as HTMLElement).style.color = "var(--color-primary)";
+												}}
 												onMouseLeave={(e) => {
 													(e.currentTarget as HTMLElement).style.color =
 														pathname === href ? "var(--color-foreground)" : "var(--color-muted-foreground)";

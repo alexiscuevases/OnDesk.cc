@@ -58,29 +58,27 @@ export function AuthLayout({ children, backLink, footer }: AuthLayoutProps) {
 			{backLink && (
 				<Link
 					to={backLink.to}
-					className="absolute top-6 left-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 group z-10"
-				>
+					className="absolute top-6 left-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-all duration-200 group z-10">
 					<ArrowLeft className="size-4 group-hover:-translate-x-1 transition-transform duration-200" />
 					{backLink.label}
 				</Link>
 			)}
 
 			{/* Home link top-right */}
-			<a
-				href="/"
-				className="absolute top-6 right-6 text-xs text-muted-foreground hover:text-foreground transition-colors z-10 hidden sm:block"
-			>
+			<a href="/" className="absolute top-6 right-6 text-xs text-muted-foreground hover:text-foreground transition-colors z-10 hidden sm:block">
 				← Back to site
 			</a>
 
 			{/* Card wrapper with entry animation */}
-			<div
-				className={`relative w-full max-w-md transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-			>
+			<div className={`relative w-full max-w-md transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 				{/* Card glow ring */}
 				<div
 					className="absolute -inset-px rounded-[18px] pointer-events-none"
-					style={{ background: "linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 30%, transparent), color-mix(in srgb, var(--color-accent) 20%, transparent))", opacity: 0.6 }}
+					style={{
+						background:
+							"linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 30%, transparent), color-mix(in srgb, var(--color-accent) 20%, transparent))",
+						opacity: 0.6,
+					}}
 				/>
 
 				{/* Card */}
@@ -90,8 +88,7 @@ export function AuthLayout({ children, backLink, footer }: AuthLayoutProps) {
 						background: "var(--color-card)",
 						border: "1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border))",
 						boxShadow: "0 32px 80px -12px color-mix(in srgb, var(--color-primary) 18%, transparent), 0 4px 24px -4px rgba(0,0,0,0.1)",
-					}}
-				>
+					}}>
 					{/* Logo */}
 					<div className="flex items-center justify-center gap-2.5 mb-8">
 						<div
@@ -99,12 +96,11 @@ export function AuthLayout({ children, backLink, footer }: AuthLayoutProps) {
 							style={{
 								background: "var(--color-primary)",
 								boxShadow: "0 8px 24px -4px color-mix(in srgb, var(--color-primary) 50%, transparent)",
-							}}
-						>
+							}}>
 							<Headset className="size-6 text-primary-foreground" />
 						</div>
 						<div className="flex flex-col items-start">
-							<span className="text-xl font-bold leading-none">SupportDesk</span>
+							<span className="text-xl font-bold leading-none">OnDesk</span>
 							<span className="text-[10px] text-muted-foreground leading-none mt-0.5">Microsoft 365</span>
 						</div>
 					</div>
@@ -114,7 +110,8 @@ export function AuthLayout({ children, backLink, footer }: AuthLayoutProps) {
 
 				{/* Footer */}
 				{footer && (
-					<div className={`mt-6 text-center transition-all duration-700 delay-200 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+					<div
+						className={`mt-6 text-center transition-all duration-700 delay-200 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
 						{footer}
 					</div>
 				)}

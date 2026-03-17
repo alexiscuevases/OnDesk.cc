@@ -22,8 +22,6 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
-
-
 // ---------- types ----------
 interface LiveTicket {
 	id: string;
@@ -86,7 +84,7 @@ const TESTIMONIALS = [
 		rating: 5,
 	},
 	{
-		quote: "We handle 12,000 tickets a month. Before SupportDesk we needed 22 agents. Now we need 9 — and they're happier.",
+		quote: "We handle 12,000 tickets a month. Before OnDesk we needed 22 agents. Now we need 9 — and they're happier.",
 		author: "Priya Patel",
 		role: "VP Operations",
 		company: "Northwind Traders",
@@ -214,22 +212,18 @@ export default function LandingPage() {
 
 						{/* Headline with gradient text */}
 						<h1 className="text-center text-5xl md:text-[5rem] font-black leading-[1.02] tracking-tight text-balance mb-6">
-							Support at the{" "}
-							<GradientText>speed of AI</GradientText>
+							Support at the <GradientText>speed of AI</GradientText>
 						</h1>
 
 						<p
 							className={`text-center text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-10 text-pretty transition-all duration-1000 delay-200 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							OnDesk.cc combines intelligent AI agents with Microsoft 365 to triage, route, and resolve customer tickets before your team
-							even clocks in.
+							OnDesk.cc combines intelligent AI agents with Microsoft 365 to triage, route, and resolve customer tickets before your team even
+							clocks in.
 						</p>
 
 						<div
 							className={`flex flex-col sm:flex-row justify-center gap-3 mb-16 transition-all duration-1000 delay-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							<Button
-								size="xl"
-								asChild
-								className="group relative overflow-hidden">
+							<Button size="xl" asChild className="group relative overflow-hidden">
 								<a href="/auth/signup">
 									<span className="relative z-10 flex items-center gap-2">
 										Start free — 14 days
@@ -237,11 +231,7 @@ export default function LandingPage() {
 									</span>
 								</a>
 							</Button>
-							<Button
-								size="xl"
-								variant="outline"
-								asChild
-								className="group">
+							<Button size="xl" variant="outline" asChild className="group">
 								<a href="#demo">
 									<Play className="mr-2 size-4 group-hover:scale-110 transition-transform" />
 									Watch demo
@@ -408,9 +398,7 @@ export default function LandingPage() {
 								</li>
 							))}
 						</ul>
-						<Button
-							asChild
-							className="group mt-2">
+						<Button asChild className="group mt-2">
 							<a href="/auth/signup">
 								Try {feat.label} free
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
@@ -618,7 +606,6 @@ function CtaSection() {
 				className={`cta-gradient relative max-w-5xl mx-auto rounded-3xl overflow-hidden p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}>
 				<CtaDecorations />
 
-
 				<div className="relative z-10">
 					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 border border-white/25 text-sm font-medium text-white mb-8">
 						<TrendingUp className="size-3.5" /> Start resolving tickets smarter today
@@ -628,21 +615,13 @@ function CtaSection() {
 						14-day free trial. No credit card. Full Microsoft 365 integration from day one.
 					</p>
 					<div className="flex flex-col sm:flex-row justify-center gap-4">
-						<Button
-							size="xl"
-							asChild
-							className="group bg-white hover:bg-white/90"
-							style={{ color: "var(--color-primary)" }}>
+						<Button size="xl" asChild className="group bg-white hover:bg-white/90" style={{ color: "var(--color-primary)" }}>
 							<a href="/auth/signup">
 								Start free trial
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 							</a>
 						</Button>
-						<Button
-							size="xl"
-							variant="outline"
-							asChild
-							className="text-white border-white/35 hover:bg-white/10 hover:border-white/60">
+						<Button size="xl" variant="outline" asChild className="text-white border-white/35 hover:bg-white/10 hover:border-white/60">
 							<a href="/auth/signin">Sign in to your account</a>
 						</Button>
 					</div>

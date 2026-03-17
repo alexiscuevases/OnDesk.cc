@@ -4,8 +4,6 @@ import { ArrowRight, Shield, Lock, Server, Eye, Globe, Users, CheckCircle2, File
 import { SiteLayout } from "./site-layout";
 import { useInView, useCounter, useMouseGlow, SectionBadge, CtaDecorations } from "./shared";
 
-
-
 // -- Data --
 
 const CERTIFICATIONS = [
@@ -127,7 +125,7 @@ const DATA_HANDLING = [
 ];
 
 const RESPONSIBLE_DISCLOSURE = [
-	"Report a vulnerability to security@supportdesk365.io",
+	"Report a vulnerability to security@ondesk.cc",
 	"We acknowledge receipt within 24 hours",
 	"We assess severity and begin remediation within 72 hours for critical issues",
 	"We credit researchers in our Hall of Fame upon fix publication",
@@ -328,7 +326,7 @@ function DisclosureSection() {
 						</ul>
 						<div className="flex flex-wrap gap-3 mt-6">
 							<Button size="lg" asChild className="group">
-								<a href="mailto:security@supportdesk365.io">
+								<a href="mailto:security@ondesk.cc">
 									Report a vulnerability
 									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 								</a>
@@ -436,20 +434,14 @@ export default function SecurityPage() {
 					</p>
 					<div
 						className={`flex flex-col sm:flex-row justify-center gap-3 transition-all duration-700 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						<Button
-							size="xl"
-							asChild
-							className="group">
+						<Button size="xl" asChild className="group">
 							<a href="/contact">
 								Request security review
 								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 							</a>
 						</Button>
-						<Button
-							size="xl"
-							variant="outline"
-							asChild>
-							<a href="mailto:security@supportdesk365.io">Contact security team</a>
+						<Button size="xl" variant="outline" asChild>
+							<a href="mailto:security@ondesk.cc">Contact security team</a>
 						</Button>
 					</div>
 
