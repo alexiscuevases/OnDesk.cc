@@ -2,7 +2,7 @@ import { jsonError } from "../../../_lib/response";
 import { findTicketById, findMessagesByTicket, isWorkspaceMember, findWorkspaceById } from "../../../_lib/db";
 import { withAuth } from "../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../_lib/http";
-import { AI_LIMITS, AI_MODELS } from "../../../_lib/config";
+import { AI_LIMITS, AI_MODELS } from "../../../_lib/configs";
 
 // POST /api/tickets/:id/ai
 // Calls Workers AI with the full ticket context and returns a streaming text response.

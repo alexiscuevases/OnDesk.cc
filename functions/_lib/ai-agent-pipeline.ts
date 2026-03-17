@@ -1,5 +1,5 @@
 import type { Env, AiAgentRow, MailboxIntegrationRow, TicketRow, ContactRow } from "./types";
-import type { GraphMessage } from "./graph";
+import type { GraphMessage } from "./types";
 import {
   findAiTicketState,
   createAiTicketState,

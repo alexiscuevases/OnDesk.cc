@@ -1,16 +1,12 @@
-import type { Env, PublicWorkspaceProduct } from "./types";
-import type { ParsedAgentOutput } from "./ai-agent-testing-utils";
+import type {
+	Env,
+	PublicWorkspaceProduct,
+	ChatMessage,
+	AgentLoopTrace,
+	AgentLoopResult,
+} from "./types";
 import { parseStructuredTokens, executeAction } from "./ai-agent-testing-utils";
-import { AI_LIMITS, AI_MODELS } from "./config";
-
-type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
-
-export interface AgentLoopTrace {
-  type: "execute" | "escalate" | "reply";
-  rawText: string;
-  parsed: ParsedAgentOutput;
-  toolResult: unknown;
-}
+import { AI_LIMITS, AI_MODELS } from "./configs";
 
 interface RunAgenticLoopInput {
   env: Env;
@@ -22,16 +18,6 @@ interface RunAgenticLoopInput {
   maxActions?: number;
   maxTokens?: number;
   collectTraces?: boolean;
-}
-
-export interface AgentLoopResult {
-  outcome: "reply" | "escalate";
-  reason?: string;
-  replyText?: string;
-  parsed: ParsedAgentOutput;
-  traces: AgentLoopTrace[];
-  messages: ChatMessage[];
-  actionCount: number;
 }
 
 export async function runAgenticLoop(input: RunAgenticLoopInput): Promise<AgentLoopResult> {

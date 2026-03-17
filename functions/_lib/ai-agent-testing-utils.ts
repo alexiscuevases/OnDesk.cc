@@ -1,24 +1,4 @@
-export interface ExecuteActionToken {
-	actionId: string;
-	params: Record<string, unknown>;
-}
-
-import type { PublicWorkspaceProduct } from "./types";
-
-export interface ParsedAgentOutput {
-	// The action to execute, if the model requested one
-	action: ExecuteActionToken | null;
-	// Whether the model explicitly requested human escalation
-	escalate: boolean;
-	// Optional reason provided alongside escalate action
-	escalateReason: string;
-	// Confidence score for reply (defaults to 0 if not present)
-	confidence: number;
-	// The reply text formatted for the user
-	cleanText: string;
-	// Internal reasoning captured from "_thought" field (never sent to customer)
-	thought: string;
-}
+import type { PublicWorkspaceProduct, ExecuteActionToken, ParsedAgentOutput } from "./types";
 
 /**
  * Parses JSON action payload from the AI response.

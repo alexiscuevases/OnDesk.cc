@@ -1,6 +1,5 @@
 import { jsonError } from "./response";
-
-export type MethodHandler = () => Promise<Response> | Response;
+import type { MethodHandler } from "./types";
 
 export function createMethodRouter(
   method: string,

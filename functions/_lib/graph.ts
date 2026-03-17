@@ -1,33 +1,14 @@
-const TOKEN_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
-const GRAPH_BASE = "https://graph.microsoft.com/v1.0";
+import type {
+	GraphTokenResponse,
+	GraphUserProfile,
+	GraphSubscription,
+	GraphMessage,
+	SendGraphMailResult,
+} from "./types";
+import { MICROSOFT_GRAPH_CONFIG } from "./configs";
 
-export interface GraphTokenResponse {
-	access_token: string;
-	refresh_token: string;
-	expires_in: number;
-}
-
-export interface GraphUserProfile {
-	id: string;
-	mail: string | null;
-	userPrincipalName: string;
-}
-
-export interface GraphSubscription {
-	id: string;
-	expirationDateTime: string;
-}
-
-export interface GraphMessage {
-	id: string;
-	subject: string | null;
-	bodyPreview: string;
-	body: { content: string; contentType: string };
-	from: { emailAddress: { name: string; address: string } };
-	internetMessageId: string;
-	conversationId: string;
-	receivedDateTime: string;
-}
+const TOKEN_ENDPOINT = MICROSOFT_GRAPH_CONFIG.TOKEN_ENDPOINT;
+const GRAPH_BASE = MICROSOFT_GRAPH_CONFIG.GRAPH_BASE_URL;
 
 export async function exchangeCodeForTokens(clientId: string, clientSecret: string, code: string, redirectUri: string): Promise<GraphTokenResponse> {
 	const body = new URLSearchParams({
@@ -36,7 +17,7 @@ export async function exchangeCodeForTokens(clientId: string, clientSecret: stri
 		code,
 		redirect_uri: redirectUri,
 		grant_type: "authorization_code",
-		scope: "User.Read Mail.Read Mail.ReadWrite Mail.Send offline_access",
+		scope: MICROSOFT_GRAPH_CONFIG.OAUTH_SCOPE,
 	});
 
 	const res = await fetch(TOKEN_ENDPOINT, {
@@ -59,7 +40,7 @@ export async function refreshAccessToken(clientId: string, clientSecret: string,
 		client_secret: clientSecret,
 		refresh_token: refreshToken,
 		grant_type: "refresh_token",
-		scope: "User.Read Mail.Read Mail.ReadWrite Mail.Send offline_access",
+		scope: MICROSOFT_GRAPH_CONFIG.OAUTH_SCOPE,
 	});
 
 	const res = await fetch(TOKEN_ENDPOINT, {
@@ -90,8 +71,9 @@ export async function getGraphUserProfile(accessToken: string): Promise<GraphUse
 }
 
 export async function createGraphSubscription(accessToken: string, notificationUrl: string, clientState: string): Promise<GraphSubscription> {
-	// Mail subscriptions expire after max ~3 days
-	const expirationDateTime = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+	const expirationDateTime = new Date(
+		Date.now() + MICROSOFT_GRAPH_CONFIG.MAIL_SUBSCRIPTION_TTL_DAYS * 24 * 60 * 60 * 1000,
+	).toISOString();
 
 	const res = await fetch(`${GRAPH_BASE}/subscriptions`, {
 		method: "POST",
@@ -117,7 +99,9 @@ export async function createGraphSubscription(accessToken: string, notificationU
 }
 
 export async function renewGraphSubscription(accessToken: string, subscriptionId: string): Promise<GraphSubscription> {
-	const expirationDateTime = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
+	const expirationDateTime = new Date(
+		Date.now() + MICROSOFT_GRAPH_CONFIG.MAIL_SUBSCRIPTION_TTL_DAYS * 24 * 60 * 60 * 1000,
+	).toISOString();
 
 	const res = await fetch(`${GRAPH_BASE}/subscriptions/${subscriptionId}`, {
 		method: "PATCH",
@@ -200,11 +184,6 @@ export async function replyGraphMail(
 		const err = await sendRes.text();
 		throw new Error(`Failed to send reply: ${err}`);
 	}
-}
-
-export interface SendGraphMailResult {
-	conversationId: string;
-	internetMessageId: string;
 }
 
 export async function sendGraphMail(

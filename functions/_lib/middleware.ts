@@ -1,20 +1,9 @@
 import type { PagesFunction } from "@cloudflare/workers-types";
-import type { Env, JwtPayload } from "./types";
+import type { Env, AuthContext, WorkspaceContext } from "./types";
 import { verifyJwt } from "./crypto";
 import { parseCookies, ACCESS_TOKEN_COOKIE } from "./cookies";
 import { jsonError } from "./response";
 import { isWorkspaceMember } from "./db";
-
-export interface AuthContext {
-	request: Request;
-	env: Env;
-	params: Record<string, string>;
-	payload: JwtPayload;
-}
-
-export interface WorkspaceContext extends AuthContext {
-	workspaceId: string;
-}
 
 type AuthHandler<P extends string = string> = (
 	ctx: Omit<AuthContext, "params"> & { params: Record<P, string> }
