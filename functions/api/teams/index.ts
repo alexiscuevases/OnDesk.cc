@@ -1,34 +1,32 @@
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
 import { findTeamsByWorkspace, createTeam } from "../../_lib/db";
 import { withWorkspace } from "../../_lib/middleware";
+import { asTrimmedString, createMethodRouter, parseJsonBody } from "../../_lib/http";
 
 // GET  /api/teams?workspace_id=
 // POST /api/teams
 export const onRequest = withWorkspace(async ({ request, env, workspaceId }) => {
-  if (request.method === "GET") {
-    const teams = await findTeamsByWorkspace(env.DB, workspaceId);
-    return jsonOk({ teams });
-  }
+  return createMethodRouter(request.method, {
+    GET: async () => {
+      const teams = await findTeamsByWorkspace(env.DB, workspaceId);
+      return jsonOk({ teams });
+    },
+    POST: async () => {
+      const parsed = await parseJsonBody(request);
+      if (!parsed.ok) return parsed.response;
 
-  if (request.method === "POST") {
-    let body: unknown;
-    try { body = await request.json(); } catch { return jsonError("Invalid JSON body"); }
+      const { name, description, leader_id, logo_url } = parsed.body;
+      const normalizedName = asTrimmedString(name);
+      if (!normalizedName) return jsonError("name is required");
 
-    const { name, description, leader_id, logo_url } = body as Record<string, unknown>;
+      const team = await createTeam(env.DB, workspaceId, {
+        name: normalizedName,
+        description: asTrimmedString(description),
+        leader_id: typeof leader_id === "string" ? leader_id : undefined,
+        logo_url: asTrimmedString(logo_url),
+      });
 
-    if (typeof name !== "string" || name.trim().length === 0) {
-      return jsonError("name is required");
-    }
-
-    const team = await createTeam(env.DB, workspaceId, {
-      name: name.trim(),
-      description: typeof description === "string" ? description.trim() || undefined : undefined,
-      leader_id: typeof leader_id === "string" ? leader_id : undefined,
-      logo_url: typeof logo_url === "string" ? logo_url.trim() || undefined : undefined,
-    });
-
-    return jsonCreated({ team });
-  }
-
-  return jsonError("Method not allowed", 405);
+      return jsonCreated({ team });
+    },
+  });
 });

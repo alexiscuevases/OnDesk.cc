@@ -1,6 +1,7 @@
 import { jsonOk, jsonError } from "../../_lib/response";
 import { findSignatureById, updateSignature, deleteSignature } from "../../_lib/db";
 import { withAuth } from "../../_lib/middleware";
+import { createMethodRouter, parseJsonBody } from "../../_lib/http";
 
 // GET    /api/signatures/:id
 // PATCH  /api/signatures/:id
@@ -23,28 +24,24 @@ export const onRequest = withAuth<"id">(async ({ request, env, params, payload }
     created_at: r.created_at,
   });
 
-  if (request.method === "GET") {
-    return jsonOk({ signature: toPublic(row) });
-  }
+  return createMethodRouter(request.method, {
+    GET: () => jsonOk({ signature: toPublic(row) }),
+    PATCH: async () => {
+      const parsed = await parseJsonBody(request);
+      if (!parsed.ok) return parsed.response;
 
-  if (request.method === "PATCH") {
-    let body: unknown;
-    try { body = await request.json(); } catch { return jsonError("Invalid JSON body"); }
-
-    const { name, content, is_default } = body as Record<string, unknown>;
-    await updateSignature(env.DB, signatureId, payload.sub, {
-      name: typeof name === "string" ? name.trim() : undefined,
-      content: typeof content === "string" ? content.trim() : undefined,
-      is_default: typeof is_default === "boolean" ? is_default : undefined,
-    });
-    const updated = await findSignatureById(env.DB, signatureId);
-    return jsonOk({ signature: toPublic(updated!) });
-  }
-
-  if (request.method === "DELETE") {
-    await deleteSignature(env.DB, signatureId);
-    return jsonOk({ success: true });
-  }
-
-  return jsonError("Method not allowed", 405);
+      const { name, content, is_default } = parsed.body;
+      await updateSignature(env.DB, signatureId, payload.sub, {
+        name: typeof name === "string" ? name.trim() : undefined,
+        content: typeof content === "string" ? content.trim() : undefined,
+        is_default: typeof is_default === "boolean" ? is_default : undefined,
+      });
+      const updated = await findSignatureById(env.DB, signatureId);
+      return jsonOk({ signature: toPublic(updated!) });
+    },
+    DELETE: async () => {
+      await deleteSignature(env.DB, signatureId);
+      return jsonOk({ success: true });
+    },
+  });
 });

@@ -5,6 +5,7 @@ import {
   slugExists,
 } from "../../_lib/db";
 import { withAuth } from "../../_lib/middleware";
+import { createMethodRouter, parseJsonBody } from "../../_lib/http";
 
 const SLUG_RE = /^[a-z0-9-]{3,50}$/;
 
@@ -13,50 +14,45 @@ const SLUG_RE = /^[a-z0-9-]{3,50}$/;
 export const onRequest = withAuth(async ({ request, env, payload }) => {
   const userId = payload.sub;
 
-  if (request.method === "GET") {
-    const workspaces = await findWorkspacesByUserId(env.DB, userId);
-    return jsonOk({ workspaces });
-  }
+  return createMethodRouter(request.method, {
+    GET: async () => {
+      const workspaces = await findWorkspacesByUserId(env.DB, userId);
+      return jsonOk({ workspaces });
+    },
+    POST: async () => {
+      const parsed = await parseJsonBody(request);
+      if (!parsed.ok) return parsed.response;
 
-  if (request.method === "POST") {
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      return jsonError("Invalid JSON body");
-    }
+      const { name, slug, description, logo_url, workspace_prompt } = parsed.body;
 
-    const { name, slug, description, logo_url, workspace_prompt } = body as Record<string, unknown>;
+      if (typeof name !== "string" || name.trim().length < 2) {
+        return jsonError("Name must be at least 2 characters");
+      }
+      if (typeof slug !== "string" || !SLUG_RE.test(slug)) {
+        return jsonError(
+          "Slug must be 3-50 characters and contain only lowercase letters, numbers, and hyphens"
+        );
+      }
 
-    if (typeof name !== "string" || name.trim().length < 2) {
-      return jsonError("Name must be at least 2 characters");
-    }
-    if (typeof slug !== "string" || !SLUG_RE.test(slug)) {
-      return jsonError(
-        "Slug must be 3-50 characters and contain only lowercase letters, numbers, and hyphens"
+      const taken = await slugExists(env.DB, slug);
+      if (taken) return jsonError("Slug is already taken", 409);
+
+      const workspace = await createWorkspace(
+        env.DB,
+        {
+          name: name.trim(),
+          slug,
+          description: typeof description === "string" ? description.trim() || undefined : undefined,
+          logo_url: typeof logo_url === "string" ? logo_url.trim() || undefined : undefined,
+          workspace_prompt:
+            typeof workspace_prompt === "string" ? workspace_prompt.trim() || undefined : undefined,
+        },
+        userId
       );
-    }
 
-    const taken = await slugExists(env.DB, slug);
-    if (taken) return jsonError("Slug is already taken", 409);
-
-    const workspace = await createWorkspace(
-      env.DB,
-      {
-        name: name.trim(),
-        slug,
-        description: typeof description === "string" ? description.trim() || undefined : undefined,
-        logo_url: typeof logo_url === "string" ? logo_url.trim() || undefined : undefined,
-        workspace_prompt:
-          typeof workspace_prompt === "string" ? workspace_prompt.trim() || undefined : undefined,
-      },
-      userId
-    );
-
-    return jsonCreated({ workspace: toPublic(workspace, "owner") });
-  }
-
-  return jsonError("Method not allowed", 405);
+      return jsonCreated({ workspace: toPublic(workspace, "owner") });
+    },
+  });
 });
 
 function toPublic(

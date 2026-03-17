@@ -7,6 +7,7 @@ import {
 import { sendGraphMail, replyGraphMail, refreshAccessToken } from "../../../_lib/graph";
 import type { MessageType } from "../../../_lib/types";
 import { withAuth } from "../../../_lib/middleware";
+import { createMethodRouter, parseJsonBody } from "../../../_lib/http";
 
 const VALID_TYPES: MessageType[] = ["message", "note"];
 
@@ -20,29 +21,29 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
   const member = await isWorkspaceMember(env.DB, ticket.workspace_id, payload.sub);
   if (!member) return jsonError("Forbidden", 403);
 
-  if (request.method === "GET") {
-    const messages = await findMessagesByTicket(env.DB, ticketId);
-    return jsonOk({ messages });
-  }
+  return createMethodRouter(request.method, {
+    GET: async () => {
+      const messages = await findMessagesByTicket(env.DB, ticketId);
+      return jsonOk({ messages });
+    },
+    POST: async () => {
+      const parsed = await parseJsonBody(request);
+      if (!parsed.ok) return parsed.response;
 
-  if (request.method === "POST") {
-    let body: unknown;
-    try { body = await request.json(); } catch { return jsonError("Invalid JSON body"); }
+      const { content, type } = parsed.body;
 
-    const { content, type } = body as Record<string, unknown>;
+      if (typeof content !== "string" || content.trim().length === 0) {
+        return jsonError("content is required");
+      }
+      const msgType: MessageType = VALID_TYPES.includes(type as MessageType) ? (type as MessageType) : "message";
 
-    if (typeof content !== "string" || content.trim().length === 0) {
-      return jsonError("content is required");
-    }
-    const msgType: MessageType = VALID_TYPES.includes(type as MessageType) ? (type as MessageType) : "message";
-
-    const message = await createTicketMessage(env.DB, {
-      ticket_id: ticketId,
-      author_id: payload.sub,
-      author_type: "agent",
-      type: msgType,
-      content: content.trim(),
-    });
+      const message = await createTicketMessage(env.DB, {
+        ticket_id: ticketId,
+        author_id: payload.sub,
+        author_type: "agent",
+        type: msgType,
+        content: content.trim(),
+      });
 
     // When an agent sends a reply (not an internal note) and the ticket is open,
     // move it to pending and assign it to the responding agent
@@ -168,8 +169,7 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
       );
     }
 
-    return jsonCreated({ message });
-  }
-
-  return jsonError("Method not allowed", 405);
+      return jsonCreated({ message });
+    },
+  });
 });

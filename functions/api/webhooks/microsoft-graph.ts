@@ -21,6 +21,7 @@ import {
   renewGraphSubscription,
 } from "../../_lib/graph";
 import { runAiAgentPipeline } from "../../_lib/ai-agent-pipeline";
+import { createMethodRouter } from "../../_lib/http";
 
 interface GraphNotification {
   subscriptionId: string;
@@ -48,24 +49,22 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
     });
   }
 
-  if (request.method !== "POST") {
-    return new Response(null, { status: 405 });
-  }
+  return createMethodRouter(request.method, {
+    POST: async () => {
+      // Type 2: Change notification
+      // Always respond 202 quickly — process notifications then return
+      let body: GraphNotificationPayload;
+      try {
+        body = await request.json() as GraphNotificationPayload;
+      } catch {
+        return new Response(null, { status: 202 });
+      }
 
-  // Type 2: Change notification
-  // Always respond 202 quickly — process notifications then return
-  let body: GraphNotificationPayload;
-  try {
-    body = await request.json() as GraphNotificationPayload;
-  } catch {
-    return new Response(null, { status: 202 });
-  }
+      const nowSecs = () => Math.floor(Date.now() / 1000);
 
-  const nowSecs = () => Math.floor(Date.now() / 1000);
-
-  // Process each notification (fire-and-forget pattern: respond 202 first would be ideal,
-  // but Cloudflare Workers require processing before returning — keep it fast)
-  for (const notification of body.value ?? []) {
+      // Process each notification (fire-and-forget pattern: respond 202 first would be ideal,
+      // but Cloudflare Workers require processing before returning — keep it fast)
+      for (const notification of body.value ?? []) {
     try {
       // 1. Look up the mailbox by subscription ID
       const mailbox = await findMailboxIntegrationBySubscriptionId(
@@ -225,7 +224,9 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
       // Log but don't throw — we must still return 202
       console.error("Error processing Graph notification:", err);
     }
-  }
+      }
 
-  return new Response(null, { status: 202 });
+      return new Response(null, { status: 202 });
+    },
+  }) as unknown as Response;
 };

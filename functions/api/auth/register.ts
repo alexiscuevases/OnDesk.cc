@@ -11,14 +11,12 @@ import {
 	createNotification,
 } from "../../_lib/db";
 import { jsonCreated, jsonError } from "../../_lib/response";
+import { parseJsonBody } from "../../_lib/http";
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-	let body: { name?: string; email?: string; password?: string };
-	try {
-		body = (await request.json()) as typeof body;
-	} catch {
-		return jsonError("Invalid JSON body");
-	}
+	const parsed = await parseJsonBody(request);
+	if (!parsed.ok) return parsed.response;
+	const body = parsed.body as { name?: string; email?: string; password?: string };
 
 	const { name, email, password } = body;
 	if (!name?.trim() || !email?.trim() || !password) {
@@ -36,16 +34,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 	const passwordHash = await hashPassword(password);
 	const user = await createUser(env.DB, name.trim(), email.trim(), passwordHash);
 
-	// Auto-join workspace if there is a pending invitation for this email
 	const now = Math.floor(Date.now() / 1000);
 	const invite = await findPendingInvitationByEmail(env.DB, email.trim());
 	if (invite && invite.expires_at > now) {
-		// Fetch existing members before adding the new one so we can notify them
 		const existingMemberIds = await findWorkspaceMemberIds(env.DB, invite.workspace_id);
 		await addWorkspaceMember(env.DB, invite.workspace_id, user.id, invite.role);
 		await updateInvitationStatus(env.DB, invite.id, "accepted");
 
-		// — Notification: new member joined — notify all pre-existing workspace members
 		await Promise.all(
 			existingMemberIds.map((uid) =>
 				createNotification(env.DB, {
@@ -55,8 +50,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 					title: "New member joined",
 					description: `${user.name} joined the workspace.`,
 					actor_id: user.id,
-				}),
-			),
+				})
+			)
 		);
 	}
 

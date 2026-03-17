@@ -1,11 +1,14 @@
-import { jsonOk, jsonError } from "../../../_lib/response";
+import { jsonOk } from "../../../_lib/response";
 import { findMailboxIntegrationsByWorkspace } from "../../../_lib/db";
 import { withWorkspace } from "../../../_lib/middleware";
+import { createMethodRouter } from "../../../_lib/http";
 
 // GET /api/integrations/mailboxes?workspace_id=
 export const onRequest = withWorkspace(async ({ request, env, workspaceId }) => {
-  if (request.method !== "GET") return jsonError("Method not allowed", 405);
-
-  const mailboxes = await findMailboxIntegrationsByWorkspace(env.DB, workspaceId);
-  return jsonOk({ mailboxes });
+  return createMethodRouter(request.method, {
+    GET: async () => {
+      const mailboxes = await findMailboxIntegrationsByWorkspace(env.DB, workspaceId);
+      return jsonOk({ mailboxes });
+    },
+  });
 });

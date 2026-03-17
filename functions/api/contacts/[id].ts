@@ -1,6 +1,7 @@
 import { jsonOk, jsonError } from "../../_lib/response";
 import { findContactById, updateContact, deleteContact, isWorkspaceMember } from "../../_lib/db";
 import { withAuth } from "../../_lib/middleware";
+import { asNullableTrimmedString, asTrimmedString, createMethodRouter, parseJsonBody } from "../../_lib/http";
 
 // GET    /api/contacts/:id
 // PATCH  /api/contacts/:id
@@ -13,28 +14,24 @@ export const onRequest = withAuth<"id">(async ({ request, env, params, payload }
   const member = await isWorkspaceMember(env.DB, contact.workspace_id, payload.sub);
   if (!member) return jsonError("Forbidden", 403);
 
-  if (request.method === "GET") {
-    return jsonOk({ contact });
-  }
+  return createMethodRouter(request.method, {
+    GET: () => jsonOk({ contact }),
+    PATCH: async () => {
+      const parsed = await parseJsonBody(request);
+      if (!parsed.ok) return parsed.response;
 
-  if (request.method === "PATCH") {
-    let body: unknown;
-    try { body = await request.json(); } catch { return jsonError("Invalid JSON body"); }
-
-    const { name, phone, company_id } = body as Record<string, unknown>;
-    await updateContact(env.DB, contactId, {
-      name: typeof name === "string" ? name.trim() : undefined,
-      phone: typeof phone === "string" ? phone.trim() : undefined,
-      company_id: company_id === null ? null : typeof company_id === "string" ? company_id : undefined,
-    });
-    const updated = await findContactById(env.DB, contactId);
-    return jsonOk({ contact: updated });
-  }
-
-  if (request.method === "DELETE") {
-    await deleteContact(env.DB, contactId);
-    return jsonOk({ success: true });
-  }
-
-  return jsonError("Method not allowed", 405);
+      const { name, phone, company_id } = parsed.body;
+      await updateContact(env.DB, contactId, {
+        name: asTrimmedString(name),
+        phone: asTrimmedString(phone),
+        company_id: asNullableTrimmedString(company_id),
+      });
+      const updated = await findContactById(env.DB, contactId);
+      return jsonOk({ contact: updated });
+    },
+    DELETE: async () => {
+      await deleteContact(env.DB, contactId);
+      return jsonOk({ success: true });
+    },
+  });
 });

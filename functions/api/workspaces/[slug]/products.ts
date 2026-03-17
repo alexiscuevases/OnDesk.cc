@@ -1,6 +1,7 @@
 import { jsonOk, jsonError } from "../../../_lib/response";
 import { findWorkspaceBySlug, findWorkspaceProducts, getWorkspaceMemberRole, installProduct, updateWorkspaceProductConfig } from "../../../_lib/db";
 import { withAuth } from "../../../_lib/middleware";
+import { createMethodRouter, parseJsonBody } from "../../../_lib/http";
 
 // GET    /api/workspaces/:slug/products
 // POST   /api/workspaces/:slug/products (install)
@@ -15,30 +16,45 @@ export const onRequest = withAuth<"slug">(async ({ request, env, payload, params
 	const memberRole = await getWorkspaceMemberRole(env.DB, workspace.id, userId);
 	if (!memberRole) return jsonError("Forbidden", 403);
 
-	if (request.method === "GET") {
-		const products = await findWorkspaceProducts(env.DB, workspace.id);
-		return jsonOk({ products });
-	}
+	return createMethodRouter(request.method, {
+		GET: async () => {
+			const products = await findWorkspaceProducts(env.DB, workspace.id);
+			return jsonOk({ products });
+		},
+		POST: async () => {
+			if (memberRole !== "owner" && memberRole !== "admin") {
+				return jsonError("Only workspace owners and admins can manage products", 403);
+			}
 
-	if (memberRole !== "owner" && memberRole !== "admin") {
-		return jsonError("Only workspace owners and admins can manage products", 403);
-	}
+			const parsed = await parseJsonBody(request);
+			if (!parsed.ok) return parsed.response;
 
-	if (request.method === "POST") {
-		const { productId } = await request.json() as { productId: string };
-		if (!productId) return jsonError("Product ID is required");
-		
-		await installProduct(env.DB, workspace.id, productId);
-		return jsonOk({ success: true });
-	}
+			const { productId } = parsed.body;
+			if (!productId || typeof productId !== "string") return jsonError("Product ID is required");
 
-	if (request.method === "PATCH") {
-		const { workspaceProductId, configuration } = await request.json() as { workspaceProductId: string; configuration: Record<string, any> };
-		if (!workspaceProductId || !configuration) return jsonError("Workspace Product ID and configuration are required");
+			await installProduct(env.DB, workspace.id, productId);
+			return jsonOk({ success: true });
+		},
+		PATCH: async () => {
+			if (memberRole !== "owner" && memberRole !== "admin") {
+				return jsonError("Only workspace owners and admins can manage products", 403);
+			}
 
-		await updateWorkspaceProductConfig(env.DB, workspaceProductId, configuration);
-		return jsonOk({ success: true });
-	}
+			const parsed = await parseJsonBody(request);
+			if (!parsed.ok) return parsed.response;
 
-	return jsonError("Method not allowed", 405);
+			const { workspaceProductId, configuration } = parsed.body;
+			if (
+				!workspaceProductId ||
+				typeof workspaceProductId !== "string" ||
+				!configuration ||
+				typeof configuration !== "object"
+			) {
+				return jsonError("Workspace Product ID and configuration are required");
+			}
+
+			await updateWorkspaceProductConfig(env.DB, workspaceProductId, configuration as Record<string, any>);
+			return jsonOk({ success: true });
+		},
+	});
 });
