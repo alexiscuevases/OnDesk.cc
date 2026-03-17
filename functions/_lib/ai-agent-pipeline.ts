@@ -28,7 +28,7 @@ interface PipelineContext {
 
 // ─── Structured Token Types ───────────────────────────────────────────────────
 
-import { parseStructuredTokens, executeAction, type ParsedAgentOutput, buildToolsSection, buildSystemPromptRules } from "./ai-agent-testing-utils";
+import { parseStructuredTokens, executeAction, type ParsedAgentOutput, buildToolsSection, buildFullSystemPrompt } from "./ai-agent-testing-utils";
 
 // ─── Escalation Helper ────────────────────────────────────────────────────────
 
@@ -109,28 +109,36 @@ export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promis
 	const agentTools = await findAgentTools(env.DB, aiAgent.id);
 	const toolsSection = buildToolsSection(agentTools);
 
-	// 6. Build system prompt with structured token instructions
-	const basePrompt = `
-		You are ${aiAgent.name}, an automated AI support agent. Your job is to resolve customer support tickets by writing professional, empathetic email replies.
+	// 6. Compute ticket age in hours for SLA-aware urgency framing
+	const startSecs = Math.floor(Date.now() / 1000);
+	const ticketAgeHours = (startSecs - ticket.created_at) / 3600;
 
-		TICKET CONTEXT
-		- Subject: ${ticket.subject}
-		- Status: ${ticket.status}
-		- Priority: ${ticket.priority}
-		- Channel: ${ticket.channel ?? "email"}
-		- Created: ${new Date(ticket.created_at * 1000).toISOString()}
+	// 7. Build system prompt using centralized utility
+	const systemPrompt = buildFullSystemPrompt({
+		agentName: aiAgent.name,
+		agentSystemPrompt: aiAgent.system_prompt,
+		ticket: {
+			subject: ticket.subject,
+			status: ticket.status,
+			priority: ticket.priority,
+			channel: ticket.channel ?? "email",
+			created_at: ticket.created_at,
+			number: ticket.number,
+			ageHours: ticketAgeHours,
+		},
+		contact: {
+			name: contact.name,
+			email: contact.email,
+			phone: contact.phone ?? null,
+			// company_id is a FK — the company name is not in ContactRow directly,
+			// but pass what we have; enrichment can be added when company join is available
+			company: null,
+		},
+		toolsSection,
+		conversationBlock,
+	});
 
-		${toolsSection}
-
-		CONVERSATION HISTORY:
-		${conversationBlock}
-
-		${buildSystemPromptRules(aiAgent.name)}
-	`;
-
-	const systemPrompt = aiAgent.system_prompt ? `${aiAgent.system_prompt}\n\n${basePrompt}` : basePrompt;
-
-	// 7. Prepare message history — tool results are injected as user messages so
+	// 8. Prepare message history — tool results are injected as user messages so
 	//    the model sees them in the next iteration without needing native tool-call support
 	const messages: Array<{ role: string; content: string }> = [
 		{ role: "system", content: systemPrompt },
@@ -166,10 +174,7 @@ export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promis
 				max_tokens: 1024,
 			})) as { response?: string } | string;
 
-			const rawText: string =
-				typeof aiResponse === "string"
-					? aiResponse
-					: ((aiResponse as { response?: string }).response ?? "");
+			const rawText: string = typeof aiResponse === "string" ? aiResponse : ((aiResponse as { response?: string }).response ?? "");
 
 			const parsed = parseStructuredTokens(rawText);
 			lastParsed = parsed;
@@ -191,12 +196,7 @@ export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promis
 			if (parsed.action) {
 				// Safety cap check
 				if (actionCount >= MAX_ACTIONS) {
-					await triggerEscalation(
-						env,
-						ticket,
-						aiAgent,
-						`Safety cap reached: model requested more than ${MAX_ACTIONS} tool executions.`,
-					);
+					await triggerEscalation(env, ticket, aiAgent, `Safety cap reached: model requested more than ${MAX_ACTIONS} tool executions.`);
 					return;
 				}
 
@@ -261,8 +261,7 @@ export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promis
 
 			// ── Branch: model requested escalation ───────────────────────────
 			if (parsed.escalate) {
-				const reason =
-					parsed.escalateReason || "AI agent determined human intervention is required.";
+				const reason = parsed.escalateReason || "AI agent determined human intervention is required.";
 				await triggerEscalation(env, ticket, aiAgent, reason);
 				return;
 			}
@@ -351,21 +350,11 @@ export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promis
 				await replyGraphMail(accessToken, lastInbound.graph_message_id, replyHtml);
 			} catch {
 				// Fallback to send new mail if reply-to fails
-				const result = await sendGraphMail(
-					accessToken,
-					{ name: contact.name, address: contact.email },
-					`Re: ${ticket.subject}`,
-					replyHtml,
-				);
+				const result = await sendGraphMail(accessToken, { name: contact.name, address: contact.email }, `Re: ${ticket.subject}`, replyHtml);
 				sentConversationId = result.conversationId;
 			}
 		} else {
-			const result = await sendGraphMail(
-				accessToken,
-				{ name: contact.name, address: contact.email },
-				`Re: ${ticket.subject}`,
-				replyHtml,
-			);
+			const result = await sendGraphMail(accessToken, { name: contact.name, address: contact.email }, `Re: ${ticket.subject}`, replyHtml);
 			sentConversationId = result.conversationId;
 		}
 

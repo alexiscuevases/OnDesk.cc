@@ -1,7 +1,7 @@
 import { withWorkspace } from "../../../_lib/middleware";
 import { jsonOk, jsonError } from "../../../_lib/response";
 import { findAiAgentById, findAgentTools, getWorkspaceMemberRole } from "../../../_lib/db";
-import { parseStructuredTokens, executeAction, buildToolsSection, buildSystemPromptRules } from "../../../_lib/ai-agent-testing-utils"; // We'll create this to share logic
+import { parseStructuredTokens, executeAction, buildToolsSection, buildFullSystemPrompt } from "../../../_lib/ai-agent-testing-utils"; // We'll create this to share logic
 
 // POST /api/ai-agents/:id/test?workspace_id=
 export const onRequest = withWorkspace<"id">(async ({ request, env, payload, params, workspaceId }) => {
@@ -34,16 +34,15 @@ export const onRequest = withWorkspace<"id">(async ({ request, env, payload, par
 
 	const toolsSection = buildToolsSection(agentTools);
 
-	// Build base prompt, similar to how it works in the pipeline but generalized
-	const basePrompt = `
-		You are ${agent.name}, an automated AI support agent. Your job is to resolve customer support tickets by writing professional, empathetic email replies.
-
-		${toolsSection}
-
-		${buildSystemPromptRules(agent.name)}
-	`;
-
-	const systemPrompt = agent.system_prompt ? `${agent.system_prompt}\n\n${basePrompt}` : basePrompt;
+	// Build full system prompt using centralized utility
+	const systemPrompt = buildFullSystemPrompt({
+		agentName: agent.name,
+		agentSystemPrompt: agent.system_prompt,
+		toolsSection,
+		conversationBlock: history.length > 0 
+			? history.map(m => `[${m.role}]: ${m.content}`).join("\n\n")
+			: "No history."
+	});
 
 	const messages = [
 		{ role: "system", content: systemPrompt },
