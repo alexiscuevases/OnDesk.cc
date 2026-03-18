@@ -195,7 +195,11 @@ export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspa
 										</Avatar>
 										<div className="min-w-0">
 											<p className="text-sm font-medium truncate">{ticket.subject}</p>
-											<p className="text-[11px] text-muted-foreground mt-0.5">{contact ? contact.name : "No contact"}</p>
+											<p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+												<span className="font-mono text-[10px] text-muted-foreground/80">#{ticket.number}</span>
+												<span className="mx-1">·</span>
+												{contact ? contact.name : "No contact"}
+											</p>
 										</div>
 									</div>
 									<div className="flex items-center gap-2 shrink-0">

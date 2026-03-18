@@ -49,9 +49,7 @@ export function TeamsView() {
 	const totalPending = teams.reduce((a, t) => a + pendingCount(t.id), 0);
 
 	const filteredTickets = teamTickets.filter((ticket) => {
-		const matchesSearch =
-			searchQuery === "" ||
-			ticket.subject.toLowerCase().includes(searchQuery.toLowerCase());
+		const matchesSearch = searchQuery === "" || ticket.subject.toLowerCase().includes(searchQuery.toLowerCase());
 		const matchesPriority = priorityFilter === "all" || ticket.priority === priorityFilter;
 		const matchesStatus = statusFilter === "all" || ticket.status === statusFilter;
 		return matchesSearch && matchesPriority && matchesStatus;
@@ -129,14 +127,16 @@ export function TeamsView() {
 								<button
 									key={team.id}
 									onClick={() => setSelectedTeam(team.id)}
-									className={`w-full text-left rounded-xl p-3 transition-all ${isSelected ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary/40 hover:bg-secondary/80"
-										}`}>
+									className={`w-full text-left rounded-xl p-3 transition-all ${
+										isSelected ? "bg-primary text-primary-foreground shadow-sm" : "bg-secondary/40 hover:bg-secondary/80"
+									}`}>
 									<div className="flex items-center gap-3 mb-2">
 										<Avatar className="size-9 rounded-lg">
 											<AvatarImage src={team.logo_url ?? undefined} className="object-cover rounded-lg" />
 											<AvatarFallback
-												className={`rounded-lg text-xs font-bold ${isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
-													}`}>
+												className={`rounded-lg text-xs font-bold ${
+													isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary text-primary-foreground"
+												}`}>
 												{initials}
 											</AvatarFallback>
 										</Avatar>
@@ -154,24 +154,27 @@ export function TeamsView() {
 
 									<div className="grid grid-cols-3 gap-1.5 mb-2">
 										<div
-											className={`flex flex-col items-center gap-0.5 rounded-lg p-1.5 ${isSelected ? "bg-primary-foreground/10" : "bg-secondary/60"
-												}`}>
+											className={`flex flex-col items-center gap-0.5 rounded-lg p-1.5 ${
+												isSelected ? "bg-primary-foreground/10" : "bg-secondary/60"
+											}`}>
 											<span className={`text-xs font-bold ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
 												{teamOpen}
 											</span>
 											<span className={`text-[9px] ${isSelected ? "text-primary-foreground/70" : "text-muted-foreground"}`}>Open</span>
 										</div>
 										<div
-											className={`flex flex-col items-center gap-0.5 rounded-lg p-1.5 ${isSelected ? "bg-primary-foreground/10" : "bg-secondary/60"
-												}`}>
+											className={`flex flex-col items-center gap-0.5 rounded-lg p-1.5 ${
+												isSelected ? "bg-primary-foreground/10" : "bg-secondary/60"
+											}`}>
 											<span className={`text-xs font-bold ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
 												{teamPending}
 											</span>
 											<span className={`text-[9px] ${isSelected ? "text-primary-foreground/70" : "text-muted-foreground"}`}>Pending</span>
 										</div>
 										<div
-											className={`flex flex-col items-center gap-0.5 rounded-lg p-1.5 ${isSelected ? "bg-primary-foreground/10" : "bg-secondary/60"
-												}`}>
+											className={`flex flex-col items-center gap-0.5 rounded-lg p-1.5 ${
+												isSelected ? "bg-primary-foreground/10" : "bg-secondary/60"
+											}`}>
 											<span className={`text-xs font-bold ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
 												{teamResolved}
 											</span>
@@ -255,11 +258,11 @@ export function TeamsView() {
 											: undefined;
 										const contactInitials = contact
 											? contact.name
-												.split(" ")
-												.map((w) => w[0])
-												.join("")
-												.slice(0, 2)
-												.toUpperCase()
+													.split(" ")
+													.map((w) => w[0])
+													.join("")
+													.slice(0, 2)
+													.toUpperCase()
 											: "?";
 										return (
 											<div
@@ -276,6 +279,8 @@ export function TeamsView() {
 													<div className="min-w-0 flex-1">
 														<p className="text-sm font-medium truncate">{ticket.subject}</p>
 														<p className="text-[11px] text-muted-foreground truncate mt-0.5">
+															<span className="font-mono text-[10px] text-muted-foreground/80">#{ticket.number}</span>
+															<span className="mx-1">·</span>
 															{contact ? contact.name : "No contact"}
 														</p>
 													</div>
@@ -286,8 +291,9 @@ export function TeamsView() {
 														variant={
 															ticket.priority === "urgent" ? "destructive" : ticket.priority === "high" ? "default" : "secondary"
 														}
-														className={`text-[10px] rounded-full px-2 ${ticket.priority === "high" ? "bg-warning text-warning-foreground" : ""
-															}`}>
+														className={`text-[10px] rounded-full px-2 ${
+															ticket.priority === "high" ? "bg-warning text-warning-foreground" : ""
+														}`}>
 														{ticket.priority}
 													</Badge>
 													<Badge variant="outline" className="text-[10px] rounded-full px-2">
