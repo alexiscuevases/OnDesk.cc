@@ -48,6 +48,18 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 	const updateTicket = useUpdateTicketMutation(ticketId, workspaceId);
 	const deleteTicket = useDeleteTicketMutation(workspaceId);
 
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	useEffect(() => {
+		if (ticket?.cc_addresses) {
+			try {
+				const parsed = JSON.parse(ticket.cc_addresses) as EmailRecipient[];
+				if (Array.isArray(parsed)) setCcList(parsed);
+			} catch {
+				// ignore malformed JSON
+			}
+		}
+	}, [ticket?.cc_addresses]);
+
 	if (isLoading) {
 		return (
 			<div className="flex flex-col items-center justify-center h-64 gap-3">
@@ -66,18 +78,6 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 			</div>
 		);
 	}
-
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	useEffect(() => {
-		if (ticket?.cc_addresses) {
-			try {
-				const parsed = JSON.parse(ticket.cc_addresses) as EmailRecipient[];
-				if (Array.isArray(parsed)) setCcList(parsed);
-			} catch {
-				// ignore malformed JSON
-			}
-		}
-	}, [ticket?.cc_addresses]);
 
 	const assignee = members.find((m) => m.id === ticket.assignee_id) ?? null;
 	const team = teams.find((t) => t.id === ticket.team_id) ?? null;
