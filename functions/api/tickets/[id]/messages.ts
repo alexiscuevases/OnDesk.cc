@@ -30,12 +30,21 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
       const parsed = await parseJsonBody(request);
       if (!parsed.ok) return parsed.response;
 
-      const { content, type } = parsed.body;
+      const { content, type, cc, bcc } = parsed.body;
 
       if (typeof content !== "string" || content.trim().length === 0) {
         return jsonError("content is required");
       }
       const msgType: MessageType = VALID_TYPES.includes(type as MessageType) ? (type as MessageType) : "message";
+
+      // Parse CC/BCC: accept array of {name, address} objects
+      type EmailRecipient = { name: string; address: string };
+      const ccList: EmailRecipient[] = Array.isArray(cc)
+        ? (cc as EmailRecipient[]).filter((r) => r && typeof r.address === "string")
+        : [];
+      const bccList: EmailRecipient[] = Array.isArray(bcc)
+        ? (bcc as EmailRecipient[]).filter((r) => r && typeof r.address === "string")
+        : [];
 
       const message = await createTicketMessage(env.DB, {
         ticket_id: ticketId,
@@ -90,14 +99,20 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
 
           if (lastInbound?.graph_message_id) {
             try {
-              await replyGraphMail(token, lastInbound.graph_message_id, content.trim());
+              await replyGraphMail(token, lastInbound.graph_message_id, content.trim(),
+                ccList.length > 0 ? ccList : undefined,
+                bccList.length > 0 ? bccList : undefined,
+              );
             } catch {
               // Fallback to sendMail if createReply fails (e.g. missing Mail.ReadWrite scope)
               const result = await sendGraphMail(
                 token,
                 { name: contact.name, address: contact.email },
                 `Re: ${ticket.subject}`,
-                content.trim()
+                content.trim(),
+                undefined,
+                ccList.length > 0 ? ccList : undefined,
+                bccList.length > 0 ? bccList : undefined,
               );
               sentConversationId = result.conversationId;
             }
@@ -110,17 +125,26 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
               token,
               { name: contact.name, address: contact.email },
               emailSubject,
-              content.trim()
+              content.trim(),
+              undefined,
+              ccList.length > 0 ? ccList : undefined,
+              bccList.length > 0 ? bccList : undefined,
             );
             sentConversationId = result.conversationId;
           }
 
-          // Persist conversationId + channel so inbound replies thread correctly
+          // Persist conversationId + channel + cc_addresses so future replies stay consistent
+          const ticketUpdates: Parameters<typeof updateTicket>[2] = {};
           if (sentConversationId && !ticket.conversation_id) {
-            await updateTicket(env.DB, ticketId, {
-              conversation_id: sentConversationId,
-              channel: "email",
-            });
+            ticketUpdates.conversation_id = sentConversationId;
+            ticketUpdates.channel = "email";
+          }
+          const newCcJson = ccList.length > 0 ? JSON.stringify(ccList) : null;
+          if (newCcJson !== (ticket.cc_addresses ?? null)) {
+            ticketUpdates.cc_addresses = newCcJson;
+          }
+          if (Object.keys(ticketUpdates).length > 0) {
+            await updateTicket(env.DB, ticketId, ticketUpdates);
           }
         }
       } catch (emailErr) {

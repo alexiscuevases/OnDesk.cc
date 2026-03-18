@@ -125,6 +125,7 @@ CREATE TABLE IF NOT EXISTS tickets (
   priority         TEXT NOT NULL DEFAULT 'medium',
   channel          TEXT,
   conversation_id  TEXT,
+  cc_addresses     TEXT,
   created_at       INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at       INTEGER NOT NULL DEFAULT (unixepoch())
 );

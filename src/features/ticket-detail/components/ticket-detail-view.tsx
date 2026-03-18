@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/context/workspace-context";
 import { useTicket, useTicketMessages } from "@/features/tickets/hooks/use-ticket-queries";
@@ -7,7 +7,7 @@ import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
 import { useTeams } from "@/features/teams/hooks/use-team-queries";
 import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
 import { useCompanies } from "@/features/companies/hooks/use-company-queries";
-import type { TicketStatus, TicketPriority } from "@/features/tickets/api/tickets-api";
+import type { TicketStatus, TicketPriority, EmailRecipient } from "@/features/tickets/api/tickets-api";
 import { TicketDetailHeader } from "./ticket-detail-header";
 import { TicketConversation } from "./ticket-conversation";
 import { TicketReplyBox } from "./ticket-reply-box";
@@ -31,6 +31,12 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 	const [statusOpen, setStatusOpen] = useState(false);
 	const [teamsOpen, setTeamsOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
+
+	const [ccList, setCcList] = useState<EmailRecipient[]>([]);
+	const [bccList, setBccList] = useState<EmailRecipient[]>([]);
+	const [ccInput, setCcInput] = useState("");
+	const [bccInput, setBccInput] = useState("");
+	const [showBcc, setShowBcc] = useState(false);
 
 	const { data: ticket, isLoading } = useTicket(ticketId);
 	const { data: messages = [] } = useTicketMessages(ticketId);
@@ -60,6 +66,18 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 			</div>
 		);
 	}
+
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	useEffect(() => {
+		if (ticket?.cc_addresses) {
+			try {
+				const parsed = JSON.parse(ticket.cc_addresses) as EmailRecipient[];
+				if (Array.isArray(parsed)) setCcList(parsed);
+			} catch {
+				// ignore malformed JSON
+			}
+		}
+	}, [ticket?.cc_addresses]);
 
 	const assignee = members.find((m) => m.id === ticket.assignee_id) ?? null;
 	const team = teams.find((t) => t.id === ticket.team_id) ?? null;
@@ -112,7 +130,14 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 			<div className="grid gap-6 lg:grid-cols-3">
 				<div className="lg:col-span-2 flex flex-col gap-4">
 					<TicketConversation messages={messages} members={members} contacts={contacts} workspace={workspace} companies={companies} />
-					<TicketReplyBox ticketId={ticketId} members={members} />
+					<TicketReplyBox
+						ticketId={ticketId}
+						ticket={ticket}
+						members={members}
+						ccList={ccList}
+						bccList={bccList}
+						onBccClear={() => { setBccList([]); setBccInput(""); }}
+					/>
 				</div>
 
 				<TicketProperties
@@ -122,6 +147,16 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 					contact={contact}
 					workspace={workspace}
 					companies={companies}
+					ccList={ccList}
+					setCcList={setCcList}
+					bccList={bccList}
+					setBccList={setBccList}
+					ccInput={ccInput}
+					setCcInput={setCcInput}
+					bccInput={bccInput}
+					setBccInput={setBccInput}
+					showBcc={showBcc}
+					setShowBcc={setShowBcc}
 					onEditStatus={() => setStatusOpen(true)}
 					onEditPriority={() => setPriorityOpen(true)}
 					onEditAssignee={() => setAssigneeOpen(true)}

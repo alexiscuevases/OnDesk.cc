@@ -78,6 +78,7 @@ export async function createTicket(
 		priority?: TicketPriority;
 		channel?: string;
 		conversation_id?: string;
+		cc_addresses?: string; // JSON: {name, address}[]
 	},
 ): Promise<TicketRow> {
 	const id = crypto.randomUUID();
@@ -86,8 +87,8 @@ export async function createTicket(
 	const number = row?.next ?? 1;
 	await db
 		.prepare(
-			`INSERT INTO tickets (id, workspace_id, contact_id, assignee_id, team_id, number, subject, status, priority, channel, conversation_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			`INSERT INTO tickets (id, workspace_id, contact_id, assignee_id, team_id, number, subject, status, priority, channel, conversation_id, cc_addresses)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.bind(
 			id,
@@ -101,6 +102,7 @@ export async function createTicket(
 			data.priority ?? "medium",
 			data.channel ?? null,
 			data.conversation_id ?? null,
+			data.cc_addresses ?? null,
 		)
 		.run();
 	return (await findTicketById(db, id))!;
@@ -118,6 +120,7 @@ export async function updateTicket(
 		contact_id?: string | null;
 		conversation_id?: string | null;
 		channel?: string | null;
+		cc_addresses?: string | null; // JSON: {name, address}[]
 	},
 ): Promise<void> {
 	const fields: string[] = [];
@@ -153,6 +156,10 @@ export async function updateTicket(
 	if (data.channel !== undefined) {
 		fields.push("channel = ?");
 		values.push(data.channel);
+	}
+	if (data.cc_addresses !== undefined) {
+		fields.push("cc_addresses = ?");
+		values.push(data.cc_addresses);
 	}
 	if (fields.length === 0) return;
 	fields.push("updated_at = unixepoch()");

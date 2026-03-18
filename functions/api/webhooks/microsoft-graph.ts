@@ -159,6 +159,10 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
       } else {
         // New conversation — create a ticket
         const subject = message.subject?.trim() || "(no subject)";
+        const ccList = (message.ccRecipients ?? []).map((r) => ({
+          name: r.emailAddress.name || r.emailAddress.address,
+          address: r.emailAddress.address,
+        }));
         const ticket = await createTicket(env.DB, mailbox.workspace_id, {
           subject,
           contact_id: contact.id,
@@ -166,6 +170,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
           priority: "medium",
           channel: "email",
           conversation_id: message.conversationId || undefined,
+          cc_addresses: ccList.length > 0 ? JSON.stringify(ccList) : undefined,
         });
         ticketId = ticket.id;
 

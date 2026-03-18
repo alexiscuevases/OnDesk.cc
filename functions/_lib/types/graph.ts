@@ -15,12 +15,17 @@ export interface GraphSubscription {
 	expirationDateTime: string;
 }
 
+export interface GraphEmailAddress {
+	emailAddress: { name: string; address: string };
+}
+
 export interface GraphMessage {
 	id: string;
 	subject: string | null;
 	bodyPreview: string;
 	body: { content: string; contentType: string };
 	from: { emailAddress: { name: string; address: string } };
+	ccRecipients: GraphEmailAddress[];
 	internetMessageId: string;
 	conversationId: string;
 	receivedDateTime: string;

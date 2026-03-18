@@ -147,12 +147,24 @@ async function findMessageByInternetId(accessToken: string, internetMessageId: s
 export async function replyGraphMail(
 	accessToken: string,
 	internetMessageId: string,
-	bodyHtml: string
+	bodyHtml: string,
+	cc?: { name: string; address: string }[],
+	bcc?: { name: string; address: string }[],
 ): Promise<void> {
 	// Resolve the stable mailbox message ID from the RFC 2822 internetMessageId
 	const mailboxMessageId = await findMessageByInternetId(accessToken, internetMessageId);
 	if (!mailboxMessageId) {
 		throw new Error(`Message not found in mailbox for internetMessageId: ${internetMessageId}`);
+	}
+
+	const messageOverride: Record<string, unknown> = {
+		body: { contentType: "HTML", content: bodyHtml },
+	};
+	if (cc && cc.length > 0) {
+		messageOverride.ccRecipients = cc.map((r) => ({ emailAddress: { name: r.name, address: r.address } }));
+	}
+	if (bcc && bcc.length > 0) {
+		messageOverride.bccRecipients = bcc.map((r) => ({ emailAddress: { name: r.name, address: r.address } }));
 	}
 
 	const res = await fetch(`${GRAPH_BASE}/me/messages/${mailboxMessageId}/createReply`, {
@@ -161,11 +173,7 @@ export async function replyGraphMail(
 			Authorization: `Bearer ${accessToken}`,
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({
-			message: {
-				body: { contentType: "HTML", content: bodyHtml },
-			},
-		}),
+		body: JSON.stringify({ message: messageOverride }),
 	});
 
 	if (!res.ok) {
@@ -191,13 +199,21 @@ export async function sendGraphMail(
 	to: { name: string; address: string },
 	subject: string,
 	bodyHtml: string,
-	inReplyToMessageId?: string
+	inReplyToMessageId?: string,
+	cc?: { name: string; address: string }[],
+	bcc?: { name: string; address: string }[],
 ): Promise<SendGraphMailResult> {
 	const draftPayload: Record<string, unknown> = {
 		subject,
 		body: { contentType: "HTML", content: bodyHtml },
 		toRecipients: [{ emailAddress: { name: to.name, address: to.address } }],
 	};
+	if (cc && cc.length > 0) {
+		draftPayload.ccRecipients = cc.map((r) => ({ emailAddress: { name: r.name, address: r.address } }));
+	}
+	if (bcc && bcc.length > 0) {
+		draftPayload.bccRecipients = bcc.map((r) => ({ emailAddress: { name: r.name, address: r.address } }));
+	}
 
 	if (inReplyToMessageId) {
 		draftPayload.internetMessageHeaders = [
@@ -240,7 +256,7 @@ export async function sendGraphMail(
 }
 
 export async function getGraphMessage(accessToken: string, messageId: string): Promise<GraphMessage> {
-	const fields = "id,subject,bodyPreview,body,from,internetMessageId,conversationId,receivedDateTime";
+	const fields = "id,subject,bodyPreview,body,from,ccRecipients,internetMessageId,conversationId,receivedDateTime";
 	const res = await fetch(`${GRAPH_BASE}/me/messages/${messageId}?$select=${fields}`, {
 		headers: { Authorization: `Bearer ${accessToken}` },
 	});

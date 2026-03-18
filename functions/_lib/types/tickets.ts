@@ -13,6 +13,7 @@ export interface TicketRow {
 	priority: TicketPriority;
 	channel: string | null;
 	conversation_id: string | null;
+	cc_addresses: string | null; // JSON: {name: string, address: string}[]
 	created_at: number;
 	updated_at: number;
 }

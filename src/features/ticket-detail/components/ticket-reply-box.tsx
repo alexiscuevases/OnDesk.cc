@@ -9,13 +9,18 @@ import { useSignatures } from "@/features/signatures/hooks/use-signature-queries
 import { useCannedReplies } from "@/features/canned-replies/hooks/use-canned-reply-queries";
 import { useWorkspace } from "@/context/workspace-context";
 import { TicketAIAssistant } from "./ticket-ai-assistant";
+import type { Ticket, EmailRecipient } from "@/features/tickets/api/tickets-api";
 
 interface TicketReplyBoxProps {
 	ticketId: string;
+	ticket?: Ticket | null;
 	members?: { id: string; name: string }[];
+	ccList?: EmailRecipient[];
+	bccList?: EmailRecipient[];
+	onBccClear?: () => void;
 }
 
-export function TicketReplyBox({ ticketId, members = [] }: TicketReplyBoxProps) {
+export function TicketReplyBox({ ticketId, ticket, members = [], ccList = [], bccList = [], onBccClear }: TicketReplyBoxProps) {
 	const [reply, setReply] = useState("");
 	const [isInternal, setIsInternal] = useState(false);
 	const [cannedOpen, setCannedOpen] = useState(false);
@@ -28,6 +33,7 @@ export function TicketReplyBox({ ticketId, members = [] }: TicketReplyBoxProps) 
 
 	const { workspace } = useWorkspace();
 	const sendMessage = useSendMessageMutation(ticketId);
+
 	const { data: signatures = [] } = useSignatures();
 	const { data: cannedReplies = [] } = useCannedReplies(workspace.id);
 	const defaultSignature = signatures.find((s) => s.is_default) ?? null;
@@ -102,8 +108,14 @@ export function TicketReplyBox({ ticketId, members = [] }: TicketReplyBoxProps) 
 			!isInternal && defaultSignature
 				? `${content}<div style="margin-top:12px;overflow:hidden;">${normalizeSignatureHtml(defaultSignature.content)}</div>`
 				: content;
-		await sendMessage.mutateAsync({ content: fullContent, type: isInternal ? "note" : "message" });
+		await sendMessage.mutateAsync({
+			content: fullContent,
+			type: isInternal ? "note" : "message",
+			cc: !isInternal && ccList.length > 0 ? ccList : undefined,
+			bcc: !isInternal && bccList.length > 0 ? bccList : undefined,
+		});
 		setReply("");
+		onBccClear?.();
 	}
 
 	return (
@@ -126,6 +138,7 @@ export function TicketReplyBox({ ticketId, members = [] }: TicketReplyBoxProps) 
 						Internal Note
 					</Button>
 				</div>
+
 				<div ref={editorWrapperRef} className="relative" onKeyDown={handleEditorKeyDown}>
 					{shortcutSuggestions.length > 0 && (
 						<div className="absolute bottom-full mb-1 left-0 z-50 w-72 bg-popover border border-border rounded-lg shadow-lg overflow-hidden">

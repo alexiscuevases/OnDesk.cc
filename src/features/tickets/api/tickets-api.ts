@@ -17,6 +17,7 @@ export interface Ticket {
 	status: TicketStatus;
 	priority: TicketPriority;
 	channel: string | null;
+	cc_addresses: string | null; // JSON: {name: string, address: string}[]
 	created_at: number;
 	updated_at: number;
 }
@@ -50,9 +51,16 @@ export interface UpdateTicketInput {
 	contact_id?: string | null;
 }
 
+export interface EmailRecipient {
+	name: string;
+	address: string;
+}
+
 export interface CreateMessageInput {
 	content: string;
 	type?: MessageType;
+	cc?: EmailRecipient[];
+	bcc?: EmailRecipient[];
 }
 
 const API_BASE = "/api/tickets";
