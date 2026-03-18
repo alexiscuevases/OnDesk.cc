@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Users, CheckCircle2, Ticket, TrendingUp, Search, X, Clock } from "lucide-react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 
@@ -15,7 +15,7 @@ import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
 import { useCompanies } from "@/features/companies/hooks/use-company-queries";
 import { TicketAiStatusBadge } from "@/shared/components/ticket-ai-status-badge";
 
-export function TeamsView() {
+export function TeamsView({ initialTeamId }: { initialTeamId?: string }) {
 	const { workspace } = useWorkspace();
 	const { data: teams = [] } = useTeams(workspace.id);
 	const { data: tickets = [] } = useTickets(workspace.id);
@@ -24,7 +24,7 @@ export function TeamsView() {
 	const navigate = useNavigate();
 	const { slug } = useParams({ strict: false }) as { slug: string };
 
-	const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+	const [selectedTeam, setSelectedTeam] = useState<string | null>(initialTeamId ?? null);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [priorityFilter, setPriorityFilter] = useState<string>("all");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -54,6 +54,13 @@ export function TeamsView() {
 		const matchesStatus = statusFilter === "all" || ticket.status === statusFilter;
 		return matchesSearch && matchesPriority && matchesStatus;
 	});
+
+	useEffect(() => {
+		if (!initialTeamId) return;
+		if (teams.some((team) => team.id === initialTeamId)) {
+			setSelectedTeam(initialTeamId);
+		}
+	}, [initialTeamId, teams]);
 
 	return (
 		<div className="flex flex-col gap-6">

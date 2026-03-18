@@ -1,6 +1,8 @@
 import { Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { WorkspaceMember } from "@/features/users/api/users-api";
+import type { Contact } from "@/features/contacts/api/contacts-api";
 
 interface TicketsFiltersProps {
 	search: string;
@@ -9,6 +11,12 @@ interface TicketsFiltersProps {
 	onStatusFilterChange: (value: string) => void;
 	priorityFilter: string;
 	onPriorityFilterChange: (value: string) => void;
+	assigneeFilter: string;
+	onAssigneeFilterChange: (value: string) => void;
+	requesterFilter: string;
+	onRequesterFilterChange: (value: string) => void;
+	members: WorkspaceMember[];
+	contacts: Contact[];
 }
 
 export function TicketsFilters({
@@ -18,6 +26,12 @@ export function TicketsFilters({
 	onStatusFilterChange,
 	priorityFilter,
 	onPriorityFilterChange,
+	assigneeFilter,
+	onAssigneeFilterChange,
+	requesterFilter,
+	onRequesterFilterChange,
+	members,
+	contacts,
 }: TicketsFiltersProps) {
 	return (
 		<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -54,6 +68,32 @@ export function TicketsFilters({
 						<SelectItem value="high">High</SelectItem>
 						<SelectItem value="medium">Medium</SelectItem>
 						<SelectItem value="low">Low</SelectItem>
+					</SelectContent>
+				</Select>
+				<Select value={assigneeFilter} onValueChange={onAssigneeFilterChange}>
+					<SelectTrigger className="w-40 h-9 rounded-lg text-xs">
+						<SelectValue placeholder="Agent" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Agents</SelectItem>
+						{members.map((member) => (
+							<SelectItem key={member.id} value={member.id}>
+								{member.name}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<Select value={requesterFilter} onValueChange={onRequesterFilterChange}>
+					<SelectTrigger className="w-40 h-9 rounded-lg text-xs">
+						<SelectValue placeholder="User" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Users</SelectItem>
+						{contacts.map((contact) => (
+							<SelectItem key={contact.id} value={contact.id}>
+								{contact.name}
+							</SelectItem>
+						))}
 					</SelectContent>
 				</Select>
 			</div>

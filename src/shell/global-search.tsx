@@ -31,9 +31,16 @@ export function GlobalSearch() {
 		tickets: allTickets.filter((t) => q && (t.id.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q))).slice(0, 3),
 		agents: allMembers.filter((a) => q && (a.name.toLowerCase().includes(q) || a.email.toLowerCase().includes(q))).slice(0, 3),
 		teams: allTeams.filter((t) => q && t.name.toLowerCase().includes(q)).slice(0, 3),
+		contacts: allContacts
+			.filter((c) => q && (c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.phone?.toLowerCase().includes(q)))
+			.slice(0, 3),
 	};
 
-	const hasResults = searchResults.tickets.length > 0 || searchResults.agents.length > 0 || searchResults.teams.length > 0;
+	const hasResults =
+		searchResults.tickets.length > 0 ||
+		searchResults.agents.length > 0 ||
+		searchResults.contacts.length > 0 ||
+		searchResults.teams.length > 0;
 
 	function getContact(id: string | null) {
 		if (!id) return null;
@@ -60,7 +67,7 @@ export function GlobalSearch() {
 				<div className="relative flex-1 max-w-md">
 					<Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 					<Input
-						placeholder="Search tickets, teams, or users..."
+						placeholder="Search tickets, teams, agents, or contacts..."
 						value={globalSearch}
 						onChange={(e) => {
 							setGlobalSearch(e.target.value);
@@ -112,6 +119,43 @@ export function GlobalSearch() {
 								})}
 							</div>
 						)}
+						{searchResults.contacts.length > 0 && (
+							<div className="p-2 border-t">
+								<div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+									<User className="size-3" />
+									Contacts
+								</div>
+								{searchResults.contacts.map((contact) => {
+									const companyLogo = getCompanyLogo(contact.company_id ?? null);
+									return (
+										<button
+											key={contact.id}
+											onClick={() => {
+												if (slug) {
+													navigate({ to: "/w/$slug/tickets", params: { slug }, search: { contact: contact.id } });
+												}
+												setSearchOpen(false);
+												setGlobalSearch("");
+											}}
+											className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors text-left">
+											<Avatar className="size-7 rounded-lg">
+												<AvatarImage
+													src={contact.logo_url ?? companyLogo ?? undefined}
+													className="object-cover rounded-lg"
+												/>
+												<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
+													{getInitials(contact.name)}
+												</AvatarFallback>
+											</Avatar>
+											<div className="flex-1 min-w-0">
+												<p className="text-sm font-medium truncate">{contact.name}</p>
+												<p className="text-xs text-muted-foreground truncate">{contact.email}</p>
+											</div>
+										</button>
+									);
+								})}
+							</div>
+						)}
 						{searchResults.agents.length > 0 && (
 							<div className="p-2 border-t">
 								<div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
@@ -119,7 +163,16 @@ export function GlobalSearch() {
 									Agents
 								</div>
 								{searchResults.agents.map((agent) => (
-									<div key={agent.id} className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors">
+									<button
+										key={agent.id}
+										onClick={() => {
+											if (slug) {
+												navigate({ to: "/w/$slug/tickets", params: { slug }, search: { assignee: agent.id } });
+											}
+											setSearchOpen(false);
+											setGlobalSearch("");
+										}}
+										className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors text-left">
 										<Avatar className="size-7 rounded-lg">
 											<AvatarImage src={agent.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-lg" />
 											<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
@@ -130,7 +183,7 @@ export function GlobalSearch() {
 											<p className="text-sm font-medium truncate">{agent.name}</p>
 											<p className="text-xs text-muted-foreground truncate">{agent.role}</p>
 										</div>
-									</div>
+									</button>
 								))}
 							</div>
 						)}
@@ -141,7 +194,16 @@ export function GlobalSearch() {
 									Teams
 								</div>
 								{searchResults.teams.map((team) => (
-									<div key={team.id} className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors">
+									<button
+										key={team.id}
+										onClick={() => {
+											if (slug) {
+												navigate({ to: "/w/$slug/teams", params: { slug }, search: { team: team.id } });
+											}
+											setSearchOpen(false);
+											setGlobalSearch("");
+										}}
+										className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors text-left">
 										<Avatar className="size-7 rounded-lg">
 											<AvatarImage src={team.logo_url ?? undefined} className="object-cover rounded-lg" />
 											<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[9px] font-bold">
@@ -152,7 +214,7 @@ export function GlobalSearch() {
 											<p className="text-sm font-medium">{team.name}</p>
 											<p className="text-xs text-muted-foreground truncate">{team.description}</p>
 										</div>
-									</div>
+									</button>
 								))}
 							</div>
 						)}

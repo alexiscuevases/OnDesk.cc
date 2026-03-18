@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useWorkspace } from "@/context/workspace-context";
 import { useTickets } from "../hooks/use-ticket-queries";
 import { useDeleteTicketMutation } from "../hooks/use-ticket-mutations";
@@ -21,7 +21,15 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import type { TicketStatus } from "../api/tickets-api";
 
-export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => void }) {
+export function TicketsView({
+	onOpenTicket,
+	initialAssigneeId,
+	initialRequesterId,
+}: {
+	onOpenTicket: (id: string) => void;
+	initialAssigneeId?: string;
+	initialRequesterId?: string;
+}) {
 	const { workspace } = useWorkspace();
 	const workspaceId = workspace.id;
 	const queryClient = useQueryClient();
@@ -29,6 +37,8 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
 	const [priorityFilter, setPriorityFilter] = useState<string>("all");
+	const [assigneeFilter, setAssigneeFilter] = useState<string>(initialAssigneeId ?? "all");
+	const [requesterFilter, setRequesterFilter] = useState<string>(initialRequesterId ?? "all");
 	const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
 
 	const [newTicketOpen, setNewTicketOpen] = useState(false);
@@ -37,7 +47,21 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 	const [assignAgentOpen, setAssignAgentOpen] = useState(false);
 	const [assignTeamOpen, setAssignTeamOpen] = useState(false);
 
-	const apiFilters = statusFilter !== "all" ? { status: statusFilter as TicketStatus } : {};
+	useEffect(() => {
+		setAssigneeFilter(initialAssigneeId ?? "all");
+	}, [initialAssigneeId]);
+
+	useEffect(() => {
+		setRequesterFilter(initialRequesterId ?? "all");
+	}, [initialRequesterId]);
+
+	const apiFilters =
+		statusFilter !== "all" || assigneeFilter !== "all"
+			? {
+					...(statusFilter !== "all" ? { status: statusFilter as TicketStatus } : {}),
+					...(assigneeFilter !== "all" ? { assignee_id: assigneeFilter } : {}),
+				}
+			: {};
 	const { data: tickets = [], isLoading } = useTickets(workspaceId, apiFilters);
 	const { data: allTickets = [] } = useTickets(workspaceId, {});
 	const { data: members = [] } = useWorkspaceMembers(workspaceId);
@@ -47,13 +71,26 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 
 	const deleteTicket = useDeleteTicketMutation(workspaceId);
 
+	const contactNameById = useMemo(() => {
+		const map = new Map<string, string>();
+		for (const contact of contacts) {
+			map.set(contact.id, contact.name);
+		}
+		return map;
+	}, [contacts]);
+
 	// Client-side search + priority filter (API only filters by status/assignee/team)
 	const filteredTickets = tickets.filter((t) => {
 		const matchesPriority = priorityFilter === "all" || t.priority === priorityFilter;
 		if (!matchesPriority) return false;
+		const matchesAssignee = assigneeFilter === "all" || t.assignee_id === assigneeFilter;
+		if (!matchesAssignee) return false;
+		const matchesRequester = requesterFilter === "all" || t.contact_id === requesterFilter;
+		if (!matchesRequester) return false;
 		if (!search) return true;
 		const q = search.toLowerCase();
-		return t.subject.toLowerCase().includes(q) || t.id.toLowerCase().includes(q);
+		const requesterName = t.contact_id ? contactNameById.get(t.contact_id)?.toLowerCase() ?? "" : "";
+		return t.subject.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || requesterName.includes(q);
 	});
 
 	const mergeableTickets = filteredTickets.filter((t) => !selectedTickets.includes(t.id));
@@ -146,6 +183,12 @@ export function TicketsView({ onOpenTicket }: { onOpenTicket: (id: string) => vo
 				onStatusFilterChange={setStatusFilter}
 				priorityFilter={priorityFilter}
 				onPriorityFilterChange={setPriorityFilter}
+				assigneeFilter={assigneeFilter}
+				onAssigneeFilterChange={setAssigneeFilter}
+				requesterFilter={requesterFilter}
+				onRequesterFilterChange={setRequesterFilter}
+				members={members}
+				contacts={contacts}
 			/>
 
 			<TicketsTable
