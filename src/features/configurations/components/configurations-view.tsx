@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2, Bot } from "lucide-react";
+import { Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2, Bot, CreditCard } from "lucide-react";
 import { GeneralSection } from "./general-section";
 import { AgentsSection } from "./agents-section";
 import { IntegrationsSection } from "./integrations-section";
@@ -8,9 +8,10 @@ import { CannedRepliesSection } from "./canned-replies-section";
 import { SignaturesSection } from "./signatures-section";
 import { UsersCompaniesSection } from "./users-companies-section";
 import { SecuritySection } from "./security-section";
+import { BillingSection } from "./billing-section";
 import { AiAgentsSection } from "@/features/ai-agents/components/ai-agents-section";
 
-type ConfigSection = "general" | "agents" | "ai-agents" | "integrations" | "teams" | "canned-replies" | "signatures" | "users-companies" | "security";
+type ConfigSection = "general" | "agents" | "ai-agents" | "integrations" | "teams" | "canned-replies" | "signatures" | "users-companies" | "security" | "billing";
 
 const sections: { id: ConfigSection; label: string; icon: typeof Globe; desc: string }[] = [
 	{ id: "general", label: "General", icon: Globe, desc: "Workspace settings and branding" },
@@ -22,6 +23,7 @@ const sections: { id: ConfigSection; label: string; icon: typeof Globe; desc: st
 	{ id: "signatures", label: "Signatures", icon: FileSignature, desc: "Email signatures for agents" },
 	{ id: "users-companies", label: "Users & Companies", icon: Building2, desc: "Customer management" },
 	{ id: "security", label: "Security", icon: Shield, desc: "Authentication and access controls" },
+	{ id: "billing", label: "Plan & Billing", icon: CreditCard, desc: "Subscription, invoices and payment" },
 ];
 
 export function ConfigurationsView() {
@@ -71,6 +73,7 @@ export function ConfigurationsView() {
 					{activeSection === "signatures" && <SignaturesSection />}
 					{activeSection === "users-companies" && <UsersCompaniesSection />}
 					{activeSection === "security" && <SecuritySection />}
+				{activeSection === "billing" && <BillingSection />}
 				</div>
 			</div>
 		</div>

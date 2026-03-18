@@ -2,9 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { apiCreateWorkspace, apiUpdateWorkspace, apiDeleteWorkspace } from "../api/workspaces-api";
 import { workspaceQueryKeys } from "./use-workspace-queries";
-import type { CreateWorkspaceInput } from "../api/workspaces-api";
+import type { CreateWorkspaceInput, Workspace } from "../api/workspaces-api";
 
-export function useCreateWorkspaceMutation() {
+export function useCreateWorkspaceMutation(onCreated?: (workspace: Workspace) => void) {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 
@@ -12,7 +12,11 @@ export function useCreateWorkspaceMutation() {
 		mutationFn: (input: CreateWorkspaceInput) => apiCreateWorkspace(input),
 		onSuccess: (workspace) => {
 			queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.all });
-			navigate({ to: "/w/$slug/overview", params: { slug: workspace.slug } });
+			if (onCreated) {
+				onCreated(workspace);
+			} else {
+				navigate({ to: "/w/$slug/overview", params: { slug: workspace.slug } });
+			}
 		},
 	});
 }

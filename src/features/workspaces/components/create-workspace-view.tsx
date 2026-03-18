@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Building2, ArrowLeft } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
@@ -8,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createWorkspaceSchema, type CreateWorkspaceValues } from "../schemas/workspace.schema";
 import { useCreateWorkspaceMutation } from "../hooks/use-workspace-mutations";
+import { SelectPlanView } from "./select-plan-view";
+import type { Workspace } from "../api/workspaces-api";
 
 function toSlug(value: string) {
 	return value
@@ -20,7 +23,11 @@ function toSlug(value: string) {
 
 export function CreateWorkspaceView() {
 	const navigate = useNavigate();
-	const createMutation = useCreateWorkspaceMutation();
+	const [createdWorkspace, setCreatedWorkspace] = useState<Workspace | null>(null);
+
+	const createMutation = useCreateWorkspaceMutation((workspace) => {
+		setCreatedWorkspace(workspace);
+	});
 
 	const form = useForm({
 		defaultValues: { name: "", slug: "", description: "", logo_url: "" } as CreateWorkspaceValues,
@@ -36,6 +43,12 @@ export function CreateWorkspaceView() {
 		validatorAdapter: zodValidator(),
 	});
 
+	// Step 2: plan selection after workspace is created
+	if (createdWorkspace) {
+		return <SelectPlanView workspaceId={createdWorkspace.id} workspaceName={createdWorkspace.name} />;
+	}
+
+	// Step 1: workspace details
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
 			<div className="w-full max-w-md space-y-8">
@@ -154,7 +167,7 @@ export function CreateWorkspaceView() {
 							className="w-full"
 							size="lg"
 							disabled={createMutation.isPending}>
-							{createMutation.isPending ? "Creating..." : "Create workspace"}
+							{createMutation.isPending ? "Creating..." : "Continue"}
 						</Button>
 
 						<Button
