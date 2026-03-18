@@ -7,8 +7,6 @@ import {
 	Cell,
 	Line,
 	LineChart,
-	Pie,
-	PieChart,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
@@ -20,12 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import {
-	apiGetTicketVolumeData,
-	apiGetResponseTimeData,
-	apiGetCsatTrendData,
-	apiGetTeamPerformanceData,
-	apiGetPriorityBreakdown,
-	apiGetHourlyTicketData,
+	apiGetWorkspaceAnalytics,
 	analyticsQueryKeys,
 } from "../api/analytics-api";
 
@@ -38,13 +31,17 @@ const tooltipStyle = {
 	boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
 };
 
-export function AnalyticsView() {
-	const { data: ticketVolumeData = [] } = useQuery({ queryKey: analyticsQueryKeys.ticketVolume, queryFn: apiGetTicketVolumeData });
-	const { data: responseTimeData = [] } = useQuery({ queryKey: analyticsQueryKeys.responseTime, queryFn: apiGetResponseTimeData });
-	const { data: csatTrendData = [] } = useQuery({ queryKey: analyticsQueryKeys.csatTrend, queryFn: apiGetCsatTrendData });
-	const { data: teamPerformanceData = [] } = useQuery({ queryKey: analyticsQueryKeys.teamPerformance, queryFn: apiGetTeamPerformanceData });
-	const { data: priorityBreakdown = [] } = useQuery({ queryKey: analyticsQueryKeys.priorityBreakdown, queryFn: apiGetPriorityBreakdown });
-	const { data: hourlyTicketData = [] } = useQuery({ queryKey: analyticsQueryKeys.hourlyTickets, queryFn: apiGetHourlyTicketData });
+export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
+	const { data: analytics } = useQuery({
+		queryKey: analyticsQueryKeys.snapshot(workspaceId),
+		queryFn: () => apiGetWorkspaceAnalytics(workspaceId),
+	});
+	const ticketVolumeData = analytics?.ticketVolume ?? [];
+	const responseTimeData = analytics?.responseTime ?? [];
+	const resolutionTrendData = analytics?.resolutionTrend ?? [];
+	const teamPerformanceData = analytics?.teamPerformance ?? [];
+	const priorityBreakdown = analytics?.priorityBreakdown ?? [];
+	const hourlyTicketData = analytics?.hourlyTickets ?? [];
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -106,6 +103,7 @@ export function AnalyticsView() {
 										<XAxis
 											dataKey="hour"
 											tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+											interval={1}
 											axisLine={false}
 											tickLine={false}
 										/>
@@ -136,12 +134,12 @@ export function AnalyticsView() {
 					<div className="grid gap-4 lg:grid-cols-2">
 						<Card className="border-0 shadow-sm">
 							<CardHeader>
-								<CardTitle className="text-sm font-semibold">CSAT Score Trend</CardTitle>
-								<CardDescription className="text-xs">Customer satisfaction over the last 8 weeks</CardDescription>
+								<CardTitle className="text-sm font-semibold">Resolution Health Trend</CardTitle>
+								<CardDescription className="text-xs">Resolved tickets vs created tickets over the last 8 weeks</CardDescription>
 							</CardHeader>
 							<CardContent>
 								<ResponsiveContainer width="100%" height={300}>
-									<AreaChart data={csatTrendData}>
+									<AreaChart data={resolutionTrendData}>
 										<defs>
 											<linearGradient id="csatGrad" x1="0" y1="0" x2="0" y2="1">
 												<stop offset="5%" stopColor="var(--color-chart-2)" stopOpacity={0.2} />
@@ -156,7 +154,7 @@ export function AnalyticsView() {
 											tickLine={false}
 										/>
 										<YAxis
-											domain={[3.5, 5]}
+											domain={[0, 5]}
 											tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
 											axisLine={false}
 											tickLine={false}
@@ -171,7 +169,7 @@ export function AnalyticsView() {
 						<Card className="border-0 shadow-sm">
 							<CardHeader>
 								<CardTitle className="text-sm font-semibold">Hourly Ticket Activity</CardTitle>
-								<CardDescription className="text-xs">Number of tickets created per hour (24h)</CardDescription>
+								<CardDescription className="text-xs">Ticket creation distribution by hour over the last 30 days</CardDescription>
 							</CardHeader>
 							<CardContent>
 								<ResponsiveContainer width="100%" height={300}>
@@ -226,7 +224,7 @@ export function AnalyticsView() {
 						<Card className="border-0 shadow-sm">
 							<CardHeader>
 								<CardTitle className="text-sm font-semibold">Weekly Volume Trend</CardTitle>
-								<CardDescription className="text-xs">Open, resolved, and closed tickets this week</CardDescription>
+								<CardDescription className="text-xs">Open, resolved, and closed tickets over the last 7 days</CardDescription>
 							</CardHeader>
 							<CardContent>
 								<ResponsiveContainer width="100%" height={300}>

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
-import { apiGetKPIs, apiGetTicketVolumeData, apiGetChannelDistribution, overviewQueryKeys } from "../api/overview-api";
+import { apiGetWorkspaceAnalytics, analyticsQueryKeys } from "@/features/analytics/api/analytics-api";
 import { useTickets } from "@/features/tickets/hooks/use-ticket-queries";
 import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
 import { useCompanies } from "@/features/companies/hooks/use-company-queries";
@@ -33,9 +33,13 @@ function getInitials(name: string) {
 }
 
 export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspaceId: string; onOpenTicket: (id: string) => void; onViewAll: () => void }) {
-	const { data: kpis = [] } = useQuery({ queryKey: overviewQueryKeys.kpis.all, queryFn: apiGetKPIs });
-	const { data: ticketVolumeData = [] } = useQuery({ queryKey: overviewQueryKeys.ticketVolume, queryFn: apiGetTicketVolumeData });
-	const { data: channelDistribution = [] } = useQuery({ queryKey: overviewQueryKeys.channelDistribution, queryFn: apiGetChannelDistribution });
+	const { data: analytics } = useQuery({
+		queryKey: analyticsQueryKeys.snapshot(workspaceId),
+		queryFn: () => apiGetWorkspaceAnalytics(workspaceId),
+	});
+	const kpis = analytics?.kpis ?? [];
+	const ticketVolumeData = analytics?.ticketVolume ?? [];
+	const channelDistribution = analytics?.channelDistribution ?? [];
 
 	const { data: tickets = [] } = useTickets(workspaceId);
 	const { data: contacts = [] } = useContacts(workspaceId);

@@ -4,6 +4,7 @@ export * from "./teams";
 export * from "./companies";
 export * from "./contacts";
 export * from "./tickets";
+export * from "./analytics";
 export * from "./canned-replies";
 export * from "./signatures";
 export * from "./invitations";
