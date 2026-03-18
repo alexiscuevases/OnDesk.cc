@@ -40,6 +40,58 @@ export function applyInlineFormatting(text: string): string {
 	return text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 }
 
+async function streamSSE(url: string, messages: AIChatMessage[], onChunk: (token: string) => void): Promise<void> {
+	const response = await fetch(url, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ messages }),
+		credentials: "include",
+	});
+
+	if (!response.ok) {
+		const errText = await response.text();
+		throw new Error(errText || `HTTP ${response.status}`);
+	}
+
+	const reader = response.body!.getReader();
+	const decoder = new TextDecoder();
+
+	while (true) {
+		const { done, value } = await reader.read();
+		if (done) break;
+
+		const chunk = decoder.decode(value, { stream: true });
+		const lines = chunk.split("\n");
+
+		for (const line of lines) {
+			if (!line.startsWith("data: ")) continue;
+			const data = line.slice(6).trim();
+			if (data === "[DONE]") break;
+
+			try {
+				const parsed = JSON.parse(data) as { response?: string };
+				if (parsed.response) onChunk(parsed.response);
+			} catch {
+				// Ignore malformed SSE chunks
+			}
+		}
+	}
+}
+
+/**
+ * Streams an AI response from the workspace AI endpoint and calls onChunk with each token.
+ * @param workspaceSlug - The workspace slug
+ * @param messages - Chat history to send to the AI
+ * @param onChunk - Callback fired for each token received
+ */
+export async function streamWorkspaceAI(
+	workspaceSlug: string,
+	messages: AIChatMessage[],
+	onChunk: (token: string) => void
+): Promise<void> {
+	return streamSSE(`/api/workspaces/${workspaceSlug}/ai`, messages, onChunk);
+}
+
 /**
  * Streams an AI response from the ticket AI endpoint and calls onChunk with each token.
  * @param ticketId - The ticket ID
@@ -52,43 +104,5 @@ export async function streamTicketAI(
 	messages: AIChatMessage[],
 	onChunk: (token: string) => void
 ): Promise<void> {
-	const response = await fetch(`/api/tickets/${ticketId}/ai`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ messages }),
-		credentials: "include",
-	});
-
-	if (!response.ok) {
-		const errText = await response.text();
-		throw new Error(errText || `HTTP ${response.status}`);
-	}
-
-	// Read the SSE stream and call onChunk for each token
-	const reader = response.body!.getReader();
-	const decoder = new TextDecoder();
-
-	while (true) {
-		const { done, value } = await reader.read();
-		if (done) break;
-
-		// Workers AI streams Server-Sent Events: "data: {...}\n\n"
-		const chunk = decoder.decode(value, { stream: true });
-		const lines = chunk.split("\n");
-
-		for (const line of lines) {
-			if (!line.startsWith("data: ")) continue;
-			const data = line.slice(6).trim();
-			if (data === "[DONE]") break;
-
-			try {
-				const parsed = JSON.parse(data) as { response?: string };
-				if (parsed.response) {
-					onChunk(parsed.response);
-				}
-			} catch {
-				// Ignore malformed SSE chunks
-			}
-		}
-	}
+	return streamSSE(`/api/tickets/${ticketId}/ai`, messages, onChunk);
 }

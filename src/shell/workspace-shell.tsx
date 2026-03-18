@@ -7,6 +7,7 @@ import { NotificationsProvider } from "@/context/notifications-context";
 import { WorkspaceSidebar } from "./workspace-sidebar";
 import { GlobalSearch } from "./global-search";
 import { NotificationsPanel } from "./notifications-panel";
+import { GlobalAIAssistant } from "./global-ai-assistant";
 
 export function WorkspaceShell() {
 	return (
@@ -19,6 +20,7 @@ export function WorkspaceShell() {
 						<Separator orientation="vertical" className="mr-1 h-4" />
 						<GlobalSearch />
 						<div className="ml-auto flex items-center gap-1.5">
+							<GlobalAIAssistant />
 							<Button variant="ghost" size="icon" className="size-8 rounded-lg">
 								<HelpCircle className="size-4" />
 								<span className="sr-only">Help</span>
