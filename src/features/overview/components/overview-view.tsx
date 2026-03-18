@@ -10,6 +10,7 @@ import { apiGetWorkspaceAnalytics, analyticsQueryKeys } from "@/features/analyti
 import { useTickets } from "@/features/tickets/hooks/use-ticket-queries";
 import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
 import { useCompanies } from "@/features/companies/hooks/use-company-queries";
+import { TicketAiStatusBadge } from "@/shared/components/ticket-ai-status-badge";
 import type { Contact } from "@/features/contacts/api/contacts-api";
 
 const kpiIcons = [AlertTriangle, Clock, CheckCircle2, TrendingUp];
@@ -198,6 +199,7 @@ export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspa
 										</div>
 									</div>
 									<div className="flex items-center gap-2 shrink-0">
+										<TicketAiStatusBadge ticket={ticket} className="text-[10px] px-2" />
 										<Badge
 											variant={ticket.priority === "urgent" ? "destructive" : ticket.priority === "high" ? "default" : "secondary"}
 											className={`text-[10px] px-2 rounded-full ${ticket.priority === "high" ? "bg-warning text-warning-foreground" : ""}`}>

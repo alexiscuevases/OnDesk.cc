@@ -13,6 +13,7 @@ import { useTeams } from "../hooks/use-team-queries";
 import { useTickets } from "@/features/tickets/hooks/use-ticket-queries";
 import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
 import { useCompanies } from "@/features/companies/hooks/use-company-queries";
+import { TicketAiStatusBadge } from "@/shared/components/ticket-ai-status-badge";
 
 export function TeamsView() {
 	const { workspace } = useWorkspace();
@@ -280,6 +281,7 @@ export function TeamsView() {
 													</div>
 												</div>
 												<div className="flex items-center gap-2 shrink-0">
+													<TicketAiStatusBadge ticket={ticket} className="text-[10px] rounded-full px-2" />
 													<Badge
 														variant={
 															ticket.priority === "urgent" ? "destructive" : ticket.priority === "high" ? "default" : "secondary"

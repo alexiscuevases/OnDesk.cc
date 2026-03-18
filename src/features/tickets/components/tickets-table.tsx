@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { StatusBadge } from "@/shared/components/status-badge";
 import { PriorityBadge } from "@/shared/components/priority-badge";
+import { TicketAiStatusBadge } from "@/shared/components/ticket-ai-status-badge";
 import type { Ticket } from "@/features/tickets/api/tickets-api";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
 import type { Team } from "@/features/teams/api/teams-api";
@@ -102,6 +103,7 @@ export function TicketsTable({
 							<TableHead className="hidden lg:table-cell text-[11px] font-semibold uppercase tracking-wider">Team</TableHead>
 							<TableHead className="hidden sm:table-cell text-[11px] font-semibold uppercase tracking-wider">Assignee</TableHead>
 							<TableHead className="text-[11px] font-semibold uppercase tracking-wider">Priority</TableHead>
+							<TableHead className="text-[11px] font-semibold uppercase tracking-wider">AI</TableHead>
 							<TableHead className="text-[11px] font-semibold uppercase tracking-wider">Status</TableHead>
 							<TableHead className="w-12 pr-6" />
 						</TableRow>
@@ -175,6 +177,9 @@ export function TicketsTable({
 										<PriorityBadge priority={ticket.priority} />
 									</TableCell>
 									<TableCell className="cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
+										<TicketAiStatusBadge ticket={ticket} className="text-[10px] px-2 py-0.5" />
+									</TableCell>
+									<TableCell className="cursor-pointer" onClick={() => onOpenTicket(ticket.id)}>
 										<StatusBadge status={ticket.status} />
 									</TableCell>
 									<TableCell className="pr-6" onClick={(e) => e.stopPropagation()}>
@@ -202,7 +207,7 @@ export function TicketsTable({
 						})}
 						{tickets.length === 0 && (
 							<TableRow>
-								<TableCell colSpan={8} className="h-24 text-center text-muted-foreground text-sm">
+								<TableCell colSpan={9} className="h-24 text-center text-muted-foreground text-sm">
 									No tickets found matching your filters.
 								</TableCell>
 							</TableRow>

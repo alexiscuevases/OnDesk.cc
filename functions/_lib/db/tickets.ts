@@ -23,12 +23,34 @@ export async function findTicketsByWorkspace(
 	}
 	const result = await db
 		.prepare(
-			`SELECT id, workspace_id, contact_id, assignee_id, team_id, number, subject, status, priority, created_at, updated_at
-       FROM tickets t WHERE ${conditions.join(" AND ")} ORDER BY t.created_at DESC`,
+			`SELECT
+				t.id,
+				t.workspace_id,
+				t.contact_id,
+				t.assignee_id,
+				t.team_id,
+				ats.ai_agent_id,
+				aa.name AS ai_agent_name,
+				COALESCE(ats.escalated, 0) AS ai_escalated,
+				t.number,
+				t.subject,
+				t.status,
+				t.priority,
+				t.channel,
+				t.created_at,
+				t.updated_at
+			FROM tickets t
+			LEFT JOIN ai_ticket_state ats ON ats.ticket_id = t.id
+			LEFT JOIN ai_agents aa ON aa.id = ats.ai_agent_id
+			WHERE ${conditions.join(" AND ")}
+			ORDER BY t.created_at DESC`,
 		)
 		.bind(...values)
-		.all<PublicTicket>();
-	return result.results ?? [];
+		.all<PublicTicket & { ai_escalated: number | boolean }>();
+	return (result.results ?? []).map((ticket) => ({
+		...ticket,
+		ai_escalated: Boolean(ticket.ai_escalated),
+	}));
 }
 
 export async function findTicketById(db: D1Database, ticketId: string): Promise<TicketRow | null> {

@@ -23,6 +23,9 @@ export interface PublicTicket {
 	contact_id: string | null;
 	assignee_id: string | null;
 	team_id: string | null;
+	ai_agent_id: string | null;
+	ai_agent_name: string | null;
+	ai_escalated: boolean;
 	number: number;
 	subject: string;
 	status: TicketStatus;
