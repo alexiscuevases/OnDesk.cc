@@ -4,7 +4,7 @@ pages_build_output_dir = "./dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "pulse-db"
-database_id = "5ad5172b-ee5b-49ac-bde7-a8303f3dd57f"
+database_id = "59eb1987-dd3a-49c7-add0-b69e87869ed4"
 
 [[r2_buckets]]
 binding = "STORAGE"
