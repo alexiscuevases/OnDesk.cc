@@ -1,18 +1,18 @@
 {
-  "name": "desk",
+  "name": "pulse",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:full": "wrangler pages dev dist",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "deploy": "npm run build && wrangler pages deploy dist",
-    "db:create": "wrangler d1 create desk",
-    "db:migrate": "wrangler d1 execute desk --remote --file=functions/_db/schema.sql",
-    "db:migrate:local": "wrangler d1 execute desk --local --file=functions/_db/schema.sql"
+    "pages:dev": "wrangler pages dev dist",
+    "pages:deploy": "npm run build && wrangler pages deploy dist",
+    "db:create": "wrangler d1 create pulse-db",
+    "db:migrate:remote": "wrangler d1 execute pulse-db --remote --file=functions/_db/schema.sql",
+    "db:migrate:local": "wrangler d1 execute pulse-db --local --file=functions/_db/schema.sql"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.0",
