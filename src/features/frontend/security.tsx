@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Lock, Server, Eye, Globe, Users, CheckCircle2, FileText, Zap, Key, AlertTriangle, Database } from "lucide-react";
 import { SiteLayout } from "./site-layout";
@@ -61,7 +61,7 @@ const INFRASTRUCTURE = [
 	{
 		icon: Server,
 		title: "Multi-region hosting",
-		desc: "Deployed on Azure across US (East/West), EU (West Europe), and APAC (Southeast Asia). Enterprise customers select their data residency region at account creation.",
+		desc: "Deployed on Azure across US (East/West), EU (West Europe), and APAC (Southeast Asia). All customers benefit from our secure multi-region infrastructure; data residency region selection is available on the Enterprise plan.",
 	},
 	{
 		icon: Database,
@@ -104,7 +104,7 @@ const ACCESS_CONTROLS = [
 const DATA_HANDLING = [
 	{
 		title: "Data residency",
-		desc: "Choose where your data lives: United States, European Union, or Asia-Pacific. Data never crosses regions without explicit customer consent.",
+		desc: "All customer data is stored securely within our infrastructure. Enterprise plan customers can choose their data residency region: United States, European Union, or Asia-Pacific. Data never crosses regions without explicit consent.",
 		icon: Globe,
 	},
 	{
@@ -125,7 +125,7 @@ const DATA_HANDLING = [
 ];
 
 const RESPONSIBLE_DISCLOSURE = [
-	"Report a vulnerability to security@ondesk.cc",
+	"Report a vulnerability to security@pulse.cc",
 	"We acknowledge receipt within 24 hours",
 	"We assess severity and begin remediation within 72 hours for critical issues",
 	"We credit researchers in our Hall of Fame upon fix publication",
@@ -310,7 +310,7 @@ function DisclosureSection() {
 					<div>
 						<h2 className="text-2xl font-bold mb-2">Responsible disclosure</h2>
 						<p className="text-muted-foreground text-sm leading-relaxed mb-5">
-							We take every security report seriously. If you believe you have found a vulnerability in OnDesk.cc, please contact us before
+							We take every security report seriously. If you believe you have found a vulnerability in Pulse, please contact us before
 							disclosing publicly.
 						</p>
 						<ul className="space-y-2.5">
@@ -326,7 +326,7 @@ function DisclosureSection() {
 						</ul>
 						<div className="flex flex-wrap gap-3 mt-6">
 							<Button size="lg" asChild className="group">
-								<a href="mailto:security@ondesk.cc">
+								<a href="mailto:security@pulse.cc">
 									Report a vulnerability
 									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 								</a>
@@ -351,11 +351,11 @@ function SecurityCtaSection() {
 					className={`cta-gradient relative overflow-hidden rounded-3xl p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
 					<CtaDecorations />
 					<div className="relative z-10">
-						<p className="text-white/70 text-sm font-semibold tracking-widest uppercase mb-4">Enterprise teams</p>
-						<h2 className="text-3xl md:text-5xl font-black text-white mb-5 text-balance">Security review for your InfoSec team</h2>
+						<p className="text-white/70 text-sm font-semibold tracking-widest uppercase mb-4">Security & Trust</p>
+						<h2 className="text-3xl md:text-5xl font-black text-white mb-5 text-balance">Security review for your team</h2>
 						<p className="text-white/75 text-lg leading-relaxed max-w-xl mx-auto mb-10">
-							Need a custom security review, DPA, or audit report? Our security team works directly with enterprise customers and their InfoSec
-							teams.
+							Need a custom security review, DPA, or audit report? Our security team is here to help — whether you're a solo operator, a
+							growing agency, or a global enterprise.
 						</p>
 						<div className="flex flex-col sm:flex-row justify-center gap-4">
 							<Button
@@ -429,8 +429,8 @@ export default function SecurityPage() {
 					</h1>
 					<p
 						className={`text-xl text-muted-foreground leading-relaxed text-pretty mb-10 transition-all duration-700 delay-200 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						We treat security as a first-class product requirement not an afterthought. Every layer of OnDesk.cc is designed to protect your
-						customers' data and your team's trust.
+						Built for everyone — from solo operators to global enterprises. Your data is safe with Pulse. Every layer is designed to protect
+						your customers' data, with controls that scale to your needs.
 					</p>
 					<div
 						className={`flex flex-col sm:flex-row justify-center gap-3 transition-all duration-700 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
@@ -441,7 +441,7 @@ export default function SecurityPage() {
 							</a>
 						</Button>
 						<Button size="xl" variant="outline" asChild>
-							<a href="mailto:security@ondesk.cc">Contact security team</a>
+							<a href="mailto:security@pulse.cc">Contact security team</a>
 						</Button>
 					</div>
 

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Globe, Heart, Zap, TrendingUp, BookOpen, Monitor, Clock, Users, Star, ChevronRight } from "lucide-react";
 import { SiteLayout } from "./site-layout";
@@ -8,9 +8,9 @@ import { useInView, useCounter, SectionBadge } from "./shared";
 
 const DEPARTMENTS = [
 	{
-		name: "Engineering",
+		name: "Intelligence & Infrastructure",
 		openRoles: [
-			{ title: "Senior Backend Engineer  AI Platform", location: "Remote (EU / US)", type: "Full-time", tags: ["Python", "LLMs", "Azure"] },
+			{ title: "Senior Intelligence Engineer — Pulse Core", location: "Remote (EU / US)", type: "Full-time", tags: ["Python", "LLMs", "Azure"] },
 			{ title: "Frontend Engineer — Design Systems", location: "Remote (EU / US)", type: "Full-time", tags: ["React", "TypeScript", "Tailwind"] },
 			{ title: "Staff Engineer  Infrastructure", location: "Remote (EU / US)", type: "Full-time", tags: ["Kubernetes", "Terraform", "GCP"] },
 			{ title: "ML Engineer  Ticket Classification", location: "Remote", type: "Full-time", tags: ["NLP", "PyTorch", "Azure OpenAI"] },
@@ -21,20 +21,22 @@ const DEPARTMENTS = [
 		openRoles: [
 			{ title: "Senior Product Manager  Core Platform", location: "Remote (EU / US)", type: "Full-time", tags: ["B2B SaaS", "Enterprise", "AI"] },
 			{ title: "Product Designer  Enterprise UX", location: "Remote", type: "Full-time", tags: ["Figma", "Research", "Design Systems"] },
+			{ title: "Product Manager — Starter & SMB", location: "Remote", type: "Full-time", tags: ["SMB", "Self-serve", "Growth"] },
 		],
 	},
 	{
 		name: "Customer Success",
 		openRoles: [
 			{ title: "Customer Success Manager  Enterprise (EMEA)", location: "London or Remote", type: "Full-time", tags: ["Enterprise", "EMEA", "SaaS"] },
-			{ title: "Technical Onboarding Specialist", location: "Remote", type: "Full-time", tags: ["Microsoft 365", "Onboarding", "Technical"] },
+			{ title: "Technical Onboarding Specialist", location: "Remote", type: "Full-time", tags: ["Onboarding", "Technical", "SMB"] },
 		],
 	},
 	{
 		name: "Sales",
 		openRoles: [
 			{ title: "Account Executive  Mid-Market (EMEA)", location: "London or Remote", type: "Full-time", tags: ["Mid-Market", "EMEA", "SaaS"] },
-			{ title: "Sales Engineer", location: "Remote (US)", type: "Full-time", tags: ["Pre-sales", "Microsoft 365", "Technical"] },
+			{ title: "Sales Engineer", location: "Remote (US)", type: "Full-time", tags: ["Pre-sales", "Technical", "Integrations"] },
+			{ title: "SMB Account Executive", location: "Remote (US / LATAM)", type: "Full-time", tags: ["SMB", "Self-serve", "SaaS"] },
 		],
 	},
 ];
@@ -408,13 +410,12 @@ export default function CareersPage() {
 								WebkitTextFillColor: "transparent",
 								backgroundClip: "text",
 							}}>
-							future of support
+							autonomous service
 						</span>
 					</h1>
 					<p
 						className={`text-xl text-muted-foreground leading-relaxed text-pretty mb-10 transition-all duration-700 delay-200 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						We are a remote-first team of 47 people spread across the globe, working to make support teams everywhere faster, happier, and more
-						effective.
+						We are a remote-first team of 47 people spread across the globe, building support infrastructure that works for solo founders and enterprise teams alike.
 					</p>
 					<div
 						className={`flex flex-wrap justify-center gap-4 text-sm text-muted-foreground transition-all duration-700 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>

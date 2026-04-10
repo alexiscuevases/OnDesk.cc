@@ -5,15 +5,11 @@ import {
 	Bot,
 	Zap,
 	Shield,
-	Users,
 	BarChart3,
 	MessageSquare,
 	CheckCircle2,
 	ArrowRight,
 	Headset,
-	Globe,
-	Bell,
-	Lock,
 	Play,
 	TrendingUp,
 	Clock,
@@ -22,114 +18,112 @@ import {
 } from "lucide-react";
 import { useInView, useCounter, SectionBadge } from "./shared";
 
-const TABS = ["All", "Automation", "Analytics", "Security", "Channels"];
+const TABS = ["All", "Omnichannel", "AI Automation", "Marketplace", "Intelligence", "Security"];
 
 const ALL_FEATURES = [
 	{
 		icon: Bot,
-		title: "AI Agents",
-		description: "Intelligent agents triage, classify, and auto-resolve up to 80% of incoming tickets around the clock — no human required.",
+		title: "Autonomous Resolution",
+		description: "Pulse AI resolves up to 80% of support volume without human intervention. Pulse handles the routine so your team focuses on what actually needs a human.",
 		bullets: [
-			"Context-aware auto-replies",
-			"Smart escalation to human agents",
-			"Continuous learning from resolutions",
-			"Multilingual support out of the box",
+			"Intent & sentiment detection",
+			"Zero-latency auto-resolution",
+			"Seamless agent handoff",
+			"Self-learning resolution engine",
 		],
-		tabs: ["All", "Automation"],
+		tabs: ["All", "Omnichannel", "AI Automation"],
 		stat: "80%",
-		statLabel: "auto-resolution rate",
+		statLabel: "autonomous resolution",
 	},
 	{
 		icon: Zap,
-		title: "Instant SLA Tracking",
-		description: "Real-time SLA dashboards fire breach alerts before they happen, keeping your team ahead of every commitment.",
-		bullets: ["Custom SLA tiers per customer", "Automated breach notifications", "Priority queue rebalancing", "Historical compliance reports"],
-		tabs: ["All", "Automation", "Analytics"],
-		stat: "99.4%",
-		statLabel: "SLA compliance avg.",
-	},
-	{
-		icon: Shield,
-		title: "Enterprise Security",
-		description: "Built on Microsoft Azure with SOC 2 Type II, GDPR, and ISO 27001 compliance baked in from day one.",
-		bullets: ["Azure AD SSO & MFA", "Role-based access control", "End-to-end encryption at rest & in transit", "Audit logs with 1-year retention"],
-		tabs: ["All", "Security"],
-		stat: "SOC 2",
-		statLabel: "Type II certified",
-	},
-	{
-		icon: Users,
-		title: "Team Management",
-		description: "Supervisors get a live heatmap of agent workloads, shift coverage, and real-time performance metrics.",
-		bullets: ["Live workload heatmaps", "Skill-based ticket routing", "Shift scheduling integration", "Internal knowledge base"],
-		tabs: ["All", "Automation"],
-		stat: "3x",
-		statLabel: "faster onboarding",
-	},
-	{
-		icon: BarChart3,
-		title: "Advanced Analytics",
-		description: "Pre-built and custom dashboards surface CSAT trends, volume forecasts, and agent KPIs without a BI team.",
-		bullets: ["CSAT & NPS tracking", "Volume forecast models", "Agent performance scorecards", "Exportable reports (CSV, PDF)"],
-		tabs: ["All", "Analytics"],
-		stat: "4.8★",
-		statLabel: "avg. CSAT score",
+		title: "Intelligent Routing",
+		description: "Dynamic workload balancing that routes every ticket based on agent expertise, priority, and real-time operational capacity.",
+		bullets: [
+			"Skill-based matchmaking",
+			"Predictive SLA enforcement",
+			"Priority queue orchestration",
+			"Capacity-aware distribution",
+		],
+		tabs: ["All", "AI Automation", "Intelligence"],
+		stat: "< 30s",
+		statLabel: "max routing latency",
 	},
 	{
 		icon: MessageSquare,
-		title: "Omnichannel Inbox",
-		description: "Email, Teams chat, web widget, and phone tickets all land in one unified queue with full conversation history.",
-		bullets: ["Microsoft Teams native integration", "Web widget & email ingest", "Phone-to-ticket transcription", "Unified customer timeline"],
-		tabs: ["All", "Channels"],
-		stat: "8+",
+		title: "Omnichannel Unification",
+		description: "Converge WhatsApp, Email, Teams, and Voice into a single, unified thread. No silos, just fluid conversations.",
+		bullets: [
+			"Native WhatsApp & Teams",
+			"Unified customer context",
+			"Cross-channel history",
+			"Instant channel switching",
+		],
+		tabs: ["All", "Omnichannel"],
+		stat: "10+",
 		statLabel: "channels unified",
 	},
 	{
-		icon: Globe,
-		title: "Self-Service Portal",
-		description: "Give customers a branded portal to submit tickets, track status, and search your knowledge base 24/7.",
-		bullets: ["Fully customizable branding", "AI-powered article suggestions", "Real-time ticket status", "Community Q&A"],
-		tabs: ["All", "Channels"],
-		stat: "40%",
-		statLabel: "deflection rate",
+		icon: Sparkles,
+		title: "Pulse Marketplace",
+		description: "Empower your agents with a deep ecosystem of integrations that bring business data directly into the support flow.",
+		bullets: [
+			"CRM & Billing deep-links",
+			"Custom app development SDK",
+			"One-click tool activation",
+			"Automated workflow actions",
+		],
+		tabs: ["All", "Marketplace"],
+		stat: "50+",
+		statLabel: "integrations available",
 	},
 	{
-		icon: Bell,
-		title: "Smart Notifications",
-		description: "Configurable notification rules ensure the right person is pinged at the right time — never flooded.",
-		bullets: ["Digest mode to reduce noise", "Escalation chains", "Mobile push & email", "Slack & Teams webhooks"],
-		tabs: ["All", "Automation", "Channels"],
-		stat: "0",
-		statLabel: "missed escalations",
+		icon: BarChart3,
+		title: "Predictive Intelligence",
+		description: "Move beyond descriptive reports. Leverage AI to forecast volume trends and identify friction points before they escalate.",
+		bullets: [
+			"Volume forecasting models",
+			"Automated friction analysis",
+			"Agent performance scoring",
+			"Business impact reporting",
+		],
+		tabs: ["All", "Intelligence"],
+		stat: "4.9★",
+		statLabel: "avg. CSAT impact",
 	},
 	{
-		icon: Lock,
-		title: "Data Residency",
-		description: "Choose where your data lives. US, EU, or Asia-Pacific regions available for enterprise plans.",
-		bullets: ["Regional data centers", "Sovereign cloud option", "Customer-managed encryption keys", "GDPR DPA included"],
+		icon: Shield,
+		title: "Security & Reliability",
+		description: "SOC 2, GDPR, and 99.99% uptime — built for teams that can't afford downtime, at any scale.",
+		bullets: [
+			"SOC 2 Type II compliance",
+			"Regional data residency",
+			"Advanced RBAC & SSO",
+			"End-to-end data encryption",
+		],
 		tabs: ["All", "Security"],
-		stat: "3",
-		statLabel: "global regions",
+		stat: "99.99%",
+		statLabel: "uptime guarantee",
 	},
 ];
 
 const SOCIAL_PROOF = [
 	{
-		quote: "Resolved our first 500 tickets in 48 hours after onboarding. The AI agent is uncanny.",
-		author: "Laura M.",
-		role: "Head of Support, Nexus Labs",
+		quote: "I switched from three different email inboxes to Pulse in a weekend. Now everything is in one place and I'm not dropping client requests.",
+		author: "Mia Torres",
+		role: "Independent Consultant, Torres Digital",
 		rating: 5,
 	},
 	{
-		quote: "SLA compliance went from 71% to 99% in our first month. Our enterprise clients noticed immediately.",
-		author: "David K.",
-		role: "VP Operations, Vantage Group",
+		quote: "Pulse Core gave our agency exactly what we needed — separate client workflows and real visibility into what's happening across all our accounts.",
+		author: "James Okafor",
+		role: "Operations Lead, BrightSupport Agency",
 		rating: 5,
 	},
 	{
-		quote: "The omnichannel inbox is the single best upgrade we have made to our support stack.",
-		author: "Priya S.",
-		role: "Support Director, CloudBridge",
+		quote: "Pulse transformed our support from a cost center into a CSAT driver. The autonomous routing paid back in week one.",
+		author: "Marcus Chen",
+		role: "Director of Ops, FinStream",
 		rating: 5,
 	},
 ];
@@ -142,8 +136,8 @@ export default function FeaturesPage() {
 	// Stats in-view
 	const statsRef = useInView();
 	const c80 = useCounter(80, 1100, statsRef.inView);
-	const c48 = useCounter(48, 1200, statsRef.inView);
-	const c994 = useCounter(994, 1300, statsRef.inView);
+	const c30 = useCounter(30, 1200, statsRef.inView);
+	const c999 = useCounter(999, 1300, statsRef.inView);
 
 	useEffect(() => {
 		const id = requestAnimationFrame(() => setVisible(true));
@@ -181,9 +175,9 @@ export default function FeaturesPage() {
 
 				<div className="container mx-auto px-4 text-center relative">
 					<div className={`transition-all duration-1000 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-						<SectionBadge icon={Headset} label="Everything your support team needs" />
+						<SectionBadge icon={Headset} label="Everything you need to support your customers" />
 						<h1 className="text-5xl md:text-[5rem] font-black mb-5 text-balance tracking-tight leading-[1.02]" style={{ lineHeight: 1.04 }}>
-							Features built for{" "}
+							Built for the{" "}
 							<span
 								style={{
 									background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
@@ -191,13 +185,13 @@ export default function FeaturesPage() {
 									WebkitTextFillColor: "transparent",
 									backgroundClip: "text",
 								}}>
-								modern support
+								next era
 							</span>
+							{" "}of support
 						</h1>
 						<p
 							className={`text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-10 text-pretty transition-all duration-1000 delay-150 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							From AI-powered automation to enterprise security, every capability in OnDesk.cc is designed to help your team resolve more,
-							faster.
+							From unified inbox to AI automation — everything you need to deliver great support, whether you're a solo consultant or a global team.
 						</p>
 
 						<div
@@ -229,10 +223,10 @@ export default function FeaturesPage() {
 						ref={statsRef.ref as React.RefObject<HTMLDivElement>}
 						className={`grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto transition-all duration-1000 delay-400 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 						{[
-							{ icon: TrendingUp, value: `${c80}%`, label: "Auto-resolution" },
-							{ icon: Clock, value: `${c48}s`, label: "First response" },
-							{ icon: Star, value: `${(c994 / 1000).toFixed(1)}★`, label: "Avg. CSAT" },
-							{ icon: Shield, value: "SOC 2", label: "Certified", static: true },
+							{ icon: TrendingUp, value: `${c80}%`, label: "Auto-resolved" },
+							{ icon: Clock, value: `<${c30}s`, label: "Routing Latency" },
+							{ icon: Shield, value: `${(c999 / 10).toFixed(2)}%`, label: "Uptime SLA" },
+							{ icon: Star, value: "4.9★", label: "Business Impact", static: true },
 						].map(({ icon: Icon, value, label }) => (
 							<div
 								key={label}
@@ -274,9 +268,9 @@ function FeatureGridSection({ activeTab, setActiveTab, filtered }: { activeTab: 
 	return (
 		<section ref={ref} className="container mx-auto px-4 py-20 md:py-28">
 			<div className={`text-center mb-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-				<SectionBadge icon={Sparkles} label="All features" />
-				<h2 className="text-3xl md:text-5xl font-black mb-4 text-balance tracking-tight">Explore everything we offer</h2>
-				<p className="text-xl text-muted-foreground max-w-xl mx-auto">Filter by category to find exactly what your team needs.</p>
+				<SectionBadge icon={Sparkles} label="Core capabilities" />
+				<h2 className="text-3xl md:text-5xl font-black mb-4 text-balance tracking-tight">The Pulse Ecosystem</h2>
+				<p className="text-xl text-muted-foreground max-w-xl mx-auto">Discover the pillars of the most advanced support orchestration platform.</p>
 			</div>
 
 			{/* Tabs */}
@@ -385,8 +379,8 @@ function SocialProofSection() {
 			/>
 			<div className="container mx-auto px-4 max-w-5xl relative">
 				<div className={`text-center mb-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-					<SectionBadge icon={Star} label="Testimonials" />
-					<h2 className="text-3xl md:text-4xl font-black text-balance tracking-tight">What teams say after switching</h2>
+					<SectionBadge icon={Star} label="Global impact" />
+					<h2 className="text-3xl md:text-4xl font-black text-balance tracking-tight">Trusted by engineering-led support teams</h2>
 				</div>
 				<div className="grid md:grid-cols-3 gap-5">
 					{SOCIAL_PROOF.map(({ quote, author, role, rating }, i) => (
@@ -451,11 +445,11 @@ function FeaturesCtaSection() {
 
 				<div className="relative z-10">
 					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 border border-white/25 text-sm font-medium text-white mb-8">
-						<Sparkles className="size-3.5" /> Ready to see every feature live?
+						<Sparkles className="size-3.5" /> High-performance support starts here
 					</div>
-					<h2 className="text-4xl md:text-6xl font-black mb-5 text-white text-balance tracking-tight">Start your free trial today</h2>
+					<h2 className="text-4xl md:text-6xl font-black mb-5 text-white text-balance tracking-tight">Deploy Pulse in minutes</h2>
 					<p className="text-xl text-white/75 mb-10 max-w-xl mx-auto leading-relaxed">
-						14 days. No credit card. Full access to every feature from day one.
+						Experience the power of autonomous support. 14-day full access trial, no commitment required.
 					</p>
 					<div className="flex flex-col sm:flex-row justify-center gap-4">
 						<Button

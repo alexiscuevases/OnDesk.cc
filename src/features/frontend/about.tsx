@@ -30,12 +30,12 @@ const TIMELINE = [
 	{
 		year: "2022",
 		title: "Founded",
-		desc: "Three engineers leave Microsoft frustrated by the state of enterprise support tooling. OnDesk.cc ships its first beta to 12 teams.",
+		desc: "Three engineers leave Microsoft frustrated by the state of enterprise support tooling. Pulse (launched as OnDesk) ships its first beta to 12 teams.",
 	},
 	{
 		year: "2023",
-		title: "Microsoft 365 native launch",
-		desc: "Deep integration with Outlook, Teams, and the M365 Graph API goes live. First 100 paying customers in 90 days.",
+		title: "Native integrations launch",
+		desc: "Deep integrations with Microsoft 365 and Google Workspace go live. First 100 paying customers in 90 days.",
 	},
 	{
 		year: "2024",
@@ -108,11 +108,11 @@ const TEAM = [
 
 const PRESS = [
 	{
-		quote: "OnDesk.cc is quietly becoming the default choice for Microsoft-first enterprise teams.",
+		quote: "Pulse is the rare support tool that works just as well for a solo consultant as it does for a 500-person enterprise.",
 		source: "TechCrunch",
 	},
 	{
-		quote: "The tightest Microsoft 365 integration we have seen in a support product  by a wide margin.",
+		quote: "Whether you're running one inbox or fifty, Pulse keeps everything organized without making you feel like you need an IT department.",
 		source: "The Verge",
 	},
 	{
@@ -123,7 +123,7 @@ const PRESS = [
 
 const INVESTORS = ["Accel", "Sequoia", "Index Ventures", "Microsoft M12"];
 
-const MISSION_CHECKS = ["SOC 2 Type II certified", "GDPR & CCPA compliant", "Data residency in US, EU, and APAC", "99.97% uptime SLA"];
+const MISSION_CHECKS = ["SOC 2 Type II certified", "GDPR & CCPA compliant", "Plans starting at $9 flat — scales to enterprise", "99.97% uptime SLA"];
 
 //  Sections
 
@@ -141,8 +141,8 @@ function MissionSection() {
 							people doing that work deserve better tools than a shared inbox and a spreadsheet.
 						</p>
 						<p className="text-muted-foreground leading-relaxed">
-							OnDesk.cc is built to give enterprise support teams the speed and structure they need to actually solve problems without the
-							complexity of legacy platforms or the instability of early-stage startups.
+							Pulse is built to give support teams of every size the speed and structure they need to actually solve problems through autonomous orchestration, without the
+							complexity of legacy platforms.
 						</p>
 					</div>
 					<div className={`transition-all duration-700 delay-150 ${inView ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"}`}>
@@ -479,7 +479,7 @@ export default function AboutPage() {
 					</h1>
 					<p
 						className={`text-xl text-muted-foreground leading-relaxed text-pretty mb-10 transition-all duration-700 delay-200 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						OnDesk.cc is a team of 47 people across 14 countries building the support platform that enterprise Microsoft 365 teams actually
+						Pulse is a team of 47 people across 14 countries building the autonomous support infrastructure that teams of every size actually
 						deserve.
 					</p>
 					<div

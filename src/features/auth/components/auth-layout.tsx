@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Headset, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 
@@ -7,12 +7,11 @@ type OrbVariant = "left-right" | "right-left" | "center";
 
 interface AuthLayoutProps {
 	children: ReactNode;
-	backLink?: { to: "/auth/signin" | "/auth/signup" | "/auth/recover"; label: string };
-	footer?: ReactNode;
+	backLink?: { to: "/" | "/auth/signin"; label: string };
 	orbVariant?: OrbVariant;
 }
 
-export function AuthLayout({ children, backLink, footer }: AuthLayoutProps) {
+export function AuthLayout({ children, backLink }: AuthLayoutProps) {
 	const [visible, setVisible] = useState(false);
 	const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
 
@@ -64,11 +63,6 @@ export function AuthLayout({ children, backLink, footer }: AuthLayoutProps) {
 				</Link>
 			)}
 
-			{/* Home link top-right */}
-			<a href="/" className="absolute top-6 right-6 text-xs text-muted-foreground hover:text-foreground transition-colors z-10 hidden sm:block">
-				← Back to site
-			</a>
-
 			{/* Card wrapper with entry animation */}
 			<div className={`relative w-full max-w-md transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 				{/* Card glow ring */}
@@ -90,31 +84,12 @@ export function AuthLayout({ children, backLink, footer }: AuthLayoutProps) {
 						boxShadow: "0 32px 80px -12px color-mix(in srgb, var(--color-primary) 18%, transparent), 0 4px 24px -4px rgba(0,0,0,0.1)",
 					}}>
 					{/* Logo */}
-					<div className="flex items-center justify-center gap-2.5 mb-8">
-						<div
-							className="size-11 rounded-xl flex items-center justify-center shadow-lg"
-							style={{
-								background: "var(--color-primary)",
-								boxShadow: "0 8px 24px -4px color-mix(in srgb, var(--color-primary) 50%, transparent)",
-							}}>
-							<Headset className="size-6 text-primary-foreground" />
-						</div>
-						<div className="flex flex-col items-start">
-							<span className="text-xl font-bold leading-none">OnDesk</span>
-							<span className="text-[10px] text-muted-foreground leading-none mt-0.5">Microsoft 365</span>
-						</div>
+					<div className="flex items-center justify-center mb-8">
+						<img src="/logo.png" alt="Pulse Logo" height={300} className="h-10" />
 					</div>
 
 					{children}
 				</div>
-
-				{/* Footer */}
-				{footer && (
-					<div
-						className={`mt-6 text-center transition-all duration-700 delay-200 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-						{footer}
-					</div>
-				)}
 			</div>
 		</div>
 	);

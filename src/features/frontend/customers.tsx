@@ -4,7 +4,7 @@ import { ArrowRight, Star, TrendingDown, Clock, Users, Zap, ChevronRight, Quote,
 import { useState, useEffect, useCallback } from "react";
 import { useInView, useCounter, SectionBadge } from "./shared";
 
-const INDUSTRIES = ["All", "Technology", "Retail", "Healthcare", "Finance", "Education"];
+const INDUSTRIES = ["All", "Technology", "Retail", "Agency", "Finance", "Education"];
 
 const CASE_STUDIES = [
 	{
@@ -16,14 +16,14 @@ const CASE_STUDIES = [
 		challenge:
 			"Fabrikam's IT support team was drowning in repetitive Microsoft 365 license and onboarding tickets. Agents spent 60% of their time on issues that had identical resolutions.",
 		solution:
-			"Deployed OnDesk.cc's AI agents to auto-resolve password resets, license requests, and onboarding checklists. Integrated directly with their Azure AD and Teams channels.",
+			"Deployed Pulse AI agents to auto-resolve password resets, license requests, and onboarding checklists. Integrated directly with their Azure AD and Teams channels.",
 		results: [
 			{ metric: "59%", label: "Reduction in headcount needed", icon: Users },
 			{ metric: "4 min", label: "Average resolution time", icon: Clock },
 			{ metric: "94%", label: "CSAT score", icon: Star },
 			{ metric: "$420K", label: "Annual cost savings", icon: TrendingDown },
 		],
-		quote: "We evaluated six tools. OnDesk.cc was the only one that had a truly native Microsoft Teams experience — not just a webhook bolted on.",
+		quote: "We evaluated six tools. Pulse was the only one that had a truly native Microsoft Teams orchestration — not just a webhook bolted on.",
 		author: "Marcus Rivera",
 		role: "IT Director",
 		plan: "Enterprise",
@@ -37,7 +37,7 @@ const CASE_STUDIES = [
 		tagline: "Customer support scaled 4× without adding headcount",
 		challenge: "A peak-season surge doubled inbound customer tickets. The team had no way to predict volume or automatically route by urgency.",
 		solution:
-			"Used OnDesk.cc's predictive routing, SLA breach alerts, and canned responses powered by AI to handle peak load without hiring seasonal agents.",
+			"Used Pulse's predictive routing, SLA breach alerts, and autonomous responses to handle peak load without hiring seasonal agents.",
 		results: [
 			{ metric: "4×", label: "Volume handled, same team size", icon: TrendingDown },
 			{ metric: "98%", label: "SLA compliance during peak", icon: Shield },
@@ -48,6 +48,46 @@ const CASE_STUDIES = [
 		author: "Priya Patel",
 		role: "VP Operations",
 		plan: "Professional",
+		featured: false,
+	},
+	{
+		company: "BrightSupport Agency",
+		industry: "Agency",
+		logo: "BS",
+		color: "bg-indigo-500",
+		tagline: "8 clients. 1 inbox. Zero context-switching.",
+		challenge: "BrightSupport managed email support for 8 SaaS clients across 4 different tools. Agents constantly switched tabs, mixed up client voices, and lacked any cross-client reporting to show clients what they were actually getting.",
+		solution: "Consolidated all clients into Pulse with separate client workspaces, custom inboxes per client, and a shared analytics view for reporting. Each agent was scoped to their assigned clients only.",
+		results: [
+			{ metric: "8", label: "Clients in one workspace", icon: Users },
+			{ metric: "60%", label: "Less time on context-switching", icon: Clock },
+			{ metric: "100%", label: "Client data isolation", icon: Shield },
+			{ metric: "3×", label: "Faster monthly reporting", icon: BarChart3 },
+		],
+		quote: "We onboard new clients in under an hour now. The isolation between client workspaces is exactly what we needed to feel confident nothing would bleed across.",
+		author: "James Okafor",
+		role: "Operations Lead",
+		plan: "Core",
+		featured: false,
+	},
+	{
+		company: "Torres Digital",
+		industry: "Technology",
+		logo: "TD",
+		color: "bg-teal-500",
+		tagline: "Solo consultant. 3 products. Zero dropped requests.",
+		challenge: "Mia Torres managed client support solo for three SaaS products she'd built. Requests came through email, a contact form, and Twitter DMs. She was constantly dropping things and losing track of who she'd replied to.",
+		solution: "Connected all 3 channels to Pulse Starter in one afternoon. Set up canned replies for her 10 most common questions and an auto-reply for nights and weekends.",
+		results: [
+			{ metric: "< 10 min", label: "Setup time", icon: Zap },
+			{ metric: "3", label: "Products managed solo", icon: Users },
+			{ metric: "0", label: "Dropped requests since launch", icon: Shield },
+			{ metric: "2×", label: "Faster reply time", icon: Clock },
+		],
+		quote: "I was running support across three inboxes and two browsers. Pulse Starter pulled it all together in an afternoon. I haven't missed a message since.",
+		author: "Mia Torres",
+		role: "Independent Consultant",
+		plan: "Starter",
 		featured: false,
 	},
 	{
@@ -66,7 +106,7 @@ const CASE_STUDIES = [
 			{ metric: "73%", label: "Faster compliance reporting", icon: BarChart3 },
 			{ metric: "91%", label: "Agent satisfaction score", icon: Star },
 		],
-		quote: "In healthcare, a data breach is existential. OnDesk.cc gave us the controls and audit trails that legacy tools never could.",
+		quote: "In healthcare, a data breach is existential. Pulse gave us the controls and sovereign audit trails that legacy tools never could.",
 		author: "Dr. Sandra Lin",
 		role: "CISO",
 		plan: "Enterprise",
@@ -103,7 +143,7 @@ const CASE_STUDIES = [
 		challenge:
 			"Fourteen regional offices each managed their own ticket queues in different tools. Cross-region escalations fell through the cracks regularly.",
 		solution:
-			"Consolidated all queues into OnDesk.cc with region-aware routing, automatic escalation paths, and a shared analytics dashboard for regional managers.",
+			"Consolidated all queues into Pulse with region-aware routing, automatic escalation paths, and a shared intelligence dashboard for regional managers.",
 		results: [
 			{ metric: "14→1", label: "Queues unified into one", icon: Users },
 			{ metric: "0", label: "Cross-region escalation failures in 6 months", icon: Shield },
@@ -197,8 +237,7 @@ export default function CustomersPage() {
 						</h1>
 						<p
 							className={`text-xl text-muted-foreground leading-relaxed text-pretty transition-all duration-1000 delay-150 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							See how support teams across every industry use OnDesk.cc to resolve tickets faster, reduce costs, and finally get ahead of
-							the queue.
+							Real results from support teams, agencies, and solo operators around the world.
 						</p>
 					</div>
 

@@ -13,6 +13,7 @@ import { Route as WorkspacesRouteImport } from './routes/workspaces'
 import { Route as WRouteImport } from './routes/w'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StatusRouteImport } from './routes/status'
+import { Route as SolutionsRouteImport } from './routes/solutions'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -30,6 +31,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkspacesIndexRouteImport } from './routes/workspaces/index'
 import { Route as WorkspacesNewRouteImport } from './routes/workspaces/new'
 import { Route as WSlugRouteImport } from './routes/w/$slug'
+import { Route as SolutionsSupportTeamsRouteImport } from './routes/solutions/support-teams'
+import { Route as SolutionsSoloSmallTeamsRouteImport } from './routes/solutions/solo-small-teams'
+import { Route as SolutionsAgenciesRouteImport } from './routes/solutions/agencies'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthSigninRouteImport } from './routes/auth/signin'
 import { Route as AuthRecoverRouteImport } from './routes/auth/recover'
@@ -61,6 +65,11 @@ const TermsRoute = TermsRouteImport.update({
 const StatusRoute = StatusRouteImport.update({
   id: '/status',
   path: '/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SolutionsRoute = SolutionsRouteImport.update({
+  id: '/solutions',
+  path: '/solutions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SecurityRoute = SecurityRouteImport.update({
@@ -148,6 +157,21 @@ const WSlugRoute = WSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => WRoute,
 } as any)
+const SolutionsSupportTeamsRoute = SolutionsSupportTeamsRouteImport.update({
+  id: '/support-teams',
+  path: '/support-teams',
+  getParentRoute: () => SolutionsRoute,
+} as any)
+const SolutionsSoloSmallTeamsRoute = SolutionsSoloSmallTeamsRouteImport.update({
+  id: '/solo-small-teams',
+  path: '/solo-small-teams',
+  getParentRoute: () => SolutionsRoute,
+} as any)
+const SolutionsAgenciesRoute = SolutionsAgenciesRouteImport.update({
+  id: '/agencies',
+  path: '/agencies',
+  getParentRoute: () => SolutionsRoute,
+} as any)
 const AuthSignupRoute = AuthSignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -224,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
+  '/solutions': typeof SolutionsRouteWithChildren
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/w': typeof WRouteWithChildren
@@ -231,6 +256,9 @@ export interface FileRoutesByFullPath {
   '/auth/recover': typeof AuthRecoverRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/solutions/agencies': typeof SolutionsAgenciesRoute
+  '/solutions/solo-small-teams': typeof SolutionsSoloSmallTeamsRoute
+  '/solutions/support-teams': typeof SolutionsSupportTeamsRoute
   '/w/$slug': typeof WSlugRouteWithChildren
   '/workspaces/new': typeof WorkspacesNewRoute
   '/workspaces/': typeof WorkspacesIndexRoute
@@ -259,12 +287,16 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
+  '/solutions': typeof SolutionsRouteWithChildren
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/w': typeof WRouteWithChildren
   '/auth/recover': typeof AuthRecoverRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/solutions/agencies': typeof SolutionsAgenciesRoute
+  '/solutions/solo-small-teams': typeof SolutionsSoloSmallTeamsRoute
+  '/solutions/support-teams': typeof SolutionsSupportTeamsRoute
   '/w/$slug': typeof WSlugRouteWithChildren
   '/workspaces/new': typeof WorkspacesNewRoute
   '/workspaces': typeof WorkspacesIndexRoute
@@ -293,6 +325,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/security': typeof SecurityRoute
+  '/solutions': typeof SolutionsRouteWithChildren
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/w': typeof WRouteWithChildren
@@ -300,6 +333,9 @@ export interface FileRoutesById {
   '/auth/recover': typeof AuthRecoverRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/solutions/agencies': typeof SolutionsAgenciesRoute
+  '/solutions/solo-small-teams': typeof SolutionsSoloSmallTeamsRoute
+  '/solutions/support-teams': typeof SolutionsSupportTeamsRoute
   '/w/$slug': typeof WSlugRouteWithChildren
   '/workspaces/new': typeof WorkspacesNewRoute
   '/workspaces/': typeof WorkspacesIndexRoute
@@ -330,6 +366,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/security'
+    | '/solutions'
     | '/status'
     | '/terms'
     | '/w'
@@ -337,6 +374,9 @@ export interface FileRouteTypes {
     | '/auth/recover'
     | '/auth/signin'
     | '/auth/signup'
+    | '/solutions/agencies'
+    | '/solutions/solo-small-teams'
+    | '/solutions/support-teams'
     | '/w/$slug'
     | '/workspaces/new'
     | '/workspaces/'
@@ -365,12 +405,16 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/security'
+    | '/solutions'
     | '/status'
     | '/terms'
     | '/w'
     | '/auth/recover'
     | '/auth/signin'
     | '/auth/signup'
+    | '/solutions/agencies'
+    | '/solutions/solo-small-teams'
+    | '/solutions/support-teams'
     | '/w/$slug'
     | '/workspaces/new'
     | '/workspaces'
@@ -398,6 +442,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/security'
+    | '/solutions'
     | '/status'
     | '/terms'
     | '/w'
@@ -405,6 +450,9 @@ export interface FileRouteTypes {
     | '/auth/recover'
     | '/auth/signin'
     | '/auth/signup'
+    | '/solutions/agencies'
+    | '/solutions/solo-small-teams'
+    | '/solutions/support-teams'
     | '/w/$slug'
     | '/workspaces/new'
     | '/workspaces/'
@@ -434,6 +482,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   SecurityRoute: typeof SecurityRoute
+  SolutionsRoute: typeof SolutionsRouteWithChildren
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   WRoute: typeof WRouteWithChildren
@@ -468,6 +517,13 @@ declare module '@tanstack/react-router' {
       path: '/status'
       fullPath: '/status'
       preLoaderRoute: typeof StatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solutions': {
+      id: '/solutions'
+      path: '/solutions'
+      fullPath: '/solutions'
+      preLoaderRoute: typeof SolutionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/security': {
@@ -589,6 +645,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WSlugRouteImport
       parentRoute: typeof WRoute
     }
+    '/solutions/support-teams': {
+      id: '/solutions/support-teams'
+      path: '/support-teams'
+      fullPath: '/solutions/support-teams'
+      preLoaderRoute: typeof SolutionsSupportTeamsRouteImport
+      parentRoute: typeof SolutionsRoute
+    }
+    '/solutions/solo-small-teams': {
+      id: '/solutions/solo-small-teams'
+      path: '/solo-small-teams'
+      fullPath: '/solutions/solo-small-teams'
+      preLoaderRoute: typeof SolutionsSoloSmallTeamsRouteImport
+      parentRoute: typeof SolutionsRoute
+    }
+    '/solutions/agencies': {
+      id: '/solutions/agencies'
+      path: '/agencies'
+      fullPath: '/solutions/agencies'
+      preLoaderRoute: typeof SolutionsAgenciesRouteImport
+      parentRoute: typeof SolutionsRoute
+    }
     '/auth/signup': {
       id: '/auth/signup'
       path: '/signup'
@@ -690,6 +767,22 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface SolutionsRouteChildren {
+  SolutionsAgenciesRoute: typeof SolutionsAgenciesRoute
+  SolutionsSoloSmallTeamsRoute: typeof SolutionsSoloSmallTeamsRoute
+  SolutionsSupportTeamsRoute: typeof SolutionsSupportTeamsRoute
+}
+
+const SolutionsRouteChildren: SolutionsRouteChildren = {
+  SolutionsAgenciesRoute: SolutionsAgenciesRoute,
+  SolutionsSoloSmallTeamsRoute: SolutionsSoloSmallTeamsRoute,
+  SolutionsSupportTeamsRoute: SolutionsSupportTeamsRoute,
+}
+
+const SolutionsRouteWithChildren = SolutionsRoute._addFileChildren(
+  SolutionsRouteChildren,
+)
+
 interface WSlugTicketsRouteChildren {
   WSlugTicketsIdRoute: typeof WSlugTicketsIdRoute
   WSlugTicketsIndexRoute: typeof WSlugTicketsIndexRoute
@@ -765,6 +858,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   SecurityRoute: SecurityRoute,
+  SolutionsRoute: SolutionsRouteWithChildren,
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   WRoute: WRouteWithChildren,

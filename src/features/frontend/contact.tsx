@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,9 +13,21 @@ import { useInView, useCounter, SectionBadge } from "./shared";
 const CONTACT_OPTIONS = [
 	{
 		icon: MessageSquare,
+		title: "General",
+		desc: "New to Pulse, not sure where to start, or just have a quick question? We read every message.",
+		detail: "hello@pulse.cc",
+		badge: "Replies in < 8 hours",
+		badgeStyle: {
+			background: "color-mix(in srgb, var(--color-accent) 12%, transparent)",
+			color: "var(--color-accent)",
+			borderColor: "color-mix(in srgb, var(--color-accent) 25%, transparent)",
+		} as React.CSSProperties,
+	},
+	{
+		icon: Mail,
 		title: "Sales",
-		desc: "Talk to our sales team about pricing, plans, and whether OnDesk.cc is the right fit for your team.",
-		detail: "sales@ondesk.cc",
+		desc: "Questions about plans, pricing, or whether Pulse is right for you — we're happy to help.",
+		detail: "sales@pulse.cc",
 		badge: "Replies in < 4 hours",
 		badgeStyle: {
 			background: "color-mix(in srgb, #22c55e 12%, transparent)",
@@ -26,8 +38,8 @@ const CONTACT_OPTIONS = [
 	{
 		icon: Phone,
 		title: "Enterprise",
-		desc: "Dedicated support for teams of 50+ with custom contracts, SSO, compliance reviews, and SLA guarantees.",
-		detail: "enterprise@ondesk.cc",
+		desc: "Custom contracts, SSO, compliance reviews, and SLA guarantees for teams with advanced requirements.",
+		detail: "enterprise@pulse.cc",
 		badge: "Dedicated team",
 		badgeStyle: {
 			background: "color-mix(in srgb, var(--color-primary) 10%, transparent)",
@@ -36,10 +48,10 @@ const CONTACT_OPTIONS = [
 		} as React.CSSProperties,
 	},
 	{
-		icon: Mail,
+		icon: Zap,
 		title: "Press",
 		desc: "Media inquiries, logo requests, and press kit. We are happy to provide interviews, quotes, and company data.",
-		detail: "press@ondesk.cc",
+		detail: "press@pulse.cc",
 		badge: "Replies in < 24 hours",
 		badgeStyle: {
 			background: "color-mix(in srgb, var(--color-muted) 80%, transparent)",
@@ -55,6 +67,7 @@ const OFFICES = [
 ];
 
 const REASONS: Record<string, string> = {
+	general: "Tell us a bit about yourself and what you're trying to do. We'll point you in the right direction.",
 	sales: "Tell us your team size, current setup, and what you are hoping to solve.",
 	enterprise: "Describe your requirements  SSO, compliance, SLA, or custom contracts.",
 	technical: "Share details about the issue or integration you need help with.",
@@ -69,7 +82,7 @@ function ContactChannelsSection() {
 	return (
 		<section className="border-b border-border py-16" ref={ref}>
 			<div className="container mx-auto px-4 max-w-5xl">
-				<div className="grid md:grid-cols-3 gap-4">
+				<div className="grid md:grid-cols-4 gap-4">
 					{CONTACT_OPTIONS.map(({ icon: Icon, title, desc, detail, badge, badgeStyle }, i) => (
 						<div
 							key={title}
@@ -207,6 +220,7 @@ function ContactFormSection({
 											<SelectValue placeholder="Select a topic" />
 										</SelectTrigger>
 										<SelectContent>
+											<SelectItem value="general">General question</SelectItem>
 											<SelectItem value="sales">Sales inquiry</SelectItem>
 											<SelectItem value="enterprise">Enterprise plan</SelectItem>
 											<SelectItem value="technical">Technical support</SelectItem>
@@ -394,7 +408,7 @@ export default function ContactPage() {
 					</h1>
 					<p
 						className={`text-xl text-muted-foreground leading-relaxed text-pretty transition-all duration-700 delay-200 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						Whether you are evaluating OnDesk.cc, scaling an existing plan, or just have a question we would love to hear from you.
+						We're here to help. Reach out to the right team and we'll get back to you fast.
 					</p>
 
 					<div

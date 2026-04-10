@@ -17,10 +17,7 @@ export default function SignInView() {
 	}
 
 	return (
-		<AuthLayout
-			orbVariant="left-right"
-			backLink={{ to: "/auth/signin", label: "Back to home" }}
-			footer={<p className="text-sm text-muted-foreground">Secured by Microsoft 365 • Enterprise-grade encryption</p>}>
+		<AuthLayout orbVariant="left-right" backLink={{ to: "/", label: "Back to home" }}>
 			<div className="text-center mb-8">
 				<h1 className="text-3xl font-bold mb-2">Welcome back</h1>
 				<p className="text-muted-foreground">Sign in to access your support dashboard</p>

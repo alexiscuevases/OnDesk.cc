@@ -9,11 +9,26 @@ const FILTER_TAGS = ["All", "Major", "Minor", "Patch"];
 
 const RELEASES = [
 	{
+		version: "3.5.0",
+		date: "March 2025",
+		tag: "Minor",
+		icon: Sparkles,
+		headline: "Pulse Starter, Google Workspace, and smarter canned replies",
+		changes: [
+			{ type: "new", text: "Pulse Starter plan — flat-rate pricing for solo operators and small teams" },
+			{ type: "new", text: "Google Workspace integration — Gmail and Google Chat channels now supported" },
+			{ type: "new", text: "Canned replies now support AI-assisted personalization before sending" },
+			{ type: "new", text: "E-commerce integrations: Stripe and Shopify order context in ticket sidebar" },
+			{ type: "improvement", text: "Mobile app: inbox filters now persist between sessions" },
+			{ type: "fix", text: "Fixed canned reply search not returning results with accented characters" },
+		],
+	},
+	{
 		version: "3.4.0",
 		date: "February 2025",
 		tag: "Major",
 		icon: Bot,
-		headline: "AI Agents v2 — smarter, faster, context-aware",
+		headline: "The Pulse Orchestration Update — smarter, faster, sovereign",
 		changes: [
 			{ type: "new", text: "AI Agents v2 — context-aware multi-turn reasoning with memory" },
 			{ type: "new", text: "Microsoft Copilot integration (beta) — surface ticket context in Copilot Chat" },
@@ -81,12 +96,12 @@ const RELEASES = [
 		date: "September 2024",
 		tag: "Major",
 		icon: Shield,
-		headline: "OnDesk.cc v3 — rebuilt from the ground up",
+		headline: "Pulse v3 — the platform, rebuilt from the ground up",
 		changes: [
-			{ type: "new", text: "OnDesk.cc v3 — rebuilt UI with new design system" },
+			{ type: "new", text: "Pulse v3 — comprehensive architecture overhaul and new design system" },
 			{ type: "new", text: "AI Agents v1 — automated triage and first response" },
-			{ type: "new", text: "Microsoft 365 native integration (Teams, Outlook, Azure AD, SharePoint)" },
-			{ type: "new", text: "Enterprise: customer-managed encryption keys" },
+			{ type: "new", text: "Microsoft 365 and Google Workspace native integrations" },
+			{ type: "new", text: "Enterprise: customer-managed encryption keys (Enterprise plan)" },
 			{ type: "new", text: "Advanced analytics with CSAT, NPS, and volume forecasting" },
 		],
 	},
@@ -145,7 +160,7 @@ export default function ChangelogPage() {
 
 				<div className="container mx-auto px-4 text-center relative">
 					<div className={`transition-all duration-1000 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-						<SectionBadge icon={Rss} label="Always up to date" />
+						<SectionBadge icon={Rss} label="Pulse Evolution" />
 						<h1 className="text-5xl md:text-[5rem] font-black mb-5 text-balance tracking-tight" style={{ lineHeight: 1.04 }}>
 							What's{" "}
 							<span
@@ -160,7 +175,7 @@ export default function ChangelogPage() {
 						</h1>
 						<p
 							className={`text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed text-pretty mb-10 transition-all duration-1000 delay-150 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							Every update, improvement, and fix — documented transparently so you always know what changed and why.
+							Tracking the continuous evolution of Pulse as the world's most advanced autonomous support platform.
 						</p>
 						<div className={`transition-all duration-1000 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 							<Button

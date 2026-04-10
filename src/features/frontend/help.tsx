@@ -39,20 +39,20 @@ const CATEGORIES: Category[] = [
 	{
 		icon: Settings,
 		label: "Getting Started",
-		description: "Onboarding, workspace setup, and first steps.",
-		count: 18,
+		description: "Set up your workspace, invite your team, and connect your channels.",
+		count: 22,
 		articles: [
-			{ title: "Creating your OnDesk.cc account", href: "#", popular: true },
-			{ title: "Connecting Microsoft 365 to your workspace", href: "#", popular: true },
+			{ title: "Creating your Pulse account", href: "#", popular: true },
+			{ title: "Connecting your first channel", href: "#", popular: true },
 			{ title: "Inviting your team and setting roles", href: "#" },
 			{ title: "Importing existing tickets from Zendesk / Freshdesk", href: "#" },
 		],
 	},
 	{
 		icon: Bot,
-		label: "AI Agents",
-		description: "Set up, train, and fine-tune your AI agents.",
-		count: 24,
+		label: "Pulse AI Core",
+		description: "Deploying and fine-tuning autonomous resolution agents.",
+		count: 31,
 		articles: [
 			{ title: "How AI Agents triage incoming tickets", href: "#", popular: true },
 			{ title: "Configuring escalation rules", href: "#" },
@@ -69,7 +69,7 @@ const CATEGORIES: Category[] = [
 			{ title: "Creating your first SLA policy", href: "#", popular: true },
 			{ title: "Building automation rules with triggers", href: "#" },
 			{ title: "Skill-based routing setup", href: "#" },
-			{ title: "Power Automate connector reference", href: "#" },
+			{ title: "Automation rules reference", href: "#" },
 		],
 	},
 	{
@@ -112,7 +112,7 @@ const CATEGORIES: Category[] = [
 
 const ALL_ARTICLES = CATEGORIES.flatMap((c) => c.articles.map((a) => ({ ...a, category: c.label })));
 
-const POPULAR_QUERIES = ["Reset password", "Teams notifications", "Custom email domain", "Export tickets CSV", "Two-factor auth", "SLA breach alert"];
+const POPULAR_QUERIES = ["Reset password", "Connect Gmail", "Custom email domain", "Export tickets CSV", "Two-factor auth", "SLA breach alert"];
 
 const QUICK_LINKS = [
 	{ icon: Video, label: "Video tutorials", description: "25+ walkthroughs", href: "#" },
@@ -151,7 +151,7 @@ export default function HelpCenterPage() {
 							we help?
 						</span>
 					</h1>
-					<p className="text-xl text-muted-foreground mb-8 text-pretty leading-relaxed">Search our docs or browse by category below.</p>
+					<p className="text-xl text-muted-foreground mb-8 text-pretty leading-relaxed">Find answers, browse guides, or reach out — we're here for every kind of Pulse user.</p>
 
 					{/* Search */}
 					<div className="relative">
@@ -243,9 +243,9 @@ export default function HelpCenterPage() {
 function HelpTrustBar() {
 	const { ref, inView } = useInView();
 	const items = [
-		{ icon: Clock, stat: "< 2 hrs", label: "Avg. response time" },
-		{ icon: ThumbsUp, stat: "97%", label: "Satisfaction rate" },
-		{ icon: BookOpen, stat: "200+", label: "Articles published" },
+		{ icon: Clock, stat: "< 1 hr", label: "Avg. response time" },
+		{ icon: ThumbsUp, stat: "98%", label: "Satisfaction rate" },
+		{ icon: BookOpen, stat: "350+", label: "Articles published" },
 	];
 	return (
 		<section ref={ref} className="border-b border-border" style={{ background: "var(--color-card)" }}>

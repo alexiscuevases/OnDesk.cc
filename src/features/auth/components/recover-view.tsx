@@ -15,10 +15,7 @@ export default function RecoverView() {
 	}
 
 	return (
-		<AuthLayout
-			orbVariant="center"
-			backLink={{ to: "/auth/signin", label: "Back to sign in" }}
-			footer={<p className="text-sm text-muted-foreground">Secured by Microsoft 365 • Your data is protected</p>}>
+		<AuthLayout orbVariant="center" backLink={{ to: "/auth/signin", label: "Back to sign in" }}>
 			{!submittedEmail ? (
 				<>
 					<div className="text-center mb-8">

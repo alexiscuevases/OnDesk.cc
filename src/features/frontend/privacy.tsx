@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Shield, ArrowRight, FileText, Lock, Share2, Clock, ShieldCheck, UserCheck, Cookie, Globe, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "./site-layout";
@@ -15,7 +15,7 @@ const SECTIONS = [
             "We collect information you provide directly to us, such as when you create an account, submit a support ticket, or contact us. This includes:",
             [
                 "Account information: name, email address, company name, and password.",
-                "Ticket content: messages, attachments, and metadata submitted through OnDesk.cc.",
+                "Ticket content: messages, attachments, and metadata submitted through Pulse.",
                 "Usage data: log files, IP addresses, browser type, pages viewed, and actions taken within the platform.",
                 "Payment information: processed securely by Stripe; we do not store raw card numbers.",
             ],
@@ -29,7 +29,7 @@ const SECTIONS = [
         body: [
             "We use the information we collect to:",
             [
-                "Provide, maintain, and improve OnDesk.cc.",
+                "Provide, maintain, and improve Pulse.",
                 "Process transactions and send related information, including confirmations and invoices.",
                 "Send technical notices, updates, security alerts, and support messages.",
                 "Respond to your comments and questions.",
@@ -59,7 +59,7 @@ const SECTIONS = [
         icon: Clock,
         body: [
             "We retain your personal data for as long as your account is active or as needed to provide services. Upon account deletion, we delete or anonymize your data within 90 days, except where we are required to retain it for legal or compliance purposes.",
-            "Ticket data and conversation history may be retained for up to 7 years for customers on Enterprise plans with audit log requirements.",
+            "Ticket data and conversation history may be retained for up to 7 years where audit log requirements apply. Extended retention is available on all plans; Enterprise plans include additional compliance-grade audit log exports.",
         ],
     },
     {
@@ -92,7 +92,7 @@ const SECTIONS = [
                 "Data portability  receive a copy of your data in a structured, machine-readable format.",
                 "Withdraw consent at any time where processing is based on consent.",
             ],
-            "To exercise these rights, contact us at privacy@ondesk.cc. We will respond within 30 days.",
+            "To exercise these rights, contact us at privacy@pulse.cc. We will respond within 30 days.",
         ],
     },
     {
@@ -100,7 +100,7 @@ const SECTIONS = [
         title: "Cookies",
         icon: Cookie,
         body: [
-            "We use cookies and similar tracking technologies to operate and improve our services. You can control cookies through your browser settings. Disabling cookies may limit certain features of OnDesk.cc.",
+            "We use cookies and similar tracking technologies to operate and improve our services. You can control cookies through your browser settings. Disabling cookies may limit certain features of Pulse.",
             "We use:",
             [
                 "Strictly necessary cookies: required for core platform functionality.",
@@ -115,7 +115,7 @@ const SECTIONS = [
         icon: Globe,
         body: [
             "Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place, including Standard Contractual Clauses approved by the European Commission.",
-            "Enterprise customers can select their data residency region (US, EU, or APAC) from within the platform settings.",
+            "Data residency region selection (US, EU, or APAC) is available to customers on the Enterprise plan from within the platform settings.",
         ],
     },
     {
@@ -125,10 +125,10 @@ const SECTIONS = [
         body: [
             "If you have any questions about this Privacy Policy, please contact us:",
             [
-                "Email: privacy@ondesk.cc",
-                "Post: OnDesk.cc, Data Protection Office, 123 Innovation Way, London, EC2A 4NE, United Kingdom",
+                "Email: privacy@pulse.cc",
+                "Post: Pulse Intelligence Ltd., Data Protection Office, 123 Innovation Way, London, EC2A 4NE, United Kingdom",
             ],
-            "For EU residents, our Data Protection Officer can be reached at dpo@ondesk.cc.",
+            "For EU residents, our Data Protection Officer can be reached at dpo@pulse.cc.",
         ],
     },
 ];
@@ -249,13 +249,13 @@ export default function PrivacyPage() {
                     </h1>
                     <div className={`flex items-center gap-4 flex-wrap transition-all duration-700 delay-200 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
                         <p className="text-muted-foreground text-sm">
-                            Last updated: <span className="font-medium text-foreground">February 1, 2025</span>
+                            Last updated: <span className="font-medium text-foreground">March 1, 2025</span>
                         </p>
                         <span className="text-border"></span>
                         <p className="text-muted-foreground text-sm">OnDesk.cc Ltd.</p>
                     </div>
                     <p className={`text-base text-muted-foreground mt-4 leading-relaxed max-w-2xl transition-all duration-700 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-                        This Privacy Policy describes how OnDesk.cc Ltd. collects, uses, and shares information about you when you use our services.
+                        This Privacy Policy describes how Pulse Intelligence Ltd. collects, uses, and shares information about you when you use our services.
                     </p>
                     <div className={`flex gap-3 mt-6 transition-all duration-700 delay-400 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
                         <Button size="sm" asChild className="group">
@@ -296,7 +296,7 @@ export default function PrivacyPage() {
                             style={{ background: "color-mix(in srgb, var(--color-primary) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
                             <p className="font-semibold text-xs" style={{ color: "var(--color-primary)" }}>Questions about privacy?</p>
                             <p className="text-xs text-muted-foreground">Contact our Data Protection Officer.</p>
-                            <a href="mailto:dpo@ondesk.cc" className="text-xs font-medium hover:underline" style={{ color: "var(--color-primary)" }}>dpo@ondesk.cc</a>
+                            <a href="mailto:dpo@pulse.cc" className="text-xs font-medium hover:underline" style={{ color: "var(--color-primary)" }}>dpo@pulse.cc</a>
                         </div>
                     </aside>
 

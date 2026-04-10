@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FileText, ArrowRight, Scale, Users, CreditCard, Cpu, BookOpen, EyeOff, Server, Database, AlertTriangle, XCircle, RefreshCw, Gavel, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "./site-layout";
@@ -12,7 +12,7 @@ const SECTIONS = [
         title: "Acceptance of terms",
         icon: Scale,
         body: [
-            `By accessing or using OnDesk.cc (the "Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Service.`,
+            `By accessing or using Pulse (the "Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Service.`,
             "These Terms apply to all visitors, users, and others who access or use the Service. By using the Service on behalf of a company or other legal entity, you represent that you have the authority to bind that entity to these Terms.",
         ],
     },
@@ -48,6 +48,7 @@ const SECTIONS = [
         body: [
             "Certain features of the Service are available on a paid subscription basis. By subscribing, you authorize us to charge your payment method on a recurring basis.",
             "Fees are non-refundable except as required by law or as expressly provided in these Terms. We may change subscription fees at any time, but we will provide at least 30 days' notice before any increase takes effect.",
+            "Your subscription may be billed on a per-agent or flat-rate basis depending on your selected plan. Please refer to the pricing page or your order confirmation for the billing model applicable to your account.",
             "If your payment fails, we may suspend access to the Service until payment is received. After 14 days of non-payment, we reserve the right to terminate your account.",
         ],
     },
@@ -56,7 +57,7 @@ const SECTIONS = [
         title: "Intellectual property",
         icon: BookOpen,
         body: [
-            `The Service and its original content, features, and functionality are and will remain the exclusive property of OnDesk.cc Ltd. and its licensors. The Service is protected by copyright, trademark, and other intellectual property laws.`,
+            `The Service and its original content, features, and functionality are and will remain the exclusive property of Pulse Intelligence Ltd. and its licensors. The Service is protected by copyright, trademark, and other intellectual property laws.`,
             `You retain ownership of all content you submit, post, or display on or through the Service ("Customer Content"). By submitting Customer Content, you grant us a worldwide, non-exclusive, royalty-free license to use, process, and display such content solely to provide the Service.`,
         ],
     },
@@ -75,7 +76,7 @@ const SECTIONS = [
         icon: Server,
         body: [
             "We aim to provide 99.9% monthly uptime for the Service, as described in our Service Level Agreement. Scheduled maintenance windows are excluded from uptime calculations and will be communicated at least 48 hours in advance.",
-            "In the event of a service outage, our status page (ondesk.cc/status) will be updated in real time. Credits for downtime below the SLA threshold are available to customers on Professional and Enterprise plans upon request.",
+            "In the event of a service outage, our status page (pulse.cc/status) will be updated in real time. Credits for downtime below the SLA threshold are available to customers on Starter, Professional, and Enterprise plans upon request.",
         ],
     },
     {
@@ -83,7 +84,7 @@ const SECTIONS = [
         title: "Data processing",
         icon: Database,
         body: [
-            `By using the Service, you authorize us to process Customer Content in accordance with our Privacy Policy and, where applicable, the Data Processing Agreement ("DPA") available to Enterprise customers.`,
+            `By using the Service, you authorize us to process Customer Content in accordance with our Privacy Policy and, where applicable, the Data Processing Agreement ("DPA") available to all customers. Enterprise customers may request an enhanced DPA with additional data residency and audit provisions.`,
             "For customers subject to the GDPR, we act as a Data Processor with respect to personal data contained in Customer Content. Our Privacy Policy describes how we handle such data.",
         ],
     },
@@ -101,7 +102,7 @@ const SECTIONS = [
         title: "Limitation of liability",
         icon: Scale,
         body: [
-            "TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL OnDesk.cc LTD. BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR DAMAGES FOR LOSS OF PROFITS, REVENUE, DATA, GOODWILL, OR OTHER INTANGIBLE LOSSES.",
+            "TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL PULSE INTELLIGENCE LTD. BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR DAMAGES FOR LOSS OF PROFITS, REVENUE, DATA, GOODWILL, OR OTHER INTANGIBLE LOSSES.",
             "OUR TOTAL LIABILITY TO YOU FOR ANY CLAIM ARISING FROM OR RELATING TO THESE TERMS OR THE SERVICE SHALL NOT EXCEED THE GREATER OF (A) THE AMOUNT PAID BY YOU IN THE 12 MONTHS PRECEDING THE CLAIM OR (B) ONE HUNDRED US DOLLARS ($100).",
         ],
     },
@@ -138,9 +139,9 @@ const SECTIONS = [
         title: "Contact",
         icon: Mail,
         body: [
-            "If you have any questions about these Terms, please contact us at legal@ondesk.cc or at:",
+            "If you have any questions about these Terms, please contact us at legal@pulse.cc or at:",
             [
-                "OnDesk.cc Ltd.",
+                "Pulse Intelligence Ltd.",
                 "123 Innovation Way",
                 "London, EC2A 4NE",
                 "United Kingdom",
@@ -265,13 +266,13 @@ export default function TermsPage() {
                     </h1>
                     <div className={`flex items-center gap-4 flex-wrap transition-all duration-700 delay-200 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
                         <p className="text-muted-foreground text-sm">
-                            Last updated: <span className="font-medium text-foreground">February 1, 2025</span>
+                            Last updated: <span className="font-medium text-foreground">March 1, 2025</span>
                         </p>
                         <span className="text-border"></span>
-                        <p className="text-muted-foreground text-sm">OnDesk.cc Ltd.</p>
+                        <p className="text-muted-foreground text-sm">Pulse Intelligence Ltd.</p>
                     </div>
                     <p className={`text-base text-muted-foreground mt-4 leading-relaxed max-w-2xl transition-all duration-700 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-                        Please read these Terms of Service carefully before using OnDesk.cc. These Terms constitute a legally binding agreement between you and OnDesk.cc Ltd.
+                        Please read these Terms of Service carefully before using Pulse. These Terms constitute a legally binding agreement between you and Pulse Intelligence Ltd.
                     </p>
                     <div className={`flex gap-3 mt-6 transition-all duration-700 delay-400 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
                         <Button size="sm" asChild className="group">
@@ -312,7 +313,7 @@ export default function TermsPage() {
                             style={{ background: "color-mix(in srgb, var(--color-primary) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
                             <p className="font-semibold text-xs" style={{ color: "var(--color-primary)" }}>Legal questions?</p>
                             <p className="text-xs text-muted-foreground">Contact our legal team directly.</p>
-                            <a href="mailto:legal@ondesk.cc" className="text-xs font-medium hover:underline" style={{ color: "var(--color-primary)" }}>legal@ondesk.cc</a>
+                            <a href="mailto:legal@pulse.cc" className="text-xs font-medium hover:underline" style={{ color: "var(--color-primary)" }}>legal@pulse.cc</a>
                         </div>
                     </aside>
 

@@ -6,6 +6,17 @@ import { useInView, useCounter, SectionBadge } from "./shared";
 
 const INTEGRATIONS = [
 	{
+		category: "Google Workspace",
+		icon: Globe,
+		description: "First-class support for teams that live in Google — no complexity, just results.",
+		items: [
+			{ name: "Gmail", desc: "Convert inbound Gmail messages into tickets automatically with full threading.", badge: "Native", logo: "📩" },
+			{ name: "Google Chat", desc: "Receive and reply to support tickets directly inside Google Chat spaces.", badge: "Native", logo: "💬" },
+			{ name: "Google Drive", desc: "Attach Drive files to tickets and share KB articles instantly.", badge: null, logo: "📁" },
+			{ name: "Google SSO", desc: "One-click sign-in and user management via Google Identity.", badge: null, logo: "🔑" },
+		],
+	},
+	{
 		category: "Microsoft 365",
 		icon: Globe,
 		description: "First-class, native integrations built specifically for M365 — not bolted-on.",
@@ -39,6 +50,17 @@ const INTEGRATIONS = [
 		],
 	},
 	{
+		category: "E-commerce & Payments",
+		icon: BarChart3,
+		description: "Bring order data, billing context, and payment status directly into every ticket.",
+		items: [
+			{ name: "Stripe", desc: "See subscription status, payment history, and invoices inside any ticket.", badge: null, logo: "💳" },
+			{ name: "Shopify", desc: "Surface order status, tracking, and returns without leaving Pulse.", badge: null, logo: "🛍️" },
+			{ name: "PayPal", desc: "View transaction details and resolve billing disputes faster.", badge: null, logo: "🅿️" },
+			{ name: "WooCommerce", desc: "Connect your WooCommerce store and handle order support in one place.", badge: null, logo: "🛒" },
+		],
+	},
+	{
 		category: "Developer & DevOps",
 		icon: Code2,
 		description: "Bridge support and engineering so bugs get fixed, not forgotten.",
@@ -55,7 +77,7 @@ const INTEGRATIONS = [
 		description: "Extend AI capabilities and connect to thousands of apps with no code.",
 		items: [
 			{ name: "Azure OpenAI", desc: "Power AI agents with your own Azure OpenAI deployment for data sovereignty.", badge: "Enterprise", logo: "🤖" },
-			{ name: "Zapier", desc: "Connect OnDesk.cc to 6,000+ apps via Zapier workflows.", badge: null, logo: "⚡" },
+			{ name: "Zapier", desc: "Connect Pulse to 6,000+ apps via Zapier workflows.", badge: null, logo: "⚡" },
 			{ name: "Power Automate", desc: "Trigger Microsoft Power Automate flows from ticket events.", badge: "Native", logo: "🔄" },
 		],
 	},
@@ -69,7 +91,7 @@ const BADGE_STYLES: Record<string, string> = {
 
 const HOW_IT_WORKS = [
 	{ step: "01", title: "Connect in one click", desc: "Authorize the integration from your dashboard — no developer required for most tools." },
-	{ step: "02", title: "Map your data", desc: "Choose which fields, channels, or projects sync between OnDesk and your tool." },
+	{ step: "02", title: "Map your data", desc: "Choose which fields, channels, or projects sync between Pulse and your tool." },
 	{ step: "03", title: "Go live instantly", desc: "Events flow in real time. Everything is logged and auditable from day one." },
 ];
 
@@ -116,9 +138,9 @@ export default function IntegrationsPage() {
 
 				<div className="container mx-auto px-4 text-center relative">
 					<div className={`transition-all duration-1000 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-						<SectionBadge icon={Plug} label="30+ integrations and counting" />
+						<SectionBadge icon={Plug} label="Pulse Marketplace" />
 						<h1 className="text-5xl md:text-[5rem] font-black mb-5 text-balance tracking-tight" style={{ lineHeight: 1.04 }}>
-							Connect your{" "}
+							Connect the tools{" "}
 							<span
 								style={{
 									background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
@@ -126,12 +148,12 @@ export default function IntegrationsPage() {
 									WebkitTextFillColor: "transparent",
 									backgroundClip: "text",
 								}}>
-								entire stack
+								you already use
 							</span>
 						</h1>
 						<p
 							className={`text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed text-pretty mb-10 transition-all duration-1000 delay-150 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							OnDesk.cc plugs into the tools your team already uses — starting with a deep, native Microsoft 365 integration.
+							Whether you use Gmail or Microsoft 365, Stripe or Salesforce — Pulse connects to your stack in minutes.
 						</p>
 						<div className={`transition-all duration-1000 delay-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 							<Button size="xl" asChild className="group">
@@ -148,10 +170,10 @@ export default function IntegrationsPage() {
 						ref={statsRef.ref as React.RefObject<HTMLDivElement>}
 						className={`grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mt-14 transition-all duration-1000 delay-400 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 						{[
-							{ icon: Layers, displayValue: `${c30}+`, label: "Native integrations" },
-							{ icon: Zap, displayValue: `${c6000.toLocaleString()}+`, label: "Apps via Zapier" },
-							{ icon: Clock, displayValue: `< ${c5} min`, label: "Average setup time" },
-							{ icon: Activity, displayValue: `${(c999 / 10).toFixed(1)}%`, label: "Webhook delivery rate" },
+							{ icon: Layers, displayValue: `${c30}+`, label: "Ecosystem Partners" },
+							{ icon: Zap, displayValue: `${c6000.toLocaleString()}+`, label: "Workflow automations" },
+							{ icon: Clock, displayValue: `< ${c5} min`, label: "Native setup" },
+							{ icon: Activity, displayValue: `${(c999 / 10).toFixed(1)}%`, label: "Delivery reliability" },
 						].map(({ icon: Icon, displayValue, label }, i) => (
 							<div
 								key={label}
@@ -197,8 +219,8 @@ function HowItWorksSection() {
 	return (
 		<section ref={ref} className="container mx-auto px-4 py-20 max-w-5xl">
 			<div className={`text-center mb-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-				<SectionBadge icon={Zap} label="Quick setup" />
-				<h2 className="text-3xl md:text-5xl font-black text-balance tracking-tight">Set up any integration in minutes</h2>
+				<SectionBadge icon={Zap} label="Instant connectivity" />
+				<h2 className="text-3xl md:text-5xl font-black text-balance tracking-tight">Deploy Marketplace tools in minutes</h2>
 			</div>
 			<div className="grid md:grid-cols-3 gap-6">
 				{HOW_IT_WORKS.map(({ step, title, desc }, i) => (
@@ -340,10 +362,9 @@ function SecuritySection() {
 					<Shield className="size-7 text-primary" />
 				</div>
 				<div className="flex-1 relative z-10">
-					<h3 className="font-bold text-lg mb-1">Enterprise-grade security for every integration</h3>
+					<h3 className="font-bold text-lg mb-1">High-performance connectivity for the Enterprise</h3>
 					<p className="text-sm text-muted-foreground leading-relaxed">
-						All integrations use OAuth 2.0 or API key authentication, enforce TLS 1.3 in transit, and are scoped to the minimum permissions
-						required. Webhook payloads are signed with HMAC-SHA256. Full audit logs available on all plans.
+						Every Marketplace connection leverages sovereign security protocols, TLS 1.3 encryption, and signed HMAC-SHA256 payloads for total data integrity.
 					</p>
 				</div>
 				<Button
@@ -379,10 +400,10 @@ function IntegrationsCtaSection() {
 				<div className="absolute -bottom-16 -left-16 size-64 rounded-full bg-white/5 blur-3xl pointer-events-none" />
 
 				<div className="relative z-10">
-					<SectionBadge icon={Code2} label="Don't see your tool?" />
-					<h2 className="text-4xl md:text-6xl font-black mb-5 text-white text-balance tracking-tight">Build any integration</h2>
+					<SectionBadge icon={Code2} label="Pulse SDK" />
+					<h2 className="text-4xl md:text-6xl font-black mb-5 text-white text-balance tracking-tight">Build your own flow</h2>
 					<p className="text-xl text-white/75 mb-10 max-w-xl mx-auto leading-relaxed">
-						Our REST API and webhook system lets you connect to any platform. Enterprise customers get dedicated integration engineering support.
+						Extend Pulse with our robust GraphQL API and developer SDK. Build custom internal apps or connect proprietary legacy systems.
 					</p>
 					<div className="flex flex-col sm:flex-row justify-center gap-4">
 						<Button size="xl" asChild className="group bg-white hover:bg-white/90" style={{ color: "var(--color-primary)" }}>

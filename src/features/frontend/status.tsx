@@ -24,11 +24,11 @@ interface Incident {
 
 const SERVICES: Service[] = [
 	{ name: "Ticket Ingestion", description: "Email, Teams, and API ticket creation", status: "operational", uptime: "100.00%" },
-	{ name: "AI Agent Engine", description: "Automated triage, classification, and replies", status: "operational", uptime: "99.98%" },
-	{ name: "Microsoft 365 Integration", description: "Teams, Outlook, SharePoint, Azure AD sync", status: "operational", uptime: "99.97%" },
+	{ name: "AI Engine", description: "AI classification, routing, and automated resolution", status: "operational", uptime: "99.98%" },
+	{ name: "Third-party Integrations", description: "Microsoft 365, Google Workspace, and external app integrations", status: "operational", uptime: "99.97%" },
 	{ name: "Dashboard & Web App", description: "Agent and admin UI", status: "operational", uptime: "100.00%" },
 	{ name: "Analytics & Reports", description: "Real-time dashboards and exports", status: "operational", uptime: "99.99%" },
-	{ name: "Mobile App", description: "iOS and Android native apps", status: "operational", uptime: "99.96%" },
+	{ name: "Pulse Mobile", description: "iOS and Android native orchestration apps", status: "operational", uptime: "99.96%" },
 	{ name: "API", description: "Public REST and webhook APIs", status: "operational", uptime: "100.00%" },
 	{ name: "Notifications", description: "Email, Teams, and push alerts", status: "operational", uptime: "99.95%" },
 ];
@@ -43,20 +43,20 @@ const PAST_INCIDENTS: Incident[] = [
 		updates: [
 			{
 				time: "14:32 UTC",
-				message: "Resolved. Root cause was a misconfigured auto-scaling rule. Median AI response time is back to baseline (<800 ms).",
+				message: "Resolved. Root cause analysis identified a saturated auto-scaling cluster. Median Pulse AI response time is restored to baseline (<800 ms).",
 			},
 			{ time: "13:58 UTC", message: "Investigating elevated p99 latency on AI Agent Engine. Ticket creation and delivery are unaffected." },
 		],
 	},
 	{
 		id: "inc-023",
-		title: "Teams notification delay",
+		title: "Notification delivery delay",
 		severity: "minor",
 		status: "resolved",
 		date: "Feb 7, 2025",
 		updates: [
-			{ time: "09:14 UTC", message: "Resolved. Microsoft Graph API throttling lifted. All queued notifications delivered." },
-			{ time: "08:41 UTC", message: "Microsoft Graph API experiencing throttling. Teams notifications delayed up to 15 minutes. No tickets lost." },
+			{ time: "09:14 UTC", message: "Integration API throttling resolved. All queued notifications delivered." },
+			{ time: "08:41 UTC", message: "Third-party integration API experiencing throttling. Some notifications delayed up to 15 minutes. No tickets lost." },
 		],
 	},
 	{
@@ -156,7 +156,7 @@ export default function StatusPage() {
 						</h1>
 						<p
 							className={`text-xl text-muted-foreground text-pretty mb-3 leading-relaxed transition-all duration-1000 delay-150 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							Real-time status and 90-day uptime history for all OnDesk.cc services.
+							Real-time status and sovereign performance history for all Pulse global services.
 						</p>
 						<p className="text-xs text-muted-foreground mb-8">Last updated: Feb 27, 2026 at 08:00 UTC</p>
 						<div

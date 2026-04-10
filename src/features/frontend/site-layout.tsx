@@ -1,20 +1,47 @@
 import { Button } from "@/components/ui/button";
-import { Headset, ArrowRight, Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ArrowRight, Menu, X, Users, Building2, UserCheck, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+
+const SOLUTIONS = [
+	{
+		icon: Users,
+		label: "Support Teams",
+		description: "Manage high-volume support with automation and workflows",
+		href: "/solutions/support-teams",
+	},
+	{
+		icon: Building2,
+		label: "Agencies",
+		description: "Run support for multiple clients from one place",
+		href: "/solutions/agencies",
+	},
+	{
+		icon: UserCheck,
+		label: "Solo & Small Teams",
+		description: "Keep requests organized without complexity",
+		href: "/solutions/solo-small-teams",
+	},
+];
 
 const NAV_LINKS = [
 	{ label: "Features", href: "/features" },
 	{ label: "Pricing", href: "/pricing" },
 	{ label: "Integrations", href: "/integrations" },
-	{ label: "Changelog", href: "/changelog" },
 ];
 
 const FOOTER_COLS = [
 	{
-		heading: "Product",
+		heading: "Solutions",
+		links: [
+			{ label: "Support Teams", href: "/solutions/support-teams" },
+			{ label: "Agencies", href: "/solutions/agencies" },
+			{ label: "Solo & Small Teams", href: "/solutions/solo-small-teams" },
+		],
+	},
+	{
+		heading: "Platform",
 		links: [
 			{ label: "Features", href: "/features" },
-			{ label: "Pricing", href: "/pricing" },
 			{ label: "Integrations", href: "/integrations" },
 			{ label: "Changelog", href: "/changelog" },
 		],
@@ -24,7 +51,7 @@ const FOOTER_COLS = [
 		links: [
 			{ label: "Blog", href: "/blog" },
 			{ label: "Help Center", href: "/help" },
-			{ label: "Customers", href: "/customers" },
+			{ label: "Case Studies", href: "/customers" },
 			{ label: "Status", href: "/status" },
 		],
 	},
@@ -55,8 +82,10 @@ interface SiteLayoutProps {
 export function SiteLayout({ children, withBackground = false }: SiteLayoutProps) {
 	const [scrolled, setScrolled] = useState(false);
 	const [mobileOpen, setMobileOpen] = useState(false);
+	const [solutionsOpen, setSolutionsOpen] = useState(false);
 	const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 	const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+	const solutionsRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		const onScroll = () => setScrolled(window.scrollY > 20);
@@ -74,7 +103,19 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 	// Close mobile menu on route change
 	useEffect(() => {
 		setMobileOpen(false);
+		setSolutionsOpen(false);
 	}, [pathname]);
+
+	// Close solutions dropdown on outside click
+	useEffect(() => {
+		const handler = (e: MouseEvent) => {
+			if (solutionsRef.current && !solutionsRef.current.contains(e.target as Node)) {
+				setSolutionsOpen(false);
+			}
+		};
+		document.addEventListener("mousedown", handler);
+		return () => document.removeEventListener("mousedown", handler);
+	}, []);
 
 	return (
 		<div className="relative min-h-screen bg-background text-foreground overflow-x-clip flex flex-col">
@@ -106,22 +147,67 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 				<nav className="container mx-auto px-4 h-16 flex items-center justify-between">
 					{/* Logo */}
 					<a href="/" className="flex items-center gap-2.5 group shrink-0">
-						<div
-							className="size-9 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:rotate-3"
-							style={{
-								background: "var(--color-primary)",
-								boxShadow: "0 4px 14px -2px color-mix(in srgb, var(--color-primary) 45%, transparent)",
-							}}>
-							<Headset className="size-5 text-primary-foreground" />
-						</div>
-						<div className="flex flex-col leading-none">
-							<span className="text-base font-bold tracking-tight">OnDesk</span>
-							<span className="text-[10px] text-muted-foreground">Microsoft 365</span>
-						</div>
+						<img src="/logo.png" alt="Pulse Logo" height={300} className="h-9" />
 					</a>
 
 					{/* Desktop nav */}
 					<div className="hidden md:flex items-center gap-1">
+						{/* Solutions dropdown */}
+						<div ref={solutionsRef} className="relative">
+							<button
+								onClick={() => setSolutionsOpen((v) => !v)}
+								className="relative flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 group"
+								style={{ color: solutionsOpen ? "var(--color-foreground)" : "var(--color-muted-foreground)" }}>
+								<span
+									className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+									style={{ background: "color-mix(in srgb, var(--color-primary) 8%, transparent)" }}
+								/>
+								<span className="relative group-hover:text-foreground transition-colors duration-200">Solutions</span>
+								<ChevronDown
+									className={`relative size-3.5 transition-transform duration-200 ${solutionsOpen ? "rotate-180" : ""}`}
+									style={{ color: "inherit" }}
+								/>
+							</button>
+
+							{solutionsOpen && (
+								<div
+									className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 rounded-xl border p-2 shadow-xl backdrop-blur-xl"
+									style={{
+										background: "color-mix(in srgb, var(--color-background) 92%, transparent)",
+										borderColor: "color-mix(in srgb, var(--color-primary) 14%, var(--color-border))",
+										boxShadow: "0 16px 48px -8px color-mix(in srgb, var(--color-primary) 12%, rgba(0,0,0,0.3))",
+									}}>
+									{SOLUTIONS.map(({ icon: Icon, label, description, href }) => (
+										<a
+											key={label}
+											href={href}
+											onClick={() => setSolutionsOpen(false)}
+											className="flex items-start gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group/item"
+											style={{ color: "var(--color-muted-foreground)" }}
+											onMouseEnter={(e) => {
+												(e.currentTarget as HTMLElement).style.background = "color-mix(in srgb, var(--color-primary) 7%, transparent)";
+											}}
+											onMouseLeave={(e) => {
+												(e.currentTarget as HTMLElement).style.background = "transparent";
+											}}>
+											<span
+												className="mt-0.5 p-1.5 rounded-md shrink-0"
+												style={{ background: "color-mix(in srgb, var(--color-primary) 10%, transparent)" }}>
+												<Icon className="size-3.5" style={{ color: "var(--color-primary)" }} />
+											</span>
+											<span>
+												<span className="block text-sm font-medium text-foreground group-hover/item:text-primary transition-colors duration-150">
+													{label}
+												</span>
+												<span className="block text-xs text-muted-foreground mt-0.5 leading-snug">{description}</span>
+											</span>
+										</a>
+									))}
+								</div>
+							)}
+						</div>
+
+						{/* Rest of nav links */}
 						{NAV_LINKS.map(({ label, href }) => {
 							const isActive = pathname === href;
 							return (
@@ -130,13 +216,11 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 									href={href}
 									className="relative px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 group"
 									style={isActive ? { color: "var(--color-primary)" } : { color: "var(--color-muted-foreground)" }}>
-									{/* Hover bg */}
 									<span
 										className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
 										style={{ background: "color-mix(in srgb, var(--color-primary) 8%, transparent)" }}
 									/>
 									<span className="relative group-hover:text-foreground transition-colors duration-200">{label}</span>
-									{/* Active underline dot */}
 									{isActive && (
 										<span
 											className="absolute bottom-0 left-1/2 -translate-x-1/2 size-1 rounded-full"
@@ -185,6 +269,25 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 							background: "color-mix(in srgb, var(--color-background) 95%, transparent)",
 							borderColor: "color-mix(in srgb, var(--color-primary) 12%, var(--color-border))",
 						}}>
+						{/* Solutions section in mobile */}
+						<div className="py-2 px-3 border-b border-border/40">
+							<p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--color-primary)" }}>
+								Solutions
+							</p>
+							<div className="flex flex-col gap-1">
+								{SOLUTIONS.map(({ icon: Icon, label, href }) => (
+									<a
+										key={label}
+										href={href}
+										className="flex items-center gap-2.5 py-1.5 text-sm transition-colors duration-200"
+										style={{ color: "var(--color-muted-foreground)" }}>
+										<Icon className="size-3.5 shrink-0" style={{ color: "var(--color-primary)" }} />
+										{label}
+									</a>
+								))}
+							</div>
+						</div>
+
 						{NAV_LINKS.map(({ label, href }) => (
 							<a
 								key={label}
@@ -247,25 +350,14 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 				/>
 
 				<div className="relative container mx-auto px-4 pt-14 pb-10">
-					<div className="grid sm:grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+					<div className="grid sm:grid-cols-2 md:grid-cols-6 gap-8 mb-12">
 						{/* Brand column */}
-						<div>
+						<div className="md:col-span-1">
 							<a href="/" className="flex items-center gap-2.5 group mb-4 w-fit">
-								<div
-									className="size-8 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-105"
-									style={{
-										background: "var(--color-primary)",
-										boxShadow: "0 4px 12px -2px color-mix(in srgb, var(--color-primary) 45%, transparent)",
-									}}>
-									<Headset className="size-4 text-primary-foreground" />
-								</div>
-								<div className="flex flex-col leading-none">
-									<span className="text-sm font-bold tracking-tight">OnDesk</span>
-									<span className="text-[10px] text-muted-foreground">Microsoft 365</span>
-								</div>
+								<img src="/logo.png" alt="Pulse Logo" height={300} className="h-8" />
 							</a>
 							<p className="text-sm text-muted-foreground leading-relaxed max-w-[200px]">
-								AI-powered ticket management built for Microsoft 365 organizations.
+								Automate support, resolve faster, and scale effortlessly.
 							</p>
 						</div>
 
@@ -306,8 +398,8 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 					<div
 						className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground"
 						style={{ borderTop: "1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border))" }}>
-						<span>© 2025 OnDesk.cc. All rights reserved.</span>
-						<span>Microsoft 365 is a trademark of Microsoft Corporation.</span>
+						<span>© 2025 Pulse. All rights reserved.</span>
+						<span>All trademarks are the property of their respective owners.</span>
 					</div>
 				</div>
 			</footer>

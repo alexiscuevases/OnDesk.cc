@@ -4,7 +4,7 @@ import { ArrowRight, Clock, Sparkles, Rss } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useInView, SectionBadge } from "./shared";
 
-type Tag = "AI" | "Product" | "Guide" | "Microsoft 365" | "Customer Success";
+type Tag = "AI" | "Product" | "Guide" | "Agency" | "Solo & Small Teams";
 
 interface Post {
 	slug: string;
@@ -23,7 +23,7 @@ const POSTS: Post[] = [
 		slug: "ai-agents-resolve-80-percent",
 		title: "How AI agents resolve 80% of tickets without human intervention",
 		excerpt:
-			"A deep dive into the classification, context-retrieval, and reply-generation pipeline that powers OnDesk.cc AI Agents — and the edge cases we had to solve.",
+			"A deep dive into the classification, context-retrieval, and reply-generation pipeline that powers Pulse AI Agents — and the edge cases we had to solve.",
 		author: "Daniel Park",
 		role: "CTO",
 		date: "Feb 18, 2025",
@@ -42,14 +42,14 @@ const POSTS: Post[] = [
 		tag: "Guide",
 	},
 	{
-		slug: "microsoft-365-integration-deep-dive",
-		title: "Everything you can do with the Microsoft 365 integration",
-		excerpt: "Teams alerts, Outlook ingestion, SharePoint attachments, Azure AD user sync — the complete map of what connects to what and why it matters.",
-		author: "Marcus Webb",
-		role: "Head of Sales",
+		slug: "running-client-support-as-an-agency",
+		title: "How agencies manage support for 8+ clients without losing their mind",
+		excerpt: "The tools, workflows, and rituals that high-performing support agencies use to keep every client's queue clean — without context-switching all day.",
+		author: "Sophie Laurent",
+		role: "Head of Customer Success",
 		date: "Feb 4, 2025",
-		readTime: "10 min",
-		tag: "Microsoft 365",
+		readTime: "7 min",
+		tag: "Agency",
 	},
 	{
 		slug: "csat-from-60-to-90",
@@ -60,13 +60,13 @@ const POSTS: Post[] = [
 		role: "Head of Customer Success",
 		date: "Jan 28, 2025",
 		readTime: "5 min",
-		tag: "Customer Success",
+		tag: "Guide",
 	},
 	{
 		slug: "self-service-portal-launch",
 		title: "Building a self-service portal your customers will actually use",
 		excerpt:
-			"Most self-service portals fail because they are hard to find and harder to search. Here is what we learned building the portal feature for OnDesk.cc.",
+			"Most self-service portals fail because they are hard to find and harder to search. Here is what we learned building the portal feature for Pulse.",
 		author: "Aisha Okafor",
 		role: "Head of Product",
 		date: "Jan 21, 2025",
@@ -84,14 +84,14 @@ const POSTS: Post[] = [
 		tag: "AI",
 	},
 	{
-		slug: "power-automate-connector",
-		title: "Automating cross-team workflows with the Power Automate connector",
-		excerpt: "From auto-creating Jira issues on high-priority tickets to notifying finance on billing complaints — real flows built by real customers.",
-		author: "Daniel Park",
-		role: "CTO",
+		slug: "solo-support-without-burning-out",
+		title: "Running support solo: how to handle 200+ requests a week without burning out",
+		excerpt: "Canned replies, smart inboxes, and a few AI rules can do the work of a second hire. A practical guide for freelancers and solopreneurs managing client support.",
+		author: "Aisha Okafor",
+		role: "Head of Product",
 		date: "Jan 7, 2025",
-		readTime: "9 min",
-		tag: "Microsoft 365",
+		readTime: "6 min",
+		tag: "Solo & Small Teams",
 	},
 ];
 
@@ -99,11 +99,11 @@ const TAG_STYLES: Record<Tag, string> = {
 	AI: "bg-primary/10 text-primary border-primary/25",
 	Product: "bg-accent/10 text-accent border-accent/25",
 	Guide: "bg-success/10 text-success border-success/25",
-	"Microsoft 365": "bg-secondary text-secondary-foreground border-border",
-	"Customer Success": "bg-warning/10 text-warning border-warning/25",
+	Agency: "bg-accent/10 text-accent border-accent/25",
+	"Solo & Small Teams": "bg-success/10 text-success border-success/25",
 };
 
-const TAGS: Tag[] = ["AI", "Product", "Guide", "Microsoft 365", "Customer Success"];
+const TAGS: Tag[] = ["AI", "Product", "Guide", "Agency", "Solo & Small Teams"];
 
 const featured = POSTS.find((p) => p.featured)!;
 const rest = POSTS.filter((p) => !p.featured);
@@ -139,9 +139,9 @@ export default function BlogPage() {
 				</div>
 				<div className="container mx-auto px-4 text-center max-w-2xl relative">
 					<div className={`transition-all duration-1000 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-						<SectionBadge icon={Rss} label="Insights from the team" />
+						<SectionBadge icon={Rss} label="Pulse Blog" />
 						<h1 className="text-5xl md:text-[5rem] font-black mb-5 text-balance tracking-tight" style={{ lineHeight: 1.04 }}>
-							The{" "}
+							Insights for{" "}
 							<span
 								style={{
 									background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
@@ -149,12 +149,12 @@ export default function BlogPage() {
 									WebkitTextFillColor: "transparent",
 									backgroundClip: "text",
 								}}>
-								Blog
+								every support team
 							</span>
 						</h1>
 						<p
 							className={`text-xl text-muted-foreground text-pretty leading-relaxed transition-all duration-1000 delay-150 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							Insights on AI support, customer success, and Microsoft 365 — straight from the team building OnDesk.cc.
+							Guides, product updates, and stories from teams, agencies, and solos building better support.
 						</p>
 					</div>
 				</div>

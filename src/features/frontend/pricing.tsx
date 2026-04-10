@@ -7,45 +7,81 @@ import { useInView, useMountVisible, useMouseGlow, SectionBadge, CtaDecorations 
 
 
 // ── Pricing data ──
-// Price is per agent per month (USD)
 const PLANS = [
 	{
-		name: "Professional",
-		pricePerAgent: { monthly: 15, annual: 12 },
-		description: "AI-powered support for growing teams. Everything you need to scale.",
+		name: "Pulse Starter",
+		tagline: "For Solo & Small Teams",
+		pricingType: "flat" as const,
+		priceFlat: { monthly: 9, annual: 7 },
+		description: "Keep every request organized. Set up in minutes, cancel anytime.",
 		cta: "Start free trial",
 		href: "/auth/signup",
 		highlight: false,
+		badge: undefined as string | undefined,
 		features: [
-			"Unlimited tickets",
-			"Email, web widget & Teams",
-			"Full AI auto-resolve engine",
-			"Advanced SLA with breach alerts",
-			"90-day analytics history",
-			"Microsoft 365 SSO",
-			"Custom SLA tiers",
-			"Priority support (24h SLA)",
+			"Up to 2 agents",
+			"300 tickets / month",
+			"2 channels (email + chat)",
+			"Unified inbox",
+			"Canned replies",
+			"Basic automations",
+			"Mobile app",
+			"Community support",
 		],
-		missing: ["Custom AI workflows", "Data residency", "Dedicated CSM", "Custom contracts"],
+		missing: [
+			"AI classification & routing",
+			"AI auto-resolution",
+			"Analytics dashboard",
+			"Data residency",
+			"Dedicated architect",
+		],
 	},
 	{
-		name: "Business",
-		pricePerAgent: { monthly: 29, annual: 23 },
-		description: "Enterprise power without the enterprise sales cycle.",
+		name: "Pulse Core",
+		tagline: "For Teams & Agencies",
+		pricingType: "per-agent" as const,
+		pricePerAgent: { monthly: 19, annual: 15 },
+		description: "Full-featured support with AI routing, omnichannel inbox, and team management.",
+		cta: "Start free trial",
+		href: "/auth/signup",
+		highlight: false,
+		badge: undefined as string | undefined,
+		features: [
+			"Unlimited ticket volume",
+			"All channels unified",
+			"AI Classification & Routing",
+			"Team workload management",
+			"Analytics dashboard",
+			"Marketplace access",
+			"Canned replies & automation",
+			"24/7 Priority support",
+		],
+		missing: [
+			"AI auto-resolution",
+			"Sovereign data residency",
+			"Dedicated success architect",
+			"Custom SLA frameworks",
+		],
+	},
+	{
+		name: "Pulse Enterprise",
+		tagline: "For Large Organizations",
+		pricingType: "per-agent" as const,
+		pricePerAgent: { monthly: 39, annual: 31 },
+		description: "The complete platform for complex, high-volume support operations.",
 		cta: "Start free trial",
 		href: "/auth/signup",
 		highlight: true,
-		badge: "Most popular",
+		badge: "Most selected",
 		features: [
-			"Everything in Professional",
-			"Custom AI workflows",
-			"Advanced analytics & reporting",
-			"Data residency (US / EU / APAC)",
-			"Customer-managed encryption",
-			"Dedicated Customer Success Manager",
-			"Custom SLAs & contracts",
-			"SSO & SAML",
-			"99.99% uptime SLA",
+			"Everything in Pulse Core",
+			"AI Auto-resolution Engine",
+			"Predictive Volume Forecasting",
+			"Sovereign Data Residency (US/EU/APAC)",
+			"Enterprise Key Management",
+			"Dedicated Success Architect",
+			"Custom SLA Frameworks",
+			"99.99% Uptime Guarantee",
 		],
 		missing: [],
 	},
@@ -55,25 +91,32 @@ const LOGOS = ["Contoso", "Fabrikam", "Northwind", "Tailwind", "Adventure Works"
 
 const TESTIMONIALS = [
 	{
-		quote: "We evaluated six tools. OnDesk.cc was the only one that had a real Microsoft Teams native experience — not just a webhook.",
-		author: "Marcus Rivera",
-		role: "IT Director",
-		company: "Fabrikam Inc.",
-		plan: "Business",
+		quote: "I was live in under 10 minutes. All my client emails in one inbox, basic automations done, and nothing I didn't need.",
+		author: "Mia Torres",
+		role: "Independent Consultant",
+		company: "Torres Digital",
+		plan: "Starter",
 	},
 	{
-		quote: "Went from 22 agents to 9 handling the same volume. The ROI paid for three years of Business in the first quarter.",
-		author: "Priya Patel",
-		role: "VP Operations",
-		company: "Northwind Traders",
-		plan: "Business",
+		quote: "Core gave our agency real visibility. We manage 8 clients and everyone's queue stays separate without any extra effort.",
+		author: "James Okafor",
+		role: "Operations Lead",
+		company: "BrightSupport Agency",
+		plan: "Core",
+	},
+	{
+		quote: "The autonomous resolution engine paid for the Enterprise upgrade in less than one quarter. It's not a support tool — it's a competitive edge.",
+		author: "Elena Rossi",
+		role: "VP of Customer Experience",
+		company: "RetailFlow Group",
+		plan: "Enterprise",
 	},
 ];
 
 const FAQ = [
 	{
-		q: "How does per-agent pricing work?",
-		a: "You pay for each active agent seat. Add or remove agents at any time — changes are prorated to the day. No minimum seat commitments on Professional.",
+		q: "How does pricing work?",
+		a: "Pulse Starter is a flat $9/month for up to 2 agents — perfect for solos and small teams. Core and Enterprise are priced per active agent per month, billed at the end of each billing period. Add or remove agents anytime; changes are prorated to the day.",
 	},
 	{
 		q: "Can I change plans later?",
@@ -93,20 +136,21 @@ const FAQ = [
 	},
 	{
 		q: "Where is our data stored?",
-		a: "Professional data is stored in the US by default. Business customers choose their region: US, EU, or APAC.",
+		a: "Starter and Core data is stored in the US by default. Enterprise customers choose their region: US, EU, or APAC.",
 	},
 ];
 
 const COMPARE_ROWS = [
-	{ feature: "Tickets / month", pro: "Unlimited", biz: "Unlimited" },
-	{ feature: "AI auto-resolve", pro: "Full", biz: "Full + Custom" },
-	{ feature: "Microsoft 365 SSO", pro: true, biz: true },
-	{ feature: "SLA breach alerts", pro: true, biz: true },
-	{ feature: "Custom AI workflows", pro: false, biz: true },
-	{ feature: "Data residency", pro: false, biz: true },
-	{ feature: "Dedicated CSM", pro: false, biz: true },
-	{ feature: "Uptime SLA", pro: "99.97%", biz: "99.99%" },
-	{ feature: "Support SLA", pro: "24-hour", biz: "Custom" },
+	{ feature: "Agents", starter: "Up to 2", core: "Unlimited", enterprise: "Unlimited" },
+	{ feature: "Ticket volume", starter: "300 / month", core: "Unlimited", enterprise: "Unlimited" },
+	{ feature: "Channels", starter: "2", core: "Unlimited", enterprise: "Unlimited" },
+	{ feature: "AI Classification & Routing", starter: false, core: true, enterprise: true },
+	{ feature: "AI Auto-resolution", starter: false, core: false, enterprise: true },
+	{ feature: "Analytics dashboard", starter: false, core: true, enterprise: true },
+	{ feature: "Sovereign data residency", starter: false, core: false, enterprise: true },
+	{ feature: "Dedicated Architect", starter: false, core: false, enterprise: true },
+	{ feature: "Uptime SLA", starter: "99.9%", core: "99.97%", enterprise: "99.99%" },
+	{ feature: "Support", starter: "Community", core: "24/7 Priority", enterprise: "White-glove" },
 ];
 
 // ── Agent counter component ──
@@ -214,6 +258,8 @@ function AgentCounter({ agents, setAgents }: { agents: number; setAgents: (n: nu
 						150+
 					</button>
 				</div>
+
+				<p className="text-xs text-muted-foreground mt-4 text-center">Agent count applies to Core and Enterprise plans.</p>
 			</div>
 		</div>
 	);
@@ -247,7 +293,7 @@ export default function PricingPage() {
 					<div className={`transition-all duration-1000 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
 						<SectionBadge icon={Zap} label="14-day free trial — no credit card required" />
 						<h1 className="text-5xl md:text-[5rem] font-black mb-5 text-balance tracking-tight" style={{ lineHeight: 1.04 }}>
-							Pay per{" "}
+							Simple,{" "}
 							<span
 								style={{
 									background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
@@ -255,12 +301,13 @@ export default function PricingPage() {
 									WebkitTextFillColor: "transparent",
 									backgroundClip: "text",
 								}}>
-								agent
+								honest
 							</span>
+							{" "}pricing
 						</h1>
 						<p
 							className={`text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed text-pretty mb-8 transition-all duration-1000 delay-150 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							Simple, transparent pricing that scales with your team. Add or remove agents anytime.
+							Simple flat pricing for solos. Flexible per-agent pricing for teams. All plans include a 14-day free trial.
 						</p>
 
 						{/* Billing toggle */}
@@ -317,10 +364,12 @@ function PlansSection({ annual, agents }: { annual: boolean; agents: number }) {
 
 	return (
 		<section ref={ref} className="container mx-auto px-4 py-16 md:py-20">
-			<div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto items-start">
+			<div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-start">
 				{PLANS.map((plan, i) => {
-					const ratePerAgent = annual ? plan.pricePerAgent.annual : plan.pricePerAgent.monthly;
-					const total = ratePerAgent * agents;
+					const isFlat = plan.pricingType === "flat";
+					const flatRate = isFlat && plan.priceFlat ? (annual ? plan.priceFlat.annual : plan.priceFlat.monthly) : 0;
+					const perAgentRate = !isFlat && plan.pricePerAgent ? (annual ? plan.pricePerAgent.annual : plan.pricePerAgent.monthly) : 0;
+					const total = isFlat ? flatRate : perAgentRate * agents;
 
 					return (
 						<div
@@ -366,36 +415,58 @@ function PlansSection({ annual, agents }: { annual: boolean; agents: number }) {
 									</span>
 								)}
 
-								{/* Plan name + desc */}
+								{/* Plan name + tagline + desc */}
 								<div className="relative z-10">
-									<h3 className="text-xl font-black mb-1.5">{plan.name}</h3>
+									<h3 className="text-xl font-black mb-0.5">{plan.name}</h3>
+									<p className="text-xs font-semibold text-primary mb-2">{plan.tagline}</p>
 									<p className="text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
 								</div>
 
 								{/* Price */}
 								<div className="relative z-10">
-									<div className="flex items-baseline gap-1 mb-1">
-										<span
-											className="text-5xl font-black tabular-nums transition-all duration-500"
-											style={plan.highlight ? { color: "var(--color-primary)" } : {}}>
-											${total.toLocaleString()}
-										</span>
-										<span className="text-muted-foreground text-lg">/mo</span>
-									</div>
-									<p className="text-sm text-muted-foreground">
-										<span className="font-semibold" style={{ color: "var(--color-primary)" }}>
-											${ratePerAgent}
-										</span>
-										{" × "}
-										<span className="font-semibold">{agents} agents</span>
-										{annual && (
-											<span className="ml-1.5 text-green-600 font-semibold text-xs">· billed annually</span>
-										)}
-									</p>
-									{annual && (
-										<p className="text-xs text-green-600 font-semibold mt-1">
-											${(total * 12).toLocaleString()} / year — save ${(agents * plan.pricePerAgent.monthly * 12 - agents * plan.pricePerAgent.annual * 12).toLocaleString()}
-										</p>
+									{isFlat ? (
+										<>
+											<div className="flex items-baseline gap-1 mb-1">
+												<span
+													className="text-5xl font-black tabular-nums transition-all duration-500"
+													style={plan.highlight ? { color: "var(--color-primary)" } : {}}>
+													${flatRate}
+												</span>
+												<span className="text-muted-foreground text-lg">/mo</span>
+											</div>
+											<p className="text-sm text-muted-foreground">
+												Flat rate · up to 2 agents
+												{annual && (
+													<span className="ml-1.5 text-green-600 font-semibold text-xs">· billed annually</span>
+												)}
+											</p>
+										</>
+									) : (
+										<>
+											<div className="flex items-baseline gap-1 mb-1">
+												<span
+													className="text-5xl font-black tabular-nums transition-all duration-500"
+													style={plan.highlight ? { color: "var(--color-primary)" } : {}}>
+													${total.toLocaleString()}
+												</span>
+												<span className="text-muted-foreground text-lg">/mo</span>
+											</div>
+											<p className="text-sm text-muted-foreground">
+												<span className="font-semibold" style={{ color: "var(--color-primary)" }}>
+													${perAgentRate}
+												</span>
+												{" × "}
+												<span className="font-semibold">{agents} agents</span>
+												{annual && (
+													<span className="ml-1.5 text-green-600 font-semibold text-xs">· billed annually</span>
+												)}
+											</p>
+											{annual && plan.pricePerAgent && (
+												<p className="text-xs text-green-600 font-semibold mt-1">
+													${(total * 12).toLocaleString()} / year — save ${(agents * plan.pricePerAgent.monthly * 12 - agents * plan.pricePerAgent.annual * 12).toLocaleString()}
+												</p>
+											)}
+										</>
 									)}
 								</div>
 
@@ -440,7 +511,7 @@ function PlansSection({ annual, agents }: { annual: boolean; agents: number }) {
 
 			{/* Enterprise callout */}
 			<div
-				className={`relative max-w-4xl mx-auto mt-6 rounded-2xl border overflow-hidden p-6 flex flex-col md:flex-row items-center gap-5 transition-all duration-700 delay-400 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+				className={`relative max-w-5xl mx-auto mt-6 rounded-2xl border overflow-hidden p-6 flex flex-col md:flex-row items-center gap-5 transition-all duration-700 delay-400 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
 				style={{
 					background: "linear-gradient(120deg, color-mix(in srgb, var(--color-primary) 5%, var(--color-card)), var(--color-card))",
 					borderColor: "color-mix(in srgb, var(--color-primary) 20%, var(--color-border))",
@@ -512,7 +583,7 @@ function SocialProofSection() {
 				</div>
 
 				{/* Testimonial cards */}
-				<div className="grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
+				<div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
 					{TESTIMONIALS.map(({ quote, author, role, company, plan }, i) => (
 						<div
 							key={author}
@@ -576,26 +647,26 @@ function CompareSection() {
 			</div>
 
 			<div
-				className={`max-w-3xl mx-auto rounded-2xl border overflow-hidden transition-all duration-700 delay-150 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+				className={`max-w-4xl mx-auto rounded-2xl border overflow-hidden transition-all duration-700 delay-150 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
 				style={{ background: "var(--color-card)", borderColor: "var(--color-border)", boxShadow: "0 8px 40px -8px rgba(0,0,0,0.08)" }}>
 				{/* Header */}
-				<div className="grid grid-cols-3 divide-x divide-border" style={{ background: "color-mix(in srgb, var(--color-muted) 30%, transparent)" }}>
+				<div className="grid grid-cols-4 divide-x divide-border" style={{ background: "color-mix(in srgb, var(--color-muted) 30%, transparent)" }}>
 					<div className="p-5 text-sm font-bold text-muted-foreground">Feature</div>
-					{["Professional", "Business"].map((p) => (
-						<div key={p} className="p-5 text-sm font-black text-center" style={p === "Business" ? { color: "var(--color-primary)" } : {}}>
+					{(["Starter", "Core", "Enterprise"] as const).map((p) => (
+						<div key={p} className="p-5 text-sm font-black text-center" style={p === "Enterprise" ? { color: "var(--color-primary)" } : {}}>
 							{p}
 						</div>
 					))}
 				</div>
 				{/* Rows */}
 				<div className="divide-y divide-border">
-					{COMPARE_ROWS.map(({ feature, pro, biz }, rowIdx) => (
+					{COMPARE_ROWS.map(({ feature, starter, core, enterprise }, rowIdx) => (
 						<div
 							key={feature}
-							className="grid grid-cols-3 divide-x divide-border transition-colors duration-200 hover:bg-primary/3"
+							className="grid grid-cols-4 divide-x divide-border transition-colors duration-200 hover:bg-primary/3"
 							style={{ transitionDelay: `${rowIdx * 30}ms` }}>
 							<div className="px-5 py-3.5 text-sm text-muted-foreground font-medium">{feature}</div>
-							{([pro, biz] as (string | boolean)[]).map((val, i) => (
+							{([starter, core, enterprise] as (string | boolean)[]).map((val, i) => (
 								<div key={i} className="px-5 py-3.5 text-sm text-center flex items-center justify-center">
 									{typeof val === "boolean" ? (
 										val ? (
@@ -608,7 +679,7 @@ function CompareSection() {
 											<X className="size-4 opacity-25" />
 										)
 									) : (
-										<span className={`text-sm ${i === 1 ? "font-bold" : ""}`} style={i === 1 ? { color: "var(--color-primary)" } : {}}>
+										<span className={`text-sm ${i === 2 ? "font-bold" : ""}`} style={i === 2 ? { color: "var(--color-primary)" } : {}}>
 											{val}
 										</span>
 									)}
