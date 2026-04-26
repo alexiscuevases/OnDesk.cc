@@ -2,7 +2,7 @@ import { jsonError } from "../../../_lib/response";
 import { findTicketById, findMessagesByTicket, isWorkspaceMember, findWorkspaceById } from "../../../_lib/db";
 import { withAuth } from "../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../_lib/http";
-import { AI_LIMITS, AI_MODELS } from "../../../_lib/configs";
+import { AI_LIMITS, AI_MODEL } from "../../../_lib/configs";
 
 // POST /api/tickets/:id/ai
 // Calls Workers AI with the full ticket context and returns a streaming text response.
@@ -73,10 +73,10 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
         })),
       ];
 
-      const aiResponse = await env.AI.run(AI_MODELS.TICKET_ASSISTANT, {
+      const aiResponse = await env.AI.run(AI_MODEL, {
         messages: llmMessages,
         stream: true,
-        max_tokens: AI_LIMITS.TICKET_ASSISTANT_MAX_TOKENS,
+        max_tokens: AI_LIMITS.MAX_TOKENS,
       });
 
       return new Response(aiResponse as ReadableStream, {

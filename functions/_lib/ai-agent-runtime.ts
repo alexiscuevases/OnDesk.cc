@@ -6,7 +6,7 @@ import type {
 	AgentLoopResult,
 } from "./types";
 import { parseStructuredTokens, executeAction } from "./ai-agent-testing-utils";
-import { AI_LIMITS, AI_MODELS } from "./configs";
+import { AI_LIMITS, AI_MODEL } from "./configs";
 
 interface RunAgenticLoopInput {
   env: Env;
@@ -27,9 +27,9 @@ export async function runAgenticLoop(input: RunAgenticLoopInput): Promise<AgentL
     history = [],
     incomingMessage,
     agentTools,
-    model = AI_MODELS.AGENTIC,
-    maxActions = AI_LIMITS.AGENTIC_MAX_ACTIONS,
-    maxTokens = AI_LIMITS.AGENTIC_MAX_TOKENS,
+    model = AI_MODEL,
+    maxActions = AI_LIMITS.MAX_ACTIONS,
+    maxTokens = AI_LIMITS.MAX_TOKENS,
     collectTraces = false,
   } = input;
 
