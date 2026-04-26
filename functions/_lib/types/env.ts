@@ -2,6 +2,11 @@ export interface Env {
 	DB: D1Database;
 	STORAGE: R2Bucket;
 	AI: Ai;
+	VECTORIZE_TICKETS: VectorizeIndex;
+	VECTORIZE_MESSAGES: VectorizeIndex;
+	VECTORIZE_CONTACTS: VectorizeIndex;
+	VECTORIZE_COMPANIES: VectorizeIndex;
+	VECTORIZE_MEMORIES: VectorizeIndex;
 	JWT_SECRET: string;
 	MS_CLIENT_ID: string;
 	MS_CLIENT_SECRET: string;

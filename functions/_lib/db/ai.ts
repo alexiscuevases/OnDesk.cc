@@ -8,6 +8,8 @@ import type {
 	PublicAiTicketState,
 	AiActionLogRow,
 	PublicAiActionLog,
+	AiMemoryRow,
+	PublicAiMemory,
 } from "../types";
 
 // ─── AI Agents ────────────────────────────────────────────────────────────────
@@ -246,6 +248,72 @@ export async function findAiActionLogsByTicket(db: D1Database, ticketId: string)
 		metadata: r.metadata ? (JSON.parse(r.metadata) as Record<string, unknown>) : null,
 		created_at: r.created_at,
 	}));
+}
+
+// ─── AI Memories ─────────────────────────────────────────────────────────────
+
+export async function createMemory(
+	db: D1Database,
+	workspaceId: string,
+	content: string,
+	contactId?: string | null,
+	expiresAt?: number | null,
+): Promise<PublicAiMemory> {
+	const id = crypto.randomUUID();
+	await db
+		.prepare("INSERT INTO ai_memories (id, workspace_id, contact_id, content, expires_at) VALUES (?, ?, ?, ?, ?)")
+		.bind(id, workspaceId, contactId ?? null, content, expiresAt ?? null)
+		.run();
+	const row = await db.prepare("SELECT * FROM ai_memories WHERE id = ? LIMIT 1").bind(id).first<AiMemoryRow>();
+	return row!;
+}
+
+export async function deleteMemory(db: D1Database, memoryId: string): Promise<void> {
+	await db.prepare("DELETE FROM ai_memories WHERE id = ?").bind(memoryId).run();
+}
+
+export async function findMemoryById(db: D1Database, memoryId: string): Promise<AiMemoryRow | null> {
+	const row = await db.prepare("SELECT * FROM ai_memories WHERE id = ? LIMIT 1").bind(memoryId).first<AiMemoryRow>();
+	return row ?? null;
+}
+
+export async function touchMemories(db: D1Database, ids: string[]): Promise<void> {
+	if (ids.length === 0) return;
+	const placeholders = ids.map(() => "?").join(", ");
+	await db
+		.prepare(`UPDATE ai_memories SET last_referenced_at = unixepoch() WHERE id IN (${placeholders})`)
+		.bind(...ids)
+		.run();
+}
+
+export async function findMemoriesByWorkspace(db: D1Database, workspaceId: string): Promise<PublicAiMemory[]> {
+	const result = await db
+		.prepare(
+			"SELECT * FROM ai_memories WHERE workspace_id = ? AND contact_id IS NULL AND (expires_at IS NULL OR expires_at > unixepoch()) ORDER BY created_at DESC",
+		)
+		.bind(workspaceId)
+		.all<AiMemoryRow>();
+	return result.results ?? [];
+}
+
+export async function findMemoriesByContact(db: D1Database, workspaceId: string, contactId: string): Promise<PublicAiMemory[]> {
+	const result = await db
+		.prepare(
+			"SELECT * FROM ai_memories WHERE workspace_id = ? AND contact_id = ? AND (expires_at IS NULL OR expires_at > unixepoch()) ORDER BY created_at DESC",
+		)
+		.bind(workspaceId, contactId)
+		.all<AiMemoryRow>();
+	return result.results ?? [];
+}
+
+export async function findMemoriesByIds(db: D1Database, ids: string[]): Promise<PublicAiMemory[]> {
+	if (ids.length === 0) return [];
+	const placeholders = ids.map(() => "?").join(", ");
+	const result = await db
+		.prepare(`SELECT * FROM ai_memories WHERE id IN (${placeholders}) AND (expires_at IS NULL OR expires_at > unixepoch())`)
+		.bind(...ids)
+		.all<AiMemoryRow>();
+	return result.results ?? [];
 }
 
 export async function findAiActionLogsByAgent(db: D1Database, agentId: string, ticketId?: string): Promise<PublicAiActionLog[]> {

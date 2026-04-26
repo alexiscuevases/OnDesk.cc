@@ -389,3 +389,17 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 CREATE INDEX IF NOT EXISTS idx_subscriptions_workspace_id           ON subscriptions(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_customer_id     ON subscriptions(stripe_customer_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_subscription_id ON subscriptions(stripe_subscription_id);
+
+-- ── AI Memories ───────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS ai_memories (
+  id                 TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id       TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  contact_id         TEXT    REFERENCES contacts(id) ON DELETE CASCADE,
+  content            TEXT    NOT NULL,
+  last_referenced_at INTEGER,
+  expires_at         INTEGER,
+  created_at         INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_memories_workspace_id ON ai_memories(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_ai_memories_contact_id   ON ai_memories(workspace_id, contact_id);

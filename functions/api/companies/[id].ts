@@ -2,6 +2,7 @@ import { jsonOk, jsonError } from "../../_lib/response";
 import { findCompanyById, updateCompany, deleteCompany, isWorkspaceMember } from "../../_lib/db";
 import { withAuth } from "../../_lib/middleware";
 import { asNullableTrimmedString, asTrimmedString, createMethodRouter, parseJsonBody } from "../../_lib/http";
+import { upsertCompany, deleteCompanyVector } from "../../_lib/vectorize";
 
 // GET    /api/companies/:id
 // PATCH  /api/companies/:id
@@ -28,10 +29,12 @@ export const onRequest = withAuth<"id">(async ({ request, env, params, payload }
         logo_url: asNullableTrimmedString(logo_url),
       });
       const updated = await findCompanyById(env.DB, companyId);
+      if (updated) void upsertCompany(env, updated);
       return jsonOk({ company: updated });
     },
     DELETE: async () => {
       await deleteCompany(env.DB, companyId);
+      void deleteCompanyVector(env, companyId);
       return jsonOk({ success: true });
     },
   });

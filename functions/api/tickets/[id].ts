@@ -1,8 +1,10 @@
 import { jsonOk, jsonError } from "../../_lib/response";
-import { findTicketById, updateTicket, deleteTicket, isWorkspaceMember, findUserById, createNotification } from "../../_lib/db";
+import { findTicketById, updateTicket, deleteTicket, isWorkspaceMember, findUserById, createNotification, findMessagesByTicket } from "../../_lib/db";
 import type { TicketStatus, TicketPriority } from "../../_lib/types";
 import { withAuth } from "../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../_lib/http";
+import { upsertTicket, deleteTicketVector, deleteMessageVectors } from "../../_lib/vectorize";
+import { extractAndSaveMemories } from "../../_lib/memory-extraction";
 
 const VALID_STATUSES: TicketStatus[] = ["open", "pending", "resolved", "closed"];
 const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
@@ -95,10 +97,25 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
 			}
 
 			void newAssigneeId;
+			if (updated) void upsertTicket(env, updated);
+
+			if (status === "resolved" && prevStatus !== "resolved" && ticket.contact_id) {
+				void extractAndSaveMemories(env, ticketId, {
+					workspace_id: ticket.workspace_id,
+					contact_id: ticket.contact_id,
+					subject: ticket.subject,
+				});
+			}
+
 			return jsonOk({ ticket: updated });
 		},
 		DELETE: async () => {
+			const messages = await findMessagesByTicket(env.DB, ticketId);
 			await deleteTicket(env.DB, ticketId);
+			void Promise.all([
+				deleteTicketVector(env, ticketId),
+				deleteMessageVectors(env, messages.map((m) => m.id)),
+			]);
 			return jsonOk({ success: true });
 		},
 	});

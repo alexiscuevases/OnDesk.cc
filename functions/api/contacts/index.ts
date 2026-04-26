@@ -2,6 +2,7 @@ import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
 import { findContactsByWorkspace, findOrCreateContact } from "../../_lib/db";
 import { withWorkspace } from "../../_lib/middleware";
 import { asTrimmedString, createMethodRouter, parseJsonBody } from "../../_lib/http";
+import { upsertContact } from "../../_lib/vectorize";
 
 // GET  /api/contacts?workspace_id=
 // POST /api/contacts
@@ -29,6 +30,7 @@ export const onRequest = withWorkspace(async ({ request, env, workspaceId }) => 
         company_id: typeof company_id === "string" ? company_id : undefined,
       });
 
+      void upsertContact(env, contact);
       return jsonCreated({ contact });
     },
   });

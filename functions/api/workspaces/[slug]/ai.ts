@@ -6,10 +6,14 @@ import {
   findTicketsByWorkspace,
   findContactsByWorkspace,
   findTeamsByWorkspace,
+  findCompaniesByWorkspace,
+  findMemoriesByIds,
+  touchMemories,
 } from "../../../_lib/db";
 import { withAuth } from "../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../_lib/http";
 import { AI_LIMITS, AI_MODEL } from "../../../_lib/configs";
+import { searchTickets, searchContacts, searchCompanies, searchMemories } from "../../../_lib/vectorize";
 
 // POST /api/workspaces/:slug/ai
 // Global workspace AI assistant with full workspace context.
@@ -32,25 +36,45 @@ export const onRequest = withAuth<"slug">(async ({ request, env, payload, params
         return jsonError("messages array is required");
       }
 
-      // Load workspace data in parallel for context
-      const [members, tickets, contacts, teams] = await Promise.all([
-        findWorkspaceMembers(env.DB, workspace.id),
-        findTicketsByWorkspace(env.DB, workspace.id),
-        findContactsByWorkspace(env.DB, workspace.id),
-        findTeamsByWorkspace(env.DB, workspace.id),
-      ]);
+      const userQuery = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
 
-      // Build summary blocks
+      // Load fixed small sets + all tickets for stats; run vector searches in parallel
+      const [members, teams, allTickets, allContacts, allCompanies, ticketIds, contactIds, companyIds, memoryIds] =
+        await Promise.all([
+          findWorkspaceMembers(env.DB, workspace.id),
+          findTeamsByWorkspace(env.DB, workspace.id),
+          findTicketsByWorkspace(env.DB, workspace.id),
+          findContactsByWorkspace(env.DB, workspace.id),
+          findCompaniesByWorkspace(env.DB, workspace.id),
+          searchTickets(env, userQuery, workspace.id, 8),
+          searchContacts(env, userQuery, workspace.id, 8),
+          searchCompanies(env, userQuery, workspace.id, 5),
+          searchMemories(env, userQuery, workspace.id, null, 6),
+        ]);
+
+      const memories = await findMemoriesByIds(env.DB, memoryIds);
+      if (memories.length) void touchMemories(env.DB, memories.map((m) => m.id));
+
+      // Filter to semantically relevant items; fall back to recency slice if index is empty
+      const relevantTickets = ticketIds.length > 0
+        ? allTickets.filter((t) => ticketIds.includes(t.id))
+        : allTickets.slice(0, 10);
+      const relevantContacts = contactIds.length > 0
+        ? allContacts.filter((c) => contactIds.includes(c.id))
+        : allContacts.slice(0, 15);
+      const relevantCompanies = companyIds.length > 0
+        ? allCompanies.filter((c) => companyIds.includes(c.id))
+        : allCompanies.slice(0, 10);
+
       const ticketStats = {
-        total: tickets.length,
-        open: tickets.filter((t) => t.status === "open").length,
-        pending: tickets.filter((t) => t.status === "pending").length,
-        resolved: tickets.filter((t) => t.status === "resolved").length,
-        closed: tickets.filter((t) => t.status === "closed").length,
+        total: allTickets.length,
+        open: allTickets.filter((t) => t.status === "open").length,
+        pending: allTickets.filter((t) => t.status === "pending").length,
+        resolved: allTickets.filter((t) => t.status === "resolved").length,
+        closed: allTickets.filter((t) => t.status === "closed").length,
       };
 
-      const recentTickets = tickets
-        .slice(0, 20)
+      const ticketsBlock = relevantTickets
         .map((t) => `  - [${t.number}] "${t.subject}" | status: ${t.status} | priority: ${t.priority}`)
         .join("\n");
 
@@ -62,14 +86,19 @@ export const onRequest = withAuth<"slug">(async ({ request, env, payload, params
         .map((t) => `  - ${t.name}${t.description ? `: ${t.description}` : ""}`)
         .join("\n");
 
-      const contactsBlock = contacts
-        .slice(0, 30)
+      const contactsBlock = relevantContacts
         .map((c) => `  - ${c.name} | ${c.email}${c.phone ? ` | ${c.phone}` : ""}`)
         .join("\n");
 
+      const companiesBlock = relevantCompanies
+        .map((c) => `  - ${c.name}${c.domain ? ` | ${c.domain}` : ""}${c.description ? ` | ${c.description}` : ""}`)
+        .join("\n");
+
+      const memoriesBlock = memories.map((m) => `  - ${m.content}`).join("\n");
+
       const systemPrompt = `
 You are an expert AI assistant embedded inside a helpdesk platform called Desk.
-You have access to the full workspace data listed below. Use it to answer questions accurately.
+You have access to workspace data relevant to the user's question. Use it to answer accurately.
 Never invent information — if something is not in the context, say so.
 
 ${workspace.workspace_prompt ? `---\nWORKSPACE INSTRUCTIONS\n${workspace.workspace_prompt}\n` : ""}
@@ -79,14 +108,10 @@ WORKSPACE: ${workspace.name}
 ${workspace.description ? `Description: ${workspace.description}` : ""}
 
 TICKET SUMMARY
-- Total: ${ticketStats.total}
-- Open: ${ticketStats.open}
-- Pending: ${ticketStats.pending}
-- Resolved: ${ticketStats.resolved}
-- Closed: ${ticketStats.closed}
+- Total: ${ticketStats.total} | Open: ${ticketStats.open} | Pending: ${ticketStats.pending} | Resolved: ${ticketStats.resolved} | Closed: ${ticketStats.closed}
 
-RECENT TICKETS (last 20)
-${recentTickets || "  No tickets yet."}
+RELEVANT TICKETS (${relevantTickets.length})
+${ticketsBlock || "  No matching tickets."}
 
 AGENTS (${members.length})
 ${agentsBlock || "  No agents yet."}
@@ -94,10 +119,16 @@ ${agentsBlock || "  No agents yet."}
 TEAMS (${teams.length})
 ${teamsBlock || "  No teams yet."}
 
-CONTACTS (${contacts.length} total, showing first 30)
-${contactsBlock || "  No contacts yet."}
+RELEVANT CONTACTS (${relevantContacts.length})
+${contactsBlock || "  No matching contacts."}
 
----
+RELEVANT COMPANIES (${relevantCompanies.length})
+${companiesBlock || "  No matching companies."}
+
+${memoriesBlock ? `---
+WORKSPACE MEMORY
+${memoriesBlock}
+` : ""}---
 Instructions:
 - Answer questions about this workspace's data concisely and accurately.
 - When listing items, format them clearly with bullet points.

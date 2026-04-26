@@ -13,6 +13,32 @@ bucket_name = "pulse-storage"
 [ai]
 binding = "AI"
 
+# Run: wrangler vectorize create ondesk-tickets --dimensions=384 --metric=cosine
+# Run: wrangler vectorize create ondesk-messages --dimensions=384 --metric=cosine
+# Run: wrangler vectorize create ondesk-contacts --dimensions=384 --metric=cosine
+# Run: wrangler vectorize create ondesk-companies --dimensions=384 --metric=cosine
+
+[[vectorize]]
+binding = "VECTORIZE_TICKETS"
+index_name = "ondesk-tickets"
+
+[[vectorize]]
+binding = "VECTORIZE_MESSAGES"
+index_name = "ondesk-messages"
+
+[[vectorize]]
+binding = "VECTORIZE_CONTACTS"
+index_name = "ondesk-contacts"
+
+[[vectorize]]
+binding = "VECTORIZE_COMPANIES"
+index_name = "ondesk-companies"
+
+# Run: wrangler vectorize create ondesk-memories --dimensions=384 --metric=cosine
+[[vectorize]]
+binding = "VECTORIZE_MEMORIES"
+index_name = "ondesk-memories"
+
 # ── Stripe secrets ────────────────────────────────────────────────────────────
 # Set these via: wrangler secret put <KEY>
 #

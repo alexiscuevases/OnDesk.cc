@@ -3,6 +3,7 @@ import { findTicketsByWorkspace, createTicket, findUserById, createNotification 
 import type { TicketStatus, TicketPriority } from "../../_lib/types";
 import { withWorkspace } from "../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../_lib/http";
+import { upsertTicket } from "../../_lib/vectorize";
 
 const VALID_STATUSES: TicketStatus[] = ["open", "pending", "resolved", "closed"];
 const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
@@ -65,6 +66,7 @@ export const onRequest = withWorkspace(async ({ request, env, payload, workspace
 				});
 			}
 
+			void upsertTicket(env, ticket);
 			return jsonCreated({ ticket });
 		},
 	});

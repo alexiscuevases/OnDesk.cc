@@ -87,3 +87,25 @@ export interface PublicAiActionLog {
 	metadata: Record<string, unknown> | null;
 	created_at: number;
 }
+
+// ─── AI Memories ──────────────────────────────────────────────────────────────
+
+export interface AiMemoryRow {
+	id: string;
+	workspace_id: string;
+	contact_id: string | null;
+	content: string;
+	last_referenced_at: number | null;
+	expires_at: number | null;
+	created_at: number;
+}
+
+export interface PublicAiMemory {
+	id: string;
+	workspace_id: string;
+	contact_id: string | null;
+	content: string;
+	last_referenced_at: number | null;
+	expires_at: number | null;
+	created_at: number;
+}

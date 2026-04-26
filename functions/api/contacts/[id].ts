@@ -2,6 +2,7 @@ import { jsonOk, jsonError } from "../../_lib/response";
 import { findContactById, updateContact, deleteContact, isWorkspaceMember } from "../../_lib/db";
 import { withAuth } from "../../_lib/middleware";
 import { asNullableTrimmedString, asTrimmedString, createMethodRouter, parseJsonBody } from "../../_lib/http";
+import { upsertContact, deleteContactVector } from "../../_lib/vectorize";
 
 // GET    /api/contacts/:id
 // PATCH  /api/contacts/:id
@@ -27,10 +28,12 @@ export const onRequest = withAuth<"id">(async ({ request, env, params, payload }
         company_id: asNullableTrimmedString(company_id),
       });
       const updated = await findContactById(env.DB, contactId);
+      if (updated) void upsertContact(env, updated);
       return jsonOk({ contact: updated });
     },
     DELETE: async () => {
       await deleteContact(env.DB, contactId);
+      void deleteContactVector(env, contactId);
       return jsonOk({ success: true });
     },
   });

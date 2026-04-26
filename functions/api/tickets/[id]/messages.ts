@@ -8,6 +8,7 @@ import { sendGraphMail, replyGraphMail, refreshAccessToken } from "../../../_lib
 import type { MessageType } from "../../../_lib/types";
 import { withAuth } from "../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../_lib/http";
+import { upsertMessage } from "../../../_lib/vectorize";
 
 const VALID_TYPES: MessageType[] = ["message", "note"];
 
@@ -193,6 +194,7 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
       );
     }
 
+      void upsertMessage(env, message, ticket.workspace_id);
       return jsonCreated({ message });
     },
   });
