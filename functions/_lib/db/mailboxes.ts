@@ -102,7 +102,7 @@ export async function updateMailboxSubscription(db: D1Database, id: string, data
 }
 
 export async function updateMailboxLastHistoryId(db: D1Database, id: string, historyId: string): Promise<void> {
-	await db.prepare("UPDATE mailbox_integrations SET last_history_id = ? WHERE id = ?").bind(historyId, id).run();
+	await db.prepare("UPDATE mailbox_integrations SET last_history_id = ? WHERE id = ?").bind(String(Math.floor(Number(historyId))), id).run();
 }
 
 export async function deleteMailboxIntegration(db: D1Database, id: string): Promise<void> {

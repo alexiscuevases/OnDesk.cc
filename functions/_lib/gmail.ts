@@ -145,7 +145,7 @@ export async function listGmailHistory(
 	startHistoryId: string,
 ): Promise<GmailHistoryListResponse> {
 	const params = new URLSearchParams({
-		startHistoryId,
+		startHistoryId: String(Math.floor(Number(startHistoryId))),
 		historyTypes: "messageAdded",
 		labelId: "INBOX",
 	});
