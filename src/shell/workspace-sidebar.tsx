@@ -68,7 +68,7 @@ export function WorkspaceSidebar() {
 
 	return (
 		<Sidebar collapsible="icon" className="border-r-0">
-			<SidebarHeader className="p-4">
+			<SidebarHeader className="p-4 group-data-[collapsible=icon]:p-2">
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
@@ -111,7 +111,7 @@ export function WorkspaceSidebar() {
 			</SidebarHeader>
 
 			<SidebarContent>
-				<SidebarGroup className="px-3">
+				<SidebarGroup className="px-3 group-data-[collapsible=icon]:px-2">
 					<SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40 mb-1">Menu</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu className="gap-0.5">
@@ -139,7 +139,7 @@ export function WorkspaceSidebar() {
 				</SidebarGroup>
 			</SidebarContent>
 
-			<SidebarFooter className="p-3">
+			<SidebarFooter className="p-3 group-data-[collapsible=icon]:p-2">
 				<Separator className="mb-3 bg-sidebar-border" />
 				<SidebarMenu>
 					<SidebarMenuItem>

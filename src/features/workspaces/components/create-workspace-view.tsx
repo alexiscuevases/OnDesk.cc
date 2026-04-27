@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Building2, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,40 @@ function toSlug(value: string) {
 		.replace(/[^a-z0-9-]/g, "")
 		.replace(/-+/g, "-")
 		.slice(0, 50);
+}
+
+function StepIndicator({ step }: { step: 1 | 2 }) {
+	return (
+		<div className="flex items-center gap-3 text-xs mb-8">
+			<div className="flex items-center gap-2">
+				<span
+					className={`size-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-colors ${
+						step >= 1
+							? "bg-primary text-primary-foreground"
+							: "bg-muted text-muted-foreground"
+					}`}>
+					{step > 1 ? <Check className="size-3" /> : "1"}
+				</span>
+				<span className={step === 1 ? "font-semibold text-foreground" : "text-muted-foreground"}>
+					Details
+				</span>
+			</div>
+			<div className="flex-1 h-px bg-border" />
+			<div className="flex items-center gap-2">
+				<span
+					className={`size-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-colors ${
+						step >= 2
+							? "bg-primary text-primary-foreground"
+							: "bg-muted text-muted-foreground"
+					}`}>
+					2
+				</span>
+				<span className={step === 2 ? "font-semibold text-foreground" : "text-muted-foreground"}>
+					Plan
+				</span>
+			</div>
+		</div>
+	);
 }
 
 export function CreateWorkspaceView() {
@@ -43,143 +77,152 @@ export function CreateWorkspaceView() {
 		validatorAdapter: zodValidator(),
 	});
 
-	// Step 2: plan selection after workspace is created
 	if (createdWorkspace) {
-		return <SelectPlanView workspaceId={createdWorkspace.id} workspaceName={createdWorkspace.name} />;
+		return (
+			<SelectPlanView
+				workspaceId={createdWorkspace.id}
+				workspaceName={createdWorkspace.name}
+			/>
+		);
 	}
 
-	// Step 1: workspace details
 	return (
-		<div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
-			<div className="w-full max-w-md space-y-8">
+		<div className="min-h-screen flex flex-col items-center justify-center hero-bg-gradient p-6 relative overflow-hidden">
+			<div className="dot-grid absolute inset-0 opacity-[0.035] pointer-events-none" />
+
+			<div className="w-full max-w-md relative">
+				{/* Step indicator */}
+				<StepIndicator step={1} />
+
 				{/* Header */}
-				<div className="text-center space-y-2">
-					<div className="mx-auto size-12 rounded-2xl bg-primary flex items-center justify-center mb-4">
-						<Building2 className="size-6 text-primary-foreground" />
-					</div>
+				<div className="text-center space-y-2 mb-8">
 					<h1 className="text-2xl font-bold tracking-tight">Create your workspace</h1>
 					<p className="text-sm text-muted-foreground">
 						A workspace is where your team manages tickets and customers.
 					</p>
 				</div>
 
-				{/* Form */}
-				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						form.handleSubmit();
-					}}
-					className="space-y-5">
-					{/* Name */}
-					<form.Field name="name">
-						{(field) => (
-							<div className="space-y-2">
-								<Label htmlFor="name">Workspace name</Label>
-								<Input
-									id="name"
-									placeholder="Acme Corp"
-									value={field.state.value}
-									onChange={(e) => {
-										field.handleChange(e.target.value);
-										// Auto-generate slug from name if slug hasn't been manually edited
-										const slugField = form.getFieldValue("slug");
-										const autoSlug = toSlug(field.state.value);
-										if (!slugField || slugField === toSlug(field.state.value.slice(0, -1))) {
-											form.setFieldValue("slug", toSlug(e.target.value));
-										}
-									}}
-									onBlur={field.handleBlur}
-								/>
-								{field.state.meta.errors.length > 0 && (
-									<p className="text-xs text-destructive">
-										{field.state.meta.errors[0]?.message}
-									</p>
-								)}
-							</div>
-						)}
-					</form.Field>
-
-					{/* Slug */}
-					<form.Field name="slug">
-						{(field) => (
-							<div className="space-y-2">
-								<Label htmlFor="slug">
-									Slug{" "}
-									<span className="text-muted-foreground font-normal text-xs">(URL identifier)</span>
-								</Label>
-								<div className="flex items-center rounded-lg border bg-muted/40 overflow-hidden focus-within:ring-2 focus-within:ring-ring">
-									<span className="px-3 text-sm text-muted-foreground border-r bg-muted/60 h-10 flex items-center select-none">
-										/w/
-									</span>
-									<input
-										id="slug"
-										className="flex-1 h-10 px-3 text-sm bg-transparent outline-none"
-										placeholder="acme-corp"
+				{/* Form card */}
+				<div className="bg-card border rounded-2xl p-6 shadow-sm">
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							form.handleSubmit();
+						}}
+						className="space-y-5">
+						{/* Name */}
+						<form.Field name="name">
+							{(field) => (
+								<div className="space-y-2">
+									<Label htmlFor="name">Workspace name</Label>
+									<Input
+										id="name"
+										placeholder="Acme Corp"
 										value={field.state.value}
-										onChange={(e) => field.handleChange(toSlug(e.target.value))}
+										onChange={(e) => {
+											field.handleChange(e.target.value);
+											const slugField = form.getFieldValue("slug");
+											if (!slugField || slugField === toSlug(field.state.value.slice(0, -1))) {
+												form.setFieldValue("slug", toSlug(e.target.value));
+											}
+										}}
 										onBlur={field.handleBlur}
 									/>
+									{field.state.meta.errors.length > 0 && (
+										<p className="text-xs text-destructive">
+											{field.state.meta.errors[0]?.message}
+										</p>
+									)}
 								</div>
-								{field.state.meta.errors.length > 0 && (
-									<p className="text-xs text-destructive">
-										{field.state.meta.errors[0]?.message}
-									</p>
-								)}
-							</div>
+							)}
+						</form.Field>
+
+						{/* Slug */}
+						<form.Field name="slug">
+							{(field) => (
+								<div className="space-y-2">
+									<Label htmlFor="slug">
+										URL identifier{" "}
+										<span className="text-muted-foreground font-normal text-xs">(auto-generated)</span>
+									</Label>
+									<div className="flex items-center rounded-lg border bg-muted/40 overflow-hidden focus-within:ring-2 focus-within:ring-ring">
+										<span className="px-3 text-sm text-muted-foreground border-r bg-muted/60 h-10 flex items-center select-none shrink-0">
+											/w/
+										</span>
+										<input
+											id="slug"
+											className="flex-1 h-10 px-3 text-sm bg-transparent outline-none"
+											placeholder="acme-corp"
+											value={field.state.value}
+											onChange={(e) => field.handleChange(toSlug(e.target.value))}
+											onBlur={field.handleBlur}
+										/>
+									</div>
+									{field.state.value && (
+										<p className="text-[11px] text-muted-foreground/70 font-mono">
+											app.ondesk.cc/w/{field.state.value}
+										</p>
+									)}
+									{field.state.meta.errors.length > 0 && (
+										<p className="text-xs text-destructive">
+											{field.state.meta.errors[0]?.message}
+										</p>
+									)}
+								</div>
+							)}
+						</form.Field>
+
+						{/* Description */}
+						<form.Field name="description">
+							{(field) => (
+								<div className="space-y-2">
+									<Label htmlFor="description">
+										Description{" "}
+										<span className="text-muted-foreground font-normal text-xs">(optional)</span>
+									</Label>
+									<Textarea
+										id="description"
+										placeholder="What does your team do?"
+										value={field.state.value}
+										onChange={(e) => field.handleChange(e.target.value)}
+										onBlur={field.handleBlur}
+										rows={3}
+										className="resize-none"
+									/>
+									{field.state.meta.errors.length > 0 && (
+										<p className="text-xs text-destructive">
+											{field.state.meta.errors[0]?.message}
+										</p>
+									)}
+								</div>
+							)}
+						</form.Field>
+
+						{createMutation.error && (
+							<p className="text-sm text-destructive text-center">
+								{createMutation.error.message}
+							</p>
 						)}
-					</form.Field>
 
-					{/* Description */}
-					<form.Field name="description">
-						{(field) => (
-							<div className="space-y-2">
-								<Label htmlFor="description">
-									Description{" "}
-									<span className="text-muted-foreground font-normal text-xs">(optional)</span>
-								</Label>
-								<Textarea
-									id="description"
-									placeholder="What does your team do?"
-									value={field.state.value}
-									onChange={(e) => field.handleChange(e.target.value)}
-									onBlur={field.handleBlur}
-									rows={3}
-									className="resize-none"
-								/>
-								{field.state.meta.errors.length > 0 && (
-									<p className="text-xs text-destructive">
-										{field.state.meta.errors[0]?.message}
-									</p>
-								)}
-							</div>
-						)}
-					</form.Field>
+						<div className="pt-1 space-y-2">
+							<Button
+								type="submit"
+								className="w-full"
+								size="lg"
+								disabled={createMutation.isPending}>
+								{createMutation.isPending ? "Creating..." : "Continue to plan →"}
+							</Button>
+						</div>
+					</form>
+				</div>
 
-					{createMutation.error && (
-						<p className="text-sm text-destructive text-center">
-							{createMutation.error.message}
-						</p>
-					)}
-
-					<div className="pt-2 space-y-3">
-						<Button
-							type="submit"
-							className="w-full"
-							size="lg"
-							disabled={createMutation.isPending}>
-							{createMutation.isPending ? "Creating..." : "Continue"}
-						</Button>
-
-						<Button
-							type="button"
-							variant="ghost"
-							className="w-full gap-2 text-muted-foreground"
-							onClick={() => navigate({ to: "/workspaces" })}>
-							<ArrowLeft className="size-4" />
-							Back to workspaces
-						</Button>
-					</div>
-				</form>
+				{/* Back link */}
+				<button
+					onClick={() => navigate({ to: "/workspaces" })}
+					className="mt-4 w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-2">
+					<ArrowLeft className="size-3.5" />
+					Back to workspaces
+				</button>
 			</div>
 		</div>
 	);

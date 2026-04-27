@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckCircle2, ArrowRight, Loader2, Zap } from "lucide-react";
+import { CheckCircle2, ArrowRight, Loader2, Zap, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -71,11 +71,29 @@ export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewPro
 	}
 
 	return (
-		<div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
-			<div className="w-full max-w-xl space-y-6">
+		<div className="min-h-screen flex flex-col items-center justify-center hero-bg-gradient p-6 relative overflow-hidden">
+			<div className="dot-grid absolute inset-0 opacity-[0.035] pointer-events-none" />
+			<div className="w-full max-w-xl relative space-y-6">
+				{/* Step indicator */}
+				<div className="flex items-center gap-3 text-xs mb-2">
+					<div className="flex items-center gap-2">
+						<span className="size-6 rounded-full flex items-center justify-center text-[11px] font-bold bg-primary text-primary-foreground">
+							<Check className="size-3" />
+						</span>
+						<span className="text-muted-foreground">Details</span>
+					</div>
+					<div className="flex-1 h-px bg-border" />
+					<div className="flex items-center gap-2">
+						<span className="size-6 rounded-full flex items-center justify-center text-[11px] font-bold bg-primary text-primary-foreground">
+							2
+						</span>
+						<span className="font-semibold text-foreground">Plan</span>
+					</div>
+				</div>
+
 				{/* Header */}
 				<div className="text-center space-y-2">
-					<div className="mx-auto size-12 rounded-2xl bg-primary flex items-center justify-center mb-4">
+					<div className="mx-auto size-12 rounded-2xl bg-primary flex items-center justify-center mb-4 shadow-sm">
 						<Zap className="size-6 text-primary-foreground" />
 					</div>
 					<h1 className="text-2xl font-bold tracking-tight">Choose your plan</h1>
