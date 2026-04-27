@@ -2,9 +2,11 @@ export interface MailboxIntegration {
 	id: string;
 	workspace_id: string;
 	email: string;
+	provider: "microsoft" | "google";
 	ms_user_id: string;
 	subscription_id: string | null;
 	subscription_expires_at: number | null;
+	last_history_id: string | null;
 	created_at: number;
 }
 
@@ -16,6 +18,18 @@ export async function apiGetOAuthUrl(workspaceId: string, slug: string): Promise
 	if (!res.ok) {
 		const err = (await res.json()) as { error: string };
 		throw new Error(err.error ?? "Failed to get OAuth URL");
+	}
+	return res.json() as Promise<{ url: string }>;
+}
+
+export async function apiGetGmailOAuthUrl(workspaceId: string, slug: string): Promise<{ url: string }> {
+	const params = new URLSearchParams({ workspace_id: workspaceId, slug });
+	const res = await fetch(`/api/integrations/google/oauth-url?${params}`, {
+		credentials: "include",
+	});
+	if (!res.ok) {
+		const err = (await res.json()) as { error: string };
+		throw new Error(err.error ?? "Failed to get Gmail OAuth URL");
 	}
 	return res.json() as Promise<{ url: string }>;
 }

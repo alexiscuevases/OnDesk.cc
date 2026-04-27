@@ -218,7 +218,6 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
               ticket,
               mailbox,
               aiAgent,
-              inboundMessage: message,
               contact,
               isNewTicket: !existingTicket,
             }).catch((err) => console.error("AI agent pipeline error:", err))

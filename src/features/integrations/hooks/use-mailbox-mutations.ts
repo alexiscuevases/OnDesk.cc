@@ -1,10 +1,19 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiGetOAuthUrl, apiDisconnectMailbox } from "../api/integrations-api";
+import { apiGetOAuthUrl, apiGetGmailOAuthUrl, apiDisconnectMailbox } from "../api/integrations-api";
 import { mailboxQueryKeys } from "./use-mailbox-queries";
 
 export function useConnectMailboxMutation(workspaceId: string, slug: string) {
 	return useMutation({
 		mutationFn: () => apiGetOAuthUrl(workspaceId, slug),
+		onSuccess: ({ url }) => {
+			window.location.href = url;
+		},
+	});
+}
+
+export function useConnectGmailMutation(workspaceId: string, slug: string) {
+	return useMutation({
+		mutationFn: () => apiGetGmailOAuthUrl(workspaceId, slug),
 		onSuccess: ({ url }) => {
 			window.location.href = url;
 		},

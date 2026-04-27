@@ -1,5 +1,4 @@
 import type { Env, AiAgentRow, MailboxIntegrationRow, TicketRow, ContactRow } from "./types";
-import type { GraphMessage } from "./types";
 import {
   findAiTicketState,
   createAiTicketState,
@@ -17,6 +16,7 @@ import {
   findWorkspaceById,
 } from "./db";
 import { refreshAccessToken, replyGraphMail, sendGraphMail } from "./graph";
+import { refreshGmailAccessToken, replyGmailMail, sendGmailMail } from "./gmail";
 import { buildToolsSection, buildFullSystemPrompt } from "./ai-agent-testing-utils";
 import { runAgenticLoop } from "./ai-agent-runtime";
 
@@ -24,7 +24,6 @@ interface PipelineContext {
   ticket: TicketRow;
   mailbox: MailboxIntegrationRow;
   aiAgent: AiAgentRow;
-  inboundMessage: GraphMessage;
   contact: ContactRow;
   isNewTicket: boolean;
 }
@@ -178,13 +177,23 @@ export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promis
   let accessToken = mailbox.access_token;
   if (mailbox.token_expires_at < nowSecs + 60) {
     try {
-      const refreshed = await refreshAccessToken(env.MS_CLIENT_ID, env.MS_CLIENT_SECRET, mailbox.refresh_token);
-      accessToken = refreshed.access_token;
-      await updateMailboxTokens(env.DB, mailbox.id, {
-        access_token: refreshed.access_token,
-        refresh_token: refreshed.refresh_token,
-        token_expires_at: nowSecs + refreshed.expires_in,
-      });
+      if (mailbox.provider === "google") {
+        const refreshed = await refreshGmailAccessToken(env.GOOGLE_CLIENT_ID, env.GOOGLE_CLIENT_SECRET, mailbox.refresh_token);
+        accessToken = refreshed.access_token;
+        await updateMailboxTokens(env.DB, mailbox.id, {
+          access_token: refreshed.access_token,
+          refresh_token: refreshed.refresh_token ?? mailbox.refresh_token,
+          token_expires_at: nowSecs + refreshed.expires_in,
+        });
+      } else {
+        const refreshed = await refreshAccessToken(env.MS_CLIENT_ID, env.MS_CLIENT_SECRET, mailbox.refresh_token);
+        accessToken = refreshed.access_token;
+        await updateMailboxTokens(env.DB, mailbox.id, {
+          access_token: refreshed.access_token,
+          refresh_token: refreshed.refresh_token,
+          token_expires_at: nowSecs + refreshed.expires_in,
+        });
+      }
     } catch (err) {
       console.error("AI pipeline: token refresh failed", err);
       await triggerEscalation(env, ticket, aiAgent, "Failed to refresh mailbox access token.");
@@ -201,16 +210,30 @@ export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promis
     const lastInbound = await findLastInboundMessageByTicket(env.DB, ticket.id);
     let sentConversationId: string | undefined;
 
-    if (lastInbound?.graph_message_id) {
-      try {
-        await replyGraphMail(accessToken, lastInbound.graph_message_id, replyHtml);
-      } catch {
-        const result = await sendGraphMail(accessToken, { name: contact.name, address: contact.email }, `Re: ${ticket.subject}`, replyHtml);
+    if (mailbox.provider === "google") {
+      if (lastInbound?.graph_message_id) {
+        try {
+          await replyGmailMail(accessToken, lastInbound.graph_message_id, replyHtml);
+        } catch {
+          const result = await sendGmailMail(accessToken, { name: contact.name, address: contact.email }, `Re: ${ticket.subject}`, replyHtml);
+          sentConversationId = result.conversationId;
+        }
+      } else {
+        const result = await sendGmailMail(accessToken, { name: contact.name, address: contact.email }, `Re: ${ticket.subject}`, replyHtml);
         sentConversationId = result.conversationId;
       }
     } else {
-      const result = await sendGraphMail(accessToken, { name: contact.name, address: contact.email }, `Re: ${ticket.subject}`, replyHtml);
-      sentConversationId = result.conversationId;
+      if (lastInbound?.graph_message_id) {
+        try {
+          await replyGraphMail(accessToken, lastInbound.graph_message_id, replyHtml);
+        } catch {
+          const result = await sendGraphMail(accessToken, { name: contact.name, address: contact.email }, `Re: ${ticket.subject}`, replyHtml);
+          sentConversationId = result.conversationId;
+        }
+      } else {
+        const result = await sendGraphMail(accessToken, { name: contact.name, address: contact.email }, `Re: ${ticket.subject}`, replyHtml);
+        sentConversationId = result.conversationId;
+      }
     }
 
     if (sentConversationId && !ticket.conversation_id) {

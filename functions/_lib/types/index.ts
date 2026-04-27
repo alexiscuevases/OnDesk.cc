@@ -13,6 +13,7 @@ export * from "./ai";
 export * from "./notifications";
 export * from "./marketplace";
 export * from "./graph";
+export * from "./gmail";
 export * from "./middleware";
 export * from "./http";
 export * from "./ai-agent-testing";

@@ -7,6 +7,7 @@ export async function createMailboxIntegration(
 	data: {
 		workspace_id: string;
 		email: string;
+		provider: "microsoft" | "google";
 		ms_user_id: string;
 		access_token: string;
 		refresh_token: string;
@@ -18,13 +19,14 @@ export async function createMailboxIntegration(
 	await db
 		.prepare(
 			`INSERT INTO mailbox_integrations
-         (id, workspace_id, email, ms_user_id, access_token, refresh_token, token_expires_at, client_state_secret)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+         (id, workspace_id, email, provider, ms_user_id, access_token, refresh_token, token_expires_at, client_state_secret)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.bind(
 			id,
 			data.workspace_id,
 			data.email.toLowerCase(),
+			data.provider,
 			data.ms_user_id,
 			data.access_token,
 			data.refresh_token,
@@ -53,10 +55,19 @@ export async function findMailboxIntegrationBySubscriptionId(db: D1Database, sub
 	return result ?? null;
 }
 
+// Used by Gmail webhook: look up all mailboxes matching an email address (any workspace)
+export async function findMailboxIntegrationsByEmailOnly(db: D1Database, email: string): Promise<MailboxIntegrationRow[]> {
+	const result = await db
+		.prepare("SELECT * FROM mailbox_integrations WHERE email = ? AND provider = 'google'")
+		.bind(email.toLowerCase())
+		.all<MailboxIntegrationRow>();
+	return result.results ?? [];
+}
+
 export async function findMailboxIntegrationsByWorkspace(db: D1Database, workspaceId: string): Promise<PublicMailboxIntegration[]> {
 	const result = await db
 		.prepare(
-			`SELECT id, workspace_id, email, ms_user_id, subscription_id, subscription_expires_at, created_at
+			`SELECT id, workspace_id, email, provider, ms_user_id, subscription_id, subscription_expires_at, last_history_id, created_at
        FROM mailbox_integrations WHERE workspace_id = ? ORDER BY created_at ASC`,
 		)
 		.bind(workspaceId)
@@ -88,6 +99,10 @@ export async function updateMailboxSubscription(db: D1Database, id: string, data
 		.prepare("UPDATE mailbox_integrations SET subscription_id = ?, subscription_expires_at = ? WHERE id = ?")
 		.bind(data.subscription_id, data.subscription_expires_at, id)
 		.run();
+}
+
+export async function updateMailboxLastHistoryId(db: D1Database, id: string, historyId: string): Promise<void> {
+	await db.prepare("UPDATE mailbox_integrations SET last_history_id = ? WHERE id = ?").bind(historyId, id).run();
 }
 
 export async function deleteMailboxIntegration(db: D1Database, id: string): Promise<void> {

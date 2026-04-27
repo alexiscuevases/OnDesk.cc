@@ -204,19 +204,25 @@ CREATE INDEX IF NOT EXISTS idx_workspace_invitations_email        ON workspace_i
 CREATE INDEX IF NOT EXISTS idx_workspace_invitations_token        ON workspace_invitations(token);
 CREATE INDEX IF NOT EXISTS idx_workspace_invitations_workspace_id ON workspace_invitations(workspace_id);
 
--- Mailbox integrations (Microsoft Outlook via Graph API)
+-- Mailbox integrations (Microsoft Outlook via Graph API + Gmail via Google API)
 -- Stores OAuth tokens per connected email account per workspace
+-- provider: 'microsoft' | 'google'
+-- ms_user_id: Microsoft user ID for Outlook, Google user ID for Gmail
+-- subscription_id: Graph subscription ID for Outlook, unused for Gmail (watch is per-user)
+-- last_history_id: Gmail only — last processed historyId for incremental sync
 CREATE TABLE IF NOT EXISTS mailbox_integrations (
   id                      TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
   workspace_id            TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
   email                   TEXT    NOT NULL,
-  ms_user_id              TEXT    NOT NULL,
+  provider                TEXT    NOT NULL DEFAULT 'microsoft',
+  ms_user_id              TEXT    NOT NULL DEFAULT '',
   access_token            TEXT    NOT NULL,
   refresh_token           TEXT    NOT NULL,
   token_expires_at        INTEGER NOT NULL,
   subscription_id         TEXT,
   subscription_expires_at INTEGER,
-  client_state_secret     TEXT    NOT NULL,
+  client_state_secret     TEXT    NOT NULL DEFAULT '',
+  last_history_id         TEXT,
   created_at              INTEGER NOT NULL DEFAULT (unixepoch()),
   UNIQUE(workspace_id, email)
 );
@@ -403,3 +409,10 @@ CREATE TABLE IF NOT EXISTS ai_memories (
 
 CREATE INDEX IF NOT EXISTS idx_ai_memories_workspace_id ON ai_memories(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_ai_memories_contact_id   ON ai_memories(workspace_id, contact_id);
+
+-- ─── Migrations ───────────────────────────────────────────────────────────────
+-- Run these on existing databases when deploying new columns
+
+-- Gmail support (run once on existing DBs — skip if column already exists)
+-- wrangler d1 execute DB --remote --command "ALTER TABLE mailbox_integrations ADD COLUMN provider TEXT NOT NULL DEFAULT 'microsoft';"
+-- wrangler d1 execute DB --remote --command "ALTER TABLE mailbox_integrations ADD COLUMN last_history_id TEXT;"
