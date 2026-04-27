@@ -83,6 +83,19 @@ export async function findFirstMailboxByWorkspace(db: D1Database, workspaceId: s
 	return result ?? null;
 }
 
+export async function findMailboxByTicketId(db: D1Database, ticketId: string): Promise<MailboxIntegrationRow | null> {
+	const result = await db
+		.prepare(
+			`SELECT mi.* FROM mailbox_integrations mi
+       JOIN email_tickets et ON et.mailbox_integration_id = mi.id
+       WHERE et.ticket_id = ?
+       LIMIT 1`,
+		)
+		.bind(ticketId)
+		.first<MailboxIntegrationRow>();
+	return result ?? null;
+}
+
 export async function updateMailboxTokens(
 	db: D1Database,
 	id: string,

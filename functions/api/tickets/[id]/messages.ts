@@ -1,10 +1,11 @@
 import { jsonOk, jsonCreated, jsonError } from "../../../_lib/response";
 import {
   findTicketById, findMessagesByTicket, createTicketMessage, isWorkspaceMember,
-  findContactById, findFirstMailboxByWorkspace, updateMailboxTokens,
+  findContactById, findFirstMailboxByWorkspace, findMailboxByTicketId, updateMailboxTokens,
   findLastInboundMessageByTicket, updateTicket, findUserById, createNotification,
 } from "../../../_lib/db";
 import { sendGraphMail, replyGraphMail, refreshAccessToken } from "../../../_lib/graph";
+import { sendGmailMail, replyGmailMail, refreshGmailAccessToken } from "../../../_lib/gmail";
 import type { MessageType } from "../../../_lib/types";
 import { withAuth } from "../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../_lib/http";
@@ -68,10 +69,11 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
     // Send email reply if this is not an internal note and the ticket has a contact
     if (msgType === "message" && ticket.contact_id) {
       try {
-        const [contact, mailbox] = await Promise.all([
+        const [contact, mailboxFromTicket] = await Promise.all([
           findContactById(env.DB, ticket.contact_id),
-          findFirstMailboxByWorkspace(env.DB, ticket.workspace_id),
+          findMailboxByTicketId(env.DB, ticketId),
         ]);
+        const mailbox = mailboxFromTicket ?? await findFirstMailboxByWorkspace(env.DB, ticket.workspace_id);
 
         if (!contact) {
           console.error("Email reply skipped: contact not found", ticket.contact_id);
@@ -82,34 +84,84 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
           const nowSecs = Math.floor(Date.now() / 1000);
 
           if (mailbox.token_expires_at < nowSecs + 60) {
-            const refreshed = await refreshAccessToken(
-              env.MS_CLIENT_ID,
-              env.MS_CLIENT_SECRET,
-              mailbox.refresh_token
-            );
-            token = refreshed.access_token;
-            await updateMailboxTokens(env.DB, mailbox.id, {
-              access_token: refreshed.access_token,
-              refresh_token: refreshed.refresh_token,
-              token_expires_at: nowSecs + refreshed.expires_in,
-            });
+            if (mailbox.provider === "google") {
+              const refreshed = await refreshGmailAccessToken(env.GOOGLE_CLIENT_ID, env.GOOGLE_CLIENT_SECRET, mailbox.refresh_token);
+              token = refreshed.access_token;
+              await updateMailboxTokens(env.DB, mailbox.id, {
+                access_token: refreshed.access_token,
+                refresh_token: refreshed.refresh_token ?? mailbox.refresh_token,
+                token_expires_at: nowSecs + refreshed.expires_in,
+              });
+            } else {
+              const refreshed = await refreshAccessToken(env.MS_CLIENT_ID, env.MS_CLIENT_SECRET, mailbox.refresh_token);
+              token = refreshed.access_token;
+              await updateMailboxTokens(env.DB, mailbox.id, {
+                access_token: refreshed.access_token,
+                refresh_token: refreshed.refresh_token,
+                token_expires_at: nowSecs + refreshed.expires_in,
+              });
+            }
           }
 
           const lastInbound = await findLastInboundMessageByTicket(env.DB, ticketId);
           let sentConversationId: string | undefined;
 
-          if (lastInbound?.graph_message_id) {
-            try {
-              await replyGraphMail(token, lastInbound.graph_message_id, content.trim(),
+          if (mailbox.provider === "google") {
+            if (lastInbound?.graph_message_id) {
+              try {
+                await replyGmailMail(token, lastInbound.graph_message_id, content.trim());
+              } catch {
+                const result = await sendGmailMail(
+                  token,
+                  { name: contact.name, address: contact.email },
+                  `Re: ${ticket.subject}`,
+                  content.trim(),
+                  undefined,
+                  ccList.length > 0 ? ccList : undefined,
+                );
+                sentConversationId = result.conversationId;
+              }
+            } else {
+              const emailSubject = ticket.channel === "email" ? `Re: ${ticket.subject}` : ticket.subject;
+              const result = await sendGmailMail(
+                token,
+                { name: contact.name, address: contact.email },
+                emailSubject,
+                content.trim(),
+                undefined,
                 ccList.length > 0 ? ccList : undefined,
-                bccList.length > 0 ? bccList : undefined,
               );
-            } catch {
-              // Fallback to sendMail if createReply fails (e.g. missing Mail.ReadWrite scope)
+              sentConversationId = result.conversationId;
+            }
+          } else {
+            if (lastInbound?.graph_message_id) {
+              try {
+                await replyGraphMail(token, lastInbound.graph_message_id, content.trim(),
+                  ccList.length > 0 ? ccList : undefined,
+                  bccList.length > 0 ? bccList : undefined,
+                );
+              } catch {
+                // Fallback to sendMail if createReply fails (e.g. missing Mail.ReadWrite scope)
+                const result = await sendGraphMail(
+                  token,
+                  { name: contact.name, address: contact.email },
+                  `Re: ${ticket.subject}`,
+                  content.trim(),
+                  undefined,
+                  ccList.length > 0 ? ccList : undefined,
+                  bccList.length > 0 ? bccList : undefined,
+                );
+                sentConversationId = result.conversationId;
+              }
+            } else {
+              // No inbound message: either a manual ticket or first outbound message
+              const emailSubject = ticket.channel === "email"
+                ? `Re: ${ticket.subject}`
+                : ticket.subject;
               const result = await sendGraphMail(
                 token,
                 { name: contact.name, address: contact.email },
-                `Re: ${ticket.subject}`,
+                emailSubject,
                 content.trim(),
                 undefined,
                 ccList.length > 0 ? ccList : undefined,
@@ -117,21 +169,6 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
               );
               sentConversationId = result.conversationId;
             }
-          } else {
-            // No inbound message: either a manual ticket or first outbound message
-            const emailSubject = ticket.channel === "email"
-              ? `Re: ${ticket.subject}`
-              : ticket.subject;
-            const result = await sendGraphMail(
-              token,
-              { name: contact.name, address: contact.email },
-              emailSubject,
-              content.trim(),
-              undefined,
-              ccList.length > 0 ? ccList : undefined,
-              bccList.length > 0 ? bccList : undefined,
-            );
-            sentConversationId = result.conversationId;
           }
 
           // Persist conversationId + channel + cc_addresses so future replies stay consistent
