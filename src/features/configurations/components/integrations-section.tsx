@@ -74,7 +74,17 @@ export function IntegrationsSection() {
 						<div className="flex items-center justify-center py-6">
 							<RefreshCw className="size-4 animate-spin text-muted-foreground" />
 						</div>
-					) : (
+					) : mailboxes.length === 0 ? (
+							<div className="flex flex-col items-center gap-2 py-8 text-center">
+								<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+									<Mail className="size-5 text-muted-foreground" />
+								</div>
+								<p className="text-sm font-medium">No accounts connected</p>
+								<p className="text-[11px] text-muted-foreground max-w-xs">
+									Connect a Microsoft Outlook account to start receiving tickets from email.
+								</p>
+							</div>
+						) : (
 						<div className="space-y-2">
 							{mailboxes.map((mailbox) => {
 								const syncStatus = getMailboxSyncStatus(mailbox);
@@ -132,7 +142,7 @@ export function IntegrationsSection() {
 								);
 							})}
 						</div>
-					)}
+						)}
 				</CardContent>
 			</Card>
 

@@ -14,6 +14,7 @@ import {
 	Legend,
 } from "recharts";
 
+import { BarChart2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
@@ -71,6 +72,15 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 								<CardDescription className="text-xs">Ticket count vs resolved by team</CardDescription>
 							</CardHeader>
 							<CardContent>
+							{teamPerformanceData.length === 0 ? (
+								<div className="flex flex-col items-center justify-center h-[300px] text-center">
+									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
+										<BarChart2 className="size-5 text-muted-foreground" />
+									</div>
+									<p className="text-sm font-medium">No team data yet</p>
+									<p className="text-[11px] text-muted-foreground mt-1">Data will appear once teams are assigned tickets.</p>
+								</div>
+							) : (
 								<ResponsiveContainer width="100%" height={300}>
 									<BarChart data={teamPerformanceData} layout="vertical">
 										<CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
@@ -88,6 +98,7 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 										<Bar dataKey="resolved" fill="var(--color-chart-2)" radius={[0, 6, 6, 0]} name="Resolved" />
 									</BarChart>
 								</ResponsiveContainer>
+							)}
 							</CardContent>
 						</Card>
 
@@ -97,6 +108,15 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 								<CardDescription className="text-xs">Response time in hours throughout the day</CardDescription>
 							</CardHeader>
 							<CardContent>
+							{responseTimeData.length === 0 ? (
+								<div className="flex flex-col items-center justify-center h-[300px] text-center">
+									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
+										<BarChart2 className="size-5 text-muted-foreground" />
+									</div>
+									<p className="text-sm font-medium">No response time data yet</p>
+									<p className="text-[11px] text-muted-foreground mt-1">Data will appear once tickets are resolved.</p>
+								</div>
+							) : (
 								<ResponsiveContainer width="100%" height={300}>
 									<LineChart data={responseTimeData}>
 										<CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
@@ -125,6 +145,7 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 										/>
 									</LineChart>
 								</ResponsiveContainer>
+							)}
 							</CardContent>
 						</Card>
 					</div>
@@ -138,6 +159,15 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 								<CardDescription className="text-xs">Resolved tickets vs created tickets over the last 8 weeks</CardDescription>
 							</CardHeader>
 							<CardContent>
+							{resolutionTrendData.length === 0 ? (
+								<div className="flex flex-col items-center justify-center h-[300px] text-center">
+									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
+										<BarChart2 className="size-5 text-muted-foreground" />
+									</div>
+									<p className="text-sm font-medium">No trend data yet</p>
+									<p className="text-[11px] text-muted-foreground mt-1">Data will appear after a few weeks of activity.</p>
+								</div>
+							) : (
 								<ResponsiveContainer width="100%" height={300}>
 									<AreaChart data={resolutionTrendData}>
 										<defs>
@@ -163,6 +193,7 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 										<Area type="monotone" dataKey="score" stroke="var(--color-chart-2)" fill="url(#csatGrad)" strokeWidth={2.5} />
 									</AreaChart>
 								</ResponsiveContainer>
+							)}
 							</CardContent>
 						</Card>
 
@@ -172,6 +203,15 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 								<CardDescription className="text-xs">Ticket creation distribution by hour over the last 30 days</CardDescription>
 							</CardHeader>
 							<CardContent>
+							{hourlyTicketData.length === 0 ? (
+								<div className="flex flex-col items-center justify-center h-[300px] text-center">
+									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
+										<BarChart2 className="size-5 text-muted-foreground" />
+									</div>
+									<p className="text-sm font-medium">No hourly data yet</p>
+									<p className="text-[11px] text-muted-foreground mt-1">Activity breakdown will appear once tickets start coming in.</p>
+								</div>
+							) : (
 								<ResponsiveContainer width="100%" height={300}>
 									<BarChart data={hourlyTicketData}>
 										<CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
@@ -187,6 +227,7 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 										<Bar dataKey="tickets" fill="var(--color-chart-1)" radius={[4, 4, 0, 0]} />
 									</BarChart>
 								</ResponsiveContainer>
+							)}
 							</CardContent>
 						</Card>
 					</div>
@@ -200,6 +241,15 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 								<CardDescription className="text-xs">Total tickets by priority level</CardDescription>
 							</CardHeader>
 							<CardContent>
+							{priorityBreakdown.length === 0 ? (
+								<div className="flex flex-col items-center justify-center h-[300px] text-center">
+									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
+										<BarChart2 className="size-5 text-muted-foreground" />
+									</div>
+									<p className="text-sm font-medium">No priority data yet</p>
+									<p className="text-[11px] text-muted-foreground mt-1">Priority breakdown will appear once tickets are created.</p>
+								</div>
+							) : (
 								<ResponsiveContainer width="100%" height={300}>
 									<BarChart data={priorityBreakdown}>
 										<CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
@@ -218,6 +268,7 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 										</Bar>
 									</BarChart>
 								</ResponsiveContainer>
+							)}
 							</CardContent>
 						</Card>
 
@@ -227,6 +278,15 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 								<CardDescription className="text-xs">Open, resolved, and closed tickets over the last 7 days</CardDescription>
 							</CardHeader>
 							<CardContent>
+							{ticketVolumeData.length === 0 ? (
+								<div className="flex flex-col items-center justify-center h-[300px] text-center">
+									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
+										<BarChart2 className="size-5 text-muted-foreground" />
+									</div>
+									<p className="text-sm font-medium">No volume data yet</p>
+									<p className="text-[11px] text-muted-foreground mt-1">Weekly trends will appear once tickets start coming in.</p>
+								</div>
+							) : (
 								<ResponsiveContainer width="100%" height={300}>
 									<AreaChart data={ticketVolumeData}>
 										<defs>
@@ -258,6 +318,7 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 										<Area type="monotone" dataKey="closed" stroke="var(--color-chart-3)" fill="url(#areaClosed)" strokeWidth={2} />
 									</AreaChart>
 								</ResponsiveContainer>
+							)}
 							</CardContent>
 						</Card>
 					</div>

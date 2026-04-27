@@ -118,7 +118,17 @@ export function TeamsView({ initialTeamId }: { initialTeamId?: string }) {
 						<CardDescription className="text-xs">Select a team to view tickets</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-2">
-						{teams.map((team) => {
+						{teams.length === 0 ? (
+							<div className="flex flex-col items-center gap-2 py-8 text-center">
+								<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+									<Users className="size-5 text-muted-foreground" />
+								</div>
+								<p className="text-sm font-medium">No teams yet</p>
+								<p className="text-[11px] text-muted-foreground max-w-xs">
+									Create teams in Settings to organize your agents.
+								</p>
+							</div>
+						) : teams.map((team) => {
 							const teamOpen = openCount(team.id);
 							const teamPending = pendingCount(team.id);
 							const teamResolved = resolvedToday(team.id);

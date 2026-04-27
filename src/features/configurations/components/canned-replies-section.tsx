@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/context/workspace-context";
@@ -66,40 +66,52 @@ export function CannedRepliesSection() {
 					</div>
 				</CardHeader>
 				<CardContent>
-					<div className="space-y-2">
-						{replies.map((reply) => (
-							<div key={reply.id} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
-								<div className="flex-1 min-w-0">
-									<p className="text-sm font-medium">{reply.name}</p>
-									<p className="text-[11px] text-muted-foreground truncate mt-1">{reply.content}</p>
-								</div>
-								<div className="flex items-center gap-1 shrink-0">
-									<Button
-										variant="ghost"
-										size="icon"
-										className="size-7 rounded-lg"
-										onClick={() => {
-											setSelectedReply(reply);
-											setEditOpen(true);
-										}}>
-										<Pencil className="size-3" />
-										<span className="sr-only">Edit reply</span>
-									</Button>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
-										onClick={() => {
-											setSelectedReply(reply);
-											setDeleteOpen(true);
-										}}>
-										<Trash2 className="size-3" />
-										<span className="sr-only">Delete reply</span>
-									</Button>
-								</div>
+					{replies.length === 0 ? (
+						<div className="flex flex-col items-center gap-2 py-8 text-center">
+							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+								<MessageSquare className="size-5 text-muted-foreground" />
 							</div>
-						))}
-					</div>
+							<p className="text-sm font-medium">No canned replies yet</p>
+							<p className="text-[11px] text-muted-foreground max-w-xs">
+								Create quick response templates to reply faster to common questions.
+							</p>
+						</div>
+					) : (
+						<div className="space-y-2">
+							{replies.map((reply) => (
+								<div key={reply.id} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
+									<div className="flex-1 min-w-0">
+										<p className="text-sm font-medium">{reply.name}</p>
+										<p className="text-[11px] text-muted-foreground truncate mt-1">{reply.content}</p>
+									</div>
+									<div className="flex items-center gap-1 shrink-0">
+										<Button
+											variant="ghost"
+											size="icon"
+											className="size-7 rounded-lg"
+											onClick={() => {
+												setSelectedReply(reply);
+												setEditOpen(true);
+											}}>
+											<Pencil className="size-3" />
+											<span className="sr-only">Edit reply</span>
+										</Button>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+											onClick={() => {
+												setSelectedReply(reply);
+												setDeleteOpen(true);
+											}}>
+											<Trash2 className="size-3" />
+											<span className="sr-only">Delete reply</span>
+										</Button>
+									</div>
+								</div>
+							))}
+						</div>
+					)}
 				</CardContent>
 			</Card>
 

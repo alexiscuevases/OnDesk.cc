@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, TrendingUp, Clock, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react";
+import { ArrowDown, ArrowUp, TrendingUp, Clock, CheckCircle2, AlertTriangle, ExternalLink, BarChart2, Inbox } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,6 +94,15 @@ export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspa
 						<CardDescription className="text-xs">Daily ticket activity over the past week</CardDescription>
 					</CardHeader>
 					<CardContent>
+						{ticketVolumeData.length === 0 ? (
+							<div className="flex flex-col items-center justify-center h-[280px] text-center">
+								<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
+									<BarChart2 className="size-5 text-muted-foreground" />
+								</div>
+								<p className="text-sm font-medium">No ticket data yet</p>
+								<p className="text-[11px] text-muted-foreground mt-1">Data will appear once tickets start coming in.</p>
+							</div>
+						) : (
 						<ResponsiveContainer width="100%" height={280}>
 							<AreaChart data={ticketVolumeData}>
 								<defs>
@@ -120,6 +129,7 @@ export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspa
 								<Area type="monotone" dataKey="resolved" stroke="var(--color-chart-2)" fill="url(#fillResolved)" strokeWidth={2} />
 							</AreaChart>
 						</ResponsiveContainer>
+						)}
 					</CardContent>
 				</Card>
 
@@ -129,6 +139,15 @@ export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspa
 						<CardDescription className="text-xs">Tickets by support channel</CardDescription>
 					</CardHeader>
 					<CardContent className="flex items-center justify-center">
+						{channelDistribution.length === 0 ? (
+							<div className="flex flex-col items-center justify-center h-[240px] text-center">
+								<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
+									<BarChart2 className="size-5 text-muted-foreground" />
+								</div>
+								<p className="text-sm font-medium">No channel data yet</p>
+								<p className="text-[11px] text-muted-foreground mt-1">Channel breakdown will appear once tickets arrive.</p>
+							</div>
+						) : (
 						<div className="flex flex-col items-center gap-4 w-full">
 							<ResponsiveContainer width="100%" height={200}>
 								<PieChart>
@@ -158,6 +177,7 @@ export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspa
 								))}
 							</div>
 						</div>
+						)}
 					</CardContent>
 				</Card>
 			</div>
@@ -175,6 +195,17 @@ export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspa
 					</Button>
 				</CardHeader>
 				<CardContent>
+					{recentTickets.length === 0 ? (
+						<div className="flex flex-col items-center gap-2 py-8 text-center">
+							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+								<Inbox className="size-5 text-muted-foreground" />
+							</div>
+							<p className="text-sm font-medium">No tickets yet</p>
+							<p className="text-[11px] text-muted-foreground max-w-xs">
+								Incoming support requests will show up here.
+							</p>
+						</div>
+					) : (
 					<div className="space-y-2">
 						{recentTickets.map((ticket) => {
 							const contact = ticket.contact_id ? contactMap[ticket.contact_id] : null;
@@ -229,6 +260,7 @@ export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspa
 							);
 						})}
 					</div>
+					)}
 				</CardContent>
 			</Card>
 		</div>

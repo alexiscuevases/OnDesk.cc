@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,49 +56,61 @@ export function SignaturesSection() {
 					</div>
 				</CardHeader>
 				<CardContent>
-					<div className="space-y-2">
-						{signatures.map((sig) => (
-							<div key={sig.id} className="flex items-start gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
-								<div className="flex-1 min-w-0">
-									<div className="flex items-center gap-2">
-										<p className="text-sm font-medium">{sig.name}</p>
-										{sig.is_default && (
-											<Badge variant="secondary" className="text-[10px] rounded-full px-2">
-												Default
-											</Badge>
-										)}
-									</div>
-									<pre className="text-[11px] text-muted-foreground mt-2 whitespace-pre-wrap font-mono bg-muted/50 rounded-lg p-2">
-										{sig.content}
-									</pre>
-								</div>
-								<div className="flex items-center gap-1 shrink-0">
-									<Button
-										variant="ghost"
-										size="icon"
-										className="size-7 rounded-lg"
-										onClick={() => {
-											setSelectedSig(sig);
-											setEditOpen(true);
-										}}>
-										<Pencil className="size-3" />
-										<span className="sr-only">Edit signature</span>
-									</Button>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
-										onClick={() => {
-											setSelectedSig(sig);
-											setDeleteOpen(true);
-										}}>
-										<Trash2 className="size-3" />
-										<span className="sr-only">Delete signature</span>
-									</Button>
-								</div>
+					{signatures.length === 0 ? (
+						<div className="flex flex-col items-center gap-2 py-8 text-center">
+							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+								<FileText className="size-5 text-muted-foreground" />
 							</div>
-						))}
-					</div>
+							<p className="text-sm font-medium">No signatures yet</p>
+							<p className="text-[11px] text-muted-foreground max-w-xs">
+								Add email signatures to automatically append to outgoing replies.
+							</p>
+						</div>
+					) : (
+						<div className="space-y-2">
+							{signatures.map((sig) => (
+								<div key={sig.id} className="flex items-start gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
+									<div className="flex-1 min-w-0">
+										<div className="flex items-center gap-2">
+											<p className="text-sm font-medium">{sig.name}</p>
+											{sig.is_default && (
+												<Badge variant="secondary" className="text-[10px] rounded-full px-2">
+													Default
+												</Badge>
+											)}
+										</div>
+										<pre className="text-[11px] text-muted-foreground mt-2 whitespace-pre-wrap font-mono bg-muted/50 rounded-lg p-2">
+											{sig.content}
+										</pre>
+									</div>
+									<div className="flex items-center gap-1 shrink-0">
+										<Button
+											variant="ghost"
+											size="icon"
+											className="size-7 rounded-lg"
+											onClick={() => {
+												setSelectedSig(sig);
+												setEditOpen(true);
+											}}>
+											<Pencil className="size-3" />
+											<span className="sr-only">Edit signature</span>
+										</Button>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+											onClick={() => {
+												setSelectedSig(sig);
+												setDeleteOpen(true);
+											}}>
+											<Trash2 className="size-3" />
+											<span className="sr-only">Delete signature</span>
+										</Button>
+									</div>
+								</div>
+							))}
+						</div>
+					)}
 				</CardContent>
 			</Card>
 

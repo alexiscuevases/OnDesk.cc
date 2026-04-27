@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Trash2, X, UserPlus, Clock } from "lucide-react";
+import { Pencil, Trash2, X, UserPlus, Clock, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,6 +80,17 @@ export function AgentsSection() {
 					</div>
 				</CardHeader>
 				<CardContent>
+					{members.length === 0 ? (
+						<div className="flex flex-col items-center gap-2 py-8 text-center">
+							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+								<Users className="size-5 text-muted-foreground" />
+							</div>
+							<p className="text-sm font-medium">No agents yet</p>
+							<p className="text-[11px] text-muted-foreground max-w-xs">
+								Invite your team members to start collaborating on support tickets.
+							</p>
+						</div>
+					) : (
 					<div className="space-y-2">
 						{members.map((member) => {
 							const initials = member.name
@@ -133,6 +144,7 @@ export function AgentsSection() {
 							);
 						})}
 					</div>
+					)}
 
 					{invitations.length > 0 && (
 						<div className="mt-4 space-y-2">

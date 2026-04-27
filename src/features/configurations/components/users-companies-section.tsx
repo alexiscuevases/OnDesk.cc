@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckCircle2, Building2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -164,7 +164,17 @@ export function UsersCompaniesSection() {
 							</TabsTrigger>
 						</TabsList>
 						<TabsContent value="companies" className="mt-4 space-y-2">
-							{companies.map((company) => {
+							{companies.length === 0 ? (
+								<div className="flex flex-col items-center gap-2 py-8 text-center">
+									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+										<Building2 className="size-5 text-muted-foreground" />
+									</div>
+									<p className="text-sm font-medium">No companies yet</p>
+									<p className="text-[11px] text-muted-foreground max-w-xs">
+										Add companies to group your contacts and get better context on your customers.
+									</p>
+								</div>
+							) : companies.map((company) => {
 								const companyContacts = contacts.filter((c) => c.company_id === company.id);
 								const initials = company.name
 									.split(" ")

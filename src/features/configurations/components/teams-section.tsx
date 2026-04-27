@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Users } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -96,52 +96,64 @@ export function TeamsSection() {
 					</div>
 				</CardHeader>
 				<CardContent>
-					<div className="space-y-2">
-						{teams.map((team) => {
-							const initials = team.name
-								.split(" ")
-								.map((w) => w[0])
-								.join("")
-								.slice(0, 2)
-								.toUpperCase();
-							return (
-								<div key={team.id} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
-									<Avatar className="size-10 rounded-lg">
-										<AvatarImage src={team.logo_url ?? undefined} />
-										<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-bold">{initials}</AvatarFallback>
-									</Avatar>
-									<div className="flex-1 min-w-0">
-										<p className="text-sm font-medium">{team.name}</p>
-										{team.description && <p className="text-[11px] text-muted-foreground truncate">{team.description}</p>}
+					{teams.length === 0 ? (
+						<div className="flex flex-col items-center gap-2 py-8 text-center">
+							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+								<Users className="size-5 text-muted-foreground" />
+							</div>
+							<p className="text-sm font-medium">No teams yet</p>
+							<p className="text-[11px] text-muted-foreground max-w-xs">
+								Create teams to organize your agents and route tickets more efficiently.
+							</p>
+						</div>
+					) : (
+						<div className="space-y-2">
+							{teams.map((team) => {
+								const initials = team.name
+									.split(" ")
+									.map((w) => w[0])
+									.join("")
+									.slice(0, 2)
+									.toUpperCase();
+								return (
+									<div key={team.id} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
+										<Avatar className="size-10 rounded-lg">
+											<AvatarImage src={team.logo_url ?? undefined} />
+											<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-bold">{initials}</AvatarFallback>
+										</Avatar>
+										<div className="flex-1 min-w-0">
+											<p className="text-sm font-medium">{team.name}</p>
+											{team.description && <p className="text-[11px] text-muted-foreground truncate">{team.description}</p>}
+										</div>
+										<div className="flex items-center gap-1 shrink-0">
+											<Button
+												variant="ghost"
+												size="icon"
+												className="size-7 rounded-lg"
+												onClick={() => {
+													setSelectedTeam(team);
+													setEditOpen(true);
+												}}>
+												<Pencil className="size-3" />
+												<span className="sr-only">Edit team</span>
+											</Button>
+											<Button
+												variant="ghost"
+												size="icon"
+												className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+												onClick={() => {
+													setSelectedTeam(team);
+													setDeleteOpen(true);
+												}}>
+												<Trash2 className="size-3" />
+												<span className="sr-only">Delete team</span>
+											</Button>
+										</div>
 									</div>
-									<div className="flex items-center gap-1 shrink-0">
-										<Button
-											variant="ghost"
-											size="icon"
-											className="size-7 rounded-lg"
-											onClick={() => {
-												setSelectedTeam(team);
-												setEditOpen(true);
-											}}>
-											<Pencil className="size-3" />
-											<span className="sr-only">Edit team</span>
-										</Button>
-										<Button
-											variant="ghost"
-											size="icon"
-											className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
-											onClick={() => {
-												setSelectedTeam(team);
-												setDeleteOpen(true);
-											}}>
-											<Trash2 className="size-3" />
-											<span className="sr-only">Delete team</span>
-										</Button>
-									</div>
-								</div>
-							);
-						})}
-					</div>
+								);
+							})}
+						</div>
+					)}
 				</CardContent>
 			</Card>
 
