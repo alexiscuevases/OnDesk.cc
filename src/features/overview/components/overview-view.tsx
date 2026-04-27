@@ -51,6 +51,9 @@ export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspa
 
 	const recentTickets = [...tickets].sort((a, b) => b.created_at - a.created_at).slice(0, 5);
 
+	const hasVolumeData = ticketVolumeData.some((d) => d.open > 0 || d.resolved > 0);
+	const hasChannelData = channelDistribution.some((d) => d.value > 0);
+
 	return (
 		<div className="flex flex-col gap-6">
 			<div>
@@ -94,7 +97,7 @@ export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspa
 						<CardDescription className="text-xs">Daily ticket activity over the past week</CardDescription>
 					</CardHeader>
 					<CardContent>
-						{ticketVolumeData.length === 0 ? (
+						{!hasVolumeData ? (
 							<div className="flex flex-col items-center justify-center h-[280px] text-center">
 								<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
 									<BarChart2 className="size-5 text-muted-foreground" />
@@ -139,7 +142,7 @@ export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspa
 						<CardDescription className="text-xs">Tickets by support channel</CardDescription>
 					</CardHeader>
 					<CardContent className="flex items-center justify-center">
-						{channelDistribution.length === 0 ? (
+						{!hasChannelData ? (
 							<div className="flex flex-col items-center justify-center h-[240px] text-center">
 								<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
 									<BarChart2 className="size-5 text-muted-foreground" />

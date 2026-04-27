@@ -44,6 +44,13 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 	const priorityBreakdown = analytics?.priorityBreakdown ?? [];
 	const hourlyTicketData = analytics?.hourlyTickets ?? [];
 
+	const hasTeamData = teamPerformanceData.some((d) => d.tickets > 0 || d.resolved > 0);
+	const hasResponseData = responseTimeData.some((d) => d.time > 0);
+	const hasResolutionData = resolutionTrendData.some((d) => d.score > 0);
+	const hasHourlyData = hourlyTicketData.some((d) => d.tickets > 0);
+	const hasPriorityData = priorityBreakdown.some((d) => d.count > 0);
+	const hasVolumeData = ticketVolumeData.some((d) => d.open > 0 || d.resolved > 0);
+
 	return (
 		<div className="flex flex-col gap-6">
 			<div>
@@ -72,7 +79,7 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 								<CardDescription className="text-xs">Ticket count vs resolved by team</CardDescription>
 							</CardHeader>
 							<CardContent>
-							{teamPerformanceData.length === 0 ? (
+							{!hasTeamData ? (
 								<div className="flex flex-col items-center justify-center h-[300px] text-center">
 									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
 										<BarChart2 className="size-5 text-muted-foreground" />
@@ -108,7 +115,7 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 								<CardDescription className="text-xs">Response time in hours throughout the day</CardDescription>
 							</CardHeader>
 							<CardContent>
-							{responseTimeData.length === 0 ? (
+							{!hasResponseData ? (
 								<div className="flex flex-col items-center justify-center h-[300px] text-center">
 									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
 										<BarChart2 className="size-5 text-muted-foreground" />
@@ -159,7 +166,7 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 								<CardDescription className="text-xs">Resolved tickets vs created tickets over the last 8 weeks</CardDescription>
 							</CardHeader>
 							<CardContent>
-							{resolutionTrendData.length === 0 ? (
+							{!hasResolutionData ? (
 								<div className="flex flex-col items-center justify-center h-[300px] text-center">
 									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
 										<BarChart2 className="size-5 text-muted-foreground" />
@@ -203,7 +210,7 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 								<CardDescription className="text-xs">Ticket creation distribution by hour over the last 30 days</CardDescription>
 							</CardHeader>
 							<CardContent>
-							{hourlyTicketData.length === 0 ? (
+							{!hasHourlyData ? (
 								<div className="flex flex-col items-center justify-center h-[300px] text-center">
 									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
 										<BarChart2 className="size-5 text-muted-foreground" />
@@ -241,7 +248,7 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 								<CardDescription className="text-xs">Total tickets by priority level</CardDescription>
 							</CardHeader>
 							<CardContent>
-							{priorityBreakdown.length === 0 ? (
+							{!hasPriorityData ? (
 								<div className="flex flex-col items-center justify-center h-[300px] text-center">
 									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
 										<BarChart2 className="size-5 text-muted-foreground" />
@@ -278,7 +285,7 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 								<CardDescription className="text-xs">Open, resolved, and closed tickets over the last 7 days</CardDescription>
 							</CardHeader>
 							<CardContent>
-							{ticketVolumeData.length === 0 ? (
+							{!hasVolumeData ? (
 								<div className="flex flex-col items-center justify-center h-[300px] text-center">
 									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
 										<BarChart2 className="size-5 text-muted-foreground" />
