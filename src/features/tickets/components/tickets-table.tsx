@@ -1,4 +1,4 @@
-import { MoreHorizontal, Eye, Trash2, SortAsc, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreHorizontal, Eye, Trash2, SortAsc, ChevronLeft, ChevronRight, Inbox } from "lucide-react";
 import { useWorkspace } from "@/context/workspace-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -207,8 +207,14 @@ export function TicketsTable({
 						})}
 						{tickets.length === 0 && (
 							<TableRow>
-								<TableCell colSpan={9} className="h-24 text-center text-muted-foreground text-sm">
-									No tickets found matching your filters.
+								<TableCell colSpan={9} className="py-14 text-center">
+									<div className="flex flex-col items-center gap-2">
+										<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+											<Inbox className="size-5 text-muted-foreground" />
+										</div>
+										<p className="text-sm font-medium">No tickets found</p>
+										<p className="text-[11px] text-muted-foreground">Try adjusting your filters or search query.</p>
+									</div>
 								</TableCell>
 							</TableRow>
 						)}
