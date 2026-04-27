@@ -8,9 +8,5 @@ export const Route = createFileRoute("/w/$slug/marketplace")({
 
 function MarketplaceRoute() {
 	const { workspace } = useWorkspace();
-	return (
-		<div className="p-6 max-w-7xl mx-auto">
-			<Marketplace slug={workspace.slug} />
-		</div>
-	)
+	return <Marketplace slug={workspace.slug} />;
 }
