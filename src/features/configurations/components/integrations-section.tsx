@@ -1,7 +1,13 @@
 import { useState } from "react";
-import { Plus, Mail, RefreshCw, Check, AlertCircle, X } from "lucide-react";
+import { Plus, Mail, RefreshCw, Check, AlertCircle, X, ChevronDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -16,6 +22,10 @@ import { useWorkspace } from "@/context/workspace-context";
 import { useMailboxes } from "@/features/integrations/hooks/use-mailbox-queries";
 import { useConnectMailboxMutation, useConnectGmailMutation, useDisconnectMailboxMutation } from "@/features/integrations/hooks/use-mailbox-mutations";
 import type { MailboxIntegration } from "@/features/integrations/api/integrations-api";
+
+function getProviderLabel(provider: MailboxIntegration["provider"]): string {
+	return provider === "google" ? "Gmail" : "Outlook";
+}
 
 function getMailboxSyncStatus(mailbox: MailboxIntegration): "synced" | "pending" | "expired" {
 	if (!mailbox.subscription_id) {
@@ -35,19 +45,20 @@ function MailboxList({
 	mailboxes,
 	onResync,
 	onDisconnect,
-	isResyncing,
+	resyncingProvider,
 	isDisconnecting,
 }: {
 	mailboxes: MailboxIntegration[];
-	onResync: () => void;
+	onResync: (provider: MailboxIntegration["provider"]) => void;
 	onDisconnect: (mailbox: MailboxIntegration) => void;
-	isResyncing: boolean;
+	resyncingProvider: MailboxIntegration["provider"] | null;
 	isDisconnecting: boolean;
 }) {
 	return (
 		<div className="space-y-2">
 			{mailboxes.map((mailbox) => {
 				const syncStatus = getMailboxSyncStatus(mailbox);
+				const isResyncing = resyncingProvider === mailbox.provider;
 				return (
 					<div
 						key={mailbox.id}
@@ -56,7 +67,12 @@ function MailboxList({
 							<Mail className="size-5 text-primary" />
 						</div>
 						<div className="flex-1 min-w-0">
-							<p className="text-sm font-medium">{mailbox.email}</p>
+							<div className="flex items-center gap-2">
+								<p className="text-sm font-medium truncate">{mailbox.email}</p>
+								<span className="shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+									{getProviderLabel(mailbox.provider)}
+								</span>
+							</div>
 							<div className="flex items-center gap-1.5 mt-0.5">
 								{syncStatus === "synced" ? (
 									<>
@@ -83,7 +99,7 @@ function MailboxList({
 								variant="outline"
 								size="sm"
 								className="h-7 gap-1.5 text-[11px] rounded-lg"
-								onClick={onResync}
+								onClick={() => onResync(mailbox.provider)}
 								disabled={isResyncing}>
 								<RefreshCw className="size-3" />
 								Re-sync
@@ -115,8 +131,17 @@ export function IntegrationsSection() {
 	const [disconnectOpen, setDisconnectOpen] = useState(false);
 	const [disconnectTarget, setDisconnectTarget] = useState<MailboxIntegration | null>(null);
 
-	const outlookMailboxes = mailboxes.filter((m) => m.provider === "microsoft");
-	const gmailMailboxes = mailboxes.filter((m) => m.provider === "google");
+	const isConnecting = outlookMutation.isPending || gmailMutation.isPending;
+	const resyncingProvider: MailboxIntegration["provider"] | null = outlookMutation.isPending
+		? "microsoft"
+		: gmailMutation.isPending
+			? "google"
+			: null;
+
+	function handleResync(provider: MailboxIntegration["provider"]) {
+		if (provider === "google") gmailMutation.mutate();
+		else outlookMutation.mutate();
+	}
 
 	function openDisconnect(mailbox: MailboxIntegration) {
 		setDisconnectTarget(mailbox);
@@ -135,22 +160,35 @@ export function IntegrationsSection() {
 
 	return (
 		<>
-			{/* Microsoft Outlook */}
 			<Card className="border-0 shadow-sm">
 				<CardHeader>
 					<div className="flex items-center justify-between">
 						<div>
-							<CardTitle className="text-sm font-semibold">Microsoft Outlook</CardTitle>
-							<CardDescription className="text-xs">Connected email accounts for ticket creation</CardDescription>
+							<CardTitle className="text-sm font-semibold">Email Accounts</CardTitle>
+							<CardDescription className="text-xs">Connect Microsoft Outlook or Gmail to receive tickets from email</CardDescription>
 						</div>
-						<Button
-							size="sm"
-							className="h-8 gap-1.5 rounded-lg text-xs font-semibold"
-							onClick={() => outlookMutation.mutate()}
-							disabled={outlookMutation.isPending}>
-							<Plus className="size-3.5" />
-							{outlookMutation.isPending ? "Redirecting..." : "Connect Account"}
-						</Button>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									size="sm"
+									className="h-8 gap-1.5 rounded-lg text-xs font-semibold"
+									disabled={isConnecting}>
+									<Plus className="size-3.5" />
+									{isConnecting ? "Redirecting..." : "Connect Account"}
+									<ChevronDown className="size-3.5 opacity-70" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end" className="w-44">
+								<DropdownMenuItem onClick={() => outlookMutation.mutate()} disabled={isConnecting}>
+									<Mail className="size-4" />
+									Microsoft Outlook
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => gmailMutation.mutate()} disabled={isConnecting}>
+									<Mail className="size-4" />
+									Gmail
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 				</CardHeader>
 				<CardContent>
@@ -158,67 +196,22 @@ export function IntegrationsSection() {
 						<div className="flex items-center justify-center py-6">
 							<RefreshCw className="size-4 animate-spin text-muted-foreground" />
 						</div>
-					) : outlookMailboxes.length === 0 ? (
+					) : mailboxes.length === 0 ? (
 						<div className="flex flex-col items-center gap-2 py-8 text-center">
 							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
 								<Mail className="size-5 text-muted-foreground" />
 							</div>
 							<p className="text-sm font-medium">No accounts connected</p>
 							<p className="text-[11px] text-muted-foreground max-w-xs">
-								Connect a Microsoft Outlook account to start receiving tickets from email.
+								Connect a Microsoft Outlook or Gmail account to start receiving tickets from email.
 							</p>
 						</div>
 					) : (
 						<MailboxList
-							mailboxes={outlookMailboxes}
-							onResync={() => outlookMutation.mutate()}
+							mailboxes={mailboxes}
+							onResync={handleResync}
 							onDisconnect={openDisconnect}
-							isResyncing={outlookMutation.isPending}
-							isDisconnecting={disconnectMutation.isPending}
-						/>
-					)}
-				</CardContent>
-			</Card>
-
-			{/* Gmail */}
-			<Card className="border-0 shadow-sm">
-				<CardHeader>
-					<div className="flex items-center justify-between">
-						<div>
-							<CardTitle className="text-sm font-semibold">Gmail</CardTitle>
-							<CardDescription className="text-xs">Connected Google accounts for ticket creation</CardDescription>
-						</div>
-						<Button
-							size="sm"
-							className="h-8 gap-1.5 rounded-lg text-xs font-semibold"
-							onClick={() => gmailMutation.mutate()}
-							disabled={gmailMutation.isPending}>
-							<Plus className="size-3.5" />
-							{gmailMutation.isPending ? "Redirecting..." : "Connect Account"}
-						</Button>
-					</div>
-				</CardHeader>
-				<CardContent>
-					{isLoading ? (
-						<div className="flex items-center justify-center py-6">
-							<RefreshCw className="size-4 animate-spin text-muted-foreground" />
-						</div>
-					) : gmailMailboxes.length === 0 ? (
-						<div className="flex flex-col items-center gap-2 py-8 text-center">
-							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-								<Mail className="size-5 text-muted-foreground" />
-							</div>
-							<p className="text-sm font-medium">No accounts connected</p>
-							<p className="text-[11px] text-muted-foreground max-w-xs">
-								Connect a Gmail account to start receiving tickets from email.
-							</p>
-						</div>
-					) : (
-						<MailboxList
-							mailboxes={gmailMailboxes}
-							onResync={() => gmailMutation.mutate()}
-							onDisconnect={openDisconnect}
-							isResyncing={gmailMutation.isPending}
+							resyncingProvider={resyncingProvider}
 							isDisconnecting={disconnectMutation.isPending}
 						/>
 					)}
