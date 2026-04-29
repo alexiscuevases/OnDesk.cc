@@ -17,7 +17,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 	}
 
 	const user = await findUserByEmail(env.DB, email);
-	if (!user) {
+	if (!user || !user.password_hash) {
 		await new Promise((r) => setTimeout(r, 300));
 		return jsonError("Invalid credentials", 401);
 	}

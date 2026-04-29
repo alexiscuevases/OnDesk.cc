@@ -4,9 +4,11 @@ import { AuthOAuthBlock } from "./auth-oauth-block";
 import { SignInForm } from "../forms/sign-in-form";
 import type { SignInFormValues } from "../schemas/auth.schema";
 import { useLoginMutation } from "../hooks/use-auth-mutations";
+import { useOAuthErrorToast } from "../hooks/use-oauth-error-toast";
 
 export default function SignInView() {
 	const loginMutation = useLoginMutation();
+	useOAuthErrorToast();
 
 	function handleSignIn(values: SignInFormValues) {
 		loginMutation.mutate({

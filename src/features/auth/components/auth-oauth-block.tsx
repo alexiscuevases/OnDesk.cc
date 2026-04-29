@@ -4,6 +4,10 @@ interface AuthOAuthBlockProps {
 	mode: "signin" | "signup";
 }
 
+function oauthHref(provider: "google" | "microsoft", mode: "signin" | "signup") {
+	return `/api/auth/oauth/${provider}/start?mode=${mode}`;
+}
+
 const MicrosoftIcon = () => (
 	<svg className="size-5 shrink-0" viewBox="0 0 23 23" fill="none">
 		<path fill="#f3f3f3" d="M0 0h23v23H0z" />
@@ -30,20 +34,24 @@ export function AuthOAuthBlock({ mode }: AuthOAuthBlockProps) {
 		<>
 			<div className="space-y-2.5 mb-6">
 				<Button
+					asChild
 					variant="outline"
 					className="w-full h-11 gap-3 font-medium hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200"
-					type="button"
 				>
-					<MicrosoftIcon />
-					{isSignIn ? "Continue with Microsoft 365" : "Sign up with Microsoft 365"}
+					<a href={oauthHref("microsoft", mode)}>
+						<MicrosoftIcon />
+						{isSignIn ? "Continue with Microsoft 365" : "Sign up with Microsoft 365"}
+					</a>
 				</Button>
 				<Button
+					asChild
 					variant="outline"
 					className="w-full h-11 gap-3 font-medium hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200"
-					type="button"
 				>
-					<GoogleIcon />
-					{isSignIn ? "Continue with Google" : "Sign up with Google"}
+					<a href={oauthHref("google", mode)}>
+						<GoogleIcon />
+						{isSignIn ? "Continue with Google" : "Sign up with Google"}
+					</a>
 				</Button>
 			</div>
 

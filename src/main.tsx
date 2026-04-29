@@ -7,6 +7,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { routeTree } from "./routeTree.gen";
 import { AuthProvider, type AuthUser } from "@/context/auth-context";
 import { apiMe } from "@/features/auth/api/auth-api";
+import { Toaster } from "@/components/ui/sonner";
 
 // Bootstrap: attempt to restore session before rendering.
 // apiMe() tries the access token, silently refreshes if expired.
@@ -35,6 +36,7 @@ createRoot(document.getElementById("root")!).render(
 		<AuthProvider initialUser={initialUser}>
 			<QueryClientProvider client={queryClient}>
 				<RouterProvider router={router} />
+				<Toaster />
 				<ReactQueryDevtools initialIsOpen={false} />
 			</QueryClientProvider>
 		</AuthProvider>

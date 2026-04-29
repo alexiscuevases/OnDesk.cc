@@ -1,14 +1,29 @@
 -- Users table
+-- password_hash is nullable to support OAuth-only accounts (Google / Microsoft)
 CREATE TABLE IF NOT EXISTS users (
   id            TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
   name          TEXT NOT NULL,
   email         TEXT NOT NULL UNIQUE,
-  password_hash TEXT NOT NULL,
+  password_hash TEXT,
   role          TEXT NOT NULL DEFAULT 'agent',
   logo_url      TEXT,
   created_at    INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at    INTEGER NOT NULL DEFAULT (unixepoch())
 );
+
+-- OAuth identities linked to a user (a user can have multiple providers)
+-- provider: 'google' | 'microsoft'
+CREATE TABLE IF NOT EXISTS user_identities (
+  id                TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  user_id           TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  provider          TEXT NOT NULL,
+  provider_user_id  TEXT NOT NULL,
+  email             TEXT NOT NULL,
+  created_at        INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE(provider, provider_user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_identities_user_id ON user_identities(user_id);
 
 -- Refresh tokens table
 -- token_hash stores SHA-256 of the raw token (never stored in plain text)
@@ -416,3 +431,9 @@ CREATE INDEX IF NOT EXISTS idx_ai_memories_contact_id   ON ai_memories(workspace
 -- Gmail support (run once on existing DBs — skip if column already exists)
 -- wrangler d1 execute DB --remote --command "ALTER TABLE mailbox_integrations ADD COLUMN provider TEXT NOT NULL DEFAULT 'microsoft';"
 -- wrangler d1 execute DB --remote --command "ALTER TABLE mailbox_integrations ADD COLUMN last_history_id TEXT;"
+
+-- OAuth login support (Google / Microsoft) — SQLite cannot drop NOT NULL via ALTER,
+-- so on existing DBs the password_hash column stays NOT NULL but new OAuth users
+-- can be inserted with an empty placeholder. The user_identities table is additive.
+-- wrangler d1 execute DB --remote --command "CREATE TABLE IF NOT EXISTS user_identities (id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))), user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, provider TEXT NOT NULL, provider_user_id TEXT NOT NULL, email TEXT NOT NULL, created_at INTEGER NOT NULL DEFAULT (unixepoch()), UNIQUE(provider, provider_user_id));"
+-- wrangler d1 execute DB --remote --command "CREATE INDEX IF NOT EXISTS idx_user_identities_user_id ON user_identities(user_id);"

@@ -1,4 +1,4 @@
-import type { UserRow, RefreshTokenRow } from "../types";
+import type { UserRow, RefreshTokenRow, UserIdentityRow, OAuthProvider } from "../types";
 
 export async function findUserByEmail(db: D1Database, email: string): Promise<UserRow | null> {
 	const result = await db.prepare("SELECT * FROM users WHERE email = ? LIMIT 1").bind(email.toLowerCase()).first<UserRow>();
@@ -14,6 +14,42 @@ export async function createUser(db: D1Database, name: string, email: string, pa
 	const id = crypto.randomUUID();
 	await db.prepare("INSERT INTO users (id, name, email, password_hash) VALUES (?, ?, ?, ?)").bind(id, name, email.toLowerCase(), passwordHash).run();
 	return (await findUserById(db, id))!;
+}
+
+export async function createOAuthUser(db: D1Database, name: string, email: string): Promise<UserRow> {
+	const id = crypto.randomUUID();
+	// Empty-string placeholder satisfies legacy NOT NULL on existing DBs;
+	// verifyPassword always returns false for empty hashes, so password login is impossible.
+	await db.prepare("INSERT INTO users (id, name, email, password_hash) VALUES (?, ?, ?, ?)").bind(id, name, email.toLowerCase(), "").run();
+	return (await findUserById(db, id))!;
+}
+
+export async function findIdentity(
+	db: D1Database,
+	provider: OAuthProvider,
+	providerUserId: string
+): Promise<UserIdentityRow | null> {
+	const result = await db
+		.prepare("SELECT * FROM user_identities WHERE provider = ? AND provider_user_id = ? LIMIT 1")
+		.bind(provider, providerUserId)
+		.first<UserIdentityRow>();
+	return result ?? null;
+}
+
+export async function linkIdentity(
+	db: D1Database,
+	userId: string,
+	provider: OAuthProvider,
+	providerUserId: string,
+	email: string
+): Promise<void> {
+	const id = crypto.randomUUID();
+	await db
+		.prepare(
+			"INSERT OR IGNORE INTO user_identities (id, user_id, provider, provider_user_id, email) VALUES (?, ?, ?, ?, ?)"
+		)
+		.bind(id, userId, provider, providerUserId, email.toLowerCase())
+		.run();
 }
 
 export async function createRefreshToken(db: D1Database, userId: string, tokenHash: string, ttlSeconds: number): Promise<void> {

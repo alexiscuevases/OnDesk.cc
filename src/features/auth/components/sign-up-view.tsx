@@ -3,9 +3,11 @@ import { AuthOAuthBlock } from "./auth-oauth-block";
 import { SignUpForm } from "../forms/sign-up-form";
 import type { SignUpFormValues } from "../schemas/auth.schema";
 import { useRegisterMutation } from "../hooks/use-auth-mutations";
+import { useOAuthErrorToast } from "../hooks/use-oauth-error-toast";
 
 export default function SignUpView() {
 	const registerMutation = useRegisterMutation();
+	useOAuthErrorToast();
 
 	function handleSignUp(values: SignUpFormValues) {
 		registerMutation.mutate({
