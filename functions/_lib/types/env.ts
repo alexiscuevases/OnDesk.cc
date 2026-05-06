@@ -1,4 +1,7 @@
 export interface Env {
+	APP_URL: string;
+	JWT_SECRET: string;
+	// Cloudfalre
 	DB: D1Database;
 	STORAGE: R2Bucket;
 	AI: Ai;
@@ -7,14 +10,14 @@ export interface Env {
 	VECTORIZE_CONTACTS: VectorizeIndex;
 	VECTORIZE_COMPANIES: VectorizeIndex;
 	VECTORIZE_MEMORIES: VectorizeIndex;
-	JWT_SECRET: string;
+	// Microsoft
 	MS_CLIENT_ID: string;
 	MS_CLIENT_SECRET: string;
+	// Google
 	GOOGLE_CLIENT_ID: string;
 	GOOGLE_CLIENT_SECRET: string;
 	GOOGLE_PUBSUB_TOPIC: string;
 	GOOGLE_PUBSUB_SECRET: string;
-	APP_URL: string;
 	// Stripe
 	STRIPE_SECRET_KEY: string;
 	STRIPE_WEBHOOK_SECRET: string;
