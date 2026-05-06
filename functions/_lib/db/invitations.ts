@@ -13,14 +13,29 @@ export async function createInvitation(
 ): Promise<WorkspaceInvitationRow> {
 	const id = crypto.randomUUID();
 	const expiresAt = Math.floor(Date.now() / 1000) + ttlSeconds;
+	const normalizedEmail = email.toLowerCase();
 	await db
 		.prepare(
-			`INSERT INTO workspace_invitations (id, workspace_id, email, role, invited_by, token, expires_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+			`INSERT INTO workspace_invitations (id, workspace_id, email, role, invited_by, token, expires_at, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
+       ON CONFLICT(workspace_id, email) DO UPDATE SET
+         role = excluded.role,
+         invited_by = excluded.invited_by,
+         token = excluded.token,
+         expires_at = excluded.expires_at,
+         status = 'pending'`,
 		)
-		.bind(id, workspaceId, email.toLowerCase(), role, invitedBy, token, expiresAt)
+		.bind(id, workspaceId, normalizedEmail, role, invitedBy, token, expiresAt)
 		.run();
-	return (await findInvitationById(db, id))!;
+	return (await findInvitationByWorkspaceAndEmail(db, workspaceId, normalizedEmail))!;
+}
+
+export async function findInvitationByWorkspaceAndEmail(db: D1Database, workspaceId: string, email: string): Promise<WorkspaceInvitationRow | null> {
+	const result = await db
+		.prepare("SELECT * FROM workspace_invitations WHERE workspace_id = ? AND email = ? LIMIT 1")
+		.bind(workspaceId, email.toLowerCase())
+		.first<WorkspaceInvitationRow>();
+	return result ?? null;
 }
 
 async function findInvitationById(db: D1Database, id: string): Promise<WorkspaceInvitationRow | null> {

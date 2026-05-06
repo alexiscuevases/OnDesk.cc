@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiUpdateMemberRole, apiRemoveWorkspaceMember, apiInviteAgent, apiCancelInvitation } from "../api/users-api";
+import { apiUpdateMemberRole, apiRemoveWorkspaceMember, apiInviteAgent, apiCancelInvitation, apiResendInvitation } from "../api/users-api";
 import { userQueryKeys } from "./use-user-queries";
 
 export function useUpdateMemberRoleMutation(workspaceId: string) {
@@ -37,6 +37,17 @@ export function useInviteAgentMutation(workspaceId: string) {
 			} else {
 				queryClient.invalidateQueries({ queryKey: userQueryKeys.invitations(workspaceId) });
 			}
+		},
+	});
+}
+
+export function useResendInvitationMutation(workspaceId: string) {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (invitationId: string) => apiResendInvitation(invitationId, workspaceId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: userQueryKeys.invitations(workspaceId) });
 		},
 	});
 }

@@ -92,6 +92,21 @@ export async function apiGetInvitations(workspaceId: string): Promise<WorkspaceI
 	return data.invitations;
 }
 
+export async function apiResendInvitation(
+	invitationId: string,
+	workspaceId: string,
+): Promise<{ email: string; expires_at: number }> {
+	const res = await fetch(`${INVITATIONS_BASE}?id=${invitationId}&workspace_id=${workspaceId}`, {
+		method: "PATCH",
+		credentials: "include",
+	});
+	if (!res.ok) {
+		const err = (await res.json()) as { error: string };
+		throw new Error(err.error ?? "Failed to resend invitation");
+	}
+	return res.json() as Promise<{ email: string; expires_at: number }>;
+}
+
 export async function apiCancelInvitation(invitationId: string, workspaceId: string): Promise<void> {
 	const res = await fetch(`${INVITATIONS_BASE}?id=${invitationId}&workspace_id=${workspaceId}`, {
 		method: "DELETE",

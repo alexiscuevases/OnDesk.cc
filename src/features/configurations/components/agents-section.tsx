@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Trash2, X, UserPlus, Clock, Users } from "lucide-react";
+import { Pencil, Trash2, X, UserPlus, Clock, Users, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
 	useRemoveMemberMutation,
 	useInviteAgentMutation,
 	useCancelInvitationMutation,
+	useResendInvitationMutation,
 } from "@/features/users/hooks/use-user-mutations";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
 import { EditAgentModal } from "../modals/edit-agent-modal";
@@ -27,6 +28,7 @@ export function AgentsSection() {
 	const removeMember = useRemoveMemberMutation(workspace.id);
 	const inviteAgent = useInviteAgentMutation(workspace.id);
 	const cancelInvitation = useCancelInvitationMutation(workspace.id);
+	const resendInvitation = useResendInvitationMutation(workspace.id);
 
 	const [addOpen, setAddOpen] = useState(false);
 	const [editOpen, setEditOpen] = useState(false);
@@ -166,6 +168,20 @@ export function AgentsSection() {
 									<Badge variant="outline" className="text-[10px] rounded-full px-2 capitalize">
 										{invite.role}
 									</Badge>
+									<Button
+										variant="ghost"
+										size="icon"
+										className="size-7 rounded-lg text-muted-foreground hover:text-foreground"
+										disabled={resendInvitation.isPending}
+										onClick={() =>
+											resendInvitation.mutate(invite.id, {
+												onSuccess: (data) => toast.success(`Invitation resent to ${data.email}`),
+												onError: (err) => toast.error(err.message),
+											})
+										}>
+										<Send className="size-3" />
+										<span className="sr-only">Resend invitation</span>
+									</Button>
 									<Button
 										variant="ghost"
 										size="icon"
