@@ -10,31 +10,49 @@ import {
 
 const PLANS = [
 	{
-		id: "professional" as SubscriptionPlan,
-		name: "Professional",
-		priceMonthly: 15,
-		priceAnnual: 12,
+		id: "starter" as SubscriptionPlan,
+		name: "Pulse Starter",
+		priceMonthly: 9,
+		priceAnnual: 7,
+		flat: true,
+		maxAgents: 2,
 		features: [
-			"Unlimited tickets",
-			"Full AI auto-resolve engine",
-			"Advanced SLA with breach alerts",
-			"90-day analytics history",
-			"Microsoft 365 SSO",
-			"Priority support (24h SLA)",
+			"Up to 2 agents",
+			"300 tickets / month",
+			"2 channels (email + chat)",
+			"Unified inbox",
+			"Canned replies",
+			"Basic automations",
 		],
 	},
 	{
-		id: "business" as SubscriptionPlan,
-		name: "Business",
-		priceMonthly: 29,
-		priceAnnual: 23,
+		id: "core" as SubscriptionPlan,
+		name: "Pulse Core",
+		priceMonthly: 19,
+		priceAnnual: 15,
+		flat: false,
 		features: [
-			"Everything in Professional",
-			"Custom AI workflows",
-			"Advanced analytics & reporting",
-			"Data residency (US / EU / APAC)",
-			"Dedicated Customer Success Manager",
-			"99.99% uptime SLA",
+			"Unlimited tickets",
+			"All channels unified",
+			"AI Classification & Routing",
+			"Team workload management",
+			"Analytics dashboard",
+			"24/7 Priority support",
+		],
+	},
+	{
+		id: "enterprise" as SubscriptionPlan,
+		name: "Pulse Enterprise",
+		priceMonthly: 39,
+		priceAnnual: 31,
+		flat: false,
+		features: [
+			"Everything in Core",
+			"AI Auto-resolution Engine",
+			"Sovereign Data Residency",
+			"Dedicated Success Architect",
+			"Custom SLA Frameworks",
+			"99.99% Uptime Guarantee",
 		],
 	},
 ];
@@ -45,13 +63,15 @@ interface SelectPlanViewProps {
 }
 
 export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewProps) {
-	const [plan, setPlan] = useState<SubscriptionPlan>("professional");
+	const [plan, setPlan] = useState<SubscriptionPlan>("core");
 	const [cycle, setCycle] = useState<SubscriptionCycle>("monthly");
 	const [agents, setAgents] = useState(5);
 	const [loading, setLoading] = useState(false);
 
 	const currentPlan = PLANS.find((p) => p.id === plan)!;
 	const pricePerAgent = cycle === "annual" ? currentPlan.priceAnnual : currentPlan.priceMonthly;
+	const effectiveAgents = currentPlan.flat ? Math.min(agents, currentPlan.maxAgents ?? agents) : agents;
+	const total = currentPlan.flat ? pricePerAgent : pricePerAgent * effectiveAgents;
 
 	async function handleCheckout() {
 		setLoading(true);
@@ -60,7 +80,7 @@ export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewPro
 				workspace_id: workspaceId,
 				plan,
 				cycle,
-				agent_count: agents,
+				agent_count: effectiveAgents,
 				workspace_name: workspaceName,
 			});
 			window.location.href = url;
@@ -119,7 +139,7 @@ export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewPro
 				</div>
 
 				{/* Plan cards */}
-				<div className="grid gap-3 sm:grid-cols-2">
+				<div className="grid gap-3 sm:grid-cols-3">
 					{PLANS.map((p) => {
 						const price = cycle === "annual" ? p.priceAnnual : p.priceMonthly;
 						const isSelected = plan === p.id;
@@ -136,7 +156,7 @@ export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewPro
 									<p className="text-sm font-bold">{p.name}</p>
 									<p className="text-lg font-black tabular-nums">
 										${price}
-										<span className="text-[10px] font-normal text-muted-foreground">/agent/mo</span>
+										<span className="text-[10px] font-normal text-muted-foreground">{p.flat ? "/mo" : "/agent/mo"}</span>
 									</p>
 								</div>
 								<ul className="space-y-1.5">
@@ -178,11 +198,11 @@ export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewPro
 					<div>
 						<p className="text-xs text-muted-foreground">Total</p>
 						<p className="text-2xl font-black tabular-nums">
-							${pricePerAgent * agents}
+							${total}
 							<span className="text-sm font-normal text-muted-foreground">/mo</span>
 						</p>
 						<p className="text-xs text-muted-foreground">
-							${pricePerAgent} × {agents} agents
+							{currentPlan.flat ? `Flat rate · up to ${currentPlan.maxAgents} agents` : `$${pricePerAgent} × ${effectiveAgents} agents`}
 						</p>
 					</div>
 					<Button className="gap-1.5" onClick={handleCheckout} disabled={loading}>

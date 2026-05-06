@@ -388,7 +388,7 @@ CREATE INDEX IF NOT EXISTS idx_agent_tools_agent_id ON agent_tools(ai_agent_id);
 -- ─── Billing & Subscriptions ───────────────────────────────────────────────────
 
 -- Subscriptions: one per workspace, synced from Stripe via webhooks
--- plan: 'professional' | 'business'
+-- plan: 'starter' | 'core' | 'enterprise'
 -- cycle: 'monthly' | 'annual'
 -- status: 'trialing' | 'active' | 'past_due' | 'canceled' | 'incomplete'
 CREATE TABLE IF NOT EXISTS subscriptions (
@@ -396,7 +396,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   workspace_id             TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE UNIQUE,
   stripe_customer_id       TEXT    NOT NULL UNIQUE,
   stripe_subscription_id   TEXT    UNIQUE,
-  plan                     TEXT    NOT NULL DEFAULT 'professional',
+  plan                     TEXT    NOT NULL DEFAULT 'core',
   cycle                    TEXT    NOT NULL DEFAULT 'monthly',
   status                   TEXT    NOT NULL DEFAULT 'incomplete',
   agent_count              INTEGER NOT NULL DEFAULT 1,

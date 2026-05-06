@@ -77,7 +77,7 @@ async function syncSubscriptionToDb(db: D1Database, sub: Stripe.Subscription): P
 	const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
 	const metadata = sub.metadata ?? {};
 
-	const plan = (metadata.plan ?? "professional") as SubscriptionPlan;
+	const plan = (metadata.plan ?? "core") as SubscriptionPlan;
 	const cycle = (metadata.cycle ?? "monthly") as SubscriptionCycle;
 
 	const status = mapStripeStatus(sub.status);

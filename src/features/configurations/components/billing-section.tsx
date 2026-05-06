@@ -18,20 +18,33 @@ import {
 
 const PLANS = [
 	{
-		id: "professional" as SubscriptionPlan,
-		name: "Professional",
-		priceMonthly: 15,
-		priceAnnual: 12,
-		features: ["Unlimited tickets", "Full AI auto-resolve engine", "Advanced SLA with breach alerts", "90-day analytics history", "Microsoft 365 SSO", "Priority support (24h SLA)"],
+		id: "starter" as SubscriptionPlan,
+		name: "Pulse Starter",
+		priceMonthly: 9,
+		priceAnnual: 7,
+		flat: true,
+		maxAgents: 2,
+		features: ["Up to 2 agents", "300 tickets / month", "2 channels (email + chat)", "Unified inbox", "Canned replies", "Basic automations"],
 	},
 	{
-		id: "business" as SubscriptionPlan,
-		name: "Business",
-		priceMonthly: 29,
-		priceAnnual: 23,
-		features: ["Everything in Professional", "Custom AI workflows", "Advanced analytics & reporting", "Data residency (US / EU / APAC)", "Dedicated Customer Success Manager", "99.99% uptime SLA"],
+		id: "core" as SubscriptionPlan,
+		name: "Pulse Core",
+		priceMonthly: 19,
+		priceAnnual: 15,
+		flat: false,
+		features: ["Unlimited tickets", "All channels unified", "AI Classification & Routing", "Team workload management", "Analytics dashboard", "24/7 Priority support"],
+	},
+	{
+		id: "enterprise" as SubscriptionPlan,
+		name: "Pulse Enterprise",
+		priceMonthly: 39,
+		priceAnnual: 31,
+		flat: false,
+		features: ["Everything in Core", "AI Auto-resolution Engine", "Sovereign Data Residency", "Dedicated Success Architect", "Custom SLA Frameworks", "99.99% Uptime Guarantee"],
 	},
 ];
+
+const PLAN_RANK: Record<SubscriptionPlan, number> = { starter: 0, core: 1, enterprise: 2 };
 
 function statusBadge(status: string) {
 	if (status === "active") return <Badge className="bg-green-500/10 text-green-600 border-green-500/20 text-[10px]">Active</Badge>;
@@ -42,13 +55,15 @@ function statusBadge(status: string) {
 }
 
 function NoSubscription({ workspaceId, workspaceName }: { workspaceId: string; workspaceName: string }) {
-	const [plan, setPlan] = useState<SubscriptionPlan>("professional");
+	const [plan, setPlan] = useState<SubscriptionPlan>("core");
 	const [cycle, setCycle] = useState<SubscriptionCycle>("monthly");
 	const [agents, setAgents] = useState(5);
 	const [loading, setLoading] = useState(false);
 
 	const currentPlan = PLANS.find((p) => p.id === plan)!;
 	const pricePerAgent = cycle === "annual" ? currentPlan.priceAnnual : currentPlan.priceMonthly;
+	const effectiveAgents = currentPlan.flat ? Math.min(agents, currentPlan.maxAgents ?? agents) : agents;
+	const total = currentPlan.flat ? pricePerAgent : pricePerAgent * effectiveAgents;
 
 	async function handleCheckout() {
 		setLoading(true);
@@ -57,7 +72,7 @@ function NoSubscription({ workspaceId, workspaceName }: { workspaceId: string; w
 				workspace_id: workspaceId,
 				plan,
 				cycle,
-				agent_count: agents,
+				agent_count: effectiveAgents,
 				workspace_name: workspaceName,
 			});
 			window.location.href = url;
@@ -88,7 +103,7 @@ function NoSubscription({ workspaceId, workspaceName }: { workspaceId: string; w
 					</div>
 
 					{/* Plan cards */}
-					<div className="grid gap-3 sm:grid-cols-2">
+					<div className="grid gap-3 sm:grid-cols-3">
 						{PLANS.map((p) => {
 							const price = cycle === "annual" ? p.priceAnnual : p.priceMonthly;
 							const isSelected = plan === p.id;
@@ -99,7 +114,7 @@ function NoSubscription({ workspaceId, workspaceName }: { workspaceId: string; w
 									className={`rounded-xl border p-4 text-left transition-all ${isSelected ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/40"}`}>
 									<div className="flex items-center justify-between mb-2">
 										<p className="text-xs font-bold">{p.name}</p>
-										<p className="text-sm font-black tabular-nums">${price}<span className="text-[10px] font-normal text-muted-foreground">/agent/mo</span></p>
+										<p className="text-sm font-black tabular-nums">${price}<span className="text-[10px] font-normal text-muted-foreground">{p.flat ? "/mo" : "/agent/mo"}</span></p>
 									</div>
 									<ul className="space-y-1">
 										{p.features.slice(0, 3).map((f) => (
@@ -131,8 +146,8 @@ function NoSubscription({ workspaceId, workspaceName }: { workspaceId: string; w
 					<div className="rounded-xl bg-secondary/50 p-3 flex items-center justify-between gap-4">
 						<div>
 							<p className="text-xs text-muted-foreground">Total</p>
-							<p className="text-lg font-black tabular-nums">${pricePerAgent * agents}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
-							<p className="text-[10px] text-muted-foreground">${pricePerAgent} × {agents} agents</p>
+							<p className="text-lg font-black tabular-nums">${total}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
+							<p className="text-[10px] text-muted-foreground">{currentPlan.flat ? `Flat · up to ${currentPlan.maxAgents} agents` : `$${pricePerAgent} × ${effectiveAgents} agents`}</p>
 						</div>
 						<Button size="sm" className="gap-1.5 h-8 text-xs" onClick={handleCheckout} disabled={loading}>
 							{loading ? <Loader2 className="size-3 animate-spin" /> : <ArrowRight className="size-3" />}
@@ -150,9 +165,9 @@ function ActiveSubscription({ sub, workspaceId }: { sub: Subscription; workspace
 	const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
 	const currentPlan = PLANS.find((p) => p.id === sub.plan)!;
-	const otherPlan = PLANS.find((p) => p.id !== sub.plan)!;
+	const otherPlans = PLANS.filter((p) => p.id !== sub.plan);
 	const pricePerAgent = sub.cycle === "annual" ? currentPlan.priceAnnual : currentPlan.priceMonthly;
-	const totalMonthly = pricePerAgent * sub.agent_count;
+	const totalMonthly = currentPlan.flat ? pricePerAgent : pricePerAgent * sub.agent_count;
 
 	async function openPortal() {
 		setPortalLoading(true);
@@ -304,40 +319,46 @@ function ActiveSubscription({ sub, workspaceId }: { sub: Subscription; workspace
 					<CardTitle className="text-sm font-semibold">Available Plans</CardTitle>
 					<CardDescription className="text-xs">Upgrade or downgrade at any time — changes are prorated</CardDescription>
 				</CardHeader>
-				<CardContent>
-					<div className="rounded-xl border p-4 flex items-start gap-4">
-						<div className="size-9 rounded-lg flex items-center justify-center bg-primary/10 shrink-0">
-							<Zap className="size-4 text-primary" />
-						</div>
-						<div className="flex-1 min-w-0">
-							<div className="flex items-center justify-between gap-2">
-								<p className="text-sm font-bold">{otherPlan.name}</p>
-								<p className="text-sm font-black tabular-nums">
-									${sub.cycle === "annual" ? otherPlan.priceAnnual : otherPlan.priceMonthly}
-									<span className="text-[10px] font-normal text-muted-foreground">/agent/mo</span>
-								</p>
+				<CardContent className="space-y-3">
+					{otherPlans.map((other) => {
+						const isUpgrade = PLAN_RANK[other.id] > PLAN_RANK[sub.plan];
+						const price = sub.cycle === "annual" ? other.priceAnnual : other.priceMonthly;
+						return (
+							<div key={other.id} className="rounded-xl border p-4 flex items-start gap-4">
+								<div className="size-9 rounded-lg flex items-center justify-center bg-primary/10 shrink-0">
+									<Zap className="size-4 text-primary" />
+								</div>
+								<div className="flex-1 min-w-0">
+									<div className="flex items-center justify-between gap-2">
+										<p className="text-sm font-bold">{other.name}</p>
+										<p className="text-sm font-black tabular-nums">
+											${price}
+											<span className="text-[10px] font-normal text-muted-foreground">{other.flat ? "/mo" : "/agent/mo"}</span>
+										</p>
+									</div>
+									<ul className="mt-2 space-y-1">
+										{other.features.slice(0, 4).map((f) => (
+											<li key={f} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+												<CheckCircle2 className="size-3 text-primary shrink-0" />
+												{f}
+											</li>
+										))}
+									</ul>
+								</div>
+								<Button
+									size="sm"
+									variant={isUpgrade ? "default" : "outline"}
+									className="h-7 text-xs shrink-0 gap-1"
+									onClick={() => changePlan(other.id)}
+									disabled={checkoutLoading === other.id}>
+									{checkoutLoading === other.id
+										? <Loader2 className="size-3 animate-spin" />
+										: <ArrowRight className="size-3" />}
+									{isUpgrade ? "Upgrade" : "Downgrade"}
+								</Button>
 							</div>
-							<ul className="mt-2 space-y-1">
-								{otherPlan.features.slice(0, 4).map((f) => (
-									<li key={f} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-										<CheckCircle2 className="size-3 text-primary shrink-0" />
-										{f}
-									</li>
-								))}
-							</ul>
-						</div>
-						<Button
-							size="sm"
-							variant={otherPlan.id === "business" ? "default" : "outline"}
-							className="h-7 text-xs shrink-0 gap-1"
-							onClick={() => changePlan(otherPlan.id)}
-							disabled={checkoutLoading === otherPlan.id}>
-							{checkoutLoading === otherPlan.id
-								? <Loader2 className="size-3 animate-spin" />
-								: <ArrowRight className="size-3" />}
-							{otherPlan.id === "business" ? "Upgrade" : "Downgrade"}
-						</Button>
-					</div>
+						);
+					})}
 				</CardContent>
 			</Card>
 		</div>

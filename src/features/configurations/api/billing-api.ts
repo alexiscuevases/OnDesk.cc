@@ -1,4 +1,4 @@
-export type SubscriptionPlan = "professional" | "business";
+export type SubscriptionPlan = "starter" | "core" | "enterprise";
 export type SubscriptionCycle = "monthly" | "annual";
 export type SubscriptionStatus = "trialing" | "active" | "past_due" | "canceled" | "incomplete";
 

@@ -5,9 +5,17 @@ import { jsonOk, jsonError } from "../../_lib/response";
 import { parseJsonBody } from "../../_lib/http";
 import type { SubscriptionPlan, SubscriptionCycle } from "../../_lib/types";
 
-const PRICE_IDS = (env: { STRIPE_PROFESSIONAL_MONTHLY_PRICE_ID: string; STRIPE_PROFESSIONAL_ANNUAL_PRICE_ID: string; STRIPE_BUSINESS_MONTHLY_PRICE_ID: string; STRIPE_BUSINESS_ANNUAL_PRICE_ID: string }) => ({
-	professional: { monthly: env.STRIPE_PROFESSIONAL_MONTHLY_PRICE_ID, annual: env.STRIPE_PROFESSIONAL_ANNUAL_PRICE_ID },
-	business: { monthly: env.STRIPE_BUSINESS_MONTHLY_PRICE_ID, annual: env.STRIPE_BUSINESS_ANNUAL_PRICE_ID },
+const PRICE_IDS = (env: {
+	STRIPE_STARTER_MONTHLY_PRICE_ID: string;
+	STRIPE_STARTER_ANNUAL_PRICE_ID: string;
+	STRIPE_CORE_MONTHLY_PRICE_ID: string;
+	STRIPE_CORE_ANNUAL_PRICE_ID: string;
+	STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: string;
+	STRIPE_ENTERPRISE_ANNUAL_PRICE_ID: string;
+}) => ({
+	starter: { monthly: env.STRIPE_STARTER_MONTHLY_PRICE_ID, annual: env.STRIPE_STARTER_ANNUAL_PRICE_ID },
+	core: { monthly: env.STRIPE_CORE_MONTHLY_PRICE_ID, annual: env.STRIPE_CORE_ANNUAL_PRICE_ID },
+	enterprise: { monthly: env.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID, annual: env.STRIPE_ENTERPRISE_ANNUAL_PRICE_ID },
 });
 
 // POST /api/billing/checkout?workspace_id=...
@@ -18,7 +26,7 @@ export const onRequestPost = withWorkspace(async ({ request, env, workspaceId, p
 
 	const { plan, cycle, agent_count, workspace_name, email } = parsed.body;
 
-	if (plan !== "professional" && plan !== "business") return jsonError("Invalid plan");
+	if (plan !== "starter" && plan !== "core" && plan !== "enterprise") return jsonError("Invalid plan");
 	if (cycle !== "monthly" && cycle !== "annual") return jsonError("Invalid cycle");
 
 	const agentCount = typeof agent_count === "number" && agent_count >= 1 ? Math.floor(agent_count) : 1;
@@ -72,7 +80,7 @@ export const onRequestPost = withWorkspace(async ({ request, env, workspaceId, p
 	const session = await stripe.checkout.sessions.create({
 		mode: "subscription",
 		customer: customerId,
-		line_items: [{ price: priceId, quantity: agentCount }],
+		line_items: [{ price: priceId, quantity: plan === "starter" ? 1 : agentCount }],
 		subscription_data: {
 			trial_period_days: existing ? undefined : 14,
 			metadata: {
