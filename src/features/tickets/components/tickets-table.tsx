@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { MoreHorizontal, Eye, Trash2, SortAsc, ChevronLeft, ChevronRight, Inbox } from "lucide-react";
 import { useWorkspace } from "@/context/workspace-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,6 +46,22 @@ export function TicketsTable({
 	companies,
 }: TicketsTableProps) {
 	const { workspace } = useWorkspace();
+
+	const PAGE_SIZE = 25;
+	const [currentPage, setCurrentPage] = useState(1);
+	const totalPages = Math.max(1, Math.ceil(tickets.length / PAGE_SIZE));
+
+	useEffect(() => {
+		if (currentPage > totalPages) setCurrentPage(1);
+	}, [currentPage, totalPages]);
+
+	const paginatedTickets = useMemo(
+		() => tickets.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+		[tickets, currentPage],
+	);
+
+	const pageStart = tickets.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+	const pageEnd = Math.min(currentPage * PAGE_SIZE, tickets.length);
 
 	function getMember(id: string | null) {
 		if (!id) return null;
@@ -96,7 +113,10 @@ export function TicketsTable({
 					<TableHeader>
 						<TableRow className="bg-secondary/50 hover:bg-secondary/50">
 							<TableHead className="w-12 pl-6">
-								<Checkbox checked={selectedTickets.length === tickets.length && tickets.length > 0} onCheckedChange={onSelectAll} />
+								<Checkbox
+									checked={paginatedTickets.length > 0 && paginatedTickets.every((t) => selectedTickets.includes(t.id))}
+									onCheckedChange={onSelectAll}
+								/>
 							</TableHead>
 							<TableHead className="w-24 text-[11px] font-semibold uppercase tracking-wider">ID</TableHead>
 							<TableHead className="text-[11px] font-semibold uppercase tracking-wider">Details</TableHead>
@@ -109,7 +129,7 @@ export function TicketsTable({
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{tickets.map((ticket) => {
+						{paginatedTickets.map((ticket) => {
 							const assignee = getMember(ticket.assignee_id);
 							const team = getTeam(ticket.team_id);
 							const contact = getContact(ticket.contact_id);

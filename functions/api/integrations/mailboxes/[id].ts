@@ -37,7 +37,7 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
             accessToken = refreshed.access_token;
           }
           await stopGmailWatch(accessToken);
-        } else if (mailbox.subscription_id) {
+        } else if (mailbox.watch_id) {
           // Revoke Graph subscription
           if (mailbox.token_expires_at < nowSecs + 60) {
             const refreshed = await refreshAccessToken(env.MS_CLIENT_ID, env.MS_CLIENT_SECRET, mailbox.refresh_token);
@@ -48,7 +48,7 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
               token_expires_at: nowSecs + refreshed.expires_in,
             });
           }
-          await deleteGraphSubscription(accessToken, mailbox.subscription_id);
+          await deleteGraphSubscription(accessToken, mailbox.watch_id);
         }
       } catch {
         // Swallow — subscription/watch may already be expired

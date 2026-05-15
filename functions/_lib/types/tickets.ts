@@ -12,7 +12,7 @@ export interface TicketRow {
 	status: TicketStatus;
 	priority: TicketPriority;
 	channel: string | null;
-	conversation_id: string | null;
+	thread_id: string | null;
 	cc_addresses: string | null; // JSON: {name: string, address: string}[]
 	created_at: number;
 	updated_at: number;
@@ -46,7 +46,7 @@ export interface TicketMessageRow {
 	author_type: AuthorType;
 	type: MessageType;
 	content: string;
-	graph_message_id: string | null;
+	provider_message_id: string | null;
 	created_at: number;
 }
 
@@ -57,6 +57,6 @@ export interface PublicTicketMessage {
 	author_type: AuthorType;
 	type: MessageType;
 	content: string;
-	graph_message_id: string | null;
+	provider_message_id: string | null;
 	created_at: number;
 }

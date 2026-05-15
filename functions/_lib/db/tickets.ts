@@ -58,10 +58,10 @@ export async function findTicketById(db: D1Database, ticketId: string): Promise<
 	return result ?? null;
 }
 
-export async function findTicketByConversationId(db: D1Database, workspaceId: string, conversationId: string): Promise<TicketRow | null> {
+export async function findTicketByThreadId(db: D1Database, workspaceId: string, threadId: string): Promise<TicketRow | null> {
 	const result = await db
-		.prepare("SELECT * FROM tickets WHERE workspace_id = ? AND conversation_id = ? ORDER BY created_at ASC LIMIT 1")
-		.bind(workspaceId, conversationId)
+		.prepare("SELECT * FROM tickets WHERE workspace_id = ? AND thread_id = ? ORDER BY created_at ASC LIMIT 1")
+		.bind(workspaceId, threadId)
 		.first<TicketRow>();
 	return result ?? null;
 }
@@ -77,7 +77,7 @@ export async function createTicket(
 		status?: TicketStatus;
 		priority?: TicketPriority;
 		channel?: string;
-		conversation_id?: string;
+		thread_id?: string;
 		cc_addresses?: string; // JSON: {name, address}[]
 	},
 ): Promise<TicketRow> {
@@ -87,7 +87,7 @@ export async function createTicket(
 	const number = row?.next ?? 1;
 	await db
 		.prepare(
-			`INSERT INTO tickets (id, workspace_id, contact_id, assignee_id, team_id, number, subject, status, priority, channel, conversation_id, cc_addresses)
+			`INSERT INTO tickets (id, workspace_id, contact_id, assignee_id, team_id, number, subject, status, priority, channel, thread_id, cc_addresses)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.bind(
@@ -101,7 +101,7 @@ export async function createTicket(
 			data.status ?? "open",
 			data.priority ?? "medium",
 			data.channel ?? null,
-			data.conversation_id ?? null,
+			data.thread_id ?? null,
 			data.cc_addresses ?? null,
 		)
 		.run();
@@ -118,7 +118,7 @@ export async function updateTicket(
 		assignee_id?: string | null;
 		team_id?: string | null;
 		contact_id?: string | null;
-		conversation_id?: string | null;
+		thread_id?: string | null;
 		channel?: string | null;
 		cc_addresses?: string | null; // JSON: {name, address}[]
 	},
@@ -149,9 +149,9 @@ export async function updateTicket(
 		fields.push("contact_id = ?");
 		values.push(data.contact_id);
 	}
-	if (data.conversation_id !== undefined) {
-		fields.push("conversation_id = ?");
-		values.push(data.conversation_id);
+	if (data.thread_id !== undefined) {
+		fields.push("thread_id = ?");
+		values.push(data.thread_id);
 	}
 	if (data.channel !== undefined) {
 		fields.push("channel = ?");
@@ -181,7 +181,7 @@ export async function deleteTicket(db: D1Database, ticketId: string): Promise<vo
 export async function findMessagesByTicket(db: D1Database, ticketId: string): Promise<PublicTicketMessage[]> {
 	const result = await db
 		.prepare(
-			"SELECT id, ticket_id, author_id, author_type, type, content, graph_message_id, created_at FROM ticket_messages WHERE ticket_id = ? ORDER BY created_at ASC",
+			"SELECT id, ticket_id, author_id, author_type, type, content, provider_message_id, created_at FROM ticket_messages WHERE ticket_id = ? ORDER BY created_at ASC",
 		)
 		.bind(ticketId)
 		.all<PublicTicketMessage>();
@@ -191,7 +191,7 @@ export async function findMessagesByTicket(db: D1Database, ticketId: string): Pr
 export async function findLastInboundMessageByTicket(db: D1Database, ticketId: string): Promise<PublicTicketMessage | null> {
 	const result = await db
 		.prepare(
-			"SELECT id, ticket_id, author_id, author_type, type, content, graph_message_id, created_at FROM ticket_messages WHERE ticket_id = ? AND author_type = 'contact' AND graph_message_id IS NOT NULL ORDER BY created_at DESC LIMIT 1",
+			"SELECT id, ticket_id, author_id, author_type, type, content, provider_message_id, created_at FROM ticket_messages WHERE ticket_id = ? AND author_type = 'contact' AND provider_message_id IS NOT NULL ORDER BY created_at DESC LIMIT 1",
 		)
 		.bind(ticketId)
 		.first<PublicTicketMessage>();
@@ -206,13 +206,13 @@ export async function createTicketMessage(
 		author_type: AuthorType;
 		type: MessageType;
 		content: string;
-		graph_message_id?: string;
+		provider_message_id?: string;
 	},
 ): Promise<PublicTicketMessage> {
 	const id = crypto.randomUUID();
 	await db
-		.prepare("INSERT INTO ticket_messages (id, ticket_id, author_id, author_type, type, content, graph_message_id) VALUES (?, ?, ?, ?, ?, ?, ?)")
-		.bind(id, data.ticket_id, data.author_id, data.author_type, data.type, data.content, data.graph_message_id ?? null)
+		.prepare("INSERT INTO ticket_messages (id, ticket_id, author_id, author_type, type, content, provider_message_id) VALUES (?, ?, ?, ?, ?, ?, ?)")
+		.bind(id, data.ticket_id, data.author_id, data.author_type, data.type, data.content, data.provider_message_id ?? null)
 		.run();
 	// bump ticket updated_at
 	await db.prepare("UPDATE tickets SET updated_at = unixepoch() WHERE id = ?").bind(data.ticket_id).run();

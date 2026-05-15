@@ -5,7 +5,7 @@ import {
   findMailboxIntegrationByEmail,
   findMailboxIntegrationById,
   updateMailboxTokens,
-  updateMailboxSubscription,
+  updateMailboxWatch,
 } from "../../../_lib/db";
 import {
   exchangeCodeForTokens,
@@ -75,15 +75,16 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       });
       mailboxId = existing.id;
     } else {
-      const clientStateSecret = crypto.randomUUID();
+      const webhookSecret = crypto.randomUUID();
       const mailbox = await createMailboxIntegration(env.DB, {
         workspace_id: workspaceId,
         email,
-        ms_user_id: profile.id,
+        provider: "microsoft",
+        provider_user_id: profile.id,
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,
         token_expires_at: tokenExpiresAt,
-        client_state_secret: clientStateSecret,
+        webhook_secret: webhookSecret,
       });
       mailboxId = mailbox.id;
     }
@@ -101,14 +102,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         const subscription = await createGraphSubscription(
           tokens.access_token,
           notificationUrl,
-          mailbox.client_state_secret
+          mailbox.webhook_secret
         );
         const subExpiresAt = Math.floor(
           new Date(subscription.expirationDateTime).getTime() / 1000
         );
-        await updateMailboxSubscription(env.DB, mailboxId, {
-          subscription_id: subscription.id,
-          subscription_expires_at: subExpiresAt,
+        await updateMailboxWatch(env.DB, mailboxId, {
+          watch_id: subscription.id,
+          watch_expires_at: subExpiresAt,
         });
       } catch (subErr) {
         // Log but don't fail — mailbox is saved, subscription can be retried

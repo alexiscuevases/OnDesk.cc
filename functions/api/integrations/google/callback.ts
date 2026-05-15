@@ -4,7 +4,7 @@ import {
 	createMailboxIntegration,
 	findMailboxIntegrationByEmail,
 	updateMailboxTokens,
-	updateMailboxSubscription,
+	updateMailboxWatch,
 	updateMailboxLastHistoryId,
 } from "../../../_lib/db";
 import {
@@ -79,11 +79,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 				workspace_id: workspaceId,
 				email,
 				provider: "google",
-				ms_user_id: profile.id, // store Google user ID in ms_user_id
+				provider_user_id: profile.id,
 				access_token: tokens.access_token,
 				refresh_token: tokens.refresh_token,
 				token_expires_at: tokenExpiresAt,
-				client_state_secret: crypto.randomUUID(),
+				webhook_secret: crypto.randomUUID(),
 			});
 			mailboxId = mailbox.id;
 		}
@@ -93,9 +93,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 			try {
 				const watch = await watchGmailMailbox(tokens.access_token, env.GOOGLE_PUBSUB_TOPIC);
 				const subExpiresAt = Math.floor(Number(watch.expiration) / 1000);
-				await updateMailboxSubscription(env.DB, mailboxId, {
-					subscription_id: watch.historyId,
-					subscription_expires_at: subExpiresAt,
+				await updateMailboxWatch(env.DB, mailboxId, {
+					watch_id: watch.historyId,
+					watch_expires_at: subExpiresAt,
 				});
 				await updateMailboxLastHistoryId(env.DB, mailboxId, watch.historyId);
 			} catch (watchErr) {

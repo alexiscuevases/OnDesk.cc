@@ -28,16 +28,16 @@ function getProviderLabel(provider: MailboxIntegration["provider"]): string {
 }
 
 function getMailboxSyncStatus(mailbox: MailboxIntegration): "synced" | "pending" | "expired" {
-	if (!mailbox.subscription_id) {
+	if (!mailbox.watch_id) {
 		// Gmail: use last_history_id as the indicator instead
 		if (mailbox.provider === "google") {
 			return mailbox.last_history_id ? "synced" : "pending";
 		}
 		return "pending";
 	}
-	if (mailbox.subscription_expires_at === null) return "pending";
+	if (mailbox.watch_expires_at === null) return "pending";
 	const nowSecs = Math.floor(Date.now() / 1000);
-	if (mailbox.subscription_expires_at < nowSecs) return "expired";
+	if (mailbox.watch_expires_at < nowSecs) return "expired";
 	return "synced";
 }
 

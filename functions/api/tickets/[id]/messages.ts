@@ -104,12 +104,12 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
           }
 
           const lastInbound = await findLastInboundMessageByTicket(env.DB, ticketId);
-          let sentConversationId: string | undefined;
+          let sentThreadId: string | undefined;
 
           if (mailbox.provider === "google") {
-            if (lastInbound?.graph_message_id) {
+            if (lastInbound?.provider_message_id) {
               try {
-                await replyGmailMail(token, lastInbound.graph_message_id, content.trim());
+                await replyGmailMail(token, lastInbound.provider_message_id, content.trim());
               } catch {
                 const result = await sendGmailMail(
                   token,
@@ -119,7 +119,7 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
                   undefined,
                   ccList.length > 0 ? ccList : undefined,
                 );
-                sentConversationId = result.conversationId;
+                sentThreadId = result.conversationId;
               }
             } else {
               const emailSubject = ticket.channel === "email" ? `Re: ${ticket.subject}` : ticket.subject;
@@ -131,12 +131,12 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
                 undefined,
                 ccList.length > 0 ? ccList : undefined,
               );
-              sentConversationId = result.conversationId;
+              sentThreadId = result.conversationId;
             }
           } else {
-            if (lastInbound?.graph_message_id) {
+            if (lastInbound?.provider_message_id) {
               try {
-                await replyGraphMail(token, lastInbound.graph_message_id, content.trim(),
+                await replyGraphMail(token, lastInbound.provider_message_id, content.trim(),
                   ccList.length > 0 ? ccList : undefined,
                   bccList.length > 0 ? bccList : undefined,
                 );
@@ -151,7 +151,7 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
                   ccList.length > 0 ? ccList : undefined,
                   bccList.length > 0 ? bccList : undefined,
                 );
-                sentConversationId = result.conversationId;
+                sentThreadId = result.conversationId;
               }
             } else {
               // No inbound message: either a manual ticket or first outbound message
@@ -167,14 +167,14 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
                 ccList.length > 0 ? ccList : undefined,
                 bccList.length > 0 ? bccList : undefined,
               );
-              sentConversationId = result.conversationId;
+              sentThreadId = result.conversationId;
             }
           }
 
-          // Persist conversationId + channel + cc_addresses so future replies stay consistent
+          // Persist thread id + channel + cc_addresses so future replies stay consistent
           const ticketUpdates: Parameters<typeof updateTicket>[2] = {};
-          if (sentConversationId && !ticket.conversation_id) {
-            ticketUpdates.conversation_id = sentConversationId;
+          if (sentThreadId && !ticket.thread_id) {
+            ticketUpdates.thread_id = sentThreadId;
             ticketUpdates.channel = "email";
           }
           const newCcJson = ccList.length > 0 ? JSON.stringify(ccList) : null;

@@ -3,9 +3,9 @@ export interface MailboxIntegration {
 	workspace_id: string;
 	email: string;
 	provider: "microsoft" | "google";
-	ms_user_id: string;
-	subscription_id: string | null;
-	subscription_expires_at: number | null;
+	provider_user_id: string;
+	watch_id: string | null;
+	watch_expires_at: number | null;
 	last_history_id: string | null;
 	created_at: number;
 }

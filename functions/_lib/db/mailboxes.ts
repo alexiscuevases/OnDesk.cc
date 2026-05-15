@@ -8,18 +8,18 @@ export async function createMailboxIntegration(
 		workspace_id: string;
 		email: string;
 		provider: "microsoft" | "google";
-		ms_user_id: string;
+		provider_user_id: string;
 		access_token: string;
 		refresh_token: string;
 		token_expires_at: number;
-		client_state_secret: string;
+		webhook_secret: string;
 	},
 ): Promise<MailboxIntegrationRow> {
 	const id = crypto.randomUUID();
 	await db
 		.prepare(
 			`INSERT INTO mailbox_integrations
-         (id, workspace_id, email, provider, ms_user_id, access_token, refresh_token, token_expires_at, client_state_secret)
+         (id, workspace_id, email, provider, provider_user_id, access_token, refresh_token, token_expires_at, webhook_secret)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.bind(
@@ -27,11 +27,11 @@ export async function createMailboxIntegration(
 			data.workspace_id,
 			data.email.toLowerCase(),
 			data.provider,
-			data.ms_user_id,
+			data.provider_user_id,
 			data.access_token,
 			data.refresh_token,
 			data.token_expires_at,
-			data.client_state_secret,
+			data.webhook_secret,
 		)
 		.run();
 	return (await findMailboxIntegrationById(db, id))!;
@@ -50,8 +50,11 @@ export async function findMailboxIntegrationByEmail(db: D1Database, workspaceId:
 	return result ?? null;
 }
 
-export async function findMailboxIntegrationBySubscriptionId(db: D1Database, subscriptionId: string): Promise<MailboxIntegrationRow | null> {
-	const result = await db.prepare("SELECT * FROM mailbox_integrations WHERE subscription_id = ? LIMIT 1").bind(subscriptionId).first<MailboxIntegrationRow>();
+export async function findMailboxIntegrationByWatchId(db: D1Database, watchId: string): Promise<MailboxIntegrationRow | null> {
+	const result = await db
+		.prepare("SELECT * FROM mailbox_integrations WHERE watch_id = ? LIMIT 1")
+		.bind(watchId)
+		.first<MailboxIntegrationRow>();
 	return result ?? null;
 }
 
@@ -67,7 +70,7 @@ export async function findMailboxIntegrationsByEmailOnly(db: D1Database, email: 
 export async function findMailboxIntegrationsByWorkspace(db: D1Database, workspaceId: string): Promise<PublicMailboxIntegration[]> {
 	const result = await db
 		.prepare(
-			`SELECT id, workspace_id, email, provider, ms_user_id, subscription_id, subscription_expires_at, last_history_id, created_at
+			`SELECT id, workspace_id, email, provider, provider_user_id, watch_id, watch_expires_at, last_history_id, created_at
        FROM mailbox_integrations WHERE workspace_id = ? ORDER BY created_at ASC`,
 		)
 		.bind(workspaceId)
@@ -107,10 +110,14 @@ export async function updateMailboxTokens(
 		.run();
 }
 
-export async function updateMailboxSubscription(db: D1Database, id: string, data: { subscription_id: string; subscription_expires_at: number }): Promise<void> {
+export async function updateMailboxWatch(
+	db: D1Database,
+	id: string,
+	data: { watch_id: string; watch_expires_at: number },
+): Promise<void> {
 	await db
-		.prepare("UPDATE mailbox_integrations SET subscription_id = ?, subscription_expires_at = ? WHERE id = ?")
-		.bind(data.subscription_id, data.subscription_expires_at, id)
+		.prepare("UPDATE mailbox_integrations SET watch_id = ?, watch_expires_at = ? WHERE id = ?")
+		.bind(data.watch_id, data.watch_expires_at, id)
 		.run();
 }
 

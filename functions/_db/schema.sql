@@ -127,7 +127,8 @@ CREATE INDEX IF NOT EXISTS idx_contacts_company_id   ON contacts(company_id);
 -- status: 'open' | 'pending' | 'resolved' | 'closed'
 -- priority: 'low' | 'medium' | 'high' | 'urgent'
 -- channel: 'email' | null
--- conversation_id: Microsoft Graph conversationId to thread replies into the same ticket
+-- thread_id: provider-side conversation/thread id (Graph conversationId or Gmail threadId)
+--            used to thread replies into the same ticket
 CREATE TABLE IF NOT EXISTS tickets (
   id               TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
   workspace_id     TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
@@ -139,33 +140,34 @@ CREATE TABLE IF NOT EXISTS tickets (
   status           TEXT NOT NULL DEFAULT 'open',
   priority         TEXT NOT NULL DEFAULT 'medium',
   channel          TEXT,
-  conversation_id  TEXT,
+  thread_id        TEXT,
   cc_addresses     TEXT,
   created_at       INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at       INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
-CREATE INDEX IF NOT EXISTS idx_tickets_workspace_id   ON tickets(workspace_id);
-CREATE INDEX IF NOT EXISTS idx_tickets_contact_id     ON tickets(contact_id);
-CREATE INDEX IF NOT EXISTS idx_tickets_assignee_id    ON tickets(assignee_id);
-CREATE INDEX IF NOT EXISTS idx_tickets_team_id        ON tickets(team_id);
-CREATE INDEX IF NOT EXISTS idx_tickets_status         ON tickets(status);
-CREATE INDEX IF NOT EXISTS idx_tickets_conversation_id ON tickets(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_workspace_id ON tickets(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_contact_id   ON tickets(contact_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_assignee_id  ON tickets(assignee_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_team_id      ON tickets(team_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_status       ON tickets(status);
+CREATE INDEX IF NOT EXISTS idx_tickets_thread_id    ON tickets(thread_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_tickets_workspace_number ON tickets(workspace_id, number);
 
 -- Ticket messages
 -- type: 'message' | 'note' (internal note)
 -- author_type: 'agent' | 'contact'
--- graph_message_id: internetMessageId of the email this message represents (for reply threading)
+-- provider_message_id: provider-side message id used for reply threading
+--                      (Graph internetMessageId or Gmail message id)
 CREATE TABLE IF NOT EXISTS ticket_messages (
-  id               TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  ticket_id        TEXT NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
-  author_id        TEXT NOT NULL,
-  author_type      TEXT NOT NULL DEFAULT 'agent',
-  type             TEXT NOT NULL DEFAULT 'message',
-  content          TEXT NOT NULL,
-  graph_message_id TEXT,
-  created_at       INTEGER NOT NULL DEFAULT (unixepoch())
+  id                  TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  ticket_id           TEXT NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+  author_id           TEXT NOT NULL,
+  author_type         TEXT NOT NULL DEFAULT 'agent',
+  type                TEXT NOT NULL DEFAULT 'message',
+  content             TEXT NOT NULL,
+  provider_message_id TEXT,
+  created_at          INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
 CREATE INDEX IF NOT EXISTS idx_ticket_messages_ticket_id ON ticket_messages(ticket_id);
@@ -221,29 +223,32 @@ CREATE INDEX IF NOT EXISTS idx_workspace_invitations_workspace_id ON workspace_i
 
 -- Mailbox integrations (Microsoft Outlook via Graph API + Gmail via Google API)
 -- Stores OAuth tokens per connected email account per workspace
--- provider: 'microsoft' | 'google'
--- ms_user_id: Microsoft user ID for Outlook, Google user ID for Gmail
--- subscription_id: Graph subscription ID for Outlook, unused for Gmail (watch is per-user)
--- last_history_id: Gmail only — last processed historyId for incremental sync
+-- provider:           'microsoft' | 'google'
+-- provider_user_id:   provider-side user id (Microsoft user id or Google user id)
+-- webhook_secret:     per-mailbox secret used to validate inbound webhook notifications
+--                     (Graph clientState; Gmail keeps a UUID for parity but doesn't verify it)
+-- watch_id:           provider-side push-subscription id (Graph subscription id or Gmail historyId from watch())
+-- watch_expires_at:   expiry of the push subscription / watch — renewed before it lapses
+-- last_history_id:    Gmail only — last processed historyId for incremental sync
 CREATE TABLE IF NOT EXISTS mailbox_integrations (
-  id                      TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  workspace_id            TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
-  email                   TEXT    NOT NULL,
-  provider                TEXT    NOT NULL DEFAULT 'microsoft',
-  ms_user_id              TEXT    NOT NULL DEFAULT '',
-  access_token            TEXT    NOT NULL,
-  refresh_token           TEXT    NOT NULL,
-  token_expires_at        INTEGER NOT NULL,
-  subscription_id         TEXT,
-  subscription_expires_at INTEGER,
-  client_state_secret     TEXT    NOT NULL DEFAULT '',
-  last_history_id         TEXT,
-  created_at              INTEGER NOT NULL DEFAULT (unixepoch()),
+  id                  TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id        TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  email               TEXT    NOT NULL,
+  provider            TEXT    NOT NULL DEFAULT 'microsoft',
+  provider_user_id    TEXT    NOT NULL DEFAULT '',
+  access_token        TEXT    NOT NULL,
+  refresh_token       TEXT    NOT NULL,
+  token_expires_at    INTEGER NOT NULL,
+  webhook_secret      TEXT    NOT NULL DEFAULT '',
+  watch_id            TEXT,
+  watch_expires_at    INTEGER,
+  last_history_id     TEXT,
+  created_at          INTEGER NOT NULL DEFAULT (unixepoch()),
   UNIQUE(workspace_id, email)
 );
 
-CREATE INDEX IF NOT EXISTS idx_mailbox_integrations_workspace_id   ON mailbox_integrations(workspace_id);
-CREATE INDEX IF NOT EXISTS idx_mailbox_integrations_subscription_id ON mailbox_integrations(subscription_id);
+CREATE INDEX IF NOT EXISTS idx_mailbox_integrations_workspace_id ON mailbox_integrations(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_mailbox_integrations_watch_id     ON mailbox_integrations(watch_id);
 
 -- Email deduplication: prevents creating duplicate tickets from the same email
 CREATE TABLE IF NOT EXISTS email_tickets (
@@ -424,16 +429,3 @@ CREATE TABLE IF NOT EXISTS ai_memories (
 
 CREATE INDEX IF NOT EXISTS idx_ai_memories_workspace_id ON ai_memories(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_ai_memories_contact_id   ON ai_memories(workspace_id, contact_id);
-
--- ─── Migrations ───────────────────────────────────────────────────────────────
--- Run these on existing databases when deploying new columns
-
--- Gmail support (run once on existing DBs — skip if column already exists)
--- wrangler d1 execute DB --remote --command "ALTER TABLE mailbox_integrations ADD COLUMN provider TEXT NOT NULL DEFAULT 'microsoft';"
--- wrangler d1 execute DB --remote --command "ALTER TABLE mailbox_integrations ADD COLUMN last_history_id TEXT;"
-
--- OAuth login support (Google / Microsoft) — SQLite cannot drop NOT NULL via ALTER,
--- so on existing DBs the password_hash column stays NOT NULL but new OAuth users
--- can be inserted with an empty placeholder. The user_identities table is additive.
--- wrangler d1 execute DB --remote --command "CREATE TABLE IF NOT EXISTS user_identities (id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))), user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, provider TEXT NOT NULL, provider_user_id TEXT NOT NULL, email TEXT NOT NULL, created_at INTEGER NOT NULL DEFAULT (unixepoch()), UNIQUE(provider, provider_user_id));"
--- wrangler d1 execute DB --remote --command "CREATE INDEX IF NOT EXISTS idx_user_identities_user_id ON user_identities(user_id);"

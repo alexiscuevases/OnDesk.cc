@@ -1,11 +1,11 @@
 import type { PagesFunction } from "@cloudflare/workers-types";
 import type { Env } from "../../_lib/types";
 import {
-  findMailboxIntegrationBySubscriptionId,
+  findMailboxIntegrationByWatchId,
   findEmailTicketByMessageId,
-  findTicketByConversationId,
+  findTicketByThreadId,
   updateMailboxTokens,
-  updateMailboxSubscription,
+  updateMailboxWatch,
   markEmailAsTicket,
   findOrCreateContact,
   createTicket,
@@ -66,15 +66,15 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
       // but Cloudflare Workers require processing before returning — keep it fast)
       for (const notification of body.value ?? []) {
     try {
-      // 1. Look up the mailbox by subscription ID
-      const mailbox = await findMailboxIntegrationBySubscriptionId(
+      // 1. Look up the mailbox by watch (Graph subscription) id
+      const mailbox = await findMailboxIntegrationByWatchId(
         env.DB,
         notification.subscriptionId
       );
       if (!mailbox) continue;
 
-      // 2. Validate clientState to prevent spoofed notifications
-      if (notification.clientState !== mailbox.client_state_secret) continue;
+      // 2. Validate clientState (webhook_secret) to prevent spoofed notifications
+      if (notification.clientState !== mailbox.webhook_secret) continue;
 
       const messageId = notification.resourceData?.id;
       if (!messageId) continue;
@@ -103,20 +103,20 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
         });
       }
 
-      // 5. Renew subscription inline if expiring within 24 hours
+      // 5. Renew watch (Graph subscription) inline if expiring within 24 hours
       if (
-        mailbox.subscription_id &&
-        mailbox.subscription_expires_at !== null &&
-        mailbox.subscription_expires_at - nowSecs() < 86400
+        mailbox.watch_id &&
+        mailbox.watch_expires_at !== null &&
+        mailbox.watch_expires_at - nowSecs() < 86400
       ) {
         try {
-          const renewed = await renewGraphSubscription(accessToken, mailbox.subscription_id);
+          const renewed = await renewGraphSubscription(accessToken, mailbox.watch_id);
           const subExpiresAt = Math.floor(
             new Date(renewed.expirationDateTime).getTime() / 1000
           );
-          await updateMailboxSubscription(env.DB, mailbox.id, {
-            subscription_id: mailbox.subscription_id,
-            subscription_expires_at: subExpiresAt,
+          await updateMailboxWatch(env.DB, mailbox.id, {
+            watch_id: mailbox.watch_id,
+            watch_expires_at: subExpiresAt,
           });
         } catch {
           // Non-fatal: continue processing the email
@@ -137,7 +137,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
       // 8. Find existing ticket by conversationId (reply threading) or create new one
       const content = message.body.content || message.bodyPreview;
       const existingTicket = message.conversationId
-        ? await findTicketByConversationId(env.DB, mailbox.workspace_id, message.conversationId)
+        ? await findTicketByThreadId(env.DB, mailbox.workspace_id, message.conversationId)
         : null;
 
       let ticketId: string;
@@ -169,7 +169,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
           status: "open",
           priority: "medium",
           channel: "email",
-          conversation_id: message.conversationId || undefined,
+          thread_id: message.conversationId || undefined,
           cc_addresses: ccList.length > 0 ? JSON.stringify(ccList) : undefined,
         });
         ticketId = ticket.id;
@@ -197,7 +197,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
         author_type: "contact",
         type: "message",
         content,
-        graph_message_id: message.internetMessageId,
+        provider_message_id: message.internetMessageId,
       });
 
       // 10. Mark as processed to prevent duplicates

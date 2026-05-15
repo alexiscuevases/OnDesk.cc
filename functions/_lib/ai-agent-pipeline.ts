@@ -208,37 +208,37 @@ export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promis
 
   try {
     const lastInbound = await findLastInboundMessageByTicket(env.DB, ticket.id);
-    let sentConversationId: string | undefined;
+    let sentThreadId: string | undefined;
 
     if (mailbox.provider === "google") {
-      if (lastInbound?.graph_message_id) {
+      if (lastInbound?.provider_message_id) {
         try {
-          await replyGmailMail(accessToken, lastInbound.graph_message_id, replyHtml);
+          await replyGmailMail(accessToken, lastInbound.provider_message_id, replyHtml);
         } catch {
           const result = await sendGmailMail(accessToken, { name: contact.name, address: contact.email }, `Re: ${ticket.subject}`, replyHtml);
-          sentConversationId = result.conversationId;
+          sentThreadId = result.conversationId;
         }
       } else {
         const result = await sendGmailMail(accessToken, { name: contact.name, address: contact.email }, `Re: ${ticket.subject}`, replyHtml);
-        sentConversationId = result.conversationId;
+        sentThreadId = result.conversationId;
       }
     } else {
-      if (lastInbound?.graph_message_id) {
+      if (lastInbound?.provider_message_id) {
         try {
-          await replyGraphMail(accessToken, lastInbound.graph_message_id, replyHtml);
+          await replyGraphMail(accessToken, lastInbound.provider_message_id, replyHtml);
         } catch {
           const result = await sendGraphMail(accessToken, { name: contact.name, address: contact.email }, `Re: ${ticket.subject}`, replyHtml);
-          sentConversationId = result.conversationId;
+          sentThreadId = result.conversationId;
         }
       } else {
         const result = await sendGraphMail(accessToken, { name: contact.name, address: contact.email }, `Re: ${ticket.subject}`, replyHtml);
-        sentConversationId = result.conversationId;
+        sentThreadId = result.conversationId;
       }
     }
 
-    if (sentConversationId && !ticket.conversation_id) {
+    if (sentThreadId && !ticket.thread_id) {
       await updateTicket(env.DB, ticket.id, {
-        conversation_id: sentConversationId,
+        thread_id: sentThreadId,
         channel: "email",
       });
     }

@@ -3,10 +3,10 @@ import type { Env } from "../../_lib/types";
 import {
 	findMailboxIntegrationsByEmailOnly,
 	findEmailTicketByMessageId,
-	findTicketByConversationId,
+	findTicketByThreadId,
 	updateMailboxTokens,
 	updateMailboxLastHistoryId,
-	updateMailboxSubscription,
+	updateMailboxWatch,
 	markEmailAsTicket,
 	findOrCreateContact,
 	createTicket,
@@ -99,13 +99,13 @@ async function processGmailNotification(env: Env, emailAddress: string, newHisto
 			}
 
 			// Renew watch if expiring within 24 hours
-			if (mailbox.subscription_expires_at !== null && mailbox.subscription_expires_at - nowSecs() < 86400) {
+			if (mailbox.watch_expires_at !== null && mailbox.watch_expires_at - nowSecs() < 86400) {
 				try {
 					const watch = await watchGmailMailbox(accessToken, env.GOOGLE_PUBSUB_TOPIC);
 					const subExpiresAt = Math.floor(Number(watch.expiration) / 1000);
-					await updateMailboxSubscription(env.DB, mailbox.id, {
-						subscription_id: watch.historyId,
-						subscription_expires_at: subExpiresAt,
+					await updateMailboxWatch(env.DB, mailbox.id, {
+						watch_id: watch.historyId,
+						watch_expires_at: subExpiresAt,
 					});
 					await updateMailboxLastHistoryId(env.DB, mailbox.id, watch.historyId);
 				} catch {
@@ -188,8 +188,8 @@ async function processGmailMessage(
 		email: fromAddress.toLowerCase(),
 	});
 
-	// Find existing ticket by threadId (Gmail thread = MS conversationId)
-	const existingTicket = await findTicketByConversationId(env.DB, workspaceId, threadId);
+	// Find existing ticket by provider thread id
+	const existingTicket = await findTicketByThreadId(env.DB, workspaceId, threadId);
 
 	let ticketId: string;
 	if (existingTicket) {
@@ -220,7 +220,7 @@ async function processGmailMessage(
 			status: "open",
 			priority: "medium",
 			channel: "email",
-			conversation_id: threadId,
+			thread_id: threadId,
 			cc_addresses: ccList.length > 0 ? JSON.stringify(ccList) : undefined,
 		});
 		ticketId = ticket.id;
@@ -240,14 +240,14 @@ async function processGmailMessage(
 		);
 	}
 
-	// Store message — graph_message_id holds Gmail message id for reply threading
+	// Store message — provider_message_id holds Gmail message id for reply threading
 	await createTicketMessage(env.DB, {
 		ticket_id: ticketId,
 		author_id: contact.id,
 		author_type: "contact",
 		type: "message",
 		content,
-		graph_message_id: gmailMessageId,
+		provider_message_id: gmailMessageId,
 	});
 
 	// Dedup record
