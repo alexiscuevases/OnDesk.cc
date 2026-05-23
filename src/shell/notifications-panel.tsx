@@ -1,4 +1,4 @@
-import { Bell, Clock, UserPlus, CheckCircle2, AlertCircle, MessageSquare, X } from "lucide-react";
+import { Bell, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,56 +6,12 @@ import { useNotifications } from "@/context/notifications-context";
 import { useWorkspace } from "@/context/workspace-context";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import {
+	NotificationIcon,
+	TICKET_NOTIFICATION_TYPES,
+	formatRelativeTime,
+} from "@/features/notifications/components/notification-icon";
 import type { Notification } from "@/features/notifications/api/notifications-api";
-
-function formatRelativeTime(timestamp: number): string {
-	const diffMs = Date.now() - timestamp * 1000;
-	const diffMins = Math.floor(diffMs / 60_000);
-	if (diffMins < 1) return "just now";
-	if (diffMins < 60) return `${diffMins}m ago`;
-	const diffHours = Math.floor(diffMins / 60);
-	if (diffHours < 24) return `${diffHours}h ago`;
-	const diffDays = Math.floor(diffHours / 24);
-	return `${diffDays}d ago`;
-}
-
-function NotificationIcon({ type }: { type: Notification["type"] }) {
-	switch (type) {
-		case "sla":
-			return (
-				<div className="flex size-8 items-center justify-center rounded-lg bg-warning/15">
-					<Clock className="size-4 text-warning" />
-				</div>
-			);
-		case "assign":
-			return (
-				<div className="flex size-8 items-center justify-center rounded-lg bg-primary/10">
-					<UserPlus className="size-4 text-primary" />
-				</div>
-			);
-		case "resolved":
-			return (
-				<div className="flex size-8 items-center justify-center rounded-lg bg-accent/15">
-					<CheckCircle2 className="size-4 text-accent" />
-				</div>
-			);
-		case "message":
-			return (
-				<div className="flex size-8 items-center justify-center rounded-lg bg-chart-2/10">
-					<MessageSquare className="size-4 text-chart-2" />
-				</div>
-			);
-		case "ticket":
-		default:
-			return (
-				<div className="flex size-8 items-center justify-center rounded-lg bg-chart-1/10">
-					<AlertCircle className="size-4 text-chart-1" />
-				</div>
-			);
-	}
-}
-
-const TICKET_TYPES: Notification["type"][] = ["ticket", "assign", "resolved", "message", "sla"];
 
 export function NotificationsPanel() {
 	const { notifications, unreadCount, isLoading, markAllRead, dismissNotification, markAsRead } =
@@ -66,10 +22,15 @@ export function NotificationsPanel() {
 
 	function handleNotificationClick(notif: Notification) {
 		markAsRead(notif.id);
-		if (notif.resource_id && TICKET_TYPES.includes(notif.type)) {
+		if (notif.resource_id && TICKET_NOTIFICATION_TYPES.includes(notif.type)) {
 			setOpen(false);
 			router.navigate({ to: "/w/$slug/tickets/$id", params: { slug: workspace.slug, id: notif.resource_id } });
 		}
+	}
+
+	function handleViewAll() {
+		setOpen(false);
+		router.navigate({ to: "/w/$slug/notifications", params: { slug: workspace.slug } });
 	}
 
 	return (
@@ -121,7 +82,7 @@ export function NotificationsPanel() {
 								key={notif.id}
 								className={`flex items-start gap-3 px-4 py-3 border-b last:border-0 transition-colors hover:bg-secondary/50 ${
 									!notif.read ? "bg-primary/5" : ""
-								} ${notif.resource_id && TICKET_TYPES.includes(notif.type) ? "cursor-pointer" : "cursor-default"}`}
+								} ${notif.resource_id && TICKET_NOTIFICATION_TYPES.includes(notif.type) ? "cursor-pointer" : "cursor-default"}`}
 								onClick={() => handleNotificationClick(notif)}
 								role="button"
 								tabIndex={0}
@@ -158,6 +119,15 @@ export function NotificationsPanel() {
 							</div>
 						))
 					)}
+				</div>
+				<div className="border-t px-2 py-1.5">
+					<Button
+						variant="ghost"
+						size="sm"
+						className="w-full h-8 text-xs text-primary hover:text-primary/80 hover:bg-primary/5"
+						onClick={handleViewAll}>
+						View all notifications
+					</Button>
 				</div>
 			</PopoverContent>
 		</Popover>
