@@ -2,16 +2,25 @@ import type { TicketRow, PublicTicket, TicketStatus, TicketPriority, PublicTicke
 
 // ─── Tickets ──────────────────────────────────────────────────────────────────
 
-export async function findTicketsByWorkspace(
-	db: D1Database,
-	workspaceId: string,
-	filters: { status?: TicketStatus; assignee_id?: string; team_id?: string } = {},
-): Promise<PublicTicket[]> {
+export interface TicketListFilters {
+	status?: TicketStatus;
+	priority?: TicketPriority;
+	assignee_id?: string;
+	team_id?: string;
+	contact_id?: string;
+	search?: string;
+}
+
+function buildTicketFilterClause(workspaceId: string, filters: TicketListFilters): { sql: string; values: (string | null)[] } {
 	const conditions = ["t.workspace_id = ?"];
 	const values: (string | null)[] = [workspaceId];
 	if (filters.status) {
 		conditions.push("t.status = ?");
 		values.push(filters.status);
+	}
+	if (filters.priority) {
+		conditions.push("t.priority = ?");
+		values.push(filters.priority);
 	}
 	if (filters.assignee_id) {
 		conditions.push("t.assignee_id = ?");
@@ -21,7 +30,38 @@ export async function findTicketsByWorkspace(
 		conditions.push("t.team_id = ?");
 		values.push(filters.team_id);
 	}
-	const result = await db
+	if (filters.contact_id) {
+		conditions.push("t.contact_id = ?");
+		values.push(filters.contact_id);
+	}
+	if (filters.search) {
+		const q = `%${filters.search.toLowerCase()}%`;
+		conditions.push("(LOWER(t.subject) LIKE ? OR LOWER(t.id) LIKE ? OR LOWER(COALESCE(c.name, '')) LIKE ?)");
+		values.push(q, q, q);
+	}
+	return { sql: conditions.join(" AND "), values };
+}
+
+export async function findTicketsByWorkspace(
+	db: D1Database,
+	workspaceId: string,
+	filters: TicketListFilters = {},
+	pagination: { limit: number; offset: number } = { limit: 25, offset: 0 },
+): Promise<{ tickets: PublicTicket[]; total: number }> {
+	const { sql: whereClause, values } = buildTicketFilterClause(workspaceId, filters);
+
+	const countResult = await db
+		.prepare(
+			`SELECT COUNT(*) AS total
+			FROM tickets t
+			LEFT JOIN contacts c ON c.id = t.contact_id
+			WHERE ${whereClause}`,
+		)
+		.bind(...values)
+		.first<{ total: number }>();
+	const total = countResult?.total ?? 0;
+
+	const listResult = await db
 		.prepare(
 			`SELECT
 				t.id,
@@ -42,15 +82,34 @@ export async function findTicketsByWorkspace(
 			FROM tickets t
 			LEFT JOIN ai_ticket_state ats ON ats.ticket_id = t.id
 			LEFT JOIN ai_agents aa ON aa.id = ats.ai_agent_id
-			WHERE ${conditions.join(" AND ")}
-			ORDER BY t.created_at DESC`,
+			LEFT JOIN contacts c ON c.id = t.contact_id
+			WHERE ${whereClause}
+			ORDER BY t.created_at DESC
+			LIMIT ? OFFSET ?`,
 		)
-		.bind(...values)
+		.bind(...values, pagination.limit, pagination.offset)
 		.all<PublicTicket & { ai_escalated: number | boolean }>();
-	return (result.results ?? []).map((ticket) => ({
+
+	const tickets = (listResult.results ?? []).map((ticket) => ({
 		...ticket,
 		ai_escalated: Boolean(ticket.ai_escalated),
 	}));
+	return { tickets, total };
+}
+
+export async function countTicketsByStatus(
+	db: D1Database,
+	workspaceId: string,
+): Promise<Record<TicketStatus, number>> {
+	const result = await db
+		.prepare("SELECT status, COUNT(*) AS count FROM tickets WHERE workspace_id = ? GROUP BY status")
+		.bind(workspaceId)
+		.all<{ status: TicketStatus; count: number }>();
+	const counts: Record<TicketStatus, number> = { open: 0, pending: 0, resolved: 0, closed: 0 };
+	for (const row of result.results ?? []) {
+		counts[row.status] = row.count;
+	}
+	return counts;
 }
 
 export async function findTicketById(db: D1Database, ticketId: string): Promise<TicketRow | null> {

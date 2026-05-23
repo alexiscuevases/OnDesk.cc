@@ -8,7 +8,7 @@ import { upsertTicket } from "../../_lib/vectorize";
 const VALID_STATUSES: TicketStatus[] = ["open", "pending", "resolved", "closed"];
 const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
 
-// GET /api/tickets?workspace_id=&status=&assignee_id=&team_id=
+// GET /api/tickets?workspace_id=&status=&priority=&assignee_id=&team_id=&contact_id=&search=&page=&page_size=
 // POST /api/tickets
 export const onRequest = withWorkspace(async ({ request, env, payload, workspaceId }) => {
 	const url = new URL(request.url);
@@ -16,16 +16,35 @@ export const onRequest = withWorkspace(async ({ request, env, payload, workspace
 	return createMethodRouter(request.method, {
 		GET: async () => {
 			const status = url.searchParams.get("status") as TicketStatus | null;
+			const priority = url.searchParams.get("priority") as TicketPriority | null;
 			const assigneeId = url.searchParams.get("assignee_id");
 			const teamId = url.searchParams.get("team_id");
+			const contactId = url.searchParams.get("contact_id");
+			const search = url.searchParams.get("search");
 
-			const filters: { status?: TicketStatus; assignee_id?: string; team_id?: string } = {};
+			const filters: {
+				status?: TicketStatus;
+				priority?: TicketPriority;
+				assignee_id?: string;
+				team_id?: string;
+				contact_id?: string;
+				search?: string;
+			} = {};
 			if (status && VALID_STATUSES.includes(status)) filters.status = status;
+			if (priority && VALID_PRIORITIES.includes(priority)) filters.priority = priority;
 			if (assigneeId) filters.assignee_id = assigneeId;
 			if (teamId) filters.team_id = teamId;
+			if (contactId) filters.contact_id = contactId;
+			if (search && search.trim().length > 0) filters.search = search.trim();
 
-			const tickets = await findTicketsByWorkspace(env.DB, workspaceId, filters);
-			return jsonOk({ tickets });
+			const pageRaw = Number.parseInt(url.searchParams.get("page") ?? "1", 10);
+			const pageSizeRaw = Number.parseInt(url.searchParams.get("page_size") ?? "25", 10);
+			const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
+			const pageSize = Number.isFinite(pageSizeRaw) ? Math.min(Math.max(pageSizeRaw, 1), 100) : 25;
+			const offset = (page - 1) * pageSize;
+
+			const { tickets, total } = await findTicketsByWorkspace(env.DB, workspaceId, filters, { limit: pageSize, offset });
+			return jsonOk({ tickets, total, page, page_size: pageSize });
 		},
 		POST: async () => {
 			const parsed = await parseJsonBody(request);

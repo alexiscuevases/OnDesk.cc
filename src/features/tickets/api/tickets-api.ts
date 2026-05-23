@@ -65,22 +65,60 @@ export interface CreateMessageInput {
 
 const API_BASE = "/api/tickets";
 
+export interface TicketListFilters {
+	status?: TicketStatus;
+	priority?: TicketPriority;
+	assignee_id?: string;
+	team_id?: string;
+	contact_id?: string;
+	search?: string;
+}
+
+export interface TicketListPage {
+	tickets: Ticket[];
+	total: number;
+	page: number;
+	page_size: number;
+}
+
+export interface TicketStatusCounts {
+	open: number;
+	pending: number;
+	resolved: number;
+	closed: number;
+}
+
 export async function apiGetTickets(
 	workspaceId: string,
-	filters: { status?: TicketStatus; assignee_id?: string; team_id?: string } = {}
-): Promise<Ticket[]> {
+	filters: TicketListFilters = {},
+	pagination: { page: number; pageSize: number } = { page: 1, pageSize: 25 }
+): Promise<TicketListPage> {
 	const params = new URLSearchParams({ workspace_id: workspaceId });
 	if (filters.status) params.set("status", filters.status);
+	if (filters.priority) params.set("priority", filters.priority);
 	if (filters.assignee_id) params.set("assignee_id", filters.assignee_id);
 	if (filters.team_id) params.set("team_id", filters.team_id);
+	if (filters.contact_id) params.set("contact_id", filters.contact_id);
+	if (filters.search) params.set("search", filters.search);
+	params.set("page", String(pagination.page));
+	params.set("page_size", String(pagination.pageSize));
 
 	const res = await fetch(`${API_BASE}?${params}`, { credentials: "include" });
 	if (!res.ok) {
 		const err = (await res.json()) as { error: string };
 		throw new Error(err.error ?? "Failed to fetch tickets");
 	}
-	const data = (await res.json()) as { tickets: Ticket[] };
-	return data.tickets;
+	return (await res.json()) as TicketListPage;
+}
+
+export async function apiGetTicketCounts(workspaceId: string): Promise<TicketStatusCounts> {
+	const res = await fetch(`${API_BASE}/counts?workspace_id=${workspaceId}`, { credentials: "include" });
+	if (!res.ok) {
+		const err = (await res.json()) as { error: string };
+		throw new Error(err.error ?? "Failed to fetch ticket counts");
+	}
+	const data = (await res.json()) as { counts: TicketStatusCounts };
+	return data.counts;
 }
 
 export async function apiGetTicket(id: string): Promise<Ticket> {

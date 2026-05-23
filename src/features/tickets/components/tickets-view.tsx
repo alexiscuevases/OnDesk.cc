@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useWorkspace } from "@/context/workspace-context";
-import { useTickets } from "../hooks/use-ticket-queries";
+import { useTickets, useTicketCounts } from "../hooks/use-ticket-queries";
 import { useDeleteTicketMutation } from "../hooks/use-ticket-mutations";
 import { apiUpdateTicket, apiMergeTickets } from "../api/tickets-api";
 import { useQueryClient } from "@tanstack/react-query";
@@ -19,7 +19,7 @@ import { MergeTicketModal } from "../modals/merge-ticket-modal";
 import { NewTicketModal } from "../modals/new-ticket-modal";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import type { TicketStatus } from "../api/tickets-api";
+import type { TicketStatus, TicketPriority, TicketListFilters } from "../api/tickets-api";
 
 export function TicketsView({
 	onOpenTicket,
@@ -35,11 +35,14 @@ export function TicketsView({
 	const queryClient = useQueryClient();
 
 	const [search, setSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
 	const [priorityFilter, setPriorityFilter] = useState<string>("all");
 	const [assigneeFilter, setAssigneeFilter] = useState<string>(initialAssigneeId ?? "all");
 	const [requesterFilter, setRequesterFilter] = useState<string>(initialRequesterId ?? "all");
 	const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(25);
 
 	const [newTicketOpen, setNewTicketOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
@@ -55,15 +58,31 @@ export function TicketsView({
 		setRequesterFilter(initialRequesterId ?? "all");
 	}, [initialRequesterId]);
 
-	const apiFilters =
-		statusFilter !== "all" || assigneeFilter !== "all"
-			? {
-					...(statusFilter !== "all" ? { status: statusFilter as TicketStatus } : {}),
-					...(assigneeFilter !== "all" ? { assignee_id: assigneeFilter } : {}),
-				}
-			: {};
-	const { data: tickets = [], isLoading } = useTickets(workspaceId, apiFilters);
-	const { data: allTickets = [] } = useTickets(workspaceId, {});
+	useEffect(() => {
+		const id = setTimeout(() => setDebouncedSearch(search), 300);
+		return () => clearTimeout(id);
+	}, [search]);
+
+	const apiFilters: TicketListFilters = useMemo(() => {
+		const f: TicketListFilters = {};
+		if (statusFilter !== "all") f.status = statusFilter as TicketStatus;
+		if (priorityFilter !== "all") f.priority = priorityFilter as TicketPriority;
+		if (assigneeFilter !== "all") f.assignee_id = assigneeFilter;
+		if (requesterFilter !== "all") f.contact_id = requesterFilter;
+		if (debouncedSearch.trim()) f.search = debouncedSearch.trim();
+		return f;
+	}, [statusFilter, priorityFilter, assigneeFilter, requesterFilter, debouncedSearch]);
+
+	// Reset to page 1 whenever filters change
+	useEffect(() => {
+		setPage(1);
+		setSelectedTickets([]);
+	}, [apiFilters, pageSize]);
+
+	const { data: ticketPage, isLoading, isFetching } = useTickets(workspaceId, apiFilters, { page, pageSize });
+	const tickets = ticketPage?.tickets ?? [];
+	const totalTickets = ticketPage?.total ?? 0;
+	const { data: counts } = useTicketCounts(workspaceId);
 	const { data: members = [] } = useWorkspaceMembers(workspaceId);
 	const { data: teams = [] } = useTeams(workspaceId);
 	const { data: contacts = [] } = useContacts(workspaceId);
@@ -71,32 +90,10 @@ export function TicketsView({
 
 	const deleteTicket = useDeleteTicketMutation(workspaceId);
 
-	const contactNameById = useMemo(() => {
-		const map = new Map<string, string>();
-		for (const contact of contacts) {
-			map.set(contact.id, contact.name);
-		}
-		return map;
-	}, [contacts]);
-
-	// Client-side search + priority filter (API only filters by status/assignee/team)
-	const filteredTickets = tickets.filter((t) => {
-		const matchesPriority = priorityFilter === "all" || t.priority === priorityFilter;
-		if (!matchesPriority) return false;
-		const matchesAssignee = assigneeFilter === "all" || t.assignee_id === assigneeFilter;
-		if (!matchesAssignee) return false;
-		const matchesRequester = requesterFilter === "all" || t.contact_id === requesterFilter;
-		if (!matchesRequester) return false;
-		if (!search) return true;
-		const q = search.toLowerCase();
-		const requesterName = t.contact_id ? contactNameById.get(t.contact_id)?.toLowerCase() ?? "" : "";
-		return t.subject.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || requesterName.includes(q);
-	});
-
-	const mergeableTickets = filteredTickets.filter((t) => !selectedTickets.includes(t.id));
+	const mergeableTickets = tickets.filter((t) => !selectedTickets.includes(t.id));
 
 	function handleSelectAll(checked: boolean) {
-		setSelectedTickets(checked ? filteredTickets.map((t) => t.id) : []);
+		setSelectedTickets(checked ? tickets.map((t) => t.id) : []);
 	}
 
 	function handleSelectTicket(ticketId: string, checked: boolean) {
@@ -151,10 +148,10 @@ export function TicketsView({
 			{/* Summary Stats */}
 			<div className="grid grid-cols-4 gap-3">
 				{[
-					{ label: "Open", count: allTickets.filter((t) => t.status === "open").length, color: "bg-chart-1" },
-					{ label: "Pending", count: allTickets.filter((t) => t.status === "pending").length, color: "bg-warning" },
-					{ label: "Resolved", count: allTickets.filter((t) => t.status === "resolved").length, color: "bg-success" },
-					{ label: "Closed", count: allTickets.filter((t) => t.status === "closed").length, color: "bg-muted-foreground" },
+					{ label: "Open", count: counts?.open ?? 0, color: "bg-chart-1" },
+					{ label: "Pending", count: counts?.pending ?? 0, color: "bg-warning" },
+					{ label: "Resolved", count: counts?.resolved ?? 0, color: "bg-success" },
+					{ label: "Closed", count: counts?.closed ?? 0, color: "bg-muted-foreground" },
 				].map((stat) => (
 					<div key={stat.label} className="flex items-center gap-3 rounded-xl bg-card p-3.5 shadow-sm">
 						<div className={`size-2.5 rounded-full ${stat.color}`} />
@@ -192,14 +189,18 @@ export function TicketsView({
 			/>
 
 			<TicketsTable
-				tickets={filteredTickets}
-				totalCount={allTickets.length}
+				tickets={tickets}
+				totalCount={totalTickets}
+				page={page}
+				pageSize={pageSize}
+				onPageChange={setPage}
+				onPageSizeChange={setPageSize}
 				selectedTickets={selectedTickets}
 				onSelectAll={handleSelectAll}
 				onSelectTicket={handleSelectTicket}
 				onOpenTicket={onOpenTicket}
 				onDeleteSingle={handleDeleteSingle}
-				isLoading={isLoading}
+				isLoading={isLoading || isFetching}
 				members={members}
 				teams={teams}
 				contacts={contacts}

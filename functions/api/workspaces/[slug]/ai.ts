@@ -4,6 +4,7 @@ import {
   isWorkspaceMember,
   findWorkspaceMembers,
   findTicketsByWorkspace,
+  countTicketsByStatus,
   findContactsByWorkspace,
   findTeamsByWorkspace,
   findCompaniesByWorkspace,
@@ -38,12 +39,13 @@ export const onRequest = withAuth<"slug">(async ({ request, env, payload, params
 
       const userQuery = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
 
-      // Load fixed small sets + all tickets for stats; run vector searches in parallel
-      const [members, teams, allTickets, allContacts, allCompanies, ticketIds, contactIds, companyIds, memoryIds] =
+      // Load fixed small sets + recent tickets slice + status counts; run vector searches in parallel
+      const [members, teams, recentTicketsPage, ticketStatusCounts, allContacts, allCompanies, ticketIds, contactIds, companyIds, memoryIds] =
         await Promise.all([
           findWorkspaceMembers(env.DB, workspace.id),
           findTeamsByWorkspace(env.DB, workspace.id),
-          findTicketsByWorkspace(env.DB, workspace.id),
+          findTicketsByWorkspace(env.DB, workspace.id, {}, { limit: 50, offset: 0 }),
+          countTicketsByStatus(env.DB, workspace.id),
           findContactsByWorkspace(env.DB, workspace.id),
           findCompaniesByWorkspace(env.DB, workspace.id),
           searchTickets(env, userQuery, workspace.id, 8),
@@ -51,14 +53,15 @@ export const onRequest = withAuth<"slug">(async ({ request, env, payload, params
           searchCompanies(env, userQuery, workspace.id, 5),
           searchMemories(env, userQuery, workspace.id, null, 6),
         ]);
+      const recentTickets = recentTicketsPage.tickets;
 
       const memories = await findMemoriesByIds(env.DB, memoryIds);
       if (memories.length) void touchMemories(env.DB, memories.map((m) => m.id));
 
       // Filter to semantically relevant items; fall back to recency slice if index is empty
       const relevantTickets = ticketIds.length > 0
-        ? allTickets.filter((t) => ticketIds.includes(t.id))
-        : allTickets.slice(0, 10);
+        ? recentTickets.filter((t) => ticketIds.includes(t.id))
+        : recentTickets.slice(0, 10);
       const relevantContacts = contactIds.length > 0
         ? allContacts.filter((c) => contactIds.includes(c.id))
         : allContacts.slice(0, 15);
@@ -67,11 +70,8 @@ export const onRequest = withAuth<"slug">(async ({ request, env, payload, params
         : allCompanies.slice(0, 10);
 
       const ticketStats = {
-        total: allTickets.length,
-        open: allTickets.filter((t) => t.status === "open").length,
-        pending: allTickets.filter((t) => t.status === "pending").length,
-        resolved: allTickets.filter((t) => t.status === "resolved").length,
-        closed: allTickets.filter((t) => t.status === "closed").length,
+        total: ticketStatusCounts.open + ticketStatusCounts.pending + ticketStatusCounts.resolved + ticketStatusCounts.closed,
+        ...ticketStatusCounts,
       };
 
       const ticketsBlock = relevantTickets

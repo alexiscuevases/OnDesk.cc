@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import { MoreHorizontal, Eye, Trash2, SortAsc, ChevronLeft, ChevronRight, Inbox } from "lucide-react";
 import { useWorkspace } from "@/context/workspace-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StatusBadge } from "@/shared/components/status-badge";
 import { PriorityBadge } from "@/shared/components/priority-badge";
 import { TicketAiStatusBadge } from "@/shared/components/ticket-ai-status-badge";
@@ -16,9 +16,15 @@ import type { Team } from "@/features/teams/api/teams-api";
 import type { Contact } from "@/features/contacts/api/contacts-api";
 import type { Company } from "@/features/companies/api/companies-api";
 
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
+
 interface TicketsTableProps {
 	tickets: Ticket[];
 	totalCount: number;
+	page: number;
+	pageSize: number;
+	onPageChange: (page: number) => void;
+	onPageSizeChange: (size: number) => void;
 	selectedTickets: string[];
 	onSelectAll: (checked: boolean) => void;
 	onSelectTicket: (id: string, checked: boolean) => void;
@@ -34,6 +40,10 @@ interface TicketsTableProps {
 export function TicketsTable({
 	tickets,
 	totalCount,
+	page,
+	pageSize,
+	onPageChange,
+	onPageSizeChange,
 	selectedTickets,
 	onSelectAll,
 	onSelectTicket,
@@ -47,21 +57,9 @@ export function TicketsTable({
 }: TicketsTableProps) {
 	const { workspace } = useWorkspace();
 
-	const PAGE_SIZE = 25;
-	const [currentPage, setCurrentPage] = useState(1);
-	const totalPages = Math.max(1, Math.ceil(tickets.length / PAGE_SIZE));
-
-	useEffect(() => {
-		if (currentPage > totalPages) setCurrentPage(1);
-	}, [currentPage, totalPages]);
-
-	const paginatedTickets = useMemo(
-		() => tickets.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
-		[tickets, currentPage],
-	);
-
-	const pageStart = tickets.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
-	const pageEnd = Math.min(currentPage * PAGE_SIZE, tickets.length);
+	const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+	const pageStart = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
+	const pageEnd = Math.min(page * pageSize, totalCount);
 
 	function getMember(id: string | null) {
 		if (!id) return null;
@@ -99,7 +97,7 @@ export function TicketsTable({
 					<div>
 						<CardTitle className="text-sm font-semibold">All Tickets</CardTitle>
 						<CardDescription className="text-xs">
-							{isLoading ? "Loading..." : `${tickets.length} ticket${tickets.length !== 1 ? "s" : ""} found`}
+							{isLoading && totalCount === 0 ? "Loading..." : `${totalCount} ticket${totalCount !== 1 ? "s" : ""} found`}
 						</CardDescription>
 					</div>
 					<Button variant="outline" size="sm" className="gap-1.5 h-8 rounded-lg text-xs">
@@ -114,7 +112,7 @@ export function TicketsTable({
 						<TableRow className="bg-secondary/50 hover:bg-secondary/50">
 							<TableHead className="w-12 pl-6">
 								<Checkbox
-									checked={paginatedTickets.length > 0 && paginatedTickets.every((t) => selectedTickets.includes(t.id))}
+									checked={tickets.length > 0 && tickets.every((t) => selectedTickets.includes(t.id))}
 									onCheckedChange={onSelectAll}
 								/>
 							</TableHead>
@@ -129,7 +127,7 @@ export function TicketsTable({
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{paginatedTickets.map((ticket) => {
+						{tickets.map((ticket) => {
 							const assignee = getMember(ticket.assignee_id);
 							const team = getTeam(ticket.team_id);
 							const contact = getContact(ticket.contact_id);
@@ -242,18 +240,45 @@ export function TicketsTable({
 				</Table>
 
 				<div className="flex items-center justify-between px-6 py-4 border-t">
-					<p className="text-xs text-muted-foreground">
-						Showing {tickets.length} of {totalCount} tickets
-					</p>
+					<div className="flex items-center gap-3">
+						<p className="text-xs text-muted-foreground">
+							Showing {pageStart}–{pageEnd} of {totalCount}
+						</p>
+						<div className="flex items-center gap-1.5">
+							<span className="text-xs text-muted-foreground">Rows:</span>
+							<Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
+								<SelectTrigger className="h-8 w-18 text-xs">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{PAGE_SIZE_OPTIONS.map((size) => (
+										<SelectItem key={size} value={String(size)} className="text-xs">
+											{size}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
 					<div className="flex items-center gap-1.5">
-						<Button variant="outline" size="icon" className="size-8 rounded-lg" disabled>
+						<Button
+							variant="outline"
+							size="icon"
+							className="size-8 rounded-lg"
+							disabled={page <= 1 || isLoading}
+							onClick={() => onPageChange(Math.max(1, page - 1))}>
 							<ChevronLeft className="size-4" />
 							<span className="sr-only">Previous page</span>
 						</Button>
-						<Button size="sm" className="h-8 min-w-8 rounded-lg text-xs">
-							1
-						</Button>
-						<Button variant="outline" size="icon" className="size-8 rounded-lg" disabled>
+						<span className="text-xs text-muted-foreground px-2">
+							Page {page} of {totalPages}
+						</span>
+						<Button
+							variant="outline"
+							size="icon"
+							className="size-8 rounded-lg"
+							disabled={page >= totalPages || isLoading}
+							onClick={() => onPageChange(Math.min(totalPages, page + 1))}>
 							<ChevronRight className="size-4" />
 							<span className="sr-only">Next page</span>
 						</Button>
