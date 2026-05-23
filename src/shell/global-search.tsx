@@ -19,7 +19,8 @@ export function GlobalSearch() {
 	const { workspace } = useWorkspace();
 	const workspaceId = workspace.id;
 
-	const { data: allTickets = [] } = useTickets(workspaceId);
+	const { data: ticketPage } = useTickets(workspaceId);
+	const allTickets = ticketPage?.tickets ?? [];
 	const { data: allTeams = [] } = useTeams(workspaceId);
 	const { data: allMembers = [] } = useWorkspaceMembers(workspaceId);
 	const { data: allContacts = [] } = useContacts(workspaceId);

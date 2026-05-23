@@ -18,7 +18,8 @@ import { TicketAiStatusBadge } from "@/shared/components/ticket-ai-status-badge"
 export function TeamsView({ initialTeamId }: { initialTeamId?: string }) {
 	const { workspace } = useWorkspace();
 	const { data: teams = [] } = useTeams(workspace.id);
-	const { data: tickets = [] } = useTickets(workspace.id);
+	const { data: ticketPage } = useTickets(workspace.id);
+	const tickets = ticketPage?.tickets ?? [];
 	const { data: contacts = [] } = useContacts(workspace.id);
 	const { data: companies = [] } = useCompanies(workspace.id);
 	const navigate = useNavigate();

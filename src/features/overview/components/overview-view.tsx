@@ -42,7 +42,8 @@ export function OverviewView({ workspaceId, onOpenTicket, onViewAll }: { workspa
 	const ticketVolumeData = analytics?.ticketVolume ?? [];
 	const channelDistribution = analytics?.channelDistribution ?? [];
 
-	const { data: tickets = [] } = useTickets(workspaceId);
+	const { data: ticketPage } = useTickets(workspaceId);
+	const tickets = ticketPage?.tickets ?? [];
 	const { data: contacts = [] } = useContacts(workspaceId);
 	const { data: companies = [] } = useCompanies(workspaceId);
 
