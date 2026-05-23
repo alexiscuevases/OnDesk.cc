@@ -44,7 +44,7 @@ export function WorkspaceSidebar() {
 
 	const navItems = [
 		{ id: "overview", label: "Overview", icon: LayoutDashboard, badge: null, to: `/w/${slug}/overview` },
-		{ id: "tickets", label: "Tickets", icon: Ticket, badge: null, to: `/w/${slug}/tickets/` },
+		{ id: "tickets", label: "Tickets", icon: Ticket, badge: null, to: `/w/${slug}/tickets` },
 		{ id: "teams", label: "Teams", icon: Users, badge: null, to: `/w/${slug}/teams` },
 		{ id: "analytics", label: "Analytics", icon: BarChart3, badge: null, to: `/w/${slug}/analytics` },
 		{ id: "marketplace", label: "Marketplace", icon: ShoppingCart, badge: null, to: `/w/${slug}/marketplace` },
@@ -119,7 +119,7 @@ export function WorkspaceSidebar() {
 								<SidebarMenuItem key={item.id}>
 									<SidebarMenuButton
 										asChild
-										isActive={currentPath.startsWith(item.to)}
+										isActive={currentPath === item.to || currentPath.startsWith(`${item.to}/`)}
 										tooltip={item.label}
 										className="h-9 rounded-lg text-[13px] transition-all">
 										<Link to={item.to}>
