@@ -14,8 +14,14 @@ import {
 import type { Notification } from "@/features/notifications/api/notifications-api";
 
 export function NotificationsPanel() {
-	const { notifications, unreadCount, isLoading, markAllRead, dismissNotification, markAsRead } =
-		useNotifications();
+	const {
+		recentNotifications,
+		unreadCount,
+		isLoading,
+		markAllRead,
+		dismissNotification,
+		markAsRead,
+	} = useNotifications();
 	const { workspace } = useWorkspace();
 	const router = useRouter();
 	const [open, setOpen] = useState(false);
@@ -71,13 +77,13 @@ export function NotificationsPanel() {
 						<div className="flex items-center justify-center py-10 text-muted-foreground">
 							<p className="text-sm">Loading…</p>
 						</div>
-					) : notifications.length === 0 ? (
+					) : recentNotifications.length === 0 ? (
 						<div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
 							<Bell className="size-8 mb-2 opacity-20" />
 							<p className="text-sm">No notifications</p>
 						</div>
 					) : (
-						notifications.map((notif) => (
+						recentNotifications.map((notif) => (
 							<div
 								key={notif.id}
 								className={`flex items-start gap-3 px-4 py-3 border-b last:border-0 transition-colors hover:bg-secondary/50 ${

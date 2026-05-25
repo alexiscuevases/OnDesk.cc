@@ -1,6 +1,9 @@
 import { createContext, useContext, type ReactNode } from "react";
 import { useWorkspace } from "@/context/workspace-context";
-import { useNotificationsQuery } from "@/features/notifications/hooks/use-notification-queries";
+import {
+	useRecentNotificationsQuery,
+	useNotificationCountsQuery,
+} from "@/features/notifications/hooks/use-notification-queries";
 import {
 	useMarkNotificationRead,
 	useMarkAllNotificationsRead,
@@ -9,8 +12,9 @@ import {
 import type { Notification } from "@/features/notifications/api/notifications-api";
 
 interface NotificationsContextValue {
-	notifications: Notification[];
+	recentNotifications: Notification[];
 	unreadCount: number;
+	totalCount: number;
 	isLoading: boolean;
 	markAllRead: () => void;
 	dismissNotification: (id: string) => void;
@@ -23,12 +27,14 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 	const { workspace } = useWorkspace();
 	const workspaceId = workspace.id;
 
-	const { data: notifications = [], isLoading } = useNotificationsQuery(workspaceId);
+	const { data: recentNotifications = [], isLoading } = useRecentNotificationsQuery(workspaceId);
+	const { data: counts } = useNotificationCountsQuery(workspaceId);
 	const markReadMutation = useMarkNotificationRead(workspaceId);
 	const markAllReadMutation = useMarkAllNotificationsRead(workspaceId);
 	const dismissMutation = useDismissNotification(workspaceId);
 
-	const unreadCount = notifications.filter((n) => !n.read).length;
+	const unreadCount = counts?.unread ?? 0;
+	const totalCount = counts?.total ?? 0;
 
 	function markAsRead(id: string) {
 		markReadMutation.mutate(id);
@@ -44,7 +50,15 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
 	return (
 		<NotificationsContext.Provider
-			value={{ notifications, unreadCount, isLoading, markAllRead, dismissNotification, markAsRead }}>
+			value={{
+				recentNotifications,
+				unreadCount,
+				totalCount,
+				isLoading,
+				markAllRead,
+				dismissNotification,
+				markAsRead,
+			}}>
 			{children}
 		</NotificationsContext.Provider>
 	);
