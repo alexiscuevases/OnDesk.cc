@@ -8,9 +8,11 @@ import { recoverSchema, type RecoverFormValues } from "../schemas/auth.schema";
 
 interface RecoverFormProps {
 	onSubmit: (values: RecoverFormValues) => void;
+	isLoading?: boolean;
+	error?: string | null;
 }
 
-export function RecoverForm({ onSubmit }: RecoverFormProps) {
+export function RecoverForm({ onSubmit, isLoading = false, error = null }: RecoverFormProps) {
 	const form = useForm({
 		defaultValues: { email: "" },
 		onSubmit: async ({ value }) => onSubmit(value),
@@ -48,8 +50,10 @@ export function RecoverForm({ onSubmit }: RecoverFormProps) {
 				)}
 			</form.Field>
 
-			<Button type="submit" className="w-full" size="lg">
-				Send recovery link
+			{error && <p className="text-sm text-destructive text-center">{error}</p>}
+
+			<Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+				{isLoading ? "Sending…" : "Send recovery link"}
 			</Button>
 		</form>
 	);

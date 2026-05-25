@@ -26,7 +26,7 @@ export function withAuth<P extends string = string>(
 		if (!accessToken) return jsonError("Not authenticated", 401);
 
 		const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-		if (!payload) return jsonError("Invalid or expired token", 401);
+		if (!payload || payload.type === "2fa_pending") return jsonError("Invalid or expired token", 401);
 
 		return handler({ request, env, params: params as Record<P, string>, payload });
 	};

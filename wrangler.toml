@@ -39,6 +39,12 @@ index_name = "ondesk-companies"
 binding = "VECTORIZE_MEMORIES"
 index_name = "ondesk-memories"
 
+# ── Email secrets (Resend) ────────────────────────────────────────────────────
+# Sign up at resend.com, verify your domain, then run:
+#
+#   wrangler secret put RESEND_API_KEY          (e.g. re_xxxxxxxx)
+#   wrangler secret put RESEND_FROM_EMAIL       (e.g. noreply@yourdomain.com)
+
 # ── Stripe secrets ────────────────────────────────────────────────────────────
 # Set these via: wrangler secret put <KEY>
 #

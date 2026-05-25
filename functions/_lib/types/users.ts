@@ -5,6 +5,9 @@ export interface UserRow {
 	password_hash: string | null;
 	role: string;
 	logo_url: string | null;
+	login_attempts: number;
+	locked_until: number | null;
+	two_factor_enabled: number; // 0 | 1
 	created_at: number;
 	updated_at: number;
 }

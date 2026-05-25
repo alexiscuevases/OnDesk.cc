@@ -16,7 +16,7 @@ interface SignUpFormProps {
 
 export function SignUpForm({ onSubmit, isLoading = false, error = null }: SignUpFormProps) {
 	const form = useForm({
-		defaultValues: { name: "", email: "", password: "", agreeToTerms: false },
+		defaultValues: { name: "", email: "", password: "", confirmPassword: "", agreeToTerms: false },
 		onSubmit: async ({ value }) => onSubmit(value),
 		validators: { onChange: signUpSchema },
 		validatorAdapter: zodValidator(),
@@ -95,6 +95,29 @@ export function SignUpForm({ onSubmit, isLoading = false, error = null }: SignUp
 							<p className="text-xs text-destructive">{field.state.meta.errors[0]?.message}</p>
 						) : (
 							<p className="text-xs text-muted-foreground">Must be at least 8 characters long</p>
+						)}
+					</div>
+				)}
+			</form.Field>
+
+			<form.Field name="confirmPassword">
+				{(field) => (
+					<div className="space-y-2">
+						<Label htmlFor="confirmPassword">Confirm password</Label>
+						<div className="relative">
+							<Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+							<Input
+								id="confirmPassword"
+								type="password"
+								placeholder="Repeat your password"
+								value={field.state.value}
+								onChange={(e) => field.handleChange(e.target.value)}
+								onBlur={field.handleBlur}
+								className="pl-10"
+							/>
+						</div>
+						{field.state.meta.errors.length > 0 && (
+							<p className="text-xs text-destructive">{field.state.meta.errors[0]?.message}</p>
 						)}
 					</div>
 				)}

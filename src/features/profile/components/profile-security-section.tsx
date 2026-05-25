@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -5,6 +8,9 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, Monitor, Smartphone } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
+import { apiToggle2FA } from "@/features/auth/api/auth-api";
+import { authQueryKeys } from "@/features/auth/hooks/use-auth-mutations";
 
 const activeSessions = [
 	{ id: "1", device: "Chrome on macOS", location: "Buenos Aires, AR", current: true, icon: Monitor },
@@ -12,6 +18,27 @@ const activeSessions = [
 ];
 
 export function ProfileSecuritySection() {
+	const { user, setUser } = useAuth();
+	const queryClient = useQueryClient();
+	const [twoFactorEnabled, setTwoFactorEnabled] = useState(user?.two_factor_enabled ?? false);
+
+	const toggleMutation = useMutation({
+		mutationFn: (enabled: boolean) => apiToggle2FA(enabled),
+		onMutate: (enabled) => setTwoFactorEnabled(enabled),
+		onSuccess: (_, enabled) => {
+			if (user) {
+				const updated = { ...user, two_factor_enabled: enabled };
+				setUser(updated);
+				queryClient.setQueryData(authQueryKeys.me, updated);
+			}
+			toast.success(enabled ? "Two-factor authentication enabled" : "Two-factor authentication disabled");
+		},
+		onError: (err, enabled) => {
+			setTwoFactorEnabled(!enabled);
+			toast.error(err instanceof Error ? err.message : "Failed to update 2FA");
+		},
+	});
+
 	return (
 		<div className="grid gap-4">
 			<Card className="border-0 shadow-sm">
@@ -22,16 +49,22 @@ export function ProfileSecuritySection() {
 				<CardContent className="space-y-4">
 					<div className="flex items-center justify-between">
 						<div>
-							<Label className="text-xs">Enable 2FA</Label>
-							<p className="text-[10px] text-muted-foreground">Require a code each time you sign in</p>
+							<Label className="text-xs">Enable 2FA via email</Label>
+							<p className="text-[10px] text-muted-foreground">Require a 6-digit code each time you sign in</p>
 						</div>
-						<Switch />
+						<Switch
+							checked={twoFactorEnabled}
+							onCheckedChange={(checked) => toggleMutation.mutate(checked)}
+							disabled={toggleMutation.isPending}
+						/>
 					</div>
 					<Separator />
 					<div className="flex items-center gap-3 rounded-xl bg-secondary/60 p-3">
 						<ShieldCheck className="size-4 text-muted-foreground shrink-0" />
 						<p className="text-[11px] text-muted-foreground">
-							We recommend enabling 2FA for all accounts that handle customer data.
+							{twoFactorEnabled
+								? "2FA is active. A verification code will be sent to your email on each sign-in."
+								: "We recommend enabling 2FA for all accounts that handle customer data."}
 						</p>
 					</div>
 				</CardContent>

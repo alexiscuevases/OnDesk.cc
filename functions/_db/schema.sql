@@ -1,14 +1,17 @@
 -- Users table
 -- password_hash is nullable to support OAuth-only accounts (Google / Microsoft)
 CREATE TABLE IF NOT EXISTS users (
-  id            TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  name          TEXT NOT NULL,
-  email         TEXT NOT NULL UNIQUE,
-  password_hash TEXT,
-  role          TEXT NOT NULL DEFAULT 'agent',
-  logo_url      TEXT,
-  created_at    INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at    INTEGER NOT NULL DEFAULT (unixepoch())
+  id                  TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  name                TEXT    NOT NULL,
+  email               TEXT    NOT NULL UNIQUE,
+  password_hash       TEXT,
+  role                TEXT    NOT NULL DEFAULT 'agent',
+  logo_url            TEXT,
+  login_attempts      INTEGER NOT NULL DEFAULT 0,
+  locked_until        INTEGER,
+  two_factor_enabled  INTEGER NOT NULL DEFAULT 0,
+  created_at          INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at          INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
 -- OAuth identities linked to a user (a user can have multiple providers)
@@ -38,6 +41,31 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_hash ON refresh_tokens(token_hash);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id    ON refresh_tokens(user_id);
+
+-- Password reset tokens (1-hour TTL, single-use)
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id         TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  user_id    TEXT    NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT    NOT NULL UNIQUE,
+  expires_at INTEGER NOT NULL,
+  used       INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id    ON password_reset_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token_hash ON password_reset_tokens(token_hash);
+
+-- 2FA email codes (10-minute TTL, single-use)
+CREATE TABLE IF NOT EXISTS two_factor_codes (
+  id         TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  user_id    TEXT    NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  code_hash  TEXT    NOT NULL,
+  expires_at INTEGER NOT NULL,
+  used       INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_two_factor_codes_user_id ON two_factor_codes(user_id);
 
 -- Workspaces table
 CREATE TABLE IF NOT EXISTS workspaces (

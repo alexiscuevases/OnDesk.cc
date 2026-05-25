@@ -46,9 +46,17 @@ export function useLoginMutation() {
 			password: string;
 			rememberMe: boolean;
 		}) => apiLogin(email, password, rememberMe),
-		onSuccess: async ({ user }) => {
-			setUser(user);
-			queryClient.setQueryData(authQueryKeys.me, user);
+		onSuccess: async (data, variables) => {
+			if (data.requiresTwoFactor) {
+				sessionStorage.setItem(
+					"2fa_pending",
+					JSON.stringify({ token: data.twoFactorToken, rememberMe: variables.rememberMe })
+				);
+				navigate({ to: "/auth/two-factor" });
+				return;
+			}
+			setUser(data.user);
+			queryClient.setQueryData(authQueryKeys.me, data.user);
 			await navigateAfterLogin(navigate);
 		},
 	});
@@ -86,7 +94,7 @@ export function useLogoutMutation() {
 		mutationFn: apiLogout,
 		onSettled: () => {
 			clearUser();
-			queryClient.clear(); // Wipe all cached data on logout
+			queryClient.clear();
 			navigate({ to: "/auth/signin" });
 		},
 	});

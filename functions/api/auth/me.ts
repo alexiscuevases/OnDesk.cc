@@ -24,6 +24,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 	}
 
 	return jsonOk({
-		user: { id: user.id, name: user.name, email: user.email, role: user.role },
+		user: {
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			role: user.role,
+			two_factor_enabled: user.two_factor_enabled === 1,
+		},
 	});
 };

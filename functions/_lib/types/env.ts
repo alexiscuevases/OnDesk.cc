@@ -1,6 +1,8 @@
 export interface Env {
 	APP_URL: string;
 	JWT_SECRET: string;
+	RESEND_API_KEY: string;
+	RESEND_FROM_EMAIL: string;
 	// Cloudfalre
 	DB: D1Database;
 	STORAGE: R2Bucket;

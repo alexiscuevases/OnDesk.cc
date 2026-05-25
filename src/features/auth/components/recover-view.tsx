@@ -1,17 +1,23 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { CheckCircle2 } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { AuthLayout } from "./auth-layout";
 import { RecoverForm } from "../forms/recover-form";
+import { apiForgotPassword } from "../api/auth-api";
 import type { RecoverFormValues } from "../schemas/auth.schema";
 
 export default function RecoverView() {
 	const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
 
+	const forgotMutation = useMutation({
+		mutationFn: (email: string) => apiForgotPassword(email),
+		onSuccess: (_, email) => setSubmittedEmail(email),
+	});
+
 	function handleRecover(values: RecoverFormValues) {
-		console.log("[v0] Password recovery requested for:", values.email);
-		setSubmittedEmail(values.email);
+		forgotMutation.mutate(values.email);
 	}
 
 	return (
@@ -25,7 +31,11 @@ export default function RecoverView() {
 						</p>
 					</div>
 
-					<RecoverForm onSubmit={handleRecover} />
+					<RecoverForm
+						onSubmit={handleRecover}
+						isLoading={forgotMutation.isPending}
+						error={forgotMutation.error?.message ?? null}
+					/>
 
 					<div className="mt-6 p-4 rounded-lg bg-muted/50 border border-border">
 						<p className="text-sm text-muted-foreground">
@@ -47,7 +57,7 @@ export default function RecoverView() {
 							<CheckCircle2 className="size-8 text-primary" />
 						</div>
 						<h1 className="text-3xl font-bold mb-2">Check your email</h1>
-						<p className="text-muted-foreground">We've sent a password recovery link to</p>
+						<p className="text-muted-foreground">We've sent a password reset link to</p>
 						<p className="text-foreground font-medium mt-2">{submittedEmail}</p>
 					</div>
 
@@ -55,7 +65,7 @@ export default function RecoverView() {
 						<div className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
 							{[
 								"Open the email we sent to your inbox",
-								"Click the recovery link (valid for 1 hour)",
+								"Click the reset link (valid for 1 hour)",
 								"Set your new password",
 							].map((step, i) => (
 								<div key={i} className="flex gap-3">
@@ -71,7 +81,10 @@ export default function RecoverView() {
 							Didn't receive the email?{" "}
 							<button
 								type="button"
-								onClick={() => setSubmittedEmail(null)}
+								onClick={() => {
+									setSubmittedEmail(null);
+									forgotMutation.reset();
+								}}
 								className="text-primary hover:text-primary/80 font-medium transition-colors">
 								Try again
 							</button>

@@ -34,8 +34,10 @@ import { Route as WSlugRouteImport } from './routes/w/$slug'
 import { Route as SolutionsSupportTeamsRouteImport } from './routes/solutions/support-teams'
 import { Route as SolutionsSoloSmallTeamsRouteImport } from './routes/solutions/solo-small-teams'
 import { Route as SolutionsAgenciesRouteImport } from './routes/solutions/agencies'
+import { Route as AuthTwoFactorRouteImport } from './routes/auth/two-factor'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthSigninRouteImport } from './routes/auth/signin'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthRecoverRouteImport } from './routes/auth/recover'
 import { Route as WSlugTicketsRouteImport } from './routes/w/$slug/tickets'
 import { Route as WSlugTeamsRouteImport } from './routes/w/$slug/teams'
@@ -173,6 +175,11 @@ const SolutionsAgenciesRoute = SolutionsAgenciesRouteImport.update({
   path: '/agencies',
   getParentRoute: () => SolutionsRoute,
 } as any)
+const AuthTwoFactorRoute = AuthTwoFactorRouteImport.update({
+  id: '/two-factor',
+  path: '/two-factor',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthSignupRoute = AuthSignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -181,6 +188,11 @@ const AuthSignupRoute = AuthSignupRouteImport.update({
 const AuthSigninRoute = AuthSigninRouteImport.update({
   id: '/signin',
   path: '/signin',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => AuthRoute,
 } as any)
 const AuthRecoverRoute = AuthRecoverRouteImport.update({
@@ -260,8 +272,10 @@ export interface FileRoutesByFullPath {
   '/w': typeof WRouteWithChildren
   '/workspaces': typeof WorkspacesRouteWithChildren
   '/auth/recover': typeof AuthRecoverRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/auth/two-factor': typeof AuthTwoFactorRoute
   '/solutions/agencies': typeof SolutionsAgenciesRoute
   '/solutions/solo-small-teams': typeof SolutionsSoloSmallTeamsRoute
   '/solutions/support-teams': typeof SolutionsSupportTeamsRoute
@@ -299,8 +313,10 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/w': typeof WRouteWithChildren
   '/auth/recover': typeof AuthRecoverRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/auth/two-factor': typeof AuthTwoFactorRoute
   '/solutions/agencies': typeof SolutionsAgenciesRoute
   '/solutions/solo-small-teams': typeof SolutionsSoloSmallTeamsRoute
   '/solutions/support-teams': typeof SolutionsSupportTeamsRoute
@@ -339,8 +355,10 @@ export interface FileRoutesById {
   '/w': typeof WRouteWithChildren
   '/workspaces': typeof WorkspacesRouteWithChildren
   '/auth/recover': typeof AuthRecoverRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/auth/two-factor': typeof AuthTwoFactorRoute
   '/solutions/agencies': typeof SolutionsAgenciesRoute
   '/solutions/solo-small-teams': typeof SolutionsSoloSmallTeamsRoute
   '/solutions/support-teams': typeof SolutionsSupportTeamsRoute
@@ -381,8 +399,10 @@ export interface FileRouteTypes {
     | '/w'
     | '/workspaces'
     | '/auth/recover'
+    | '/auth/reset-password'
     | '/auth/signin'
     | '/auth/signup'
+    | '/auth/two-factor'
     | '/solutions/agencies'
     | '/solutions/solo-small-teams'
     | '/solutions/support-teams'
@@ -420,8 +440,10 @@ export interface FileRouteTypes {
     | '/terms'
     | '/w'
     | '/auth/recover'
+    | '/auth/reset-password'
     | '/auth/signin'
     | '/auth/signup'
+    | '/auth/two-factor'
     | '/solutions/agencies'
     | '/solutions/solo-small-teams'
     | '/solutions/support-teams'
@@ -459,8 +481,10 @@ export interface FileRouteTypes {
     | '/w'
     | '/workspaces'
     | '/auth/recover'
+    | '/auth/reset-password'
     | '/auth/signin'
     | '/auth/signup'
+    | '/auth/two-factor'
     | '/solutions/agencies'
     | '/solutions/solo-small-teams'
     | '/solutions/support-teams'
@@ -678,6 +702,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SolutionsAgenciesRouteImport
       parentRoute: typeof SolutionsRoute
     }
+    '/auth/two-factor': {
+      id: '/auth/two-factor'
+      path: '/two-factor'
+      fullPath: '/auth/two-factor'
+      preLoaderRoute: typeof AuthTwoFactorRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/auth/signup': {
       id: '/auth/signup'
       path: '/signup'
@@ -690,6 +721,13 @@ declare module '@tanstack/react-router' {
       path: '/signin'
       fullPath: '/auth/signin'
       preLoaderRoute: typeof AuthSigninRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof AuthRoute
     }
     '/auth/recover': {
@@ -774,14 +812,18 @@ declare module '@tanstack/react-router' {
 
 interface AuthRouteChildren {
   AuthRecoverRoute: typeof AuthRecoverRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSigninRoute: typeof AuthSigninRoute
   AuthSignupRoute: typeof AuthSignupRoute
+  AuthTwoFactorRoute: typeof AuthTwoFactorRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthRecoverRoute: AuthRecoverRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSigninRoute: AuthSigninRoute,
   AuthSignupRoute: AuthSignupRoute,
+  AuthTwoFactorRoute: AuthTwoFactorRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
