@@ -11,6 +11,19 @@ export interface TicketListFilters {
 	search?: string;
 }
 
+export type TicketSortField = "number" | "subject" | "priority" | "status" | "created_at" | "updated_at";
+export type SortDirection = "asc" | "desc";
+
+const SORT_EXPRESSIONS: Record<TicketSortField, string> = {
+	number: "t.number",
+	subject: "t.subject COLLATE NOCASE",
+	created_at: "t.created_at",
+	updated_at: "t.updated_at",
+	// Custom orderings: most urgent / most active first when DESC
+	priority: "CASE t.priority WHEN 'urgent' THEN 4 WHEN 'high' THEN 3 WHEN 'medium' THEN 2 WHEN 'low' THEN 1 ELSE 0 END",
+	status: "CASE t.status WHEN 'open' THEN 4 WHEN 'pending' THEN 3 WHEN 'resolved' THEN 2 WHEN 'closed' THEN 1 ELSE 0 END",
+};
+
 function buildTicketFilterClause(workspaceId: string, filters: TicketListFilters): { sql: string; values: (string | null)[] } {
 	const conditions = ["t.workspace_id = ?"];
 	const values: (string | null)[] = [workspaceId];
@@ -47,8 +60,13 @@ export async function findTicketsByWorkspace(
 	workspaceId: string,
 	filters: TicketListFilters = {},
 	pagination: { limit: number; offset: number } = { limit: 25, offset: 0 },
+	sort: { field: TicketSortField; direction: SortDirection } = { field: "created_at", direction: "desc" },
 ): Promise<{ tickets: PublicTicket[]; total: number }> {
 	const { sql: whereClause, values } = buildTicketFilterClause(workspaceId, filters);
+	const orderExpr = SORT_EXPRESSIONS[sort.field] ?? SORT_EXPRESSIONS.created_at;
+	const orderDir = sort.direction === "asc" ? "ASC" : "DESC";
+	// Stable secondary sort by id so repeated requests are deterministic
+	const orderClause = `${orderExpr} ${orderDir}, t.id ${orderDir}`;
 
 	const countResult = await db
 		.prepare(
@@ -84,7 +102,7 @@ export async function findTicketsByWorkspace(
 			LEFT JOIN ai_agents aa ON aa.id = ats.ai_agent_id
 			LEFT JOIN contacts c ON c.id = t.contact_id
 			WHERE ${whereClause}
-			ORDER BY t.created_at DESC
+			ORDER BY ${orderClause}
 			LIMIT ? OFFSET ?`,
 		)
 		.bind(...values, pagination.limit, pagination.offset)

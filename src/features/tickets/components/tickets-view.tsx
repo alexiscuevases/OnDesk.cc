@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { SortingState } from "@tanstack/react-table";
 import { useWorkspace } from "@/context/workspace-context";
 import { useTickets, useTicketCounts } from "../hooks/use-ticket-queries";
 import { useDeleteTicketMutation } from "../hooks/use-ticket-mutations";
@@ -19,7 +20,22 @@ import { MergeTicketModal } from "../modals/merge-ticket-modal";
 import { NewTicketModal } from "../modals/new-ticket-modal";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import type { TicketStatus, TicketPriority, TicketListFilters } from "../api/tickets-api";
+import type {
+	TicketStatus,
+	TicketPriority,
+	TicketListFilters,
+	TicketSort,
+	TicketSortField,
+} from "../api/tickets-api";
+
+const SORTABLE_FIELDS: ReadonlySet<TicketSortField> = new Set([
+	"number",
+	"subject",
+	"priority",
+	"status",
+	"created_at",
+	"updated_at",
+]);
 
 export function TicketsView({
 	onOpenTicket,
@@ -43,6 +59,7 @@ export function TicketsView({
 	const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(25);
+	const [sorting, setSorting] = useState<SortingState>([{ id: "created_at", desc: true }]);
 
 	const [newTicketOpen, setNewTicketOpen] = useState(false);
 	const [deleteOpen, setDeleteOpen] = useState(false);
@@ -73,13 +90,20 @@ export function TicketsView({
 		return f;
 	}, [statusFilter, priorityFilter, assigneeFilter, requesterFilter, debouncedSearch]);
 
-	// Reset to page 1 whenever filters change
+	const sort = useMemo<TicketSort | undefined>(() => {
+		const first = sorting[0];
+		if (!first) return undefined;
+		if (!SORTABLE_FIELDS.has(first.id as TicketSortField)) return undefined;
+		return { field: first.id as TicketSortField, direction: first.desc ? "desc" : "asc" };
+	}, [sorting]);
+
+	// Reset to page 1 whenever filters or sorting change
 	useEffect(() => {
 		setPage(1);
 		setSelectedTickets([]);
-	}, [apiFilters, pageSize]);
+	}, [apiFilters, pageSize, sort]);
 
-	const { data: ticketPage, isLoading, isFetching } = useTickets(workspaceId, apiFilters, { page, pageSize });
+	const { data: ticketPage, isLoading, isFetching } = useTickets(workspaceId, apiFilters, { page, pageSize }, sort);
 	const tickets = ticketPage?.tickets ?? [];
 	const totalTickets = ticketPage?.total ?? 0;
 	const { data: counts } = useTicketCounts(workspaceId);
@@ -195,6 +219,8 @@ export function TicketsView({
 				pageSize={pageSize}
 				onPageChange={setPage}
 				onPageSizeChange={setPageSize}
+				sorting={sorting}
+				onSortingChange={setSorting}
 				selectedTickets={selectedTickets}
 				onSelectAll={handleSelectAll}
 				onSelectTicket={handleSelectTicket}

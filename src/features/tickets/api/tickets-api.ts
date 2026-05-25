@@ -81,6 +81,14 @@ export interface TicketListPage {
 	page_size: number;
 }
 
+export type TicketSortField = "number" | "subject" | "priority" | "status" | "created_at" | "updated_at";
+export type SortDirection = "asc" | "desc";
+
+export interface TicketSort {
+	field: TicketSortField;
+	direction: SortDirection;
+}
+
 export interface TicketStatusCounts {
 	open: number;
 	pending: number;
@@ -91,7 +99,8 @@ export interface TicketStatusCounts {
 export async function apiGetTickets(
 	workspaceId: string,
 	filters: TicketListFilters = {},
-	pagination: { page: number; pageSize: number } = { page: 1, pageSize: 25 }
+	pagination: { page: number; pageSize: number } = { page: 1, pageSize: 25 },
+	sort?: TicketSort
 ): Promise<TicketListPage> {
 	const params = new URLSearchParams({ workspace_id: workspaceId });
 	if (filters.status) params.set("status", filters.status);
@@ -102,6 +111,10 @@ export async function apiGetTickets(
 	if (filters.search) params.set("search", filters.search);
 	params.set("page", String(pagination.page));
 	params.set("page_size", String(pagination.pageSize));
+	if (sort) {
+		params.set("sort_by", sort.field);
+		params.set("sort_dir", sort.direction);
+	}
 
 	const res = await fetch(`${API_BASE}?${params}`, { credentials: "include" });
 	if (!res.ok) {

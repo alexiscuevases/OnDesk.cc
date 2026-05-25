@@ -1,12 +1,14 @@
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
 import { findTicketsByWorkspace, createTicket, findUserById, createNotification } from "../../_lib/db";
 import type { TicketStatus, TicketPriority } from "../../_lib/types";
+import type { TicketSortField, SortDirection } from "../../_lib/db/tickets";
 import { withWorkspace } from "../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../_lib/http";
 import { upsertTicket } from "../../_lib/vectorize";
 
 const VALID_STATUSES: TicketStatus[] = ["open", "pending", "resolved", "closed"];
 const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
+const VALID_SORT_FIELDS: TicketSortField[] = ["number", "subject", "priority", "status", "created_at", "updated_at"];
 
 // GET /api/tickets?workspace_id=&status=&priority=&assignee_id=&team_id=&contact_id=&search=&page=&page_size=
 // POST /api/tickets
@@ -43,7 +45,21 @@ export const onRequest = withWorkspace(async ({ request, env, payload, workspace
 			const pageSize = Number.isFinite(pageSizeRaw) ? Math.min(Math.max(pageSizeRaw, 1), 100) : 25;
 			const offset = (page - 1) * pageSize;
 
-			const { tickets, total } = await findTicketsByWorkspace(env.DB, workspaceId, filters, { limit: pageSize, offset });
+			const sortByRaw = url.searchParams.get("sort_by");
+			const sortDirRaw = url.searchParams.get("sort_dir");
+			const sortField: TicketSortField =
+				sortByRaw && VALID_SORT_FIELDS.includes(sortByRaw as TicketSortField)
+					? (sortByRaw as TicketSortField)
+					: "created_at";
+			const sortDirection: SortDirection = sortDirRaw === "asc" ? "asc" : "desc";
+
+			const { tickets, total } = await findTicketsByWorkspace(
+				env.DB,
+				workspaceId,
+				filters,
+				{ limit: pageSize, offset },
+				{ field: sortField, direction: sortDirection },
+			);
 			return jsonOk({ tickets, total, page, page_size: pageSize });
 		},
 		POST: async () => {
