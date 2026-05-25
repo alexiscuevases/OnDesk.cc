@@ -164,8 +164,8 @@ function ActiveSubscription({ sub, workspaceId }: { sub: Subscription; workspace
 	const [portalLoading, setPortalLoading] = useState(false);
 	const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
-	const currentPlan = PLANS.find((p) => p.id === sub.plan)!;
-	const otherPlans = PLANS.filter((p) => p.id !== sub.plan);
+	const currentPlan = PLANS.find((p) => p.id === sub.plan) ?? PLANS[1];
+	const otherPlans = PLANS.filter((p) => p.id !== currentPlan.id);
 	const pricePerAgent = sub.cycle === "annual" ? currentPlan.priceAnnual : currentPlan.priceMonthly;
 	const totalMonthly = currentPlan.flat ? pricePerAgent : pricePerAgent * sub.agent_count;
 
