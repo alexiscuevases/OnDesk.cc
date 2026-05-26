@@ -9,6 +9,8 @@ import {
 	updateInvitationStatus,
 	findWorkspaceMemberIds,
 	createNotification,
+	getSecuritySettings,
+	validateStrongPassword,
 } from "../../_lib/db";
 import { jsonCreated, jsonError } from "../../_lib/response";
 import { parseJsonBody } from "../../_lib/http";
@@ -31,11 +33,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 		return jsonError("An account with this email already exists", 409);
 	}
 
-	const passwordHash = await hashPassword(password);
-	const user = await createUser(env.DB, name.trim(), email.trim(), passwordHash);
-
 	const now = Math.floor(Date.now() / 1000);
 	const invite = await findPendingInvitationByEmail(env.DB, email.trim());
+
+	// If joining via invite, enforce that workspace's password policy
+	if (invite && invite.expires_at > now) {
+		const settings = await getSecuritySettings(env.DB, invite.workspace_id);
+		if (settings.strong_password) {
+			const err = validateStrongPassword(password);
+			if (err) return jsonError(err);
+		}
+	}
+
+	const passwordHash = await hashPassword(password);
+	const user = await createUser(env.DB, name.trim(), email.trim(), passwordHash);
 	if (invite && invite.expires_at > now) {
 		const existingMemberIds = await findWorkspaceMemberIds(env.DB, invite.workspace_id);
 		await addWorkspaceMember(env.DB, invite.workspace_id, user.id, invite.role);

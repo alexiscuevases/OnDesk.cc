@@ -6,6 +6,8 @@ import {
 	markPasswordResetTokenUsed,
 	updateUserPassword,
 	revokeAllUserRefreshTokens,
+	getPolicyForUser,
+	validateStrongPassword,
 } from "../../_lib/db";
 import { jsonError } from "../../_lib/response";
 import { parseJsonBody } from "../../_lib/http";
@@ -28,6 +30,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 	const now = Math.floor(Date.now() / 1000);
 	if (!resetToken || resetToken.expires_at < now) {
 		return jsonError("Invalid or expired reset link", 400);
+	}
+
+	const policy = await getPolicyForUser(env.DB, resetToken.user_id);
+	if (policy.strong_password) {
+		const err = validateStrongPassword(body.password);
+		if (err) return jsonError(err);
 	}
 
 	const newPasswordHash = await hashPassword(body.password);

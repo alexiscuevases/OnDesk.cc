@@ -444,6 +444,54 @@ CREATE INDEX IF NOT EXISTS idx_subscriptions_workspace_id           ON subscript
 CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_customer_id     ON subscriptions(stripe_customer_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_subscription_id ON subscriptions(stripe_subscription_id);
 
+-- ─── Workspace Security ───────────────────────────────────────────────────────
+
+-- One row per workspace with security toggles
+-- require_2fa:           enforce 2FA for every member on next login
+-- strong_password:       enforce strong-password policy on registration/reset
+-- ip_allowlist_enabled:  if 1, reject sign-ins from IPs not present in workspace_ip_allowlist
+-- audit_log_enabled:     record sensitive actions into audit_logs
+CREATE TABLE IF NOT EXISTS workspace_security_settings (
+  workspace_id         TEXT    PRIMARY KEY REFERENCES workspaces(id) ON DELETE CASCADE,
+  require_2fa          INTEGER NOT NULL DEFAULT 0,
+  strong_password      INTEGER NOT NULL DEFAULT 0,
+  ip_allowlist_enabled INTEGER NOT NULL DEFAULT 0,
+  audit_log_enabled    INTEGER NOT NULL DEFAULT 1,
+  updated_at           INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Allowed CIDR ranges (or single IPs as /32) for a workspace
+CREATE TABLE IF NOT EXISTS workspace_ip_allowlist (
+  id           TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  cidr         TEXT    NOT NULL,
+  label        TEXT,
+  created_by   TEXT    NOT NULL REFERENCES users(id),
+  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE(workspace_id, cidr)
+);
+
+CREATE INDEX IF NOT EXISTS idx_workspace_ip_allowlist_workspace_id ON workspace_ip_allowlist(workspace_id);
+
+-- Audit log of sensitive actions
+-- action examples: 'security.settings_updated' | 'security.ip_added' | 'security.ip_removed'
+--                  'auth.login' | 'auth.login_blocked_ip' | 'auth.2fa_enabled'
+--                  'workspace.member_role_changed' | 'workspace.member_removed'
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id           TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  actor_id     TEXT    REFERENCES users(id) ON DELETE SET NULL,
+  actor_email  TEXT,
+  action       TEXT    NOT NULL,
+  target       TEXT,
+  ip           TEXT,
+  metadata     TEXT,
+  created_at   INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_logs_workspace_id ON audit_logs(workspace_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_actor_id     ON audit_logs(actor_id);
+
 -- ── AI Memories ───────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS ai_memories (
   id                 TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),

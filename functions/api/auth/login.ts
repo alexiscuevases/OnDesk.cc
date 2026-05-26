@@ -9,6 +9,9 @@ import {
 	resetLoginAttempts,
 	createTwoFactorCode,
 	invalidateTwoFactorCodes,
+	getPolicyForUser,
+	ipAllowed,
+	writeAuditLog,
 } from "../../_lib/db";
 import {
 	serializeCookie,
@@ -81,8 +84,27 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 	// Password correct — reset lockout counters
 	await resetLoginAttempts(env.DB, user.id);
 
+	// Workspace-level policy enforcement (2FA, IP allowlist)
+	const policy = await getPolicyForUser(env.DB, user.id);
+	const clientIp = request.headers.get("CF-Connecting-IP");
+
+	for (const ws of policy.ip_enforcing_workspaces) {
+		if (!clientIp || !ipAllowed(clientIp, ws.entries)) {
+			await writeAuditLog(env.DB, {
+				workspace_id: ws.workspace_id,
+				actor_id: user.id,
+				actor_email: user.email,
+				action: "auth.login_blocked_ip",
+				ip: clientIp,
+			});
+			return jsonError("Sign-in blocked: your IP is not allowed for one of your workspaces.", 403);
+		}
+	}
+
+	const effective2FA = user.two_factor_enabled === 1 || policy.require_2fa;
+
 	// 2FA check
-	if (user.two_factor_enabled) {
+	if (effective2FA) {
 		const code = generateSixDigitCode();
 		const codeHash = await hashRefreshToken(code);
 		await invalidateTwoFactorCodes(env.DB, user.id);
@@ -123,6 +145,23 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 	const refreshToken = generateRefreshToken();
 	const refreshTokenHash = await hashRefreshToken(refreshToken);
 	await createRefreshToken(env.DB, user.id, refreshTokenHash, refreshTTL);
+
+	// Audit successful login across all user workspaces (will respect each workspace's audit_log_enabled)
+	{
+		const result = await env.DB
+			.prepare(`SELECT workspace_id FROM workspace_members WHERE user_id = ?`)
+			.bind(user.id)
+			.all<{ workspace_id: string }>();
+		for (const row of result.results ?? []) {
+			await writeAuditLog(env.DB, {
+				workspace_id: row.workspace_id,
+				actor_id: user.id,
+				actor_email: user.email,
+				action: "auth.login",
+				ip: clientIp,
+			});
+		}
+	}
 
 	const isSecure = new URL(request.url).protocol === "https:";
 	const cookieOptions = { httpOnly: true, secure: isSecure, sameSite: "Strict" as const, path: "/" };
