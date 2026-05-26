@@ -556,10 +556,70 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_automation_runs_unique_scheduled
   ON automation_runs(automation_id, ticket_id)
   WHERE status = 'success';
 
+-- ─── Business Hours ───────────────────────────────────────────────────────────
+-- Workspace-level operating hours calendars. A workspace may have multiple
+-- calendars (e.g. "US Support", "EU Support"); exactly one row can be marked
+-- as the workspace default via the partial unique index below.
+--
+-- Hours are stored in two normalized tables:
+--   * business_hours_periods   — recurring weekday open windows (multi-range per day)
+--   * business_hours_holidays  — one-off closed (or override-open) dates
+--
+-- All times are wall-clock minutes since midnight in the calendar's timezone.
+CREATE TABLE IF NOT EXISTS business_hours (
+  id           TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  workspace_id TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  name         TEXT    NOT NULL,
+  description  TEXT,
+  timezone     TEXT    NOT NULL DEFAULT 'UTC', -- IANA tz, e.g. 'America/Mexico_City'
+  is_default   INTEGER NOT NULL DEFAULT 0,     -- exactly one default per workspace
+  enabled      INTEGER NOT NULL DEFAULT 1,
+  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at   INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_business_hours_workspace_id ON business_hours(workspace_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_business_hours_one_default_per_workspace
+  ON business_hours(workspace_id) WHERE is_default = 1;
+
+-- Recurring weekday windows. weekday: 0=Sunday..6=Saturday (matches JS Date.getDay()).
+-- start_minute / end_minute are minutes since 00:00 local time; end_minute > start_minute.
+-- Multiple rows per (calendar, weekday) allow split shifts (e.g. 09:00–13:00 + 14:00–18:00).
+CREATE TABLE IF NOT EXISTS business_hours_periods (
+  id                TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  business_hours_id TEXT    NOT NULL REFERENCES business_hours(id) ON DELETE CASCADE,
+  weekday           INTEGER NOT NULL CHECK (weekday BETWEEN 0 AND 6),
+  start_minute      INTEGER NOT NULL CHECK (start_minute BETWEEN 0 AND 1440),
+  end_minute        INTEGER NOT NULL CHECK (end_minute BETWEEN 0 AND 1440),
+  created_at        INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_business_hours_periods_calendar
+  ON business_hours_periods(business_hours_id, weekday);
+
+-- One-off date exceptions. date is YYYY-MM-DD in the calendar's timezone.
+-- kind:
+--   'closed' = override-closed all day, ignore period rows for this date
+--   'open'   = override-open with the given window (start/end minutes); ignores weekly periods
+CREATE TABLE IF NOT EXISTS business_hours_holidays (
+  id                TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  business_hours_id TEXT    NOT NULL REFERENCES business_hours(id) ON DELETE CASCADE,
+  date              TEXT    NOT NULL, -- 'YYYY-MM-DD' local to calendar tz
+  name              TEXT    NOT NULL,
+  kind              TEXT    NOT NULL DEFAULT 'closed', -- 'closed' | 'open'
+  start_minute      INTEGER, -- required when kind='open'
+  end_minute        INTEGER, -- required when kind='open'
+  created_at        INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+CREATE INDEX IF NOT EXISTS idx_business_hours_holidays_calendar_date
+  ON business_hours_holidays(business_hours_id, date);
+
 -- ─── SLA Policies ─────────────────────────────────────────────────────────────
 -- Workspace-level SLA policies. Each policy defines response and resolution
 -- targets (in minutes) per priority. Optional team/contact-company scoping.
--- business_hours_only: if 1, the clock only ticks during business hours (future)
+-- business_hours_only: if 1, the clock only ticks during open business hours
+--   (driven by the policy's business_hours_id or workspace default calendar)
 CREATE TABLE IF NOT EXISTS sla_policies (
   id                  TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
   workspace_id        TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
@@ -580,6 +640,10 @@ CREATE TABLE IF NOT EXISTS sla_policies (
   resolution_high     INTEGER,
   resolution_urgent   INTEGER,
   business_hours_only INTEGER NOT NULL DEFAULT 0,
+  -- Optional FK to a business_hours calendar. When set AND business_hours_only=1,
+  -- response/resolution clocks only tick during open periods (skipping closed
+  -- weekdays + holidays). NULL = use the workspace default calendar.
+  business_hours_id   TEXT REFERENCES business_hours(id) ON DELETE SET NULL,
   priority            INTEGER NOT NULL DEFAULT 0, -- higher = wins when multiple match
   created_at          INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at          INTEGER NOT NULL DEFAULT (unixepoch())

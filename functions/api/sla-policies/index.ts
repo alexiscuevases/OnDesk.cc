@@ -51,6 +51,10 @@ export const onRequest = withWorkspace(async ({ request, env, workspaceId }) => 
 				resolution_high: asNumberOrNull(body.resolution_high) ?? null,
 				resolution_urgent: asNumberOrNull(body.resolution_urgent) ?? null,
 				business_hours_only: Boolean(body.business_hours_only),
+				business_hours_id:
+					typeof body.business_hours_id === "string" && body.business_hours_id.length > 0
+						? body.business_hours_id
+						: null,
 				priority: typeof body.priority === "number" ? Math.floor(body.priority) : 0,
 			});
 			return jsonCreated({ sla_policy: rowToPublicPolicy(row) });

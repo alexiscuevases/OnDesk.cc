@@ -16,6 +16,7 @@ import {
 } from "../hooks/use-sla-mutations";
 import { useTeams } from "@/features/teams/hooks/use-team-queries";
 import { useCompanies } from "@/features/companies/hooks/use-company-queries";
+import { useBusinessHours } from "@/features/business-hours";
 import { SlaPolicyFormModal, type SlaFormValues } from "../modals/sla-policy-form-modal";
 import type { SlaPolicy } from "../api/sla-api";
 
@@ -33,6 +34,7 @@ export function SlaView() {
 	const { data: policies = [], isLoading } = useSlaPolicies(workspace.id);
 	const { data: teams = [] } = useTeams(workspace.id);
 	const { data: companies = [] } = useCompanies(workspace.id);
+	const { data: businessHoursList = [] } = useBusinessHours(workspace.id);
 
 	const deleteMutation = useDeleteSlaPolicyMutation(workspace.id);
 	const [mode, setMode] = useState<FormMode>({ type: "closed" });
@@ -53,6 +55,7 @@ export function SlaView() {
 
 	const teamsList = teams.map((t) => ({ id: t.id, name: t.name }));
 	const companiesList = companies.map((c) => ({ id: c.id, name: c.name }));
+	const businessHoursOptions = businessHoursList.map((b) => ({ id: b.id, name: b.name, is_default: b.is_default }));
 
 	return (
 		<div className="flex flex-col gap-6">
@@ -110,6 +113,7 @@ export function SlaView() {
 					workspaceId={workspace.id}
 					teams={teamsList}
 					companies={companiesList}
+					businessHours={businessHoursOptions}
 					onClose={() => setMode({ type: "closed" })}
 				/>
 			)}
@@ -119,6 +123,7 @@ export function SlaView() {
 					workspaceId={workspace.id}
 					teams={teamsList}
 					companies={companiesList}
+					businessHours={businessHoursOptions}
 					onClose={() => setMode({ type: "closed" })}
 				/>
 			)}
@@ -212,11 +217,13 @@ function CreatePolicyWrapper({
 	workspaceId,
 	teams,
 	companies,
+	businessHours,
 	onClose,
 }: {
 	workspaceId: string;
 	teams: { id: string; name: string }[];
 	companies: { id: string; name: string }[];
+	businessHours: { id: string; name: string; is_default: boolean }[];
 	onClose: () => void;
 }) {
 	const createMutation = useCreateSlaPolicyMutation(workspaceId);
@@ -239,6 +246,7 @@ function CreatePolicyWrapper({
 			policy={null}
 			teams={teams}
 			companies={companies}
+			businessHours={businessHours}
 			onSubmit={handleSubmit}
 		/>
 	);
@@ -249,12 +257,14 @@ function EditPolicyWrapper({
 	workspaceId,
 	teams,
 	companies,
+	businessHours,
 	onClose,
 }: {
 	policy: SlaPolicy;
 	workspaceId: string;
 	teams: { id: string; name: string }[];
 	companies: { id: string; name: string }[];
+	businessHours: { id: string; name: string; is_default: boolean }[];
 	onClose: () => void;
 }) {
 	const updateMutation = useUpdateSlaPolicyMutation(policy.id, workspaceId);
@@ -277,6 +287,7 @@ function EditPolicyWrapper({
 			policy={policy}
 			teams={teams}
 			companies={companies}
+			businessHours={businessHours}
 			onSubmit={handleSubmit}
 		/>
 	);

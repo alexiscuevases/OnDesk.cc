@@ -6,6 +6,11 @@ import type {
 	SlaStatus,
 } from "../types/sla";
 import type { TicketPriority, TicketRow } from "../types";
+import {
+	findBusinessHoursById,
+	findDefaultBusinessHours,
+	addBusinessMinutes,
+} from "./business-hours";
 
 export function rowToPublicPolicy(row: SlaPolicyRow): PublicSlaPolicy {
 	return {
@@ -44,6 +49,7 @@ export interface CreateSlaPolicyInput {
 	resolution_high?: number | null;
 	resolution_urgent?: number | null;
 	business_hours_only?: boolean;
+	business_hours_id?: string | null;
 	priority?: number;
 }
 
@@ -56,8 +62,8 @@ export async function createSlaPolicy(db: D1Database, workspaceId: string, data:
 				applies_to_team_id, applies_to_company_id, applies_to_priority,
 				response_low, response_medium, response_high, response_urgent,
 				resolution_low, resolution_medium, resolution_high, resolution_urgent,
-				business_hours_only, priority
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				business_hours_only, business_hours_id, priority
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		)
 		.bind(
 			id,
@@ -77,6 +83,7 @@ export async function createSlaPolicy(db: D1Database, workspaceId: string, data:
 			data.resolution_high ?? null,
 			data.resolution_urgent ?? null,
 			data.business_hours_only ? 1 : 0,
+			data.business_hours_id ?? null,
 			data.priority ?? 0,
 		)
 		.run();
@@ -113,6 +120,10 @@ export async function updateSlaPolicy(db: D1Database, id: string, data: UpdateSl
 	if (data.business_hours_only !== undefined) {
 		fields.push("business_hours_only = ?");
 		values.push(data.business_hours_only ? 1 : 0);
+	}
+	if (data.business_hours_id !== undefined) {
+		fields.push("business_hours_id = ?");
+		values.push(data.business_hours_id);
 	}
 	pushField("priority", data.priority);
 
@@ -285,12 +296,29 @@ export async function applySlaToTicket(db: D1Database, ticket: TicketRow): Promi
 	const respMin = getResponseMinutes(policy, ticket.priority);
 	const resMin = getResolutionMinutes(policy, ticket.priority);
 	const base = ticket.created_at;
+
+	// If business_hours_only is set, advance the clock only during open windows.
+	// Use the policy's calendar if specified, else workspace default. If no
+	// calendar is found, fall back to wall-clock seconds.
+	let respDue: number | null = respMin ? base + respMin * 60 : null;
+	let resDue: number | null = resMin ? base + resMin * 60 : null;
+
+	if (policy.business_hours_only) {
+		const calendar = policy.business_hours_id
+			? await findBusinessHoursById(db, policy.business_hours_id)
+			: await findDefaultBusinessHours(db, ticket.workspace_id);
+		if (calendar && calendar.enabled) {
+			if (respMin) respDue = addBusinessMinutes(calendar, base, respMin);
+			if (resMin) resDue = addBusinessMinutes(calendar, base, resMin);
+		}
+	}
+
 	await upsertSlaTracking(db, {
 		workspace_id: ticket.workspace_id,
 		ticket_id: ticket.id,
 		sla_policy_id: policy.id,
-		response_due_at: respMin ? base + respMin * 60 : null,
-		resolution_due_at: resMin ? base + resMin * 60 : null,
+		response_due_at: respDue,
+		resolution_due_at: resDue,
 	});
 }
 

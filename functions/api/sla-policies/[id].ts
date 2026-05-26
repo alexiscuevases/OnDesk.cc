@@ -55,6 +55,12 @@ export const onRequest = withAuth<"id">(async ({ request, env, params, payload }
 				resolution_high: asNumberOrNull(body.resolution_high),
 				resolution_urgent: asNumberOrNull(body.resolution_urgent),
 				business_hours_only: typeof body.business_hours_only === "boolean" ? body.business_hours_only : undefined,
+				business_hours_id:
+					typeof body.business_hours_id === "string"
+						? body.business_hours_id
+						: body.business_hours_id === null
+							? null
+							: undefined,
 				priority: typeof body.priority === "number" ? Math.floor(body.priority) : undefined,
 			});
 

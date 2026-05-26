@@ -25,6 +25,7 @@ export interface SlaFormValues {
 	resolution_high: number | null;
 	resolution_urgent: number | null;
 	business_hours_only: boolean;
+	business_hours_id: string | null;
 	priority: number;
 }
 
@@ -34,6 +35,7 @@ interface Props {
 	policy?: SlaPolicy | null;
 	teams: { id: string; name: string }[];
 	companies: { id: string; name: string }[];
+	businessHours: { id: string; name: string; is_default: boolean }[];
 	onSubmit: (values: SlaFormValues) => void;
 }
 
@@ -54,11 +56,12 @@ function defaults(p?: SlaPolicy | null): SlaFormValues {
 		resolution_high: p?.resolution_high ?? 480,
 		resolution_urgent: p?.resolution_urgent ?? 240,
 		business_hours_only: p?.business_hours_only ?? false,
+		business_hours_id: p?.business_hours_id ?? null,
 		priority: p?.priority ?? 0,
 	};
 }
 
-export function SlaPolicyFormModal({ open, onOpenChange, policy, teams, companies, onSubmit }: Props) {
+export function SlaPolicyFormModal({ open, onOpenChange, policy, teams, companies, businessHours, onSubmit }: Props) {
 	const [v, setV] = useState<SlaFormValues>(() => defaults(policy));
 
 	const valid = v.name.trim().length > 0;
@@ -180,6 +183,52 @@ export function SlaPolicyFormModal({ open, onOpenChange, policy, teams, companie
 							{renderTarget("resolution_high", "High")}
 							{renderTarget("resolution_urgent", "Urgent")}
 						</div>
+					</div>
+
+					<div className="rounded-lg border bg-card p-3">
+						<div className="flex items-center justify-between">
+							<div>
+								<p className="text-xs font-medium">Business hours only</p>
+								<p className="text-[10px] text-muted-foreground">
+									Clock only ticks during the calendar's open windows (skips weekends and holidays).
+								</p>
+							</div>
+							<Switch
+								checked={v.business_hours_only}
+								onCheckedChange={(c) => setV({ ...v, business_hours_only: c })}
+							/>
+						</div>
+						{v.business_hours_only && (
+							<div className="mt-3 grid gap-2">
+								<Label className="text-[10px] text-muted-foreground">Calendar</Label>
+								<Select
+									value={v.business_hours_id ?? "default"}
+									onValueChange={(val) =>
+										setV({ ...v, business_hours_id: val === "default" ? null : val })
+									}
+								>
+									<SelectTrigger className="h-9 rounded-lg text-xs">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="default" className="text-xs">
+											Workspace default
+										</SelectItem>
+										{businessHours.map((b) => (
+											<SelectItem key={b.id} value={b.id} className="text-xs">
+												{b.name}
+												{b.is_default ? " (default)" : ""}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{businessHours.length === 0 && (
+									<p className="text-[10px] text-amber-600 dark:text-amber-400">
+										No business hours configured. Create one in Settings → Business Hours; otherwise this flag has no effect.
+									</p>
+								)}
+							</div>
+						)}
 					</div>
 
 					<div className="flex items-center justify-between">

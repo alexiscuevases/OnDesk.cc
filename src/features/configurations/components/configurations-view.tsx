@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Globe, Users, Radio, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2, Bot, CreditCard, Zap, Gauge, BookOpen, ShieldAlert } from "lucide-react";
+import { Shield, Globe, Users, Radio, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2, Bot, CreditCard, Zap, Gauge, BookOpen, ShieldAlert, Clock } from "lucide-react";
 import { GeneralSection } from "./general-section";
 import { AgentsSection } from "./agents-section";
 import { IntegrationsSection } from "./integrations-section";
@@ -11,6 +11,7 @@ import { SecuritySection } from "./security-section";
 import { BillingSection } from "./billing-section";
 import { AutomationsSection } from "./automations-section";
 import { SlaSection } from "./sla-section";
+import { BusinessHoursSection } from "./business-hours-section";
 import { KbSection } from "./kb-section";
 import { RolesSection } from "./roles-section";
 import { AiAgentsSection } from "@/features/ai-agents/components/ai-agents-section";
@@ -26,6 +27,7 @@ type ConfigSection =
 	| "users-companies"
 	| "automations"
 	| "sla"
+	| "business-hours"
 	| "kb"
 	| "roles"
 	| "security"
@@ -42,7 +44,8 @@ const sections: { id: ConfigSection; label: string; icon: typeof Globe; desc: st
 	{ id: "kb", label: "Knowledge Base", icon: BookOpen, desc: "Articles for AI agents and your team", groupEnd: true },
 
 	{ id: "automations", label: "Automations", icon: Zap, desc: "Rules that act on tickets automatically" },
-	{ id: "sla", label: "SLA Policies", icon: Gauge, desc: "Response and resolution time targets", groupEnd: true },
+	{ id: "sla", label: "SLA Policies", icon: Gauge, desc: "Response and resolution time targets" },
+	{ id: "business-hours", label: "Business Hours", icon: Clock, desc: "Operating hours, timezones and holidays", groupEnd: true },
 
 	{ id: "integrations", label: "Channels", icon: Radio, desc: "Connected mailboxes and channels", groupEnd: true },
 
@@ -106,6 +109,7 @@ export function ConfigurationsView() {
 					{activeSection === "users-companies" && <UsersCompaniesSection />}
 					{activeSection === "automations" && <AutomationsSection />}
 					{activeSection === "sla" && <SlaSection />}
+					{activeSection === "business-hours" && <BusinessHoursSection />}
 					{activeSection === "kb" && <KbSection />}
 					{activeSection === "roles" && <RolesSection />}
 					{activeSection === "security" && <SecuritySection />}

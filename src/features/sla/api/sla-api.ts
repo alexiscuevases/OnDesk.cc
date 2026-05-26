@@ -26,6 +26,7 @@ export interface SlaPolicy {
 	resolution_high: number | null;
 	resolution_urgent: number | null;
 	business_hours_only: boolean;
+	business_hours_id: string | null;
 	priority: number;
 	created_at: number;
 	updated_at: number;
@@ -65,6 +66,7 @@ export interface CreateSlaPolicyInput {
 	resolution_high?: number | null;
 	resolution_urgent?: number | null;
 	business_hours_only?: boolean;
+	business_hours_id?: string | null;
 	priority?: number;
 }
 
