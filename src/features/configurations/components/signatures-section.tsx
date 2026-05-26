@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, FileText } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText, Star } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,20 +40,30 @@ export function SignaturesSection() {
 		setSelectedSig(null);
 	}
 
+	const defaultCount = signatures.filter((s) => s.is_default).length;
+
 	return (
 		<>
-			<Card className="border-0 shadow-sm">
+			<div className="flex flex-col gap-6">
+				<div className="flex items-end justify-between">
+					<p className="text-xs text-muted-foreground">
+						Email signatures automatically appended to outgoing replies.
+					</p>
+					<Button size="sm" className="h-8 gap-1.5 rounded-lg text-xs font-semibold" onClick={() => setAddOpen(true)}>
+						<Plus className="size-3.5" />
+						Add Signature
+					</Button>
+				</div>
+
+				<div className="grid grid-cols-2 gap-3">
+					<SummaryCard icon={FileText} label="Signatures" value={signatures.length} />
+					<SummaryCard icon={Star} label="Default" value={defaultCount} />
+				</div>
+
+				<Card className="border-0 shadow-sm">
 				<CardHeader>
-					<div className="flex items-center justify-between">
-						<div>
-							<CardTitle className="text-sm font-semibold">Email Signatures</CardTitle>
-							<CardDescription className="text-xs">{signatures.length} signatures configured</CardDescription>
-						</div>
-						<Button size="sm" className="h-8 gap-1.5 rounded-lg text-xs font-semibold" onClick={() => setAddOpen(true)}>
-							<Plus className="size-3.5" />
-							Add Signature
-						</Button>
-					</div>
+					<CardTitle className="text-sm font-semibold">Email Signatures</CardTitle>
+					<CardDescription className="text-xs">Personal signatures available on your account</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{signatures.length === 0 ? (
@@ -113,10 +123,25 @@ export function SignaturesSection() {
 					)}
 				</CardContent>
 			</Card>
+			</div>
 
 			<AddSignatureModal open={addOpen} onOpenChange={setAddOpen} onConfirm={handleAdd} />
 			<EditSignatureModal open={editOpen} onOpenChange={setEditOpen} signature={selectedSig} onConfirm={handleEdit} />
 			<DeleteSignatureModal open={deleteOpen} onOpenChange={setDeleteOpen} signature={selectedSig} onConfirm={handleDelete} />
 		</>
+	);
+}
+
+function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
+	return (
+		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
+			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+				<Icon className="size-5 text-primary" />
+			</div>
+			<div>
+				<p className="text-xl font-bold">{value}</p>
+				<p className="text-[11px] text-muted-foreground">{label}</p>
+			</div>
+		</div>
 	);
 }

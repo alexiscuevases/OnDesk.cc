@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2, Bot, CreditCard, Zap, Gauge, BookOpen, ShieldAlert } from "lucide-react";
+import { Shield, Globe, Users, Radio, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2, Bot, CreditCard, Zap, Gauge, BookOpen, ShieldAlert } from "lucide-react";
 import { GeneralSection } from "./general-section";
 import { AgentsSection } from "./agents-section";
 import { IntegrationsSection } from "./integrations-section";
@@ -31,20 +31,27 @@ type ConfigSection =
 	| "security"
 	| "billing";
 
-const sections: { id: ConfigSection; label: string; icon: typeof Globe; desc: string }[] = [
-	{ id: "general", label: "General", icon: Globe, desc: "Workspace settings and branding" },
+const sections: { id: ConfigSection; label: string; icon: typeof Globe; desc: string; groupEnd?: boolean }[] = [
+	{ id: "general", label: "General", icon: Globe, desc: "Workspace settings and branding", groupEnd: true },
+
 	{ id: "agents", label: "Agents", icon: UserCog, desc: "Manage support agents and roles" },
-	{ id: "ai-agents", label: "AI Agents", icon: Bot, desc: "Automated ticket handling" },
-	{ id: "integrations", label: "Integrations", icon: Plug, desc: "Connected services and APIs" },
 	{ id: "teams", label: "Teams", icon: Users, desc: "Team structure and auto-assignment" },
-	{ id: "canned-replies", label: "Canned Replies", icon: MessageSquareText, desc: "Quick response templates" },
-	{ id: "signatures", label: "Signatures", icon: FileSignature, desc: "Email signatures for agents" },
-	{ id: "users-companies", label: "Users & Companies", icon: Building2, desc: "Customer management" },
+	{ id: "users-companies", label: "Users & Companies", icon: Building2, desc: "Customer management", groupEnd: true },
+
+	{ id: "ai-agents", label: "AI Agents", icon: Bot, desc: "Automated ticket handling" },
+	{ id: "kb", label: "Knowledge Base", icon: BookOpen, desc: "Articles for AI agents and your team", groupEnd: true },
+
 	{ id: "automations", label: "Automations", icon: Zap, desc: "Rules that act on tickets automatically" },
-	{ id: "sla", label: "SLA Policies", icon: Gauge, desc: "Response and resolution time targets" },
-	{ id: "kb", label: "Knowledge Base", icon: BookOpen, desc: "Articles for AI agents and your team" },
+	{ id: "sla", label: "SLA Policies", icon: Gauge, desc: "Response and resolution time targets", groupEnd: true },
+
+	{ id: "integrations", label: "Channels", icon: Radio, desc: "Connected mailboxes and channels", groupEnd: true },
+
+	{ id: "canned-replies", label: "Canned Replies", icon: MessageSquareText, desc: "Quick response templates" },
+	{ id: "signatures", label: "Signatures", icon: FileSignature, desc: "Email signatures for agents", groupEnd: true },
+
 	{ id: "roles", label: "Roles & Permissions", icon: ShieldAlert, desc: "Built-in and custom workspace roles" },
-	{ id: "security", label: "Security", icon: Shield, desc: "Authentication and access controls" },
+	{ id: "security", label: "Security", icon: Shield, desc: "Authentication and access controls", groupEnd: true },
+
 	{ id: "billing", label: "Plan & Billing", icon: CreditCard, desc: "Subscription, invoices and payment" },
 ];
 
@@ -61,25 +68,28 @@ export function ConfigurationsView() {
 			<div className="grid gap-6 lg:grid-cols-4">
 				<div className="lg:col-span-1">
 					<nav className="flex flex-col gap-1">
-						{sections.map((section) => {
+						{sections.map((section, idx) => {
 							const Icon = section.icon;
 							const isActive = activeSection === section.id;
+							const showDivider = section.groupEnd && idx < sections.length - 1;
 							return (
-								<button
-									key={section.id}
-									onClick={() => setActiveSection(section.id)}
-									className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all ${
-										isActive ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-secondary/80 text-foreground"
-									}`}>
-									<Icon className="size-4 shrink-0" />
-									<div className="flex-1 min-w-0">
-										<p className="text-sm font-medium">{section.label}</p>
-										<p className={`text-[10px] truncate ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-											{section.desc}
-										</p>
-									</div>
-									<ChevronRight className={`size-3.5 shrink-0 ${isActive ? "text-primary-foreground/60" : "text-muted-foreground/40"}`} />
-								</button>
+								<div key={section.id}>
+									<button
+										onClick={() => setActiveSection(section.id)}
+										className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all ${
+											isActive ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-secondary/80 text-foreground"
+										}`}>
+										<Icon className="size-4 shrink-0" />
+										<div className="flex-1 min-w-0">
+											<p className="text-sm font-medium">{section.label}</p>
+											<p className={`text-[10px] truncate ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+												{section.desc}
+											</p>
+										</div>
+										<ChevronRight className={`size-3.5 shrink-0 ${isActive ? "text-primary-foreground/60" : "text-muted-foreground/40"}`} />
+									</button>
+									{showDivider && <div className="my-2 h-px bg-border/60" />}
+								</div>
 							);
 						})}
 					</nav>

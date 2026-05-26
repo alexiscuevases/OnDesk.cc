@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Plus, Pencil, Trash2, Lock } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, Lock, ShieldCheck, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,6 +46,12 @@ export function RolesView() {
 					<Plus className="mr-1 size-3.5" />
 					New role
 				</Button>
+			</div>
+
+			<div className="grid grid-cols-3 gap-3">
+				<SummaryCard icon={ShieldCheck} label="Built-in" value={builtinDisplay.length} />
+				<SummaryCard icon={Shield} label="Custom" value={customRoles.length} />
+				<SummaryCard icon={KeyRound} label="Permissions" value={availablePerms.length} />
 			</div>
 
 			<Card className="border-0 shadow-sm">
@@ -126,6 +132,20 @@ export function RolesView() {
 					setDeleting(null);
 				}}
 			/>
+		</div>
+	);
+}
+
+function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
+	return (
+		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
+			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+				<Icon className="size-5 text-primary" />
+			</div>
+			<div>
+				<p className="text-xl font-bold">{value}</p>
+				<p className="text-[11px] text-muted-foreground">{label}</p>
+			</div>
 		</div>
 	);
 }

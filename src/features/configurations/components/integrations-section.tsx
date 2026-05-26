@@ -158,38 +158,50 @@ export function IntegrationsSection() {
 		});
 	}
 
+	const activeCount = mailboxes.filter((m) => getMailboxSyncStatus(m) === "synced").length;
+	const issueCount = mailboxes.length - activeCount;
+
 	return (
 		<>
-			<Card className="border-0 shadow-sm">
+			<div className="flex flex-col gap-6">
+				<div className="flex items-end justify-between">
+					<p className="text-xs text-muted-foreground">
+						Connect Microsoft Outlook or Gmail to receive tickets from email.
+					</p>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								size="sm"
+								className="h-8 gap-1.5 rounded-lg text-xs font-semibold"
+								disabled={isConnecting}>
+								<Plus className="size-3.5" />
+								{isConnecting ? "Redirecting..." : "Connect Account"}
+								<ChevronDown className="size-3.5 opacity-70" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="w-44">
+							<DropdownMenuItem onClick={() => outlookMutation.mutate()} disabled={isConnecting}>
+								<Mail className="size-4" />
+								Microsoft Outlook
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => gmailMutation.mutate()} disabled={isConnecting}>
+								<Mail className="size-4" />
+								Gmail
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+
+				<div className="grid grid-cols-3 gap-3">
+					<SummaryCard icon={Mail} label="Connected" value={mailboxes.length} />
+					<SummaryCard icon={Check} label="Active" value={activeCount} />
+					<SummaryCard icon={AlertCircle} label="Issues" value={issueCount} />
+				</div>
+
+				<Card className="border-0 shadow-sm">
 				<CardHeader>
-					<div className="flex items-center justify-between">
-						<div>
-							<CardTitle className="text-sm font-semibold">Email Accounts</CardTitle>
-							<CardDescription className="text-xs">Connect Microsoft Outlook or Gmail to receive tickets from email</CardDescription>
-						</div>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button
-									size="sm"
-									className="h-8 gap-1.5 rounded-lg text-xs font-semibold"
-									disabled={isConnecting}>
-									<Plus className="size-3.5" />
-									{isConnecting ? "Redirecting..." : "Connect Account"}
-									<ChevronDown className="size-3.5 opacity-70" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="w-44">
-								<DropdownMenuItem onClick={() => outlookMutation.mutate()} disabled={isConnecting}>
-									<Mail className="size-4" />
-									Microsoft Outlook
-								</DropdownMenuItem>
-								<DropdownMenuItem onClick={() => gmailMutation.mutate()} disabled={isConnecting}>
-									<Mail className="size-4" />
-									Gmail
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</div>
+					<CardTitle className="text-sm font-semibold">Email Accounts</CardTitle>
+					<CardDescription className="text-xs">Mailboxes currently synced into this workspace</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{isLoading ? (
@@ -217,6 +229,7 @@ export function IntegrationsSection() {
 					)}
 				</CardContent>
 			</Card>
+			</div>
 
 			<AlertDialog open={disconnectOpen} onOpenChange={setDisconnectOpen}>
 				<AlertDialogContent>
@@ -240,5 +253,19 @@ export function IntegrationsSection() {
 				</AlertDialogContent>
 			</AlertDialog>
 		</>
+	);
+}
+
+function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
+	return (
+		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
+			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+				<Icon className="size-5 text-primary" />
+			</div>
+			<div>
+				<p className="text-xl font-bold">{value}</p>
+				<p className="text-[11px] text-muted-foreground">{label}</p>
+			</div>
+		</div>
 	);
 }

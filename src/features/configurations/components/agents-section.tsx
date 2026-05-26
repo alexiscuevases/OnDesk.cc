@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Trash2, X, UserPlus, Clock, Users, Send } from "lucide-react";
+import { Pencil, Trash2, X, UserPlus, Clock, Users, Send, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,20 +68,28 @@ export function AgentsSection() {
 
 	return (
 		<>
-			<Card className="border-0 shadow-sm">
-				<CardHeader>
-					<div className="flex items-center justify-between">
-						<div>
-							<CardTitle className="text-sm font-semibold">Support Agents</CardTitle>
-							<CardDescription className="text-xs">{members.length} agents in your workspace</CardDescription>
-						</div>
-						<Button size="sm" className="rounded-lg text-xs gap-1.5" onClick={() => setAddOpen(true)}>
-							<UserPlus className="size-3.5" />
-							Invite Agent
-						</Button>
-					</div>
-				</CardHeader>
-				<CardContent>
+			<div className="flex flex-col gap-6">
+				<div className="flex items-end justify-between">
+					<p className="text-xs text-muted-foreground">
+						Invite teammates as agents and manage their workspace role.
+					</p>
+					<Button size="sm" className="rounded-lg text-xs gap-1.5" onClick={() => setAddOpen(true)}>
+						<UserPlus className="size-3.5" />
+						Invite Agent
+					</Button>
+				</div>
+
+				<div className="grid grid-cols-2 gap-3">
+					<SummaryCard icon={Users} label="Agents" value={members.length} />
+					<SummaryCard icon={Mail} label="Pending invites" value={invitations.length} />
+				</div>
+
+				<Card className="border-0 shadow-sm">
+					<CardHeader>
+						<CardTitle className="text-sm font-semibold">Support Agents</CardTitle>
+						<CardDescription className="text-xs">Members currently active in this workspace</CardDescription>
+					</CardHeader>
+					<CardContent>
 					{members.length === 0 ? (
 						<div className="flex flex-col items-center gap-2 py-8 text-center">
 							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
@@ -201,6 +209,7 @@ export function AgentsSection() {
 					)}
 				</CardContent>
 			</Card>
+			</div>
 
 			<AddAgentModal open={addOpen} onOpenChange={setAddOpen} onConfirm={handleInvite} />
 			<EditAgentModal
@@ -216,5 +225,19 @@ export function AgentsSection() {
 				onConfirm={handleDelete}
 			/>
 		</>
+	);
+}
+
+function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
+	return (
+		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
+			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+				<Icon className="size-5 text-primary" />
+			</div>
+			<div>
+				<p className="text-xl font-bold">{value}</p>
+				<p className="text-[11px] text-muted-foreground">{label}</p>
+			</div>
+		</div>
 	);
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bot, Pencil, Trash2, Mail, Plus, RefreshCw, Wrench } from "lucide-react";
+import { Bot, Pencil, Trash2, Mail, Plus, RefreshCw, Wrench, Power } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -177,27 +177,36 @@ export function AiAgentsSection() {
     });
   }
 
+  const activeCount = agents.filter((a) => a.status === "active").length;
+
   return (
     <>
-      <Card className="border-0 shadow-sm">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-sm font-semibold">AI Agents</CardTitle>
-              <CardDescription className="text-xs">
-                Automated agents that reply to tickets from assigned mailboxes
-              </CardDescription>
-            </div>
-            <Button
-              size="sm"
-              className="rounded-lg text-xs gap-1.5"
-              onClick={() => setCreateOpen(true)}>
-              <Plus className="size-3.5" />
-              New Agent
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <div className="flex flex-col gap-6">
+        <div className="flex items-end justify-between">
+          <p className="text-xs text-muted-foreground">
+            Automated agents that reply to tickets from assigned mailboxes.
+          </p>
+          <Button
+            size="sm"
+            className="rounded-lg text-xs gap-1.5"
+            onClick={() => setCreateOpen(true)}>
+            <Plus className="size-3.5" />
+            New Agent
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          <SummaryCard icon={Bot} label="Total" value={agents.length} />
+          <SummaryCard icon={Power} label="Active" value={activeCount} />
+          <SummaryCard icon={Mail} label="Mailboxes" value={mailboxes.length} />
+        </div>
+
+        <Card className="border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-sm font-semibold">Agents</CardTitle>
+            <CardDescription className="text-xs">Configure tools, mailboxes and confidence thresholds</CardDescription>
+          </CardHeader>
+          <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-6">
               <RefreshCw className="size-4 animate-spin text-muted-foreground" />
@@ -288,6 +297,7 @@ export function AiAgentsSection() {
           )}
         </CardContent>
       </Card>
+      </div>
 
       <CreateAiAgentModal
         open={createOpen}
@@ -337,5 +347,19 @@ export function AiAgentsSection() {
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
+  return (
+    <div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
+      <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+        <Icon className="size-5 text-primary" />
+      </div>
+      <div>
+        <p className="text-xl font-bold">{value}</p>
+        <p className="text-[11px] text-muted-foreground">{label}</p>
+      </div>
+    </div>
   );
 }
