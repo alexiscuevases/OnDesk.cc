@@ -14,3 +14,7 @@ export * from "./ai";
 export * from "./marketplace";
 export * from "./billing";
 export * from "./security";
+export * from "./automations";
+export * from "./sla";
+export * from "./kb";
+export * from "./roles";

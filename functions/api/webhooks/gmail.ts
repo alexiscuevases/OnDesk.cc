@@ -26,6 +26,8 @@ import {
 } from "../../_lib/gmail";
 import { runAiAgentPipeline } from "../../_lib/ai-agent-pipeline";
 import { createMethodRouter } from "../../_lib/http";
+import { triggerMessageReceived } from "../../_lib/automations-runner";
+import { applySlaToTicket } from "../../_lib/db";
 
 interface PubSubMessage {
 	message: {
@@ -224,6 +226,7 @@ async function processGmailMessage(
 			cc_addresses: ccList.length > 0 ? JSON.stringify(ccList) : undefined,
 		});
 		ticketId = ticket.id;
+		void applySlaToTicket(env.DB, ticket);
 
 		const memberIds = await findWorkspaceMemberIds(env.DB, workspaceId);
 		await Promise.all(
@@ -241,7 +244,7 @@ async function processGmailMessage(
 	}
 
 	// Store message — provider_message_id holds Gmail message id for reply threading
-	await createTicketMessage(env.DB, {
+	const createdMessage = await createTicketMessage(env.DB, {
 		ticket_id: ticketId,
 		author_id: contact.id,
 		author_type: "contact",
@@ -249,6 +252,10 @@ async function processGmailMessage(
 		content,
 		provider_message_id: gmailMessageId,
 	});
+	{
+		const t = await findTicketById(env.DB, ticketId);
+		if (t) void triggerMessageReceived(env, t, createdMessage);
+	}
 
 	// Dedup record
 	await markEmailAsTicket(env.DB, {

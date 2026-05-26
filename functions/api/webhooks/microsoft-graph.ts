@@ -22,6 +22,8 @@ import {
 } from "../../_lib/graph";
 import { runAiAgentPipeline } from "../../_lib/ai-agent-pipeline";
 import { createMethodRouter } from "../../_lib/http";
+import { triggerMessageReceived } from "../../_lib/automations-runner";
+import { applySlaToTicket } from "../../_lib/db";
 
 interface GraphNotification {
   subscriptionId: string;
@@ -173,6 +175,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
           cc_addresses: ccList.length > 0 ? JSON.stringify(ccList) : undefined,
         });
         ticketId = ticket.id;
+        void applySlaToTicket(env.DB, ticket);
 
         // — Notification: new ticket via email — notify all workspace members
         const memberIds = await findWorkspaceMemberIds(env.DB, mailbox.workspace_id);
@@ -191,7 +194,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
       }
 
       // 9. Add the email body as a message on the ticket
-      await createTicketMessage(env.DB, {
+      const createdMessage = await createTicketMessage(env.DB, {
         ticket_id: ticketId,
         author_id: contact.id,
         author_type: "contact",
@@ -199,6 +202,10 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
         content,
         provider_message_id: message.internetMessageId,
       });
+      {
+        const t = await findTicketById(env.DB, ticketId);
+        if (t) void triggerMessageReceived(env, t, createdMessage);
+      }
 
       // 10. Mark as processed to prevent duplicates
       await markEmailAsTicket(env.DB, {

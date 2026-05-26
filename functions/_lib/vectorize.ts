@@ -71,6 +71,55 @@ export async function deleteCompanyVector(env: Env, companyId: string): Promise<
 	await env.VECTORIZE_COMPANIES.deleteByIds([companyId]);
 }
 
+// ── Knowledge Base ───────────────────────────────────────────────────────────
+
+export async function upsertKbArticle(
+	env: Env,
+	article: { id: string; workspace_id: string; category_id: string | null; title: string; content: string; excerpt: string | null },
+): Promise<string | null> {
+	if (!env.VECTORIZE_KB) return null;
+	const text = `${article.title}\n${article.excerpt ?? ""}\n${article.content}`.trim();
+	if (!text) return null;
+	const values = await embed(env, text.slice(0, 8000));
+	await env.VECTORIZE_KB.upsert([
+		{
+			id: article.id,
+			values,
+			metadata: {
+				workspace_id: article.workspace_id,
+				category_id: article.category_id ?? "",
+			},
+		},
+	]);
+	return article.id;
+}
+
+export async function deleteKbVector(env: Env, articleId: string): Promise<void> {
+	if (!env.VECTORIZE_KB) return;
+	await env.VECTORIZE_KB.deleteByIds([articleId]);
+}
+
+export async function searchKbArticles(
+	env: Env,
+	query: string,
+	workspaceId: string,
+	categoryIds: string[] | null,
+	topK = 5,
+): Promise<{ id: string; score: number }[]> {
+	if (!env.VECTORIZE_KB) return [];
+	const values = await embed(env, query);
+	const filter: Record<string, unknown> = { workspace_id: workspaceId };
+	if (categoryIds && categoryIds.length > 0) {
+		filter.category_id = { $in: categoryIds };
+	}
+	const results = await env.VECTORIZE_KB.query(values, {
+		topK,
+		filter: filter as never,
+		returnMetadata: "none",
+	});
+	return (results.matches ?? []).map((m) => ({ id: m.id, score: m.score }));
+}
+
 // ── Search ───────────────────────────────────────────────────────────────────
 
 export async function searchTickets(env: Env, query: string, workspaceId: string, topK = 8): Promise<string[]> {

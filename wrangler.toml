@@ -39,6 +39,11 @@ index_name = "ondesk-companies"
 binding = "VECTORIZE_MEMORIES"
 index_name = "ondesk-memories"
 
+# Run: wrangler vectorize create ondesk-kb --dimensions=384 --metric=cosine
+[[vectorize]]
+binding = "VECTORIZE_KB"
+index_name = "ondesk-kb"
+
 # ── Email secrets (Resend) ────────────────────────────────────────────────────
 # Sign up at resend.com, verify your domain, then run:
 #

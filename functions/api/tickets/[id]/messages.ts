@@ -10,6 +10,8 @@ import type { MessageType } from "../../../_lib/types";
 import { withAuth } from "../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../_lib/http";
 import { upsertMessage } from "../../../_lib/vectorize";
+import { triggerMessageSent } from "../../../_lib/automations-runner";
+import { markSlaFirstResponse } from "../../../_lib/db";
 
 const VALID_TYPES: MessageType[] = ["message", "note"];
 
@@ -232,6 +234,10 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
     }
 
       void upsertMessage(env, message, ticket.workspace_id);
+      void triggerMessageSent(env, ticket, message);
+      if (msgType === "message") {
+        void markSlaFirstResponse(env.DB, ticketId, Math.floor(Date.now() / 1000));
+      }
       return jsonCreated({ message });
     },
   });

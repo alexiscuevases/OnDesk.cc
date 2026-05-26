@@ -12,6 +12,7 @@ export interface Env {
 	VECTORIZE_CONTACTS: VectorizeIndex;
 	VECTORIZE_COMPANIES: VectorizeIndex;
 	VECTORIZE_MEMORIES: VectorizeIndex;
+	VECTORIZE_KB?: VectorizeIndex;
 	// Microsoft
 	MS_CLIENT_ID: string;
 	MS_CLIENT_SECRET: string;
@@ -29,4 +30,6 @@ export interface Env {
 	STRIPE_CORE_ANNUAL_PRICE_ID: string;
 	STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: string;
 	STRIPE_ENTERPRISE_ANNUAL_PRICE_ID: string;
+	// Cron / scheduled jobs (bearer token sent in Authorization header)
+	CRON_SECRET?: string;
 }

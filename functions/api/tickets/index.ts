@@ -5,6 +5,8 @@ import type { TicketSortField, SortDirection } from "../../_lib/db/tickets";
 import { withWorkspace } from "../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../_lib/http";
 import { upsertTicket } from "../../_lib/vectorize";
+import { triggerTicketCreated } from "../../_lib/automations-runner";
+import { applySlaToTicket } from "../../_lib/db";
 
 const VALID_STATUSES: TicketStatus[] = ["open", "pending", "resolved", "closed"];
 const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
@@ -102,6 +104,8 @@ export const onRequest = withWorkspace(async ({ request, env, payload, workspace
 			}
 
 			void upsertTicket(env, ticket);
+			void applySlaToTicket(env.DB, ticket);
+			void triggerTicketCreated(env, ticket);
 			return jsonCreated({ ticket });
 		},
 	});

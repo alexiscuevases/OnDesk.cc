@@ -4,6 +4,8 @@ import type { TicketStatus, TicketPriority } from "../../_lib/types";
 import { withAuth } from "../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../_lib/http";
 import { upsertTicket, deleteTicketVector, deleteMessageVectors } from "../../_lib/vectorize";
+import { triggerTicketUpdated } from "../../_lib/automations-runner";
+import { markSlaResolved, applySlaToTicket } from "../../_lib/db";
 import { extractAndSaveMemories } from "../../_lib/memory-extraction";
 
 const VALID_STATUSES: TicketStatus[] = ["open", "pending", "resolved", "closed"];
@@ -97,7 +99,21 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
 			}
 
 			void newAssigneeId;
-			if (updated) void upsertTicket(env, updated);
+			if (updated) {
+				void upsertTicket(env, updated);
+				void triggerTicketUpdated(env, updated, {
+					statusChanged: typeof status === "string" && status !== prevStatus,
+					priorityChanged: typeof priority === "string" && priority !== ticket.priority,
+					assigneeChanged: typeof assignee_id === "string" && assignee_id !== prevAssignee,
+				});
+				if (isClosingStatus && !wasAlreadyClosed) {
+					void markSlaResolved(env.DB, ticketId, Math.floor(Date.now() / 1000));
+				}
+				if (typeof priority === "string" && priority !== ticket.priority) {
+					// Re-apply SLA when priority changes (targets are priority-dependent)
+					void applySlaToTicket(env.DB, updated);
+				}
+			}
 
 			if (status === "resolved" && prevStatus !== "resolved" && ticket.contact_id) {
 				void extractAndSaveMemories(env, ticketId, {
