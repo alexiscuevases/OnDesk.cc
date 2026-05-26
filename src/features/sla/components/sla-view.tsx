@@ -57,12 +57,9 @@ export function SlaView() {
 	return (
 		<div className="flex flex-col gap-6">
 			<div className="flex items-end justify-between">
-				<div>
-					<h1 className="text-2xl font-bold tracking-tight">SLA Policies</h1>
-					<p className="text-sm text-muted-foreground mt-1">
-						Targets for first response and resolution times by priority.
-					</p>
-				</div>
+				<p className="text-xs text-muted-foreground">
+					Targets for first response and resolution times by priority.
+				</p>
 				<Button onClick={() => setMode({ type: "create" })} className="rounded-lg text-xs">
 					<Plus className="mr-1 size-3.5" />
 					New policy

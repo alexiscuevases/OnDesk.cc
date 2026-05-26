@@ -39,12 +39,9 @@ export function RolesView() {
 	return (
 		<div className="flex flex-col gap-6">
 			<div className="flex items-end justify-between">
-				<div>
-					<h1 className="text-2xl font-bold tracking-tight">Roles & Permissions</h1>
-					<p className="text-sm text-muted-foreground mt-1">
-						Built-in roles plus optional custom roles you can assign to workspace members.
-					</p>
-				</div>
+				<p className="text-xs text-muted-foreground">
+					Built-in roles plus optional custom roles you can assign to workspace members.
+				</p>
 				<Button onClick={() => setMode({ type: "create" })} className="rounded-lg text-xs">
 					<Plus className="mr-1 size-3.5" />
 					New role

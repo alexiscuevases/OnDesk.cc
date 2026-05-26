@@ -41,15 +41,11 @@ import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-passw
 import { Route as AuthRecoverRouteImport } from './routes/auth/recover'
 import { Route as WSlugTicketsRouteImport } from './routes/w/$slug/tickets'
 import { Route as WSlugTeamsRouteImport } from './routes/w/$slug/teams'
-import { Route as WSlugSlaRouteImport } from './routes/w/$slug/sla'
 import { Route as WSlugSettingsRouteImport } from './routes/w/$slug/settings'
-import { Route as WSlugRolesRouteImport } from './routes/w/$slug/roles'
 import { Route as WSlugProfileRouteImport } from './routes/w/$slug/profile'
 import { Route as WSlugOverviewRouteImport } from './routes/w/$slug/overview'
 import { Route as WSlugNotificationsRouteImport } from './routes/w/$slug/notifications'
 import { Route as WSlugMarketplaceRouteImport } from './routes/w/$slug/marketplace'
-import { Route as WSlugKbRouteImport } from './routes/w/$slug/kb'
-import { Route as WSlugAutomationsRouteImport } from './routes/w/$slug/automations'
 import { Route as WSlugAnalyticsRouteImport } from './routes/w/$slug/analytics'
 import { Route as WSlugTicketsIndexRouteImport } from './routes/w/$slug/tickets/index'
 import { Route as WSlugTicketsIdRouteImport } from './routes/w/$slug/tickets/$id'
@@ -214,19 +210,9 @@ const WSlugTeamsRoute = WSlugTeamsRouteImport.update({
   path: '/teams',
   getParentRoute: () => WSlugRoute,
 } as any)
-const WSlugSlaRoute = WSlugSlaRouteImport.update({
-  id: '/sla',
-  path: '/sla',
-  getParentRoute: () => WSlugRoute,
-} as any)
 const WSlugSettingsRoute = WSlugSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => WSlugRoute,
-} as any)
-const WSlugRolesRoute = WSlugRolesRouteImport.update({
-  id: '/roles',
-  path: '/roles',
   getParentRoute: () => WSlugRoute,
 } as any)
 const WSlugProfileRoute = WSlugProfileRouteImport.update({
@@ -247,16 +233,6 @@ const WSlugNotificationsRoute = WSlugNotificationsRouteImport.update({
 const WSlugMarketplaceRoute = WSlugMarketplaceRouteImport.update({
   id: '/marketplace',
   path: '/marketplace',
-  getParentRoute: () => WSlugRoute,
-} as any)
-const WSlugKbRoute = WSlugKbRouteImport.update({
-  id: '/kb',
-  path: '/kb',
-  getParentRoute: () => WSlugRoute,
-} as any)
-const WSlugAutomationsRoute = WSlugAutomationsRouteImport.update({
-  id: '/automations',
-  path: '/automations',
   getParentRoute: () => WSlugRoute,
 } as any)
 const WSlugAnalyticsRoute = WSlugAnalyticsRouteImport.update({
@@ -307,15 +283,11 @@ export interface FileRoutesByFullPath {
   '/workspaces/new': typeof WorkspacesNewRoute
   '/workspaces/': typeof WorkspacesIndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
-  '/w/$slug/automations': typeof WSlugAutomationsRoute
-  '/w/$slug/kb': typeof WSlugKbRoute
   '/w/$slug/marketplace': typeof WSlugMarketplaceRoute
   '/w/$slug/notifications': typeof WSlugNotificationsRoute
   '/w/$slug/overview': typeof WSlugOverviewRoute
   '/w/$slug/profile': typeof WSlugProfileRoute
-  '/w/$slug/roles': typeof WSlugRolesRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
-  '/w/$slug/sla': typeof WSlugSlaRoute
   '/w/$slug/teams': typeof WSlugTeamsRoute
   '/w/$slug/tickets': typeof WSlugTicketsRouteWithChildren
   '/w/$slug/tickets/$id': typeof WSlugTicketsIdRoute
@@ -352,15 +324,11 @@ export interface FileRoutesByTo {
   '/workspaces/new': typeof WorkspacesNewRoute
   '/workspaces': typeof WorkspacesIndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
-  '/w/$slug/automations': typeof WSlugAutomationsRoute
-  '/w/$slug/kb': typeof WSlugKbRoute
   '/w/$slug/marketplace': typeof WSlugMarketplaceRoute
   '/w/$slug/notifications': typeof WSlugNotificationsRoute
   '/w/$slug/overview': typeof WSlugOverviewRoute
   '/w/$slug/profile': typeof WSlugProfileRoute
-  '/w/$slug/roles': typeof WSlugRolesRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
-  '/w/$slug/sla': typeof WSlugSlaRoute
   '/w/$slug/teams': typeof WSlugTeamsRoute
   '/w/$slug/tickets/$id': typeof WSlugTicketsIdRoute
   '/w/$slug/tickets': typeof WSlugTicketsIndexRoute
@@ -398,15 +366,11 @@ export interface FileRoutesById {
   '/workspaces/new': typeof WorkspacesNewRoute
   '/workspaces/': typeof WorkspacesIndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
-  '/w/$slug/automations': typeof WSlugAutomationsRoute
-  '/w/$slug/kb': typeof WSlugKbRoute
   '/w/$slug/marketplace': typeof WSlugMarketplaceRoute
   '/w/$slug/notifications': typeof WSlugNotificationsRoute
   '/w/$slug/overview': typeof WSlugOverviewRoute
   '/w/$slug/profile': typeof WSlugProfileRoute
-  '/w/$slug/roles': typeof WSlugRolesRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
-  '/w/$slug/sla': typeof WSlugSlaRoute
   '/w/$slug/teams': typeof WSlugTeamsRoute
   '/w/$slug/tickets': typeof WSlugTicketsRouteWithChildren
   '/w/$slug/tickets/$id': typeof WSlugTicketsIdRoute
@@ -446,15 +410,11 @@ export interface FileRouteTypes {
     | '/workspaces/new'
     | '/workspaces/'
     | '/w/$slug/analytics'
-    | '/w/$slug/automations'
-    | '/w/$slug/kb'
     | '/w/$slug/marketplace'
     | '/w/$slug/notifications'
     | '/w/$slug/overview'
     | '/w/$slug/profile'
-    | '/w/$slug/roles'
     | '/w/$slug/settings'
-    | '/w/$slug/sla'
     | '/w/$slug/teams'
     | '/w/$slug/tickets'
     | '/w/$slug/tickets/$id'
@@ -491,15 +451,11 @@ export interface FileRouteTypes {
     | '/workspaces/new'
     | '/workspaces'
     | '/w/$slug/analytics'
-    | '/w/$slug/automations'
-    | '/w/$slug/kb'
     | '/w/$slug/marketplace'
     | '/w/$slug/notifications'
     | '/w/$slug/overview'
     | '/w/$slug/profile'
-    | '/w/$slug/roles'
     | '/w/$slug/settings'
-    | '/w/$slug/sla'
     | '/w/$slug/teams'
     | '/w/$slug/tickets/$id'
     | '/w/$slug/tickets'
@@ -536,15 +492,11 @@ export interface FileRouteTypes {
     | '/workspaces/new'
     | '/workspaces/'
     | '/w/$slug/analytics'
-    | '/w/$slug/automations'
-    | '/w/$slug/kb'
     | '/w/$slug/marketplace'
     | '/w/$slug/notifications'
     | '/w/$slug/overview'
     | '/w/$slug/profile'
-    | '/w/$slug/roles'
     | '/w/$slug/settings'
-    | '/w/$slug/sla'
     | '/w/$slug/teams'
     | '/w/$slug/tickets'
     | '/w/$slug/tickets/$id'
@@ -799,25 +751,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WSlugTeamsRouteImport
       parentRoute: typeof WSlugRoute
     }
-    '/w/$slug/sla': {
-      id: '/w/$slug/sla'
-      path: '/sla'
-      fullPath: '/w/$slug/sla'
-      preLoaderRoute: typeof WSlugSlaRouteImport
-      parentRoute: typeof WSlugRoute
-    }
     '/w/$slug/settings': {
       id: '/w/$slug/settings'
       path: '/settings'
       fullPath: '/w/$slug/settings'
       preLoaderRoute: typeof WSlugSettingsRouteImport
-      parentRoute: typeof WSlugRoute
-    }
-    '/w/$slug/roles': {
-      id: '/w/$slug/roles'
-      path: '/roles'
-      fullPath: '/w/$slug/roles'
-      preLoaderRoute: typeof WSlugRolesRouteImport
       parentRoute: typeof WSlugRoute
     }
     '/w/$slug/profile': {
@@ -846,20 +784,6 @@ declare module '@tanstack/react-router' {
       path: '/marketplace'
       fullPath: '/w/$slug/marketplace'
       preLoaderRoute: typeof WSlugMarketplaceRouteImport
-      parentRoute: typeof WSlugRoute
-    }
-    '/w/$slug/kb': {
-      id: '/w/$slug/kb'
-      path: '/kb'
-      fullPath: '/w/$slug/kb'
-      preLoaderRoute: typeof WSlugKbRouteImport
-      parentRoute: typeof WSlugRoute
-    }
-    '/w/$slug/automations': {
-      id: '/w/$slug/automations'
-      path: '/automations'
-      fullPath: '/w/$slug/automations'
-      preLoaderRoute: typeof WSlugAutomationsRouteImport
       parentRoute: typeof WSlugRoute
     }
     '/w/$slug/analytics': {
@@ -936,30 +860,22 @@ const WSlugTicketsRouteWithChildren = WSlugTicketsRoute._addFileChildren(
 
 interface WSlugRouteChildren {
   WSlugAnalyticsRoute: typeof WSlugAnalyticsRoute
-  WSlugAutomationsRoute: typeof WSlugAutomationsRoute
-  WSlugKbRoute: typeof WSlugKbRoute
   WSlugMarketplaceRoute: typeof WSlugMarketplaceRoute
   WSlugNotificationsRoute: typeof WSlugNotificationsRoute
   WSlugOverviewRoute: typeof WSlugOverviewRoute
   WSlugProfileRoute: typeof WSlugProfileRoute
-  WSlugRolesRoute: typeof WSlugRolesRoute
   WSlugSettingsRoute: typeof WSlugSettingsRoute
-  WSlugSlaRoute: typeof WSlugSlaRoute
   WSlugTeamsRoute: typeof WSlugTeamsRoute
   WSlugTicketsRoute: typeof WSlugTicketsRouteWithChildren
 }
 
 const WSlugRouteChildren: WSlugRouteChildren = {
   WSlugAnalyticsRoute: WSlugAnalyticsRoute,
-  WSlugAutomationsRoute: WSlugAutomationsRoute,
-  WSlugKbRoute: WSlugKbRoute,
   WSlugMarketplaceRoute: WSlugMarketplaceRoute,
   WSlugNotificationsRoute: WSlugNotificationsRoute,
   WSlugOverviewRoute: WSlugOverviewRoute,
   WSlugProfileRoute: WSlugProfileRoute,
-  WSlugRolesRoute: WSlugRolesRoute,
   WSlugSettingsRoute: WSlugSettingsRoute,
-  WSlugSlaRoute: WSlugSlaRoute,
   WSlugTeamsRoute: WSlugTeamsRoute,
   WSlugTicketsRoute: WSlugTicketsRouteWithChildren,
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2, Bot, CreditCard } from "lucide-react";
+import { Shield, Globe, Users, Plug, MessageSquareText, FileSignature, UserCog, ChevronRight, Building2, Bot, CreditCard, Zap, Gauge, BookOpen, ShieldAlert } from "lucide-react";
 import { GeneralSection } from "./general-section";
 import { AgentsSection } from "./agents-section";
 import { IntegrationsSection } from "./integrations-section";
@@ -9,9 +9,27 @@ import { SignaturesSection } from "./signatures-section";
 import { UsersCompaniesSection } from "./users-companies-section";
 import { SecuritySection } from "./security-section";
 import { BillingSection } from "./billing-section";
+import { AutomationsSection } from "./automations-section";
+import { SlaSection } from "./sla-section";
+import { KbSection } from "./kb-section";
+import { RolesSection } from "./roles-section";
 import { AiAgentsSection } from "@/features/ai-agents/components/ai-agents-section";
 
-type ConfigSection = "general" | "agents" | "ai-agents" | "integrations" | "teams" | "canned-replies" | "signatures" | "users-companies" | "security" | "billing";
+type ConfigSection =
+	| "general"
+	| "agents"
+	| "ai-agents"
+	| "integrations"
+	| "teams"
+	| "canned-replies"
+	| "signatures"
+	| "users-companies"
+	| "automations"
+	| "sla"
+	| "kb"
+	| "roles"
+	| "security"
+	| "billing";
 
 const sections: { id: ConfigSection; label: string; icon: typeof Globe; desc: string }[] = [
 	{ id: "general", label: "General", icon: Globe, desc: "Workspace settings and branding" },
@@ -22,6 +40,10 @@ const sections: { id: ConfigSection; label: string; icon: typeof Globe; desc: st
 	{ id: "canned-replies", label: "Canned Replies", icon: MessageSquareText, desc: "Quick response templates" },
 	{ id: "signatures", label: "Signatures", icon: FileSignature, desc: "Email signatures for agents" },
 	{ id: "users-companies", label: "Users & Companies", icon: Building2, desc: "Customer management" },
+	{ id: "automations", label: "Automations", icon: Zap, desc: "Rules that act on tickets automatically" },
+	{ id: "sla", label: "SLA Policies", icon: Gauge, desc: "Response and resolution time targets" },
+	{ id: "kb", label: "Knowledge Base", icon: BookOpen, desc: "Articles for AI agents and your team" },
+	{ id: "roles", label: "Roles & Permissions", icon: ShieldAlert, desc: "Built-in and custom workspace roles" },
 	{ id: "security", label: "Security", icon: Shield, desc: "Authentication and access controls" },
 	{ id: "billing", label: "Plan & Billing", icon: CreditCard, desc: "Subscription, invoices and payment" },
 ];
@@ -72,6 +94,10 @@ export function ConfigurationsView() {
 					{activeSection === "canned-replies" && <CannedRepliesSection />}
 					{activeSection === "signatures" && <SignaturesSection />}
 					{activeSection === "users-companies" && <UsersCompaniesSection />}
+					{activeSection === "automations" && <AutomationsSection />}
+					{activeSection === "sla" && <SlaSection />}
+					{activeSection === "kb" && <KbSection />}
+					{activeSection === "roles" && <RolesSection />}
 					{activeSection === "security" && <SecuritySection />}
 				{activeSection === "billing" && <BillingSection />}
 				</div>

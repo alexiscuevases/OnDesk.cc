@@ -49,12 +49,9 @@ export function KbView() {
 	return (
 		<div className="flex flex-col gap-6">
 			<div className="flex items-end justify-between">
-				<div>
-					<h1 className="text-2xl font-bold tracking-tight">Knowledge Base</h1>
-					<p className="text-sm text-muted-foreground mt-1">
-						Articles that power AI agent responses and serve as your team's reference.
-					</p>
-				</div>
+				<p className="text-xs text-muted-foreground">
+					Articles that power AI agent responses and serve as your team's reference.
+				</p>
 				<div className="flex items-center gap-2">
 					<Button
 						variant="outline"
