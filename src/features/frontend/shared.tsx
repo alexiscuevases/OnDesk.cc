@@ -78,6 +78,27 @@ export function useMouseGlow() {
 // COMPONENTS
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Animated EKG line. Renders a faint base trace + a bright traveling signal. */
+export function PulseLine({ className = "", strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) {
+    const d =
+        "M0 20 H70 L82 20 L90 6 L100 34 L108 20 H190 L200 15 L208 20 H290 L302 20 L310 2 L322 38 L330 20 H430 L442 26 L450 20 H600";
+    return (
+        <svg viewBox="0 0 600 40" preserveAspectRatio="none" className={className} aria-hidden="true">
+            <path d={d} fill="none" stroke="currentColor" strokeWidth={strokeWidth} opacity={0.18} />
+            <path d={d} fill="none" stroke="currentColor" strokeWidth={strokeWidth} pathLength={100} className="ekg-path" />
+        </svg>
+    );
+}
+
+/** Monospace telemetry tag, e.g. `01 — METRICS`. */
+export function MonoTag({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+    return (
+        <span className={`font-mono text-[11px] tracking-[0.25em] uppercase text-muted-foreground ${className}`}>
+            {children}
+        </span>
+    );
+}
+
 /** Pill badge shown above section headings. */
 export function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
     return (

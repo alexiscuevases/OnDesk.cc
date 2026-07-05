@@ -1,22 +1,25 @@
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Menu, X, Users, Building2, UserCheck, ChevronDown } from "lucide-react";
+import { PulseLine } from "./shared";
+import { ArrowRight, ArrowUpRight, Menu, X, Users, Building2, UserCheck, ChevronDown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 const SOLUTIONS = [
 	{
 		icon: Users,
+		index: "01",
 		label: "Support Teams",
 		description: "Manage high-volume support with automation and workflows",
 		href: "/solutions/support-teams",
 	},
 	{
 		icon: Building2,
+		index: "02",
 		label: "Agencies",
 		description: "Run support for multiple clients from one place",
 		href: "/solutions/agencies",
 	},
 	{
 		icon: UserCheck,
+		index: "03",
 		label: "Solo & Small Teams",
 		description: "Keep requests organized without complexity",
 		href: "/solutions/solo-small-teams",
@@ -123,86 +126,72 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 				<>
 					<div
 						className="pointer-events-none fixed inset-0 z-0 opacity-25"
-						style={{ background: `radial-gradient(520px circle at ${mousePos.x}px ${mousePos.y}px, rgba(99,102,241,0.18), transparent 60%)` }}
+						style={{
+							background: `radial-gradient(520px circle at ${mousePos.x}px ${mousePos.y}px, color-mix(in srgb, var(--color-primary) 14%, transparent), transparent 60%)`,
+						}}
 					/>
 					<div
 						className="pointer-events-none fixed inset-0 z-0 opacity-[0.035]"
-						style={{ backgroundImage: "radial-gradient(circle, rgba(99,102,241,0.8) 1px, transparent 1px)", backgroundSize: "32px 32px" }}
+						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "32px 32px" }}
 					/>
 				</>
 			)}
 
 			{/* ── NAVBAR ── */}
 			<header
-				className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? "backdrop-blur-xl shadow-lg" : "bg-transparent"}`}
-				style={
-					scrolled
-						? {
-								background: "color-mix(in srgb, var(--color-background) 85%, transparent)",
-								borderBottom: "1px solid color-mix(in srgb, var(--color-primary) 12%, var(--color-border))",
-								boxShadow: "0 4px 24px -4px color-mix(in srgb, var(--color-primary) 8%, transparent)",
-							}
-						: undefined
-				}>
-				<nav className="container mx-auto px-4 h-16 flex items-center justify-between">
-					{/* Logo */}
-					<a href="/" className="flex items-center gap-2.5 group shrink-0">
-						<img src="/logo.png" alt="Pulse Logo" height={300} className="h-9" />
-					</a>
+				className={`fixed top-0 inset-x-0 z-50 border-b border-border backdrop-blur-xl transition-shadow duration-300 ${scrolled ? "shadow-[0_8px_30px_-12px_rgba(0,34,25,0.15)]" : ""}`}
+				style={{ background: "color-mix(in srgb, var(--color-background) 88%, transparent)" }}>
+				{/* editorial rails aligned with page content */}
+				<nav className="mx-auto max-w-350 border-x border-border h-16 px-6 md:px-12 flex items-center justify-between">
+					{/* Logo + telemetry tag */}
+					<div className="flex items-center gap-4 shrink-0">
+						<a href="/" className="flex items-center gap-2.5">
+							<img src="/logo.png" alt="Pulse Logo" height={300} className="h-9" />
+						</a>
+						<span className="hidden xl:flex items-center gap-2 font-mono text-[10px] tracking-[0.2em] text-muted-foreground border-l border-border pl-4">
+							<span className="size-1.5 rounded-full bg-accent animate-pulse" />
+							SUPPORT_OS
+						</span>
+					</div>
 
 					{/* Desktop nav */}
-					<div className="hidden md:flex items-center gap-1">
+					<div className="hidden md:flex items-center h-full">
 						{/* Solutions dropdown */}
-						<div ref={solutionsRef} className="relative">
+						<div ref={solutionsRef} className="relative h-full">
 							<button
 								onClick={() => setSolutionsOpen((v) => !v)}
-								className="relative flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 group"
-								style={{ color: solutionsOpen ? "var(--color-foreground)" : "var(--color-muted-foreground)" }}>
-								<span
-									className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-									style={{ background: "color-mix(in srgb, var(--color-primary) 8%, transparent)" }}
-								/>
-								<span className="relative group-hover:text-foreground transition-colors duration-200">Solutions</span>
-								<ChevronDown
-									className={`relative size-3.5 transition-transform duration-200 ${solutionsOpen ? "rotate-180" : ""}`}
-									style={{ color: "inherit" }}
-								/>
+								className={`h-full flex items-center gap-1.5 px-4 font-mono text-[11px] tracking-[0.15em] uppercase font-semibold transition-colors duration-200 ${solutionsOpen ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>
+								Solutions
+								<ChevronDown className={`size-3 transition-transform duration-200 ${solutionsOpen ? "rotate-180" : ""}`} />
 							</button>
 
 							{solutionsOpen && (
-								<div
-									className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 rounded-xl border p-2 shadow-xl backdrop-blur-xl"
-									style={{
-										background: "color-mix(in srgb, var(--color-background) 92%, transparent)",
-										borderColor: "color-mix(in srgb, var(--color-primary) 14%, var(--color-border))",
-										boxShadow: "0 16px 48px -8px color-mix(in srgb, var(--color-primary) 12%, rgba(0,0,0,0.3))",
-									}}>
-									{SOLUTIONS.map(({ icon: Icon, label, description, href }) => (
-										<a
-											key={label}
-											href={href}
-											onClick={() => setSolutionsOpen(false)}
-											className="flex items-start gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group/item"
-											style={{ color: "var(--color-muted-foreground)" }}
-											onMouseEnter={(e) => {
-												(e.currentTarget as HTMLElement).style.background = "color-mix(in srgb, var(--color-primary) 7%, transparent)";
-											}}
-											onMouseLeave={(e) => {
-												(e.currentTarget as HTMLElement).style.background = "transparent";
-											}}>
-											<span
-												className="mt-0.5 p-1.5 rounded-md shrink-0"
-												style={{ background: "color-mix(in srgb, var(--color-primary) 10%, transparent)" }}>
-												<Icon className="size-3.5" style={{ color: "var(--color-primary)" }} />
-											</span>
-											<span>
-												<span className="block text-sm font-medium text-foreground group-hover/item:text-primary transition-colors duration-150">
-													{label}
+								<div className="absolute top-full left-0 w-88 border border-border bg-background shadow-[0_24px_60px_-16px_rgba(0,34,25,0.25)] animate-in fade-in slide-in-from-top-1 duration-200">
+									<div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
+										<span className="font-mono text-[10px] tracking-[0.25em] text-primary">SOLUTIONS_INDEX</span>
+										<span className="font-mono text-[10px] tracking-widest text-muted-foreground/60">3 ENTRIES</span>
+									</div>
+									<div className="divide-y divide-border">
+										{SOLUTIONS.map(({ icon: Icon, index, label, description, href }) => (
+											<a
+												key={label}
+												href={href}
+												onClick={() => setSolutionsOpen(false)}
+												className="group flex items-start gap-4 px-4 py-3.5 transition-colors duration-150 hover:bg-accent/5">
+												<span className="font-mono text-[10px] text-muted-foreground/50 pt-1 group-hover:text-accent transition-colors">
+													{index}
 												</span>
-												<span className="block text-xs text-muted-foreground mt-0.5 leading-snug">{description}</span>
-											</span>
-										</a>
-									))}
+												<span className="flex-1">
+													<span className="flex items-center gap-2 text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+														<Icon className="size-3.5 text-accent" />
+														{label}
+													</span>
+													<span className="block text-xs text-muted-foreground mt-1 leading-snug">{description}</span>
+												</span>
+												<ArrowUpRight className="size-3.5 text-muted-foreground/0 group-hover:text-accent transition-colors mt-1" />
+											</a>
+										))}
+									</div>
 								</div>
 							)}
 						</div>
@@ -214,47 +203,38 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 								<a
 									key={label}
 									href={href}
-									className="relative px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 group"
-									style={isActive ? { color: "var(--color-primary)" } : { color: "var(--color-muted-foreground)" }}>
-									<span
-										className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-										style={{ background: "color-mix(in srgb, var(--color-primary) 8%, transparent)" }}
-									/>
-									<span className="relative group-hover:text-foreground transition-colors duration-200">{label}</span>
-									{isActive && (
-										<span
-											className="absolute bottom-0 left-1/2 -translate-x-1/2 size-1 rounded-full"
-											style={{ background: "var(--color-primary)" }}
-										/>
-									)}
+									className={`relative h-full flex items-center px-4 font-mono text-[11px] tracking-[0.15em] uppercase font-semibold transition-colors duration-200 ${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>
+									{label}
+									{isActive && <span className="absolute bottom-0 inset-x-4 h-0.5 bg-accent" />}
 								</a>
 							);
 						})}
 					</div>
 
 					{/* Desktop CTA */}
-					<div className="hidden md:flex items-center gap-2">
-						<Button
-							variant="ghost"
-							size="sm"
-							asChild
-							className="text-muted-foreground hover:text-foreground hover:bg-primary/8 transition-all duration-200">
-							<a href="/auth/signin">Log in</a>
-						</Button>
-						<Button
-							size="sm"
-							asChild
-							className="group shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300">
-							<a href="/auth/signup">
+					<div className="hidden md:flex items-center gap-4">
+						<a
+							href="/auth/signin"
+							className="font-mono text-[11px] tracking-[0.15em] uppercase font-semibold text-muted-foreground hover:text-primary transition-colors duration-200">
+							Log in
+						</a>
+						<a
+							href="/auth/signup"
+							className="group relative inline-flex items-center gap-2 overflow-hidden bg-primary px-4 py-2.5 font-mono text-[11px] tracking-[0.15em] uppercase font-semibold text-primary-foreground">
+							<span
+								className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+								style={{ background: "var(--pulse-lime)" }}
+							/>
+							<span className="relative z-10 flex items-center gap-1.5 group-hover:text-[var(--pulse-ink-deep)] transition-colors duration-300">
 								Free Trial
-								<ArrowRight className="ml-1.5 size-3.5 group-hover:translate-x-0.5 transition-transform" />
-							</a>
-						</Button>
+								<ArrowRight className="size-3 group-hover:translate-x-0.5 transition-transform" />
+							</span>
+						</a>
 					</div>
 
 					{/* Mobile toggle */}
 					<button
-						className="md:hidden p-2 -mr-2 rounded-lg hover:bg-primary/8 transition-colors"
+						className="md:hidden p-2 -mr-2 border border-transparent hover:border-border transition-colors"
 						onClick={() => setMobileOpen((v) => !v)}
 						aria-label="Toggle menu">
 						{mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -263,25 +243,15 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 
 				{/* Mobile menu */}
 				{mobileOpen && (
-					<div
-						className="md:hidden border-b px-4 pb-5 pt-2 flex flex-col gap-1 backdrop-blur-xl"
-						style={{
-							background: "color-mix(in srgb, var(--color-background) 95%, transparent)",
-							borderColor: "color-mix(in srgb, var(--color-primary) 12%, var(--color-border))",
-						}}>
-						{/* Solutions section in mobile */}
-						<div className="py-2 px-3 border-b border-border/40">
-							<p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--color-primary)" }}>
-								Solutions
-							</p>
-							<div className="flex flex-col gap-1">
-								{SOLUTIONS.map(({ icon: Icon, label, href }) => (
-									<a
-										key={label}
-										href={href}
-										className="flex items-center gap-2.5 py-1.5 text-sm transition-colors duration-200"
-										style={{ color: "var(--color-muted-foreground)" }}>
-										<Icon className="size-3.5 shrink-0" style={{ color: "var(--color-primary)" }} />
+					<div className="md:hidden border-t border-border bg-background">
+						{/* Solutions section */}
+						<div className="px-6 py-4 border-b border-border">
+							<p className="font-mono text-[10px] tracking-[0.25em] text-primary mb-3">SOLUTIONS_INDEX</p>
+							<div className="flex flex-col">
+								{SOLUTIONS.map(({ icon: Icon, index, label, href }) => (
+									<a key={label} href={href} className="flex items-center gap-3 py-2 text-sm font-semibold text-muted-foreground hover:text-primary transition-colors">
+										<span className="font-mono text-[10px] text-muted-foreground/50">{index}</span>
+										<Icon className="size-3.5 text-accent shrink-0" />
 										{label}
 									</a>
 								))}
@@ -292,26 +262,24 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 							<a
 								key={label}
 								href={href}
-								className="text-sm py-2.5 px-3 rounded-lg border-b border-border/40 last:border-0 transition-all duration-200"
-								style={
-									pathname === href
-										? {
-												color: "var(--color-primary)",
-												fontWeight: 500,
-												background: "color-mix(in srgb, var(--color-primary) 6%, transparent)",
-											}
-										: { color: "var(--color-muted-foreground)" }
-								}>
+								className={`flex items-center justify-between px-6 py-3.5 border-b border-border font-mono text-[11px] tracking-[0.15em] uppercase font-semibold transition-colors ${pathname === href ? "text-primary bg-accent/5" : "text-muted-foreground hover:text-foreground"}`}>
 								{label}
+								<ArrowUpRight className="size-3.5 text-muted-foreground/40" />
 							</a>
 						))}
-						<div className="flex gap-2 pt-3">
-							<Button variant="outline" size="sm" asChild className="flex-1 hover:border-primary/40 hover:text-primary transition-all">
-								<a href="/auth/signin">Log in</a>
-							</Button>
-							<Button size="sm" asChild className="flex-1 shadow-md shadow-primary/20 hover:shadow-primary/30">
-								<a href="/auth/signup">Free Trial</a>
-							</Button>
+
+						<div className="flex gap-3 px-6 py-5">
+							<a
+								href="/auth/signin"
+								className="flex-1 inline-flex items-center justify-center border border-foreground/25 px-4 py-3 font-mono text-[11px] tracking-[0.15em] uppercase font-semibold text-foreground hover:border-primary hover:text-primary transition-colors">
+								Log in
+							</a>
+							<a
+								href="/auth/signup"
+								className="flex-1 inline-flex items-center justify-center gap-1.5 bg-primary px-4 py-3 font-mono text-[11px] tracking-[0.15em] uppercase font-semibold text-primary-foreground">
+								Free Trial
+								<ArrowRight className="size-3" />
+							</a>
 						</div>
 					</div>
 				)}
@@ -321,42 +289,30 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 			<main className="relative z-10 flex-1 pt-16">{children}</main>
 
 			{/* ── FOOTER ── */}
-			<footer className="relative z-10 overflow-hidden">
-				{/* Top border with primary glow */}
-				<div
-					className="absolute top-0 inset-x-0 h-px"
-					style={{ background: "linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-primary) 35%, transparent), transparent)" }}
-				/>
+			<footer className="relative z-10 text-white" style={{ background: "var(--pulse-ink)" }}>
+				{/* EKG strip */}
+				<div className="border-b border-white/10 px-6 md:px-12 py-2" style={{ color: "var(--pulse-lime)" }}>
+					<PulseLine className="w-full h-8 block" strokeWidth={1.2} />
+				</div>
 
-				{/* Background */}
-				<div
-					className="absolute inset-0 pointer-events-none"
-					style={{
-						background:
-							"linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 3%, transparent) 0%, color-mix(in srgb, var(--color-muted) 8%, transparent) 100%)",
-					}}
-				/>
+				<div className="mx-auto max-w-350 border-x border-white/10">
+					{/* header row */}
+					<div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-white/10">
+						<span className="font-mono text-[10px] tracking-[0.25em] text-white/40">PULSE://INDEX</span>
+						<span className="flex items-center gap-2 font-mono text-[10px] tracking-[0.2em]" style={{ color: "var(--pulse-lime)" }}>
+							<span className="size-1.5 rounded-full animate-pulse" style={{ background: "var(--pulse-lime)" }} />
+							ALL SYSTEMS OPERATIONAL
+						</span>
+					</div>
 
-				{/* Dot grid decoration */}
-				<div
-					className="absolute inset-0 opacity-[0.015] pointer-events-none"
-					style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "32px 32px" }}
-				/>
-
-				{/* Orb top-right */}
-				<div
-					className="absolute top-0 right-0 size-80 rounded-full blur-[120px] pointer-events-none opacity-40"
-					style={{ background: "color-mix(in srgb, var(--color-primary) 8%, transparent)" }}
-				/>
-
-				<div className="relative container mx-auto px-4 pt-14 pb-10">
-					<div className="grid sm:grid-cols-2 md:grid-cols-6 gap-8 mb-12">
+					{/* columns */}
+					<div className="grid sm:grid-cols-2 md:grid-cols-6 gap-x-8 gap-y-10 px-6 md:px-12 py-12">
 						{/* Brand column */}
 						<div className="md:col-span-1">
-							<a href="/" className="flex items-center gap-2.5 group mb-4 w-fit">
-								<img src="/logo.png" alt="Pulse Logo" height={300} className="h-8" />
+							<a href="/" className="inline-block font-black text-2xl tracking-tighter mb-4">
+								Pulse<span style={{ color: "var(--pulse-lime)" }}>.</span>
 							</a>
-							<p className="text-sm text-muted-foreground leading-relaxed max-w-[200px]">
+							<p className="text-sm text-white/45 leading-relaxed max-w-[200px]">
 								Automate support, resolve faster, and scale effortlessly.
 							</p>
 						</div>
@@ -364,28 +320,17 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 						{/* Link columns */}
 						{FOOTER_COLS.map((col) => (
 							<div key={col.heading}>
-								<h4 className="font-semibold text-xs uppercase tracking-widest mb-4" style={{ color: "var(--color-primary)" }}>
+								<h4 className="font-mono text-[10px] tracking-[0.25em] uppercase mb-5" style={{ color: "var(--pulse-lime)" }}>
 									{col.heading}
 								</h4>
-								<ul className="space-y-2.5">
+								<ul className="space-y-3">
 									{col.links.map(({ label, href }) => (
 										<li key={label}>
 											<a
 												href={href}
-												className="text-sm transition-all duration-200 hover:translate-x-0.5 inline-block"
-												style={
-													pathname === href
-														? { color: "var(--color-foreground)", fontWeight: 500 }
-														: { color: "var(--color-muted-foreground)" }
-												}
-												onMouseEnter={(e) => {
-													(e.currentTarget as HTMLElement).style.color = "var(--color-primary)";
-												}}
-												onMouseLeave={(e) => {
-													(e.currentTarget as HTMLElement).style.color =
-														pathname === href ? "var(--color-foreground)" : "var(--color-muted-foreground)";
-												}}>
+												className={`group inline-flex items-center gap-1.5 text-sm transition-colors duration-200 ${pathname === href ? "text-white font-medium" : "text-white/55 hover:text-white"}`}>
 												{label}
+												<ArrowUpRight className="size-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" style={{ color: "var(--pulse-lime)" }} />
 											</a>
 										</li>
 									))}
@@ -394,12 +339,21 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 						))}
 					</div>
 
-					{/* Bottom bar */}
-					<div
-						className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground"
-						style={{ borderTop: "1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border))" }}>
-						<span>© 2025 Pulse. All rights reserved.</span>
-						<span>All trademarks are the property of their respective owners.</span>
+					{/* giant outline wordmark */}
+					<div className="overflow-hidden border-t border-white/10 select-none" aria-hidden="true">
+						<div
+							className="text-center font-black tracking-tighter leading-[0.75] text-[26vw] md:text-[16rem] -mb-[0.18em]"
+							style={{ color: "transparent", WebkitTextStroke: "1px rgba(255,255,255,0.10)" }}>
+							PULSE
+						</div>
+					</div>
+
+					{/* bottom bar */}
+					<div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-6 md:px-12 py-5 border-t border-white/10 font-mono text-[10px] tracking-[0.2em] text-white/35">
+						<span>© 2026 PULSE — ALL RIGHTS RESERVED</span>
+						<span>
+							SIG.END<span className="blink-cursor" style={{ color: "var(--pulse-lime)" }}>▌</span>
+						</span>
 					</div>
 				</div>
 			</footer>
