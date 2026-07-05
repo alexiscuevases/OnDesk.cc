@@ -1,6 +1,5 @@
 import { SiteLayout } from "./site-layout";
-import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
 	Bot,
 	Zap,
@@ -9,14 +8,9 @@ import {
 	MessageSquare,
 	CheckCircle2,
 	ArrowRight,
-	Headset,
-	Play,
-	TrendingUp,
-	Clock,
-	Star,
 	Sparkles,
 } from "lucide-react";
-import { useInView, useCounter, SectionBadge } from "./shared";
+import { useInView, useCounter, useMountVisible, PulseLine, MonoTag, SectionRule, Cross, CtaLink, DarkCta } from "./shared";
 
 const TABS = ["All", "Omnichannel", "AI Automation", "Marketplace", "Intelligence", "Security"];
 
@@ -33,7 +27,7 @@ const ALL_FEATURES = [
 		],
 		tabs: ["All", "Omnichannel", "AI Automation"],
 		stat: "80%",
-		statLabel: "autonomous resolution",
+		statLabel: "AUTONOMOUS RESOLUTION",
 	},
 	{
 		icon: Zap,
@@ -47,7 +41,7 @@ const ALL_FEATURES = [
 		],
 		tabs: ["All", "AI Automation", "Intelligence"],
 		stat: "< 30s",
-		statLabel: "max routing latency",
+		statLabel: "MAX ROUTING LATENCY",
 	},
 	{
 		icon: MessageSquare,
@@ -61,7 +55,7 @@ const ALL_FEATURES = [
 		],
 		tabs: ["All", "Omnichannel"],
 		stat: "10+",
-		statLabel: "channels unified",
+		statLabel: "CHANNELS UNIFIED",
 	},
 	{
 		icon: Sparkles,
@@ -75,7 +69,7 @@ const ALL_FEATURES = [
 		],
 		tabs: ["All", "Marketplace"],
 		stat: "50+",
-		statLabel: "integrations available",
+		statLabel: "INTEGRATIONS AVAILABLE",
 	},
 	{
 		icon: BarChart3,
@@ -89,7 +83,7 @@ const ALL_FEATURES = [
 		],
 		tabs: ["All", "Intelligence"],
 		stat: "4.9★",
-		statLabel: "avg. CSAT impact",
+		statLabel: "AVG. CSAT IMPACT",
 	},
 	{
 		icon: Shield,
@@ -103,7 +97,7 @@ const ALL_FEATURES = [
 		],
 		tabs: ["All", "Security"],
 		stat: "99.99%",
-		statLabel: "uptime guarantee",
+		statLabel: "UPTIME GUARANTEE",
 	},
 ];
 
@@ -112,365 +106,214 @@ const SOCIAL_PROOF = [
 		quote: "I switched from three different email inboxes to Pulse in a weekend. Now everything is in one place and I'm not dropping client requests.",
 		author: "Mia Torres",
 		role: "Independent Consultant, Torres Digital",
-		rating: 5,
 	},
 	{
 		quote: "Pulse Core gave our agency exactly what we needed — separate client workflows and real visibility into what's happening across all our accounts.",
 		author: "James Okafor",
 		role: "Operations Lead, BrightSupport Agency",
-		rating: 5,
 	},
 	{
 		quote: "Pulse transformed our support from a cost center into a CSAT driver. The autonomous routing paid back in week one.",
 		author: "Marcus Chen",
 		role: "Director of Ops, FinStream",
-		rating: 5,
 	},
 ];
 
 export default function FeaturesPage() {
 	const [activeTab, setActiveTab] = useState("All");
-	const [visible, setVisible] = useState(false);
-	const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+	const visible = useMountVisible();
 
-	// Stats in-view
-	const statsRef = useInView();
-	const c80 = useCounter(80, 1100, statsRef.inView);
-	const c30 = useCounter(30, 1200, statsRef.inView);
-	const c999 = useCounter(999, 1300, statsRef.inView);
-
-	useEffect(() => {
-		const id = requestAnimationFrame(() => setVisible(true));
-		return () => cancelAnimationFrame(id);
-	}, []);
-
-	useEffect(() => {
-		const onMove = (e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY });
-		window.addEventListener("mousemove", onMove);
-		return () => window.removeEventListener("mousemove", onMove);
-	}, []);
+	const { ref: statsRef, inView: statsInView } = useInView();
+	const c80 = useCounter(80, 1100, statsInView);
+	const c30 = useCounter(30, 1200, statsInView);
+	const c999 = useCounter(999, 1300, statsInView);
 
 	const filtered = ALL_FEATURES.filter((f) => f.tabs.includes(activeTab));
 
 	return (
 		<SiteLayout>
-			{/* ── HERO ── */}
-			<section className="relative pt-16 pb-20 md:pt-28 md:pb-28 overflow-hidden border-b border-border">
-				{/* Background */}
-				<div className="absolute inset-0 pointer-events-none">
-					<div className="absolute inset-0 bg-linear-to-br from-primary/6 via-background to-accent/4" />
+			<div className="mx-auto max-w-350 border-x border-border">
+				{/* ── HERO ── */}
+				<section className="relative border-b border-border overflow-hidden">
 					<div
-						className="absolute size-150 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px] transition-all duration-700 ease-out"
-						style={{ left: mousePos.x, top: mousePos.y, background: "color-mix(in srgb, var(--color-primary) 10%, transparent)" }}
+						className="absolute top-0 right-0 w-1/2 h-full opacity-[0.04] pointer-events-none"
+						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "28px 28px" }}
 					/>
-					<div
-						className="absolute top-16 right-[12%] size-72 rounded-full blur-[80px] animate-pulse"
-						style={{ animationDuration: "7s", background: "color-mix(in srgb, var(--color-accent) 8%, transparent)" }}
-					/>
-					<div
-						className="absolute inset-0 opacity-[0.025]"
-						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "40px 40px" }}
-					/>
-				</div>
 
-				<div className="container mx-auto px-4 text-center relative">
-					<div className={`transition-all duration-1000 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-						<SectionBadge icon={Headset} label="Everything you need to support your customers" />
-						<h1 className="text-5xl md:text-[5rem] font-black mb-5 text-balance tracking-tight leading-[1.02]" style={{ lineHeight: 1.04 }}>
-							Built for the{" "}
-							<span
-								style={{
-									background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
-									WebkitBackgroundClip: "text",
-									WebkitTextFillColor: "transparent",
-									backgroundClip: "text",
-								}}>
-								next era
+					<div
+						className={`relative px-6 md:px-12 pt-16 md:pt-24 pb-14 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						<div className="flex items-center gap-3 mb-10">
+							<span className="relative flex size-2">
+								<span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping" />
+								<span className="relative inline-flex size-2 rounded-full bg-accent" />
 							</span>
-							{" "}of support
+							<MonoTag className="text-foreground/70">
+								SYS.MODULES — FULL CAPABILITY INDEX<span className="blink-cursor text-accent">_</span>
+							</MonoTag>
+						</div>
+
+						<h1 className="max-w-4xl text-5xl md:text-7xl font-black leading-[1.02] tracking-tighter mb-8 text-balance">
+							Built for the{" "}
+							<span className="relative inline-block px-2 text-primary-foreground" style={{ background: "var(--color-primary)" }}>
+								next era
+							</span>{" "}
+							of support
 						</h1>
-						<p
-							className={`text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-10 text-pretty transition-all duration-1000 delay-150 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							From unified inbox to AI automation — everything you need to deliver great support, whether you're a solo consultant or a global team.
+
+						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10">
+							From unified inbox to AI automation — everything you need to deliver great support, whether you're a solo consultant or a
+							global team.
 						</p>
 
-						<div
-							className={`flex flex-col sm:flex-row justify-center gap-3 mb-14 transition-all duration-1000 delay-250 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							<Button
-								size="xl"
-								asChild
-								className="group">
-								<a href="/auth/signup">
-									Start free trial
-									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
-								</a>
-							</Button>
-							<Button
-								size="xl"
-								variant="outline"
-								asChild
-								className="gap-2">
-								<a href="#demo">
-									<Play className="size-4 group-hover:scale-110 transition-transform" />
-									Watch demo
-								</a>
-							</Button>
+						<div className="flex flex-col sm:flex-row gap-3">
+							<CtaLink href="/auth/signup">
+								Start free trial <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+							</CtaLink>
+							<CtaLink href="/pricing" variant="outline">
+								See pricing
+							</CtaLink>
 						</div>
 					</div>
 
-					{/* Stat strip */}
-					<div
-						ref={statsRef.ref as React.RefObject<HTMLDivElement>}
-						className={`grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto transition-all duration-1000 delay-400 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						{[
-							{ icon: TrendingUp, value: `${c80}%`, label: "Auto-resolved" },
-							{ icon: Clock, value: `<${c30}s`, label: "Routing Latency" },
-							{ icon: Shield, value: `${(c999 / 10).toFixed(2)}%`, label: "Uptime SLA" },
-							{ icon: Star, value: "4.9★", label: "Business Impact", static: true },
-						].map(({ icon: Icon, value, label }) => (
-							<div
-								key={label}
-								className="group relative flex flex-col items-center gap-1.5 py-6 px-4 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg overflow-hidden cursor-default"
-								style={{ background: "var(--color-card)", borderColor: "var(--color-border)" }}>
+					{/* stats — hairline telemetry row */}
+					<div ref={statsRef as React.RefObject<HTMLDivElement>} className="relative border-t border-border">
+						<Cross className="-top-2 -left-1.5" />
+						<Cross className="-top-2 -right-1.5" />
+						<div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-border">
+							{[
+								{ value: `${c80}%`, label: "AUTO-RESOLVED" },
+								{ value: `<${c30}s`, label: "ROUTING LATENCY" },
+								{ value: `${(c999 / 10).toFixed(2)}%`, label: "UPTIME SLA" },
+								{ value: "4.9★", label: "BUSINESS IMPACT" },
+							].map(({ value, label }, i) => (
 								<div
-									className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-									style={{
-										background:
-											"radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 70%)",
-									}}
-								/>
-								<Icon className="size-4 text-primary mb-0.5 group-hover:scale-110 transition-transform duration-300 relative z-10" />
-								<span className="text-2xl font-black relative z-10" style={{ fontVariantNumeric: "tabular-nums" }}>
-									{value}
-								</span>
-								<span className="text-xs text-muted-foreground relative z-10">{label}</span>
-							</div>
-						))}
+									key={label}
+									className={`px-4 md:px-10 py-8 transition-all duration-700 ${statsInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+									style={{ transitionDelay: `${i * 100}ms` }}>
+									<div className="text-3xl md:text-4xl font-black tracking-tighter mb-2" style={{ fontVariantNumeric: "tabular-nums" }}>
+										{value}
+									</div>
+									<div className="font-mono text-[10px] tracking-[0.2em] text-primary font-semibold">{label}</div>
+								</div>
+							))}
+						</div>
 					</div>
-				</div>
-			</section>
 
-			{/* ── FEATURE GRID ── */}
-			<FeatureGridSection activeTab={activeTab} setActiveTab={setActiveTab} filtered={filtered} />
+					{/* EKG divider */}
+					<div className="border-t border-border text-accent">
+						<PulseLine className="w-full h-10 block" />
+					</div>
+				</section>
 
-			{/* ── SOCIAL PROOF ── */}
-			<SocialProofSection />
+				{/* ── CAPABILITY INDEX ── */}
+				<section>
+					<SectionRule index="01" label="CAPABILITY INDEX" title="The Pulse ecosystem" right={`${ALL_FEATURES.length} MODULES REGISTERED`} />
+					<p className="px-6 md:px-12 pb-8 text-lg text-muted-foreground max-w-2xl">
+						The pillars of the most advanced support orchestration platform. Filter by domain.
+					</p>
 
-			{/* ── CTA ── */}
-			<FeaturesCtaSection />
+					{/* mono filter tabs */}
+					<div className="flex flex-wrap gap-2 px-6 md:px-12 pb-10">
+						{TABS.map((tab) => {
+							const isActive = activeTab === tab;
+							return (
+								<button
+									key={tab}
+									onClick={() => setActiveTab(tab)}
+									className={`px-4 py-2 border font-mono text-[11px] tracking-[0.15em] uppercase font-semibold transition-colors duration-200 ${
+										isActive
+											? "bg-primary text-primary-foreground border-primary"
+											: "text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+									}`}>
+									{tab}
+								</button>
+							);
+						})}
+					</div>
+
+					<div className="relative border-t border-border">
+						<Cross className="-top-2 -left-1.5" />
+						<Cross className="-top-2 -right-1.5" />
+						<div key={activeTab} className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-border border-b border-border animate-in fade-in duration-300">
+							{filtered.map(({ icon: Icon, title, description, bullets, stat, statLabel }, i) => (
+								<div key={title} className="group relative bg-background px-6 md:px-10 py-10 flex flex-col">
+									<span className="absolute top-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-500 bg-accent" />
+
+									<div className="flex items-center justify-between mb-8">
+										<span className="font-mono text-[11px] tracking-[0.25em] text-muted-foreground/60">0{i + 1}</span>
+										<Icon className="size-5 text-accent" />
+									</div>
+
+									<div className="mb-6">
+										<div className="text-3xl font-black tracking-tighter text-primary" style={{ fontVariantNumeric: "tabular-nums" }}>
+											{stat}
+										</div>
+										<div className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground mt-1">{statLabel}</div>
+									</div>
+
+									<h3 className="text-xl font-black tracking-tight mb-2.5">{title}</h3>
+									<p className="text-sm text-muted-foreground leading-relaxed mb-6">{description}</p>
+
+									<ul className="space-y-2.5 mt-auto">
+										{bullets.map((b) => (
+											<li key={b} className="flex items-center gap-3 text-sm text-muted-foreground">
+												<CheckCircle2 className="size-3.5 text-accent shrink-0" />
+												{b}
+											</li>
+										))}
+									</ul>
+								</div>
+							))}
+						</div>
+					</div>
+				</section>
+
+				{/* ── FIELD REPORTS ── */}
+				<FieldReports />
+
+				{/* ── CTA ── */}
+				<DarkCta
+					tag="03 — DEPLOY · 14-DAY TRIAL · NO COMMITMENT"
+					headline={
+						<>
+							Deploy Pulse in <span style={{ color: "var(--pulse-lime)" }}>minutes.</span>
+						</>
+					}
+					desc="Experience the power of autonomous support. Full access trial, no commitment required."
+					primary={{ href: "/auth/signup", label: "Start free trial" }}
+					secondary={{ href: "/contact", label: "Talk to sales" }}
+				/>
+			</div>
 		</SiteLayout>
 	);
 }
 
-// ── Feature grid with tabs ──
-function FeatureGridSection({ activeTab, setActiveTab, filtered }: { activeTab: string; setActiveTab: (t: string) => void; filtered: typeof ALL_FEATURES }) {
+function FieldReports() {
 	const { ref, inView } = useInView();
 	return (
-		<section ref={ref} className="container mx-auto px-4 py-20 md:py-28">
-			<div className={`text-center mb-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-				<SectionBadge icon={Sparkles} label="Core capabilities" />
-				<h2 className="text-3xl md:text-5xl font-black mb-4 text-balance tracking-tight">The Pulse Ecosystem</h2>
-				<p className="text-xl text-muted-foreground max-w-xl mx-auto">Discover the pillars of the most advanced support orchestration platform.</p>
+		<section ref={ref as React.RefObject<HTMLElement>} className="border-b border-border">
+			<div className="flex items-center justify-between px-6 md:px-12 py-4 border-y border-border">
+				<MonoTag className="text-primary">02 — FIELD REPORTS</MonoTag>
+				<span className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-muted-foreground">
+					<span className="size-1.5 rounded-full bg-accent animate-pulse" />
+					VERIFIED CUSTOMERS
+				</span>
 			</div>
 
-			{/* Tabs */}
-			<div
-				className={`flex flex-wrap justify-center gap-2 mb-12 transition-all duration-700 delay-100 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-				{TABS.map((tab) => {
-					const isActive = activeTab === tab;
-					return (
-						<button
-							key={tab}
-							onClick={() => setActiveTab(tab)}
-							className={`relative px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-300 overflow-hidden ${isActive
-								? "text-primary-foreground border-primary shadow-lg shadow-primary/30 scale-105"
-								: "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground hover:scale-105"
-								}`}
-							style={isActive ? { background: "var(--color-primary)" } : {}}>
-							{isActive && (
-								<span
-									className="absolute inset-0 rounded-full animate-pulse"
-									style={{ background: "color-mix(in srgb, var(--color-primary) 25%, transparent)" }}
-								/>
-							)}
-							<span className="relative z-10">{tab}</span>
-						</button>
-					);
-				})}
-			</div>
-
-			{/* Cards grid */}
-			<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
-				{filtered.map(({ icon: Icon, title, description, bullets, stat, statLabel }, i) => (
+			<div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
+				{SOCIAL_PROOF.map(({ quote, author, role }, i) => (
 					<div
-						key={title}
-						className={`group relative flex flex-col gap-5 p-7 rounded-2xl border overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-						style={{
-							background: "var(--color-card)",
-							borderColor: "var(--color-border)",
-							boxShadow: "0 2px 16px -4px rgba(0,0,0,0.06)",
-							transitionDelay: `${i * 60}ms`,
-						}}>
-						{/* Hover glow */}
-						<div
-							className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-							style={{
-								background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 65%)",
-							}}
-						/>
-						{/* Hover border glow */}
-						<div
-							className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-							style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent)" }}
-						/>
-
-						{/* Header row */}
-						<div className="flex items-start justify-between relative z-10">
-							<div
-								className="size-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
-								style={{ background: "color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
-								<Icon className="size-5 text-primary" />
-							</div>
-							<div className="text-right">
-								<div className="text-2xl font-black" style={{ color: "var(--color-primary)" }}>
-									{stat}
-								</div>
-								<div className="text-xs text-muted-foreground">{statLabel}</div>
-							</div>
+						key={author}
+						className={`flex flex-col px-6 md:px-10 py-10 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+						style={{ transitionDelay: `${i * 120}ms` }}>
+						<span className="font-mono text-[10px] tracking-[0.25em] text-accent font-bold mb-6">LOG_0{i + 1}</span>
+						<p className="text-base font-medium leading-relaxed flex-1 mb-8">"{quote}"</p>
+						<div className="font-mono text-[11px] tracking-wider text-muted-foreground border-t border-border pt-4">
+							<span className="text-foreground font-bold">{author.toUpperCase()}</span>
+							<span className="block mt-1">{role.toUpperCase()}</span>
 						</div>
-
-						{/* Content */}
-						<div className="relative z-10">
-							<h3 className="text-lg font-bold mb-2">{title}</h3>
-							<p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-						</div>
-
-						{/* Bullets */}
-						<ul className="space-y-2 mt-auto relative z-10">
-							{bullets.map((b) => (
-								<li key={b} className="flex items-start gap-2.5 text-sm group/bullet">
-									<div
-										className="size-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-all duration-200 group-hover/bullet:scale-110"
-										style={{ background: "color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
-										<CheckCircle2 className="size-3 text-primary" />
-									</div>
-									<span className="text-muted-foreground group-hover/bullet:text-foreground transition-colors duration-200">{b}</span>
-								</li>
-							))}
-						</ul>
 					</div>
 				))}
-			</div>
-		</section>
-	);
-}
-
-// ── Social proof ──
-function SocialProofSection() {
-	const { ref, inView } = useInView();
-	return (
-		<section
-			ref={ref}
-			className="border-y border-border py-20 relative overflow-hidden"
-			style={{ background: "color-mix(in srgb, var(--color-muted) 15%, transparent)" }}>
-			<div
-				className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-96 rounded-full blur-[120px] pointer-events-none"
-				style={{ background: "color-mix(in srgb, var(--color-primary) 5%, transparent)" }}
-			/>
-			<div className="container mx-auto px-4 max-w-5xl relative">
-				<div className={`text-center mb-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-					<SectionBadge icon={Star} label="Global impact" />
-					<h2 className="text-3xl md:text-4xl font-black text-balance tracking-tight">Trusted by engineering-led support teams</h2>
-				</div>
-				<div className="grid md:grid-cols-3 gap-5">
-					{SOCIAL_PROOF.map(({ quote, author, role, rating }, i) => (
-						<div
-							key={author}
-							className={`group relative flex flex-col gap-4 p-7 rounded-2xl border overflow-hidden transition-all duration-700 hover:-translate-y-2 hover:shadow-xl ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-							style={{
-								background: "var(--color-card)",
-								borderColor: "var(--color-border)",
-								transitionDelay: `${i * 100}ms`,
-							}}>
-							{/* Hover glow */}
-							<div
-								className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-								style={{
-									background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 7%, transparent), transparent 70%)",
-								}}
-							/>
-							{/* Inset border on hover */}
-							<div
-								className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-								style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent)" }}
-							/>
-
-							<div className="flex gap-0.5 relative z-10">
-								{Array.from({ length: rating }).map((_, idx) => (
-									<Star key={idx} className="size-4 fill-primary text-primary" />
-								))}
-							</div>
-							<p className="text-sm text-muted-foreground leading-relaxed flex-1 relative z-10">"{quote}"</p>
-							<div className="border-t border-border pt-4 relative z-10">
-								<div className="text-sm font-bold">{author}</div>
-								<div className="text-xs text-muted-foreground mt-0.5">{role}</div>
-							</div>
-						</div>
-					))}
-				</div>
-			</div>
-		</section>
-	);
-}
-
-// ── Bottom CTA ──
-function FeaturesCtaSection() {
-	const { ref, inView } = useInView();
-	return (
-		<section ref={ref} className="container mx-auto px-4 py-24">
-			<div
-				className={`relative max-w-5xl mx-auto rounded-3xl overflow-hidden p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
-				style={{
-					background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 75%, var(--color-accent)) 100%)",
-					boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
-				}}>
-				{/* Grid overlay */}
-				<div
-					className="absolute inset-0 opacity-[0.07] pointer-events-none"
-					style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "32px 32px" }}
-				/>
-				{/* Glow blobs */}
-				<div className="absolute -top-16 -right-16 size-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-				<div className="absolute -bottom-16 -left-16 size-64 rounded-full bg-white/5 blur-3xl pointer-events-none" />
-
-				<div className="relative z-10">
-					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 border border-white/25 text-sm font-medium text-white mb-8">
-						<Sparkles className="size-3.5" /> High-performance support starts here
-					</div>
-					<h2 className="text-4xl md:text-6xl font-black mb-5 text-white text-balance tracking-tight">Deploy Pulse in minutes</h2>
-					<p className="text-xl text-white/75 mb-10 max-w-xl mx-auto leading-relaxed">
-						Experience the power of autonomous support. 14-day full access trial, no commitment required.
-					</p>
-					<div className="flex flex-col sm:flex-row justify-center gap-4">
-						<Button
-							size="xl"
-							asChild
-							className="group bg-white hover:bg-white/90"
-							style={{ color: "var(--color-primary)" }}>
-							<a href="/auth/signup">
-								Start free trial
-								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
-							</a>
-						</Button>
-						<Button
-							size="xl"
-							variant="outline"
-							asChild
-							className="text-white border-white/35 hover:bg-white/10 hover:border-white/60">
-							<a href="/contact">Talk to sales</a>
-						</Button>
-					</div>
-				</div>
 			</div>
 		</section>
 	);

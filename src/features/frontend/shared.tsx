@@ -5,6 +5,7 @@
  * copy-pasting them into each page file.
  */
 import { useState, useEffect, useRef, useCallback } from "react";
+import { ArrowRight } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HOOKS
@@ -152,6 +153,51 @@ export function CtaLink({ href, children, variant = "solid" }: { href: string; c
             <span className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300" style={{ background: "var(--pulse-lime)" }} />
             <span className="relative z-10 flex items-center gap-2 group-hover:text-(--pulse-ink-deep) transition-colors duration-300">{children}</span>
         </a>
+    );
+}
+
+/** Full-bleed dark CTA band with giant background EKG — the standard page closer. */
+export function DarkCta({
+    tag,
+    headline,
+    desc,
+    primary,
+    secondary,
+}: {
+    tag: string;
+    headline: React.ReactNode;
+    desc: string;
+    primary: { href: string; label: string };
+    secondary?: { href: string; label: string };
+}) {
+    const { ref, inView } = useInView();
+    return (
+        <section
+            ref={ref as React.RefObject<HTMLElement>}
+            className="relative text-white overflow-hidden"
+            style={{ background: "var(--pulse-ink-deep)" }}>
+            <div className="absolute inset-0 flex items-center opacity-30 pointer-events-none" style={{ color: "var(--pulse-lime)" }}>
+                <PulseLine className="w-full h-40" strokeWidth={0.8} />
+            </div>
+            <div
+                className={`relative px-6 md:px-12 py-24 md:py-32 text-center transition-all duration-1000 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+                <MonoTag className="block mb-8 text-white/50">{tag}</MonoTag>
+                <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-balance mb-6 max-w-4xl mx-auto">{headline}</h2>
+                <p className="text-white/55 text-lg md:text-xl mb-12 max-w-xl mx-auto">{desc}</p>
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                    <CtaLink href={primary.href} variant="lime">
+                        {primary.label} <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+                    </CtaLink>
+                    {secondary && (
+                        <a
+                            href={secondary.href}
+                            className="inline-flex items-center justify-center gap-2 border border-white/25 px-7 py-4 font-mono text-xs tracking-[0.15em] uppercase font-semibold text-white hover:border-(--pulse-lime) hover:text-(--pulse-lime) transition-colors duration-200">
+                            {secondary.label}
+                        </a>
+                    )}
+                </div>
+            </div>
+        </section>
     );
 }
 

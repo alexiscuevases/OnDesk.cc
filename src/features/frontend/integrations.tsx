@@ -1,8 +1,6 @@
 import { SiteLayout } from "./site-layout";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, Plug, Zap, Shield, Globe, MessageSquare, Code2, Bot, BarChart3, Layers, Clock, Activity } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
-import { useInView, useCounter, SectionBadge } from "./shared";
+import { ArrowRight, Shield, Globe, MessageSquare, Code2, Bot, BarChart3 } from "lucide-react";
+import { useInView, useCounter, useMountVisible, PulseLine, MonoTag, SectionRule, Cross, CtaLink, DarkCta } from "./shared";
 
 const INTEGRATIONS = [
 	{
@@ -84,9 +82,9 @@ const INTEGRATIONS = [
 ];
 
 const BADGE_STYLES: Record<string, string> = {
-	Native: "bg-primary/10 text-primary border-primary/20",
-	Beta: "bg-warning/10 text-warning border-warning/20",
-	Enterprise: "bg-muted text-muted-foreground border-border",
+	Native: "text-accent border-accent/40",
+	Beta: "text-amber-600 border-amber-500/40",
+	Enterprise: "text-muted-foreground border-border",
 };
 
 const HOW_IT_WORKS = [
@@ -96,160 +94,139 @@ const HOW_IT_WORKS = [
 ];
 
 export default function IntegrationsPage() {
-	const [visible, setVisible] = useState(false);
-	const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
-	const statsRef = useInView();
-	const c30 = useCounter(30, 1000, statsRef.inView);
-	const c6000 = useCounter(6000, 1400, statsRef.inView);
-	const c5 = useCounter(5, 900, statsRef.inView);
-	const c999 = useCounter(999, 1300, statsRef.inView);
-
-	useEffect(() => {
-		const id = requestAnimationFrame(() => setVisible(true));
-		return () => cancelAnimationFrame(id);
-	}, []);
-
-	const onMove = useCallback((e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY }), []);
-	useEffect(() => {
-		window.addEventListener("mousemove", onMove);
-		return () => window.removeEventListener("mousemove", onMove);
-	}, [onMove]);
+	const visible = useMountVisible();
+	const { ref: statsRef, inView: statsInView } = useInView();
+	const c30 = useCounter(30, 1000, statsInView);
+	const c6000 = useCounter(6000, 1400, statsInView);
+	const c5 = useCounter(5, 900, statsInView);
+	const c999 = useCounter(999, 1300, statsInView);
 
 	return (
 		<SiteLayout>
-			{/* ── HERO ── */}
-			<section className="relative pt-16 pb-20 md:pt-28 md:pb-28 overflow-hidden border-b border-border">
-				{/* Background */}
-				<div className="absolute inset-0 pointer-events-none">
-					<div className="absolute inset-0 bg-linear-to-br from-primary/6 via-background to-accent/4" />
+			<div className="mx-auto max-w-350 border-x border-border">
+				{/* ── HERO ── */}
+				<section className="relative border-b border-border overflow-hidden">
 					<div
-						className="absolute size-150 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px] transition-all duration-700 ease-out"
-						style={{ left: mousePos.x, top: mousePos.y, background: "color-mix(in srgb, var(--color-primary) 10%, transparent)" }}
+						className="absolute top-0 right-0 w-1/2 h-full opacity-[0.04] pointer-events-none"
+						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "28px 28px" }}
 					/>
-					<div
-						className="absolute top-16 right-[12%] size-72 rounded-full blur-[80px] animate-pulse"
-						style={{ animationDuration: "7s", background: "color-mix(in srgb, var(--color-accent) 8%, transparent)" }}
-					/>
-					<div
-						className="absolute inset-0 opacity-[0.025]"
-						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "40px 40px" }}
-					/>
-				</div>
 
-				<div className="container mx-auto px-4 text-center relative">
-					<div className={`transition-all duration-1000 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-						<SectionBadge icon={Plug} label="Pulse Marketplace" />
-						<h1 className="text-5xl md:text-[5rem] font-black mb-5 text-balance tracking-tight" style={{ lineHeight: 1.04 }}>
+					<div
+						className={`relative px-6 md:px-12 pt-16 md:pt-24 pb-14 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						<div className="flex items-center gap-3 mb-10">
+							<span className="relative flex size-2">
+								<span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping" />
+								<span className="relative inline-flex size-2 rounded-full bg-accent" />
+							</span>
+							<MonoTag className="text-foreground/70">
+								MARKETPLACE — CONNECTOR REGISTRY<span className="blink-cursor text-accent">_</span>
+							</MonoTag>
+						</div>
+
+						<h1 className="max-w-4xl text-5xl md:text-7xl font-black leading-[1.02] tracking-tighter mb-8 text-balance">
 							Connect the tools{" "}
-							<span
-								style={{
-									background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
-									WebkitBackgroundClip: "text",
-									WebkitTextFillColor: "transparent",
-									backgroundClip: "text",
-								}}>
+							<span className="relative inline-block px-2 text-primary-foreground" style={{ background: "var(--color-primary)" }}>
 								you already use
 							</span>
 						</h1>
-						<p
-							className={`text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed text-pretty mb-10 transition-all duration-1000 delay-150 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+
+						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10">
 							Whether you use Gmail or Microsoft 365, Stripe or Salesforce — Pulse connects to your stack in minutes.
 						</p>
-						<div className={`transition-all duration-1000 delay-300 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							<Button size="xl" asChild className="group">
-								<a href="/auth/signup">
-									Get started free
-									<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
-								</a>
-							</Button>
+
+						<div className="flex flex-col sm:flex-row gap-3">
+							<CtaLink href="/auth/signup">
+								Get started free <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+							</CtaLink>
 						</div>
 					</div>
 
-					{/* Stat strip */}
-					<div
-						ref={statsRef.ref as React.RefObject<HTMLDivElement>}
-						className={`grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mt-14 transition-all duration-1000 delay-400 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						{[
-							{ icon: Layers, displayValue: `${c30}+`, label: "Ecosystem Partners" },
-							{ icon: Zap, displayValue: `${c6000.toLocaleString()}+`, label: "Workflow automations" },
-							{ icon: Clock, displayValue: `< ${c5} min`, label: "Native setup" },
-							{ icon: Activity, displayValue: `${(c999 / 10).toFixed(1)}%`, label: "Delivery reliability" },
-						].map(({ icon: Icon, displayValue, label }, i) => (
-							<div
-								key={label}
-								className={`group relative flex flex-col items-center gap-1.5 py-6 px-4 rounded-2xl border transition-all duration-700 hover:-translate-y-1 hover:shadow-lg overflow-hidden cursor-default ${statsRef.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-								style={{ background: "var(--color-card)", borderColor: "var(--color-border)", transitionDelay: `${i * 80}ms` }}>
+					{/* stats — hairline telemetry row */}
+					<div ref={statsRef as React.RefObject<HTMLDivElement>} className="relative border-t border-border">
+						<Cross className="-top-2 -left-1.5" />
+						<Cross className="-top-2 -right-1.5" />
+						<div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-border">
+							{[
+								{ value: `${c30}+`, label: "ECOSYSTEM PARTNERS" },
+								{ value: `${c6000.toLocaleString()}+`, label: "WORKFLOW AUTOMATIONS" },
+								{ value: `< ${c5} MIN`, label: "NATIVE SETUP" },
+								{ value: `${(c999 / 10).toFixed(1)}%`, label: "DELIVERY RELIABILITY" },
+							].map(({ value, label }, i) => (
 								<div
-									className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-									style={{
-										background:
-											"radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 70%)",
-									}}
-								/>
-								<Icon className="size-4 text-primary mb-0.5 group-hover:scale-110 transition-transform duration-300 relative z-10" />
-								<span
-									className="text-2xl font-black relative z-10"
-									style={{ color: "var(--color-primary)", fontVariantNumeric: "tabular-nums" }}>
-									{displayValue}
-								</span>
-								<span className="text-xs text-muted-foreground relative z-10">{label}</span>
-							</div>
-						))}
+									key={label}
+									className={`px-4 md:px-10 py-8 transition-all duration-700 ${statsInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+									style={{ transitionDelay: `${i * 100}ms` }}>
+									<div className="text-3xl md:text-4xl font-black tracking-tighter mb-2" style={{ fontVariantNumeric: "tabular-nums" }}>
+										{value}
+									</div>
+									<div className="font-mono text-[10px] tracking-[0.2em] text-primary font-semibold">{label}</div>
+								</div>
+							))}
+						</div>
 					</div>
-				</div>
-			</section>
 
-			{/* ── HOW IT WORKS ── */}
-			<HowItWorksSection />
+					{/* EKG divider */}
+					<div className="border-t border-border text-accent">
+						<PulseLine className="w-full h-10 block" />
+					</div>
+				</section>
 
-			{/* ── INTEGRATION GROUPS ── */}
-			<IntegrationGroupsSection />
+				{/* ── PROTOCOL — dark band ── */}
+				<HowItWorksBand />
 
-			{/* ── SECURITY NOTE ── */}
-			<SecuritySection />
+				{/* ── REGISTRY ── */}
+				<RegistrySection />
 
-			{/* ── CTA ── */}
-			<IntegrationsCtaSection />
+				{/* ── SECURITY STRIP ── */}
+				<SecurityStrip />
+
+				{/* ── CTA ── */}
+				<DarkCta
+					tag="03 — BUILD · GRAPHQL API + DEVELOPER SDK"
+					headline={
+						<>
+							Build your own <span style={{ color: "var(--pulse-lime)" }}>flow.</span>
+						</>
+					}
+					desc="Extend Pulse with our robust GraphQL API and developer SDK. Build custom internal apps or connect proprietary legacy systems."
+					primary={{ href: "/contact", label: "Request an integration" }}
+					secondary={{ href: "/help", label: "View API docs" }}
+				/>
+			</div>
 		</SiteLayout>
 	);
 }
 
-function HowItWorksSection() {
+function HowItWorksBand() {
 	const { ref, inView } = useInView();
 	return (
-		<section ref={ref} className="container mx-auto px-4 py-20 max-w-5xl">
-			<div className={`text-center mb-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-				<SectionBadge icon={Zap} label="Instant connectivity" />
-				<h2 className="text-3xl md:text-5xl font-black text-balance tracking-tight">Deploy Marketplace tools in minutes</h2>
+		<section ref={ref as React.RefObject<HTMLElement>} className="relative text-white border-b border-border" style={{ background: "var(--pulse-ink)" }}>
+			<div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-white/10">
+				<span className="font-mono text-[11px] tracking-[0.25em]" style={{ color: "var(--pulse-lime)" }}>
+					01 — PROTOCOL
+				</span>
+				<span className="hidden sm:block font-mono text-[11px] tracking-[0.25em] text-white/40">CONNECT → MAP → LIVE</span>
 			</div>
-			<div className="grid md:grid-cols-3 gap-6">
+
+			<div className={`px-6 md:px-12 pt-14 pb-4 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+				<h2 className="text-4xl md:text-6xl font-black tracking-tight text-balance max-w-3xl">
+					Deploy Marketplace tools <span style={{ color: "var(--pulse-lime)" }}>in minutes.</span>
+				</h2>
+			</div>
+
+			<div className="px-6 md:px-12 pt-8" style={{ color: "var(--pulse-lime)" }}>
+				<PulseLine className="w-full h-9 block" strokeWidth={1.2} />
+			</div>
+
+			<div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10 border-t border-white/10">
 				{HOW_IT_WORKS.map(({ step, title, desc }, i) => (
 					<div
 						key={step}
-						className={`group relative flex flex-col gap-4 p-7 rounded-2xl border overflow-hidden transition-all duration-700 hover:-translate-y-2 hover:shadow-xl ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-						style={{
-							background: "var(--color-card)",
-							borderColor: "var(--color-border)",
-							transitionDelay: `${i * 100}ms`,
-						}}>
-						{/* Hover glow */}
-						<div
-							className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-							style={{
-								background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 7%, transparent), transparent 70%)",
-							}}
-						/>
-						<div
-							className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-							style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent)" }}
-						/>
-						<span
-							className="text-6xl font-black leading-none relative z-10 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-1 inline-block"
-							style={{ color: "color-mix(in srgb, var(--color-primary) 15%, transparent)" }}>
-							{step}
-						</span>
-						<h3 className="font-bold text-lg relative z-10">{title}</h3>
-						<p className="text-sm text-muted-foreground leading-relaxed relative z-10">{desc}</p>
+						className={`px-6 md:px-12 py-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+						style={{ transitionDelay: `${i * 150 + 150}ms` }}>
+						<span className="font-mono text-5xl font-black text-white/15 block mb-8">/{step}</span>
+						<h3 className="text-xl font-bold mb-3">{title}</h3>
+						<p className="text-sm text-white/50 leading-relaxed">{desc}</p>
 					</div>
 				))}
 			</div>
@@ -257,169 +234,85 @@ function HowItWorksSection() {
 	);
 }
 
-function IntegrationGroupsSection() {
+function RegistrySection() {
 	const { ref, inView } = useInView({ threshold: 0.04 });
 	return (
-		<section ref={ref} className="container mx-auto px-4 py-6 md:py-12 pb-16">
-			<div className="max-w-6xl mx-auto space-y-20">
-				{INTEGRATIONS.map((group, gi) => {
-					const GroupIcon = group.icon;
-					return (
-						<div
-							key={group.category}
-							className={`transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
-							style={{ transitionDelay: `${gi * 80}ms` }}>
-							{/* Group header */}
-							<div className="flex items-start gap-4 mb-7">
-								<div
-									className="size-12 rounded-2xl flex items-center justify-center shrink-0 mt-0.5"
-									style={{
-										background: "color-mix(in srgb, var(--color-primary) 12%, transparent)",
-										boxShadow: "0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent)",
-									}}>
-									<GroupIcon className="size-5 text-primary" />
-								</div>
-								<div>
-									<h2 className="text-2xl font-black">{group.category}</h2>
-									<p className="text-sm text-muted-foreground mt-1">{group.description}</p>
-								</div>
-							</div>
-							{/* Cards grid */}
-							<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-								{group.items.map((item, ii) => (
-									<div
-										key={item.name}
-										className={`group relative flex flex-col gap-3 p-6 rounded-2xl border overflow-hidden transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-										style={{
-											background: "var(--color-card)",
-											borderColor: "var(--color-border)",
-											transitionDelay: `${gi * 80 + ii * 60}ms`,
-										}}>
-										{/* Hover glow */}
-										<div
-											className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
-											style={{
-												background:
-													"radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 7%, transparent), transparent 65%)",
-											}}
-										/>
-										<div
-											className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
-											style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 28%, transparent)" }}
-										/>
+		<section ref={ref as React.RefObject<HTMLElement>}>
+			<SectionRule
+				index="02"
+				label="REGISTRY"
+				title="Every connector, indexed"
+				right={`${INTEGRATIONS.reduce((n, g) => n + g.items.length, 0)} CONNECTORS / ${INTEGRATIONS.length} CATEGORIES`}
+			/>
+			<div className="h-10" />
 
-										<div className="flex items-start justify-between gap-2 relative z-10">
-											<div className="flex items-center gap-2.5">
-												<span className="text-2xl leading-none select-none">{item.logo}</span>
-												<h3 className="font-bold">{item.name}</h3>
-											</div>
-											{item.badge && (
-												<span
-													className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${BADGE_STYLES[item.badge] ?? ""}`}>
-													{item.badge}
-												</span>
-											)}
-										</div>
-										<p className="text-sm text-muted-foreground leading-relaxed flex-1 relative z-10">{item.desc}</p>
-										<div
-											className="flex items-center gap-1.5 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 relative z-10"
-											style={{ color: "var(--color-primary)" }}>
-											<CheckCircle2 className="size-3.5" />
-											Available on all plans
-										</div>
-									</div>
-								))}
-							</div>
+			{INTEGRATIONS.map((group, gi) => {
+				const GroupIcon = group.icon;
+				return (
+					<div
+						key={group.category}
+						className={`transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+						style={{ transitionDelay: `${gi * 60}ms` }}>
+						{/* category header row */}
+						<div className="flex items-center gap-4 px-6 md:px-12 py-4 border-t border-border">
+							<GroupIcon className="size-4 text-accent shrink-0" />
+							<span className="font-mono text-[11px] tracking-[0.25em] text-primary font-semibold uppercase">
+								CAT_0{gi + 1} / {group.category}
+							</span>
+							<span className="hidden md:block text-xs text-muted-foreground truncate">{group.description}</span>
+							<span className="ml-auto font-mono text-[10px] tracking-widest text-muted-foreground/60 shrink-0">
+								{group.items.length} ITEMS
+							</span>
 						</div>
-					);
-				})}
-			</div>
-		</section>
-	);
-}
 
-function SecuritySection() {
-	const { ref, inView } = useInView();
-	return (
-		<section ref={ref} className="container mx-auto px-4 pb-16 max-w-6xl">
-			<div
-				className={`relative rounded-3xl border overflow-hidden p-7 flex flex-col md:flex-row items-start md:items-center gap-6 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-				style={{
-					background: "linear-gradient(120deg, color-mix(in srgb, var(--color-primary) 6%, var(--color-card)), var(--color-card))",
-					borderColor: "color-mix(in srgb, var(--color-primary) 25%, transparent)",
-					boxShadow: "0 4px 30px -6px color-mix(in srgb, var(--color-primary) 10%, transparent)",
-				}}>
-				<div
-					className="absolute inset-0 opacity-[0.03] pointer-events-none"
-					style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "30px 30px" }}
-				/>
-				<div
-					className="size-14 rounded-2xl flex items-center justify-center shrink-0 relative z-10"
-					style={{
-						background: "color-mix(in srgb, var(--color-primary) 12%, transparent)",
-						boxShadow: "0 0 0 1px color-mix(in srgb, var(--color-primary) 22%, transparent)",
-					}}>
-					<Shield className="size-7 text-primary" />
-				</div>
-				<div className="flex-1 relative z-10">
-					<h3 className="font-bold text-lg mb-1">High-performance connectivity for the Enterprise</h3>
-					<p className="text-sm text-muted-foreground leading-relaxed">
-						Every Marketplace connection leverages sovereign security protocols, TLS 1.3 encryption, and signed HMAC-SHA256 payloads for total data integrity.
-					</p>
-				</div>
-				<Button
-					variant="outline"
-					size="sm"
-					asChild
-					className="shrink-0 relative z-10 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200">
-					<a href="/security">
-						Security docs
-						<ArrowRight className="ml-1.5 size-3.5" />
-					</a>
-				</Button>
-			</div>
-		</section>
-	);
-}
-
-function IntegrationsCtaSection() {
-	const { ref, inView } = useInView();
-	return (
-		<section ref={ref} className="container mx-auto px-4 py-20">
-			<div
-				className={`relative max-w-5xl mx-auto rounded-3xl overflow-hidden p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
-				style={{
-					background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 75%, var(--color-accent)) 100%)",
-					boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
-				}}>
-				<div
-					className="absolute inset-0 opacity-[0.07] pointer-events-none"
-					style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "32px 32px" }}
-				/>
-				<div className="absolute -top-16 -right-16 size-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-				<div className="absolute -bottom-16 -left-16 size-64 rounded-full bg-white/5 blur-3xl pointer-events-none" />
-
-				<div className="relative z-10">
-					<SectionBadge icon={Code2} label="Pulse SDK" />
-					<h2 className="text-4xl md:text-6xl font-black mb-5 text-white text-balance tracking-tight">Build your own flow</h2>
-					<p className="text-xl text-white/75 mb-10 max-w-xl mx-auto leading-relaxed">
-						Extend Pulse with our robust GraphQL API and developer SDK. Build custom internal apps or connect proprietary legacy systems.
-					</p>
-					<div className="flex flex-col sm:flex-row justify-center gap-4">
-						<Button size="xl" asChild className="group bg-white hover:bg-white/90" style={{ color: "var(--color-primary)" }}>
-							<a href="/contact">
-								Request an integration
-								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
-							</a>
-						</Button>
-						<Button size="xl" variant="outline" asChild className="text-white border-white/35 hover:bg-white/10 hover:border-white/60">
-							<a href="/help">
-								<Zap className="mr-2 size-4" />
-								View API docs
-							</a>
-						</Button>
+						{/* connector cells */}
+						<div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border border-t border-border">
+							{group.items.map((item) => (
+								<div key={item.name} className="group relative bg-background px-6 py-6 flex flex-col">
+									<span className="absolute top-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-500 bg-accent" />
+									<div className="flex items-start justify-between gap-2 mb-3">
+										<div className="flex items-center gap-2.5">
+											<span className="text-xl leading-none select-none">{item.logo}</span>
+											<h3 className="font-bold text-sm">{item.name}</h3>
+										</div>
+										{item.badge && (
+											<span className={`shrink-0 font-mono text-[9px] tracking-[0.2em] border px-1.5 py-0.5 ${BADGE_STYLES[item.badge] ?? ""}`}>
+												{item.badge.toUpperCase()}
+											</span>
+										)}
+									</div>
+									<p className="text-sm text-muted-foreground leading-relaxed flex-1">{item.desc}</p>
+									<div className="font-mono text-[10px] tracking-[0.15em] text-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-4">
+										✓ AVAILABLE ON ALL PLANS
+									</div>
+								</div>
+							))}
+						</div>
 					</div>
+				);
+			})}
+		</section>
+	);
+}
+
+function SecurityStrip() {
+	const { ref, inView } = useInView();
+	return (
+		<section ref={ref as React.RefObject<HTMLElement>} className="border-t border-border">
+			<div
+				className={`flex flex-col md:flex-row md:items-center gap-5 px-6 md:px-12 py-8 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+				<Shield className="size-6 text-accent shrink-0" />
+				<div className="flex-1">
+					<p className="font-bold mb-1">High-performance connectivity for the Enterprise</p>
+					<p className="text-sm text-muted-foreground leading-relaxed">
+						Every Marketplace connection leverages sovereign security protocols, TLS 1.3 encryption, and signed HMAC-SHA256 payloads.
+					</p>
 				</div>
+				<a
+					href="/security"
+					className="inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.15em] uppercase font-semibold text-primary hover:text-accent transition-colors shrink-0">
+					Security docs <ArrowRight className="size-3" />
+				</a>
 			</div>
 		</section>
 	);
