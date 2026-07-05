@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, MapPin, Globe, Heart, Zap, TrendingUp, BookOpen, Monitor, Clock, Users, Star, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, ArrowUpRight, MapPin, Globe, Heart, Zap, TrendingUp, BookOpen, Monitor, Clock, Users, Star } from "lucide-react";
 import { SiteLayout } from "./site-layout";
-import { useInView, useCounter, SectionBadge } from "./shared";
+import { useInView, useCounter, useMountVisible, PulseLine, MonoTag, SectionRule, Cross, CtaLink, DarkCta } from "./shared";
 
-// -- Data --
+// ── Data ──
 
 const DEPARTMENTS = [
 	{
@@ -12,29 +11,29 @@ const DEPARTMENTS = [
 		openRoles: [
 			{ title: "Senior Intelligence Engineer — Pulse Core", location: "Remote (EU / US)", type: "Full-time", tags: ["Python", "LLMs", "Azure"] },
 			{ title: "Frontend Engineer — Design Systems", location: "Remote (EU / US)", type: "Full-time", tags: ["React", "TypeScript", "Tailwind"] },
-			{ title: "Staff Engineer  Infrastructure", location: "Remote (EU / US)", type: "Full-time", tags: ["Kubernetes", "Terraform", "GCP"] },
-			{ title: "ML Engineer  Ticket Classification", location: "Remote", type: "Full-time", tags: ["NLP", "PyTorch", "Azure OpenAI"] },
+			{ title: "Staff Engineer — Infrastructure", location: "Remote (EU / US)", type: "Full-time", tags: ["Kubernetes", "Terraform", "GCP"] },
+			{ title: "ML Engineer — Ticket Classification", location: "Remote", type: "Full-time", tags: ["NLP", "PyTorch", "Azure OpenAI"] },
 		],
 	},
 	{
 		name: "Product & Design",
 		openRoles: [
-			{ title: "Senior Product Manager  Core Platform", location: "Remote (EU / US)", type: "Full-time", tags: ["B2B SaaS", "Enterprise", "AI"] },
-			{ title: "Product Designer  Enterprise UX", location: "Remote", type: "Full-time", tags: ["Figma", "Research", "Design Systems"] },
+			{ title: "Senior Product Manager — Core Platform", location: "Remote (EU / US)", type: "Full-time", tags: ["B2B SaaS", "Enterprise", "AI"] },
+			{ title: "Product Designer — Enterprise UX", location: "Remote", type: "Full-time", tags: ["Figma", "Research", "Design Systems"] },
 			{ title: "Product Manager — Starter & SMB", location: "Remote", type: "Full-time", tags: ["SMB", "Self-serve", "Growth"] },
 		],
 	},
 	{
 		name: "Customer Success",
 		openRoles: [
-			{ title: "Customer Success Manager  Enterprise (EMEA)", location: "London or Remote", type: "Full-time", tags: ["Enterprise", "EMEA", "SaaS"] },
+			{ title: "Customer Success Manager — Enterprise (EMEA)", location: "London or Remote", type: "Full-time", tags: ["Enterprise", "EMEA", "SaaS"] },
 			{ title: "Technical Onboarding Specialist", location: "Remote", type: "Full-time", tags: ["Onboarding", "Technical", "SMB"] },
 		],
 	},
 	{
 		name: "Sales",
 		openRoles: [
-			{ title: "Account Executive  Mid-Market (EMEA)", location: "London or Remote", type: "Full-time", tags: ["Mid-Market", "EMEA", "SaaS"] },
+			{ title: "Account Executive — Mid-Market (EMEA)", location: "London or Remote", type: "Full-time", tags: ["Mid-Market", "EMEA", "SaaS"] },
 			{ title: "Sales Engineer", location: "Remote (US)", type: "Full-time", tags: ["Pre-sales", "Technical", "Integrations"] },
 			{ title: "SMB Account Executive", location: "Remote (US / LATAM)", type: "Full-time", tags: ["SMB", "Self-serve", "SaaS"] },
 		],
@@ -43,17 +42,17 @@ const DEPARTMENTS = [
 
 const PERKS = [
 	{ icon: Globe, title: "Fully remote", desc: "Work from wherever you do your best thinking. We have team members across 14 countries." },
-	{ icon: TrendingUp, title: "Competitive equity", desc: "Meaningful stock options for every employee  we believe in shared ownership from day one." },
+	{ icon: TrendingUp, title: "Competitive equity", desc: "Meaningful stock options for every employee — we believe in shared ownership from day one." },
 	{ icon: Heart, title: "Health & wellness", desc: "$200/month wellness allowance plus comprehensive medical, dental, and vision." },
 	{ icon: BookOpen, title: "Learning budget", desc: "$2,000/year for conferences, courses, and books. No approval required." },
-	{ icon: Clock, title: "Generous PTO", desc: "Unlimited PTO with a minimum of 20 days encouraged. We track utilization  we mean it." },
+	{ icon: Clock, title: "Generous PTO", desc: "Unlimited PTO with a minimum of 20 days encouraged. We track utilization — we mean it." },
 	{ icon: Monitor, title: "Home office stipend", desc: "$1,500 to set up your workspace the way you want it." },
 	{ icon: Users, title: "Team retreats", desc: "Two company-wide retreats per year. We have been to Lisbon, Barcelona, and Tokyo." },
 	{ icon: Zap, title: "Fast-paced growth", desc: "Tripled ARR in 2024. You will see your work matter and grow with the company." },
 ];
 
 const PROCESS = [
-	{ step: "01", title: "Apply online", desc: "Send your application. We review every submission  no auto-rejections on keywords." },
+	{ step: "01", title: "Apply online", desc: "Send your application. We review every submission — no auto-rejections on keywords." },
 	{ step: "02", title: "Intro call", desc: "30 minutes with a member of our team to discuss the role and answer your questions." },
 	{ step: "03", title: "Technical / work sample", desc: "A focused, paid take-home or live interview relevant to your role. No trick questions." },
 	{ step: "04", title: "Final interviews", desc: "Meet 2-3 people you would work with day-to-day. Decision within 5 business days." },
@@ -61,46 +60,164 @@ const PROCESS = [
 
 const GLASSDOOR = [
 	{ quote: "Best company I have worked at. Leadership actually listens, shipping is fast, and the team is world-class.", role: "Senior Engineer" },
-	{ quote: "Fully remote done right. Not just tolerated  it is the default. Great async culture.", role: "Product Designer" },
+	{ quote: "Fully remote done right. Not just tolerated — it is the default. Great async culture.", role: "Product Designer" },
 	{ quote: "Unlimited PTO that people actually use. Refreshing for a startup.", role: "Customer Success Manager" },
 ];
 
-// -- Sections --
+const TOTAL_ROLES = DEPARTMENTS.reduce((acc, d) => acc + d.openRoles.length, 0);
+
+// ── Page ──
+
+export default function CareersPage() {
+	const visible = useMountVisible();
+	const [activeDept, setActiveDept] = useState("All");
+	const { ref: statsRef, inView: statsInView } = useInView();
+	const c47 = useCounter(47, 900, statsInView);
+	const c14 = useCounter(14, 800, statsInView);
+	const c49 = useCounter(49, 1200, statsInView);
+	const c94 = useCounter(94, 1100, statsInView);
+
+	return (
+		<SiteLayout>
+			<div className="mx-auto max-w-350 border-x border-border">
+				{/* ── HERO ── */}
+				<section className="relative border-b border-border overflow-hidden">
+					<div
+						className="absolute top-0 right-0 w-1/2 h-full opacity-[0.04] pointer-events-none"
+						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "28px 28px" }}
+					/>
+
+					<div
+						className={`relative px-6 md:px-12 pt-16 md:pt-24 pb-14 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						<div className="flex items-center gap-3 mb-10">
+							<span className="relative flex size-2">
+								<span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping" />
+								<span className="relative inline-flex size-2 rounded-full bg-accent" />
+							</span>
+							<MonoTag className="text-foreground/70">
+								HIRING — {TOTAL_ROLES} POSITIONS OPEN<span className="blink-cursor text-accent">_</span>
+							</MonoTag>
+						</div>
+
+						<h1 className="max-w-4xl text-5xl md:text-7xl font-black leading-[1.02] tracking-tighter mb-8 text-balance">
+							Build the{" "}
+							<span className="relative inline-block px-2 text-primary-foreground" style={{ background: "var(--color-primary)" }}>
+								autonomous service
+							</span>
+						</h1>
+
+						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-8">
+							We are a remote-first team of 47 people spread across the globe, building support infrastructure that works for solo
+							founders and enterprise teams alike.
+						</p>
+
+						<div className="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-10">
+							<span>
+								<span className="text-accent mr-2">●</span>14 COUNTRIES
+							</span>
+							<span>
+								<span className="text-accent mr-2">●</span>FULLY REMOTE
+							</span>
+							<span>
+								<span className="text-accent mr-2">●</span>4.9 / 5 GLASSDOOR
+							</span>
+						</div>
+
+						<div className="flex flex-col sm:flex-row gap-3">
+							<CtaLink href="#roles">
+								View open positions <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+							</CtaLink>
+							<CtaLink href="/about" variant="outline">
+								About us
+							</CtaLink>
+						</div>
+					</div>
+
+					{/* stats row */}
+					<div ref={statsRef as React.RefObject<HTMLDivElement>} className="relative border-t border-border">
+						<Cross className="-top-2 -left-1.5" />
+						<Cross className="-top-2 -right-1.5" />
+						<div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-border">
+							{[
+								{ value: `${c47}`, label: "TEAM MEMBERS" },
+								{ value: `${c14}`, label: "COUNTRIES" },
+								{ value: `${(c49 / 10).toFixed(1)}/5`, label: "GLASSDOOR RATING" },
+								{ value: `${c94}%`, label: "WOULD RECOMMEND" },
+							].map(({ value, label }, i) => (
+								<div
+									key={label}
+									className={`px-4 md:px-10 py-8 transition-all duration-700 ${statsInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+									style={{ transitionDelay: `${i * 100}ms` }}>
+									<div className="text-3xl md:text-4xl font-black tracking-tighter mb-2" style={{ fontVariantNumeric: "tabular-nums" }}>
+										{value}
+									</div>
+									<div className="font-mono text-[10px] tracking-[0.2em] text-primary font-semibold">{label}</div>
+								</div>
+							))}
+						</div>
+					</div>
+
+					{/* EKG divider */}
+					<div className="border-t border-border text-accent">
+						<PulseLine className="w-full h-10 block" />
+					</div>
+				</section>
+
+				{/* ── BENEFITS ── */}
+				<PerksSection />
+
+				{/* ── CREW REPORTS ── */}
+				<GlassdoorSection />
+
+				{/* ── OPEN POSITIONS ── */}
+				<OpenRolesSection activeDept={activeDept} setActiveDept={setActiveDept} />
+
+				{/* ── PROCESS — dark band ── */}
+				<ProcessBand />
+
+				{/* ── CTA ── */}
+				<DarkCta
+					tag="EOF — GENERAL APPLICATION"
+					headline={
+						<>
+							Don't see your <span style={{ color: "var(--pulse-lime)" }}>role?</span>
+						</>
+					}
+					desc="We are always interested in meeting exceptional people. Send us a note and tell us how you would contribute."
+					primary={{ href: "/contact", label: "Send a general application" }}
+					secondary={{ href: "/about", label: "About us" }}
+				/>
+			</div>
+		</SiteLayout>
+	);
+}
+
+// ── Sections ──
 
 function PerksSection() {
 	const { ref, inView } = useInView();
 	return (
-		<section className="py-20 md:py-28 border-b border-border" ref={ref}>
-			<div className="container mx-auto px-4">
-				<div className="text-center mb-12">
-					<SectionBadge icon={Heart} label="Benefits" />
-					<h2 className="text-3xl md:text-4xl font-bold mb-3">Why work here</h2>
-					<p className="text-muted-foreground text-sm max-w-xl mx-auto">
-						We compete on culture, not just compensation. Here is what that means in practice.
-					</p>
-				</div>
-				<div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+		<section ref={ref as React.RefObject<HTMLElement>}>
+			<SectionRule index="01" label="BENEFITS" title="Why work here" right="CULTURE > COMPENSATION" />
+			<p className="px-6 md:px-12 pb-10 text-lg text-muted-foreground max-w-2xl">
+				We compete on culture, not just compensation. Here is what that means in practice.
+			</p>
+
+			<div className="relative border-t border-border">
+				<Cross className="-top-2 -left-1.5" />
+				<Cross className="-top-2 -right-1.5" />
+				<div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-border border-b border-border">
 					{PERKS.map(({ icon: Icon, title, desc }, i) => (
 						<div
 							key={title}
-							className={`group relative flex flex-col gap-3 p-5 rounded-xl border border-border bg-card overflow-hidden transition-all duration-700 hover:-translate-y-1 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+							className={`group relative bg-background px-6 py-8 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
 							style={{ transitionDelay: `${i * 60}ms` }}>
-							<div
-								className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-								style={{
-									background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 7%, transparent), transparent 70%)",
-								}}
-							/>
-							<div
-								className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-								style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent)" }}
-							/>
-							<div
-								className="size-10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
-								style={{ background: "color-mix(in srgb, var(--color-primary) 12%, transparent)" }}>
-								<Icon className="size-5" style={{ color: "var(--color-primary)" }} />
+							<span className="absolute top-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-500 bg-accent" />
+							<div className="flex items-center justify-between mb-6">
+								<span className="font-mono text-[11px] tracking-[0.25em] text-muted-foreground/60">0{i + 1}</span>
+								<Icon className="size-4 text-accent" />
 							</div>
-							<h3 className="font-semibold text-sm">{title}</h3>
+							<h3 className="font-bold text-sm mb-2">{title}</h3>
 							<p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
 						</div>
 					))}
@@ -113,45 +230,28 @@ function PerksSection() {
 function GlassdoorSection() {
 	const { ref, inView } = useInView();
 	return (
-		<section
-			className="py-16 border-b border-border"
-			style={{ background: "color-mix(in srgb, var(--color-muted) 40%, var(--color-background))" }}
-			ref={ref}>
-			<div className="container mx-auto px-4 max-w-5xl">
-				<div className="flex items-center justify-between mb-8">
-					<h2 className="text-2xl font-bold">What the team says</h2>
-					<div className="flex items-center gap-1.5 text-sm">
-						<div className="flex gap-0.5">
-							{Array.from({ length: 5 }).map((_, i) => (
-								<Star key={i} className="size-3.5 fill-primary text-primary" />
-							))}
+		<section ref={ref as React.RefObject<HTMLElement>} className="border-b border-border">
+			<div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-border">
+				<MonoTag className="text-primary">02 — CREW REPORTS</MonoTag>
+				<span className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-muted-foreground">
+					<Star className="size-3 fill-accent text-accent" />
+					4.9 / 5 ON GLASSDOOR
+				</span>
+			</div>
+
+			<div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
+				{GLASSDOOR.map(({ quote, role }, i) => (
+					<div
+						key={role}
+						className={`flex flex-col px-6 md:px-10 py-10 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+						style={{ transitionDelay: `${i * 100}ms` }}>
+						<span className="font-mono text-[10px] tracking-[0.25em] text-accent font-bold mb-6">LOG_0{i + 1}</span>
+						<p className="text-base font-medium leading-relaxed flex-1 mb-8">"{quote}"</p>
+						<div className="font-mono text-[11px] tracking-wider text-muted-foreground border-t border-border pt-4">
+							{role.toUpperCase()} — VERIFIED EMPLOYEE
 						</div>
-						<span className="font-semibold">4.9</span>
-						<span className="text-muted-foreground">on Glassdoor</span>
 					</div>
-				</div>
-				<div className="grid md:grid-cols-3 gap-4">
-					{GLASSDOOR.map(({ quote, role }, i) => (
-						<div
-							key={role}
-							className={`group relative flex flex-col gap-3 p-5 rounded-xl border border-border bg-card overflow-hidden transition-all duration-700 hover:-translate-y-0.5 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-							style={{ transitionDelay: `${i * 100}ms` }}>
-							<div
-								className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-								style={{
-									background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 5%, transparent), transparent 70%)",
-								}}
-							/>
-							<div className="flex gap-0.5">
-								{Array.from({ length: 5 }).map((_, i) => (
-									<Star key={i} className="size-3 fill-primary text-primary" />
-								))}
-							</div>
-							<p className="text-sm text-foreground leading-relaxed italic">"{quote}"</p>
-							<p className="text-xs text-muted-foreground mt-auto pt-2 border-t border-border">{role}</p>
-						</div>
-					))}
-				</div>
+				))}
 			</div>
 		</section>
 	);
@@ -161,312 +261,114 @@ function OpenRolesSection({ activeDept, setActiveDept }: { activeDept: string; s
 	const { ref, inView } = useInView();
 	const allDepts = ["All", ...DEPARTMENTS.map((d) => d.name)];
 	const filtered = activeDept === "All" ? DEPARTMENTS : DEPARTMENTS.filter((d) => d.name === activeDept);
-	const totalRoles = DEPARTMENTS.reduce((acc, d) => acc + d.openRoles.length, 0);
 
 	return (
-		<section className="py-20 border-b border-border" ref={ref}>
-			<div className="container mx-auto px-4 max-w-4xl">
-				<div className="text-center mb-10">
-					<SectionBadge icon={Zap} label={`${totalRoles} open positions`} />
-					<h2 className="text-3xl md:text-4xl font-bold mb-2">Open positions</h2>
-					<p className="text-sm text-muted-foreground">
-						{totalRoles} roles across {DEPARTMENTS.length} departments
-					</p>
-				</div>
+		<section id="roles" ref={ref as React.RefObject<HTMLElement>} className="scroll-mt-16">
+			<SectionRule index="03" label="OPEN POSITIONS" title="Join the crew" right={`${TOTAL_ROLES} ROLES / ${DEPARTMENTS.length} DEPARTMENTS`} />
+			<div className="h-6" />
 
-				{/* Filter pills */}
-				<div className="flex flex-wrap justify-center gap-2 mb-10">
-					{allDepts.map((dept) => {
-						const isActive = activeDept === dept;
-						return (
-							<button
-								key={dept}
-								onClick={() => setActiveDept(dept)}
-								className={`relative px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-300 overflow-hidden ${isActive
-									? "text-primary-foreground border-primary shadow-lg shadow-primary/30 scale-105"
-									: "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground hover:scale-105"
-									}`}
-								style={isActive ? { background: "var(--color-primary)" } : {}}>
-								{isActive && (
-									<span
-										className="absolute inset-0 rounded-full animate-pulse"
-										style={{ background: "color-mix(in srgb, var(--color-primary) 25%, transparent)" }}
-									/>
-								)}
-								<span className="relative z-10">{dept}</span>
-							</button>
-						);
-					})}
-				</div>
-
-				<div className="space-y-10">
-					{filtered.map((dept) => (
-						<div key={dept.name}>
-							<div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
-								<h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">{dept.name}</h3>
-								<span className="text-xs font-medium" style={{ color: "var(--color-primary)" }}>
-									{dept.openRoles.length} open
-								</span>
-							</div>
-							<div className="space-y-3">
-								{dept.openRoles.map((role, i) => (
-									<div
-										key={role.title}
-										className={`group relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 rounded-xl border border-border bg-card overflow-hidden transition-all duration-700 hover:-translate-y-0.5 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
-										style={{ transitionDelay: `${i * 60}ms` }}>
-										<div
-											className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-											style={{
-												background:
-													"radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 5%, transparent), transparent 70%)",
-											}}
-										/>
-										<div
-											className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-											style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent)" }}
-										/>
-										<div className="flex-1 min-w-0 relative z-10">
-											<p className="font-semibold group-hover:text-primary transition-colors">{role.title}</p>
-											<div className="flex flex-wrap gap-3 mt-1.5 text-sm text-muted-foreground">
-												<span className="flex items-center gap-1">
-													<MapPin className="size-3.5" /> {role.location}
-												</span>
-												<span>{role.type}</span>
-											</div>
-											<div className="flex flex-wrap gap-1.5 mt-2">
-												{role.tags.map((tag) => (
-													<span
-														key={tag}
-														className="text-xs px-2 py-0.5 rounded-full border"
-														style={{
-															background: "color-mix(in srgb, var(--color-primary) 6%, transparent)",
-															borderColor: "color-mix(in srgb, var(--color-primary) 15%, transparent)",
-															color: "var(--color-primary)",
-														}}>
-														{tag}
-													</span>
-												))}
-											</div>
-										</div>
-										<Button size="sm" variant="outline" asChild className="group/btn shrink-0 relative z-10">
-											<a href="/contact">
-												Apply
-												<ArrowRight className="ml-1.5 size-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-											</a>
-										</Button>
-									</div>
-								))}
-							</div>
-						</div>
-					))}
-				</div>
+			{/* mono filter buttons */}
+			<div className="flex flex-wrap gap-2 px-6 md:px-12 pb-10">
+				{allDepts.map((dept) => {
+					const isActive = activeDept === dept;
+					return (
+						<button
+							key={dept}
+							onClick={() => setActiveDept(dept)}
+							className={`px-4 py-2 border font-mono text-[11px] tracking-[0.15em] uppercase font-semibold transition-colors duration-200 ${
+								isActive
+									? "bg-primary text-primary-foreground border-primary"
+									: "text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+							}`}>
+							{dept}
+						</button>
+					);
+				})}
 			</div>
-		</section>
-	);
-}
 
-function HiringProcessSection() {
-	const { ref, inView } = useInView();
-	return (
-		<section
-			className="py-20 border-b border-border"
-			style={{ background: "color-mix(in srgb, var(--color-muted) 40%, var(--color-background))" }}
-			ref={ref}>
-			<div className="container mx-auto px-4 max-w-4xl">
-				<div className="text-center mb-12">
-					<SectionBadge icon={Clock} label="Process" />
-					<h2 className="text-3xl md:text-4xl font-bold mb-3">Our hiring process</h2>
-					<p className="text-center text-sm text-muted-foreground">Transparent, fast, and respectful of your time.</p>
-				</div>
-				<div className="grid md:grid-cols-4 gap-5">
-					{PROCESS.map(({ step, title, desc }, i) => (
-						<div
-							key={step}
-							className={`group relative flex flex-col gap-3 p-5 rounded-xl border border-border bg-card overflow-hidden transition-all duration-700 hover:-translate-y-1 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-							style={{ transitionDelay: `${i * 100}ms` }}>
-							<div
-								className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-								style={{
-									background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 6%, transparent), transparent 70%)",
-								}}
-							/>
-							<span className="text-3xl font-black" style={{ color: "color-mix(in srgb, var(--color-primary) 15%, transparent)" }}>
-								{step}
+			<div key={activeDept} className={`animate-in fade-in duration-300 ${inView ? "" : "opacity-0"}`}>
+				{filtered.map((dept, di) => (
+					<div key={dept.name}>
+						{/* department header row */}
+						<div className="flex items-center gap-4 px-6 md:px-12 py-4 border-t border-border">
+							<span className="font-mono text-[11px] tracking-[0.25em] text-primary font-semibold uppercase">
+								DEPT_0{DEPARTMENTS.findIndex((d) => d.name === dept.name) + 1} / {dept.name}
 							</span>
-							<h3 className="font-semibold text-sm">{title}</h3>
-							<p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+							<span className="ml-auto font-mono text-[10px] tracking-widest text-accent shrink-0">{dept.openRoles.length} OPEN</span>
 						</div>
-					))}
-				</div>
+
+						{/* role rows */}
+						<div className="border-t border-border divide-y divide-border">
+							{dept.openRoles.map((role, i) => (
+								<a
+									key={role.title}
+									href="/contact"
+									className={`group grid sm:grid-cols-12 gap-3 sm:gap-4 items-center px-6 md:px-12 py-5 transition-colors duration-200 hover:bg-accent/5 ${inView ? "opacity-100" : "opacity-0"}`}
+									style={{ transitionDelay: `${di * 60 + i * 40}ms` }}>
+									<div className="sm:col-span-6 min-w-0">
+										<p className="font-bold group-hover:text-primary transition-colors">{role.title}</p>
+										<div className="flex flex-wrap gap-1.5 mt-2">
+											{role.tags.map((tag) => (
+												<span key={tag} className="font-mono text-[9px] tracking-[0.15em] uppercase border border-border px-1.5 py-0.5 text-muted-foreground">
+													{tag}
+												</span>
+											))}
+										</div>
+									</div>
+									<div className="sm:col-span-3 flex items-center gap-1.5 font-mono text-[10px] tracking-widest uppercase text-muted-foreground">
+										<MapPin className="size-3 text-accent shrink-0" />
+										{role.location}
+									</div>
+									<div className="sm:col-span-2 font-mono text-[10px] tracking-[0.15em] uppercase text-muted-foreground">{role.type}</div>
+									<div className="sm:col-span-1 flex sm:justify-end">
+										<span className="inline-flex items-center gap-1 font-mono text-[10px] tracking-[0.15em] uppercase font-bold text-primary group-hover:text-accent transition-colors">
+											APPLY <ArrowUpRight className="size-3" />
+										</span>
+									</div>
+								</a>
+							))}
+						</div>
+					</div>
+				))}
 			</div>
 		</section>
 	);
 }
 
-function CareersCtaSection() {
+function ProcessBand() {
 	const { ref, inView } = useInView();
 	return (
-		<section className="py-24 md:py-32" ref={ref}>
-			<div className="container mx-auto px-4">
-				<div
-					className={`relative overflow-hidden rounded-3xl p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-					style={{
-						background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 75%, var(--color-accent)) 100%)",
-						boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
-					}}>
+		<section ref={ref as React.RefObject<HTMLElement>} className="relative text-white border-y border-border" style={{ background: "var(--pulse-ink)" }}>
+			<div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-white/10">
+				<span className="font-mono text-[11px] tracking-[0.25em]" style={{ color: "var(--pulse-lime)" }}>
+					04 — PROCESS
+				</span>
+				<span className="hidden sm:block font-mono text-[11px] tracking-[0.25em] text-white/40">APPLY → OFFER IN ~2 WEEKS</span>
+			</div>
+
+			<div className={`px-6 md:px-12 pt-14 pb-4 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+				<h2 className="text-4xl md:text-6xl font-black tracking-tight text-balance max-w-3xl mb-3">
+					Transparent, fast, <span style={{ color: "var(--pulse-lime)" }}>respectful.</span>
+				</h2>
+				<p className="text-white/50 text-lg">Four steps. No trick questions. Paid work samples.</p>
+			</div>
+
+			<div className="px-6 md:px-12 pt-8" style={{ color: "var(--pulse-lime)" }}>
+				<PulseLine className="w-full h-9 block" strokeWidth={1.2} />
+			</div>
+
+			<div className="grid md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10 border-t border-white/10">
+				{PROCESS.map(({ step, title, desc }, i) => (
 					<div
-						className="absolute inset-0 pointer-events-none"
-						style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "32px 32px", opacity: 0.07 }}
-					/>
-					<div
-						className="absolute -top-20 -right-20 size-64 rounded-full blur-3xl pointer-events-none"
-						style={{ background: "color-mix(in srgb, var(--color-accent) 30%, transparent)" }}
-					/>
-					<div
-						className="absolute -bottom-20 -left-20 size-64 rounded-full blur-3xl pointer-events-none"
-						style={{ background: "color-mix(in srgb, var(--color-primary) 50%, transparent)" }}
-					/>
-					<div className="relative z-10">
-						<p className="text-white/70 text-sm font-semibold tracking-widest uppercase mb-4">General application</p>
-						<h2 className="text-3xl md:text-5xl font-black text-white mb-5 text-balance">Don't see your role?</h2>
-						<p className="text-white/75 text-lg leading-relaxed max-w-xl mx-auto mb-10">
-							We are always interested in meeting exceptional people. Send us a note and tell us how you would contribute.
-						</p>
-						<div className="flex flex-col sm:flex-row justify-center gap-4">
-							<Button
-								size="xl"
-								className="font-semibold border-0 hover:opacity-90 transition-opacity group"
-								style={{ background: "white", color: "var(--color-primary)" }}
-								asChild>
-								<a href="/contact">
-									Send a general application
-									<ChevronRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
-								</a>
-							</Button>
-							<Button
-								size="xl"
-								variant="outline"
-								className="font-semibold text-white border-white/35 hover:bg-white/10 hover:border-white/50"
-								asChild>
-								<a href="/about">About us</a>
-							</Button>
-						</div>
+						key={step}
+						className={`px-6 md:px-10 py-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+						style={{ transitionDelay: `${i * 120 + 150}ms` }}>
+						<span className="font-mono text-5xl font-black text-white/15 block mb-8">/{step}</span>
+						<h3 className="text-lg font-bold mb-3">{title}</h3>
+						<p className="text-sm text-white/50 leading-relaxed">{desc}</p>
 					</div>
-				</div>
+				))}
 			</div>
 		</section>
-	);
-}
-
-// -- Page --
-
-export default function CareersPage() {
-	const [heroVisible, setHeroVisible] = useState(false);
-	const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
-	const [activeDept, setActiveDept] = useState("All");
-
-	const totalRoles = DEPARTMENTS.reduce((acc, d) => acc + d.openRoles.length, 0);
-
-	useEffect(() => {
-		const id = requestAnimationFrame(() => setHeroVisible(true));
-		return () => cancelAnimationFrame(id);
-	}, []);
-
-	const onMove = useCallback((e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY }), []);
-	useEffect(() => {
-		window.addEventListener("mousemove", onMove);
-		return () => window.removeEventListener("mousemove", onMove);
-	}, [onMove]);
-	const statsRef = useInView();
-	const c47 = useCounter(47, 900, statsRef.inView);
-	const c14 = useCounter(14, 800, statsRef.inView);
-	const c49 = useCounter(49, 1200, statsRef.inView);
-	const c94 = useCounter(94, 1100, statsRef.inView);
-
-	return (
-		<SiteLayout>
-			{/* Hero */}
-			<section className="relative overflow-hidden py-24 md:py-36 border-b border-border">
-				<div className="absolute inset-0 bg-linear-to-br from-primary/6 via-background to-accent/4" />
-				<div
-					className="absolute size-150 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px] transition-all duration-700 pointer-events-none"
-					style={{ left: mousePos.x, top: mousePos.y, background: "color-mix(in srgb, var(--color-primary) 10%, transparent)" }}
-				/>
-				<div
-					className="absolute inset-0 opacity-[0.025] pointer-events-none"
-					style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "40px 40px" }}
-				/>
-				<div className="relative container mx-auto px-4 text-center max-w-3xl">
-					<div className={`transition-all duration-700 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						<SectionBadge icon={Zap} label={`${totalRoles} open positions`} />
-					</div>
-					<h1
-						className={`text-4xl md:text-6xl font-black mb-6 text-balance leading-tight transition-all duration-700 delay-100 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						Build the{" "}
-						<span
-							style={{
-								background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
-								WebkitBackgroundClip: "text",
-								WebkitTextFillColor: "transparent",
-								backgroundClip: "text",
-							}}>
-							autonomous service
-						</span>
-					</h1>
-					<p
-						className={`text-xl text-muted-foreground leading-relaxed text-pretty mb-10 transition-all duration-700 delay-200 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						We are a remote-first team of 47 people spread across the globe, building support infrastructure that works for solo founders and enterprise teams alike.
-					</p>
-					<div
-						className={`flex flex-wrap justify-center gap-4 text-sm text-muted-foreground transition-all duration-700 delay-300 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						<span className="flex items-center gap-1.5">
-							<Globe className="size-4" style={{ color: "var(--color-primary)" }} /> 14 countries
-						</span>
-						<span className="flex items-center gap-1.5">
-							<MapPin className="size-4" style={{ color: "var(--color-primary)" }} /> Fully remote
-						</span>
-						<span className="flex items-center gap-1.5">
-							<Star className="size-4 fill-primary" style={{ color: "var(--color-primary)" }} /> 4.9 / 5 Glassdoor
-						</span>
-					</div>
-
-					<div
-						ref={statsRef.ref as React.RefObject<HTMLDivElement>}
-						className={`grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mt-14 transition-all duration-1000 delay-400 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						{[
-							{ icon: Users, displayValue: `${c47}`, label: "Team members" },
-							{ icon: Globe, displayValue: `${c14}`, label: "Countries" },
-							{ icon: Star, displayValue: `${(c49 / 10).toFixed(1)}/5`, label: "Glassdoor rating" },
-							{ icon: Heart, displayValue: `${c94}%`, label: "Would recommend" },
-						].map(({ icon: Icon, displayValue, label }, i) => (
-							<div
-								key={label}
-								className={`group relative flex flex-col items-center gap-1.5 py-6 px-4 rounded-2xl border transition-all duration-700 hover:-translate-y-1 hover:shadow-lg overflow-hidden cursor-default ${statsRef.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-								style={{ background: "var(--color-card)", borderColor: "var(--color-border)", transitionDelay: `${i * 80}ms` }}>
-								<div
-									className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-									style={{
-										background:
-											"radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 70%)",
-									}}
-								/>
-								<Icon className="size-4 text-primary mb-0.5 group-hover:scale-110 transition-transform duration-300 relative z-10" />
-								<span
-									className="text-2xl font-black relative z-10"
-									style={{ color: "var(--color-primary)", fontVariantNumeric: "tabular-nums" }}>
-									{displayValue}
-								</span>
-								<span className="text-xs text-muted-foreground relative z-10">{label}</span>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
-			<PerksSection />
-			<GlassdoorSection />
-			<OpenRolesSection activeDept={activeDept} setActiveDept={setActiveDept} />
-			<HiringProcessSection />
-			<CareersCtaSection />
-		</SiteLayout>
 	);
 }
