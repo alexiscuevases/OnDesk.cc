@@ -42,7 +42,7 @@ export function SecuritySection() {
 
 	if (settingsQuery.isError || !settingsQuery.data) {
 		return (
-			<div className="flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/5 p-4">
+			<div className="flex items-center gap-2 border border-destructive/20 bg-destructive/5 p-4">
 				<AlertCircle className="size-4 text-destructive shrink-0" />
 				<p className="text-xs text-destructive">Failed to load security settings.</p>
 			</div>
@@ -72,9 +72,9 @@ function AuthenticationCard({ workspaceId, settings }: { workspaceId: string; se
 	});
 
 	return (
-		<Card className="border-0 shadow-sm">
+		<Card>
 			<CardHeader>
-				<CardTitle className="text-sm font-semibold">Authentication</CardTitle>
+				<CardTitle className="console-label">Authentication</CardTitle>
 				<CardDescription className="text-xs">Control how all agents sign in to the workspace</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-4">
@@ -120,9 +120,9 @@ function AccessControlsCard({ workspaceId, settings }: { workspaceId: string; se
 	});
 
 	return (
-		<Card className="border-0 shadow-sm">
+		<Card>
 			<CardHeader>
-				<CardTitle className="text-sm font-semibold">Access Controls</CardTitle>
+				<CardTitle className="console-label">Access Controls</CardTitle>
 				<CardDescription className="text-xs">Restrict and audit workspace access</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-4">
@@ -201,7 +201,7 @@ function IpAllowlistEditor({ workspaceId }: { workspaceId: string }) {
 						value={cidr}
 						onChange={(e) => setCidr(e.target.value)}
 						placeholder="203.0.113.5 or 203.0.113.0/24"
-						className="h-8 text-xs"
+						className="h-8 text-xs font-mono"
 					/>
 				</div>
 				<div className="flex-1">
@@ -226,7 +226,7 @@ function IpAllowlistEditor({ workspaceId }: { workspaceId: string }) {
 			{listQuery.isLoading ? (
 				<div className="text-[10px] text-muted-foreground flex items-center gap-1.5"><Loader2 className="size-3 animate-spin" /> Loading...</div>
 			) : (listQuery.data?.length ?? 0) === 0 ? (
-				<div className="rounded-lg border border-dashed p-3 flex items-center gap-2">
+				<div className="border border-dashed p-3 flex items-center gap-2">
 					<Shield className="size-3.5 text-muted-foreground" />
 					<p className="text-[10px] text-muted-foreground">
 						No IPs added yet. With the allowlist enabled and empty, all sign-ins will be blocked — add at least one entry.
@@ -235,7 +235,7 @@ function IpAllowlistEditor({ workspaceId }: { workspaceId: string }) {
 			) : (
 				<div className="space-y-1.5">
 					{listQuery.data!.map((entry) => (
-						<div key={entry.id} className="flex items-center justify-between rounded-lg border bg-background px-3 py-1.5">
+						<div key={entry.id} className="flex items-center justify-between border bg-background px-3 py-1.5">
 							<div className="flex items-center gap-2 min-w-0">
 								<code className="text-[11px] font-mono">{entry.cidr}</code>
 								{entry.label && <span className="text-[10px] text-muted-foreground truncate">— {entry.label}</span>}
@@ -283,11 +283,11 @@ function AuditLogCard({ workspaceId, enabled }: { workspaceId: string; enabled: 
 	});
 
 	return (
-		<Card className="border-0 shadow-sm">
+		<Card>
 			<CardHeader>
 				<div className="flex items-center justify-between">
 					<div>
-						<CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+						<CardTitle className="console-label flex items-center gap-1.5">
 							<History className="size-3.5" />
 							Audit Log
 						</CardTitle>
@@ -295,14 +295,14 @@ function AuditLogCard({ workspaceId, enabled }: { workspaceId: string; enabled: 
 					</div>
 					{enabled && query.data && query.data.total > limit && (
 						<Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setShowAll(true)}>
-							Show all ({query.data.total})
+							Show all (<span className="font-mono tabular-nums">{query.data.total}</span>)
 						</Button>
 					)}
 				</div>
 			</CardHeader>
 			<CardContent>
 				{!enabled ? (
-					<div className="rounded-lg border border-dashed p-3">
+					<div className="border border-dashed p-3">
 						<p className="text-[10px] text-muted-foreground">Enable the Audit Log toggle above to start recording events.</p>
 					</div>
 				) : query.isLoading ? (
@@ -322,18 +322,18 @@ function AuditLogCard({ workspaceId, enabled }: { workspaceId: string; enabled: 
 function AuditLogRow({ entry }: { entry: AuditLogEntry }) {
 	const date = new Date(entry.created_at * 1000);
 	return (
-		<div className="flex items-start gap-3 rounded-lg border bg-background px-3 py-2">
+		<div className="flex items-start gap-3 border bg-background px-3 py-2">
 			<Badge variant={actionVariant(entry.action)} className="text-[9px] shrink-0 mt-0.5">
 				{ACTION_LABELS[entry.action] ?? entry.action}
 			</Badge>
 			<div className="flex-1 min-w-0">
 				<p className="text-[11px] truncate">
-					<span className="font-medium">{entry.actor_email ?? "System"}</span>
+					<span className="font-medium font-mono">{entry.actor_email ?? "System"}</span>
 					{entry.target && <span className="text-muted-foreground"> · {entry.target}</span>}
 				</p>
 				<p className="text-[10px] text-muted-foreground">
 					{date.toLocaleString()}
-					{entry.ip && <span> · {entry.ip}</span>}
+					{entry.ip && <span className="font-mono"> · {entry.ip}</span>}
 				</p>
 			</div>
 		</div>

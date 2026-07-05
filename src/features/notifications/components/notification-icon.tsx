@@ -27,33 +27,33 @@ export function NotificationIcon({ type, size = "sm" }: { type: Notification["ty
 	switch (type) {
 		case "sla":
 			return (
-				<div className={`flex ${box} items-center justify-center rounded-lg bg-warning/15`}>
+				<div className={`flex ${box} items-center justify-center bg-warning/15`}>
 					<Clock className={`${icon} text-warning`} />
 				</div>
 			);
 		case "assign":
 			return (
-				<div className={`flex ${box} items-center justify-center rounded-lg bg-primary/10`}>
+				<div className={`flex ${box} items-center justify-center bg-primary/10`}>
 					<UserPlus className={`${icon} text-primary`} />
 				</div>
 			);
 		case "resolved":
 			return (
-				<div className={`flex ${box} items-center justify-center rounded-lg bg-accent/15`}>
-					<CheckCircle2 className={`${icon} text-accent`} />
+				<div className={`flex ${box} items-center justify-center bg-success/15`}>
+					<CheckCircle2 className={`${icon} text-success`} />
 				</div>
 			);
 		case "message":
 			return (
-				<div className={`flex ${box} items-center justify-center rounded-lg bg-chart-2/10`}>
+				<div className={`flex ${box} items-center justify-center bg-chart-2/10`}>
 					<MessageSquare className={`${icon} text-chart-2`} />
 				</div>
 			);
 		case "ticket":
 		default:
 			return (
-				<div className={`flex ${box} items-center justify-center rounded-lg bg-chart-1/10`}>
-					<AlertCircle className={`${icon} text-chart-1`} />
+				<div className={`flex ${box} items-center justify-center bg-info/10`}>
+					<AlertCircle className={`${icon} text-info`} />
 				</div>
 			);
 	}

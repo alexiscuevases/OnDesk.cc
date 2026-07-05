@@ -62,9 +62,9 @@ export function AutomationRuleBuilder({ value, onChange }: Props) {
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center justify-between">
-				<Label className="text-xs font-medium">When</Label>
+				<Label className="console-label">When</Label>
 				<Select value={value.match} onValueChange={(v) => onChange({ ...value, match: v as "all" | "any" })}>
-					<SelectTrigger className="h-7 w-32 rounded-md text-xs">
+					<SelectTrigger className="h-7 w-32 text-xs">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -76,7 +76,7 @@ export function AutomationRuleBuilder({ value, onChange }: Props) {
 
 			<div className="space-y-2">
 				{value.rules.length === 0 && (
-					<p className="rounded-lg border border-dashed p-3 text-center text-xs text-muted-foreground">
+					<p className="border border-dashed p-3 text-center text-xs text-muted-foreground">
 						No conditions — runs on every event of this type.
 					</p>
 				)}
@@ -85,7 +85,7 @@ export function AutomationRuleBuilder({ value, onChange }: Props) {
 					return (
 						<div key={i} className="flex items-center gap-2">
 							<Select value={rule.field} onValueChange={(v) => updateRule(i, { field: v as AutomationConditionField })}>
-								<SelectTrigger className="h-8 flex-1 rounded-md text-xs">
+								<SelectTrigger className="h-8 flex-1 text-xs">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
@@ -97,7 +97,7 @@ export function AutomationRuleBuilder({ value, onChange }: Props) {
 								</SelectContent>
 							</Select>
 							<Select value={rule.op} onValueChange={(v) => updateRule(i, { op: v as AutomationConditionOp })}>
-								<SelectTrigger className="h-8 w-36 rounded-md text-xs">
+								<SelectTrigger className="h-8 w-36 text-xs">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
@@ -112,7 +112,7 @@ export function AutomationRuleBuilder({ value, onChange }: Props) {
 								<Input
 									value={(rule.value as string) ?? ""}
 									onChange={(e) => updateRule(i, { value: e.target.value })}
-									className="h-8 flex-1 rounded-md text-xs"
+									className="h-8 flex-1 text-xs"
 									placeholder="Value"
 								/>
 							)}
@@ -124,7 +124,7 @@ export function AutomationRuleBuilder({ value, onChange }: Props) {
 				})}
 			</div>
 
-			<Button type="button" variant="outline" size="sm" onClick={addRule} className="h-7 rounded-md text-xs">
+			<Button type="button" variant="outline" size="sm" onClick={addRule} className="h-7 text-xs">
 				<Plus className="mr-1 size-3" />
 				Add condition
 			</Button>

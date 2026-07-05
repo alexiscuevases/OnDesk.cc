@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EmptyState } from "@/shared/components/console";
 import { useTeams } from "@/features/teams/hooks/use-team-queries";
 import type { Team } from "@/features/teams/api/teams-api";
 
@@ -58,22 +59,22 @@ export function AssignTeamModal({ open, onOpenChange, selectedCount, workspaceId
 							placeholder="Search teams..."
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="pl-9 h-9 rounded-lg"
+							className="pl-9 h-9"
 						/>
 					</div>
-					<div className="max-h-[300px] overflow-y-auto rounded-lg border">
+					<div className="max-h-[300px] overflow-y-auto border">
 						{filtered.length > 0 ? (
 							<div className="p-1">
 								{filtered.map((team) => (
 									<button
 										key={team.id}
 										onClick={() => setSelectedTeam(team)}
-										className={`w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/80 transition-colors ${
+										className={`w-full flex items-center gap-3 p-2.5 hover:bg-secondary/80 transition-colors ${
 											selectedTeam?.id === team.id ? "bg-secondary" : ""
 										}`}>
-										<Avatar className="size-8 rounded-lg">
-											<AvatarImage src={team.logo_url ?? undefined} className="object-cover rounded-lg" />
-											<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
+										<Avatar className="size-8">
+											<AvatarImage src={team.logo_url ?? undefined} className="object-cover" />
+											<AvatarFallback className="bg-primary text-primary-foreground text-[10px] font-bold">
 												{getInitials(team.name)}
 											</AvatarFallback>
 										</Avatar>
@@ -90,18 +91,15 @@ export function AssignTeamModal({ open, onOpenChange, selectedCount, workspaceId
 								))}
 							</div>
 						) : (
-							<div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-								<Users className="size-8 mb-2 opacity-30" />
-								<p className="text-sm">No teams found</p>
-							</div>
+							<EmptyState icon={Users} title="No teams found" className="py-8" />
 						)}
 					</div>
 				</div>
 				<DialogFooter className="gap-2">
-					<Button variant="outline" onClick={() => handleOpenChange(false)} className="rounded-lg">
+					<Button variant="outline" onClick={() => handleOpenChange(false)}>
 						Cancel
 					</Button>
-					<Button onClick={handleConfirm} disabled={!selectedTeam} className="rounded-lg">
+					<Button onClick={handleConfirm} disabled={!selectedTeam}>
 						Assign Team
 					</Button>
 				</DialogFooter>

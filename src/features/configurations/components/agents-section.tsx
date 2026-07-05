@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import { useWorkspace } from "@/context/workspace-context";
 import { useWorkspaceMembers, useWorkspaceInvitations } from "@/features/users/hooks/use-user-queries";
 import {
@@ -73,33 +74,29 @@ export function AgentsSection() {
 					<p className="text-xs text-muted-foreground">
 						Invite teammates as agents and manage their workspace role.
 					</p>
-					<Button size="sm" className="rounded-lg text-xs gap-1.5" onClick={() => setAddOpen(true)}>
+					<Button size="sm" className="text-xs gap-1.5" onClick={() => setAddOpen(true)}>
 						<UserPlus className="size-3.5" />
 						Invite Agent
 					</Button>
 				</div>
 
-				<div className="grid grid-cols-2 gap-3">
-					<SummaryCard icon={Users} label="Agents" value={members.length} />
-					<SummaryCard icon={Mail} label="Pending invites" value={invitations.length} />
-				</div>
+				<StatGrid className="grid-cols-2">
+					<StatTile icon={Users} label="Agents" value={members.length} />
+					<StatTile icon={Mail} label="Pending invites" value={invitations.length} />
+				</StatGrid>
 
-				<Card className="border-0 shadow-sm">
+				<Card>
 					<CardHeader>
-						<CardTitle className="text-sm font-semibold">Support Agents</CardTitle>
+						<CardTitle className="console-label">Support Agents</CardTitle>
 						<CardDescription className="text-xs">Members currently active in this workspace</CardDescription>
 					</CardHeader>
 					<CardContent>
 					{members.length === 0 ? (
-						<div className="flex flex-col items-center gap-2 py-8 text-center">
-							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-								<Users className="size-5 text-muted-foreground" />
-							</div>
-							<p className="text-sm font-medium">No agents yet</p>
-							<p className="text-[11px] text-muted-foreground max-w-xs">
-								Invite your team members to start collaborating on support tickets.
-							</p>
-						</div>
+						<EmptyState
+							icon={Users}
+							title="No agents yet"
+							description="Invite your team members to start collaborating on support tickets."
+						/>
 					) : (
 					<div className="space-y-2">
 						{members.map((member) => {
@@ -112,25 +109,25 @@ export function AgentsSection() {
 							return (
 								<div
 									key={member.id}
-									className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
-									<Avatar className="size-9 rounded-lg">
-										<AvatarImage src={member.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-lg" />
-										<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[11px] font-bold">
+									className="flex items-center gap-3 bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
+									<Avatar className="size-9">
+										<AvatarImage src={member.logo_url ?? workspace.logo_url ?? undefined} className="object-cover" />
+										<AvatarFallback className="bg-primary text-primary-foreground text-[11px] font-bold">
 											{initials}
 										</AvatarFallback>
 									</Avatar>
 									<div className="flex-1 min-w-0">
 										<p className="text-sm font-medium">{member.name}</p>
-										<p className="text-[11px] text-muted-foreground">{member.email}</p>
+										<p className="text-[11px] text-muted-foreground font-mono">{member.email}</p>
 									</div>
-									<Badge variant="secondary" className="text-[10px] rounded-full px-2">
+									<Badge variant="secondary" className="text-[10px] px-2">
 										{member.workspace_role}
 									</Badge>
 									<div className="flex items-center gap-1 shrink-0">
 										<Button
 											variant="ghost"
 											size="icon"
-											className="size-7 rounded-lg"
+											className="size-7"
 											onClick={() => {
 												setSelectedMember(member);
 												setEditOpen(true);
@@ -141,7 +138,7 @@ export function AgentsSection() {
 										<Button
 											variant="ghost"
 											size="icon"
-											className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+											className="size-7 text-destructive hover:text-destructive hover:bg-destructive/10"
 											onClick={() => {
 												setSelectedMember(member);
 												setDeleteOpen(true);
@@ -158,28 +155,28 @@ export function AgentsSection() {
 
 					{invitations.length > 0 && (
 						<div className="mt-4 space-y-2">
-							<p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+							<p className="console-label flex items-center gap-1.5">
 								<Clock className="size-3" />
 								Pending Invitations
 							</p>
 							{invitations.map((invite) => (
-								<div key={invite.id} className="flex items-center gap-3 rounded-xl border border-dashed bg-muted/30 p-3.5">
-									<Avatar className="size-9 rounded-lg">
-										<AvatarFallback className="rounded-lg bg-muted text-muted-foreground text-[11px] font-bold">
+								<div key={invite.id} className="flex items-center gap-3 border border-dashed bg-muted/30 p-3.5">
+									<Avatar className="size-9">
+										<AvatarFallback className="bg-muted text-muted-foreground text-[11px] font-bold">
 											{invite.email[0].toUpperCase()}
 										</AvatarFallback>
 									</Avatar>
 									<div className="flex-1 min-w-0">
-										<p className="text-sm font-medium truncate">{invite.email}</p>
+										<p className="text-sm font-medium truncate font-mono">{invite.email}</p>
 										<p className="text-[11px] text-muted-foreground">Expires {new Date(invite.expires_at * 1000).toLocaleDateString()}</p>
 									</div>
-									<Badge variant="outline" className="text-[10px] rounded-full px-2 capitalize">
+									<Badge variant="outline" className="text-[10px] px-2 capitalize">
 										{invite.role}
 									</Badge>
 									<Button
 										variant="ghost"
 										size="icon"
-										className="size-7 rounded-lg text-muted-foreground hover:text-foreground"
+										className="size-7 text-muted-foreground hover:text-foreground"
 										disabled={resendInvitation.isPending}
 										onClick={() =>
 											resendInvitation.mutate(invite.id, {
@@ -193,7 +190,7 @@ export function AgentsSection() {
 									<Button
 										variant="ghost"
 										size="icon"
-										className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+										className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
 										onClick={() =>
 											cancelInvitation.mutate(invite.id, {
 												onSuccess: () => toast.success("Invitation cancelled"),
@@ -225,19 +222,5 @@ export function AgentsSection() {
 				onConfirm={handleDelete}
 			/>
 		</>
-	);
-}
-
-function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
-	return (
-		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
-			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-5 text-primary" />
-			</div>
-			<div>
-				<p className="text-xl font-bold">{value}</p>
-				<p className="text-[11px] text-muted-foreground">{label}</p>
-			</div>
-		</div>
 	);
 }

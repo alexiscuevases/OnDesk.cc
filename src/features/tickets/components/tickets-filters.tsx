@@ -72,20 +72,20 @@ export function TicketsFilters({
 						placeholder="Search by ID, subject, or requester..."
 						value={search}
 						onChange={(e) => onSearchChange(e.target.value)}
-						className="pl-9 h-9 bg-card border-border rounded-lg"
+						className="pl-9 h-9 bg-card border-border"
 					/>
 				</div>
 				<Button
 					variant="outline"
 					size="sm"
 					onClick={() => setOpen(true)}
-					className="h-9 rounded-lg gap-2 shrink-0">
+					className="h-9 gap-2 shrink-0">
 					<SlidersHorizontal className="size-4" />
 					Filters
 					{activeCount > 0 && (
 						<Badge
 							variant="secondary"
-							className="h-5 min-w-5 rounded-full px-1.5 text-[10px] font-semibold bg-primary/15 text-primary">
+							className="h-5 min-w-5 px-1.5 font-mono text-[10px] font-semibold bg-primary/15 text-primary">
 							{activeCount}
 						</Badge>
 					)}
@@ -95,7 +95,7 @@ export function TicketsFilters({
 						variant="ghost"
 						size="sm"
 						onClick={clearAll}
-						className="h-9 rounded-lg gap-1.5 shrink-0 text-muted-foreground hover:text-foreground">
+						className="h-9 gap-1.5 shrink-0 text-muted-foreground hover:text-foreground">
 						<X className="size-3.5" />
 						Clear
 					</Button>
@@ -154,7 +154,7 @@ export function TicketsFilters({
 						<div className="flex flex-col gap-1.5">
 							<Label className="text-xs text-muted-foreground">Status</Label>
 							<Select value={statusFilter} onValueChange={onStatusFilterChange}>
-								<SelectTrigger className="h-9 rounded-lg text-sm">
+								<SelectTrigger className="h-9 text-sm">
 									<SelectValue placeholder="Status" />
 								</SelectTrigger>
 								<SelectContent>
@@ -170,7 +170,7 @@ export function TicketsFilters({
 						<div className="flex flex-col gap-1.5">
 							<Label className="text-xs text-muted-foreground">Priority</Label>
 							<Select value={priorityFilter} onValueChange={onPriorityFilterChange}>
-								<SelectTrigger className="h-9 rounded-lg text-sm">
+								<SelectTrigger className="h-9 text-sm">
 									<SelectValue placeholder="Priority" />
 								</SelectTrigger>
 								<SelectContent>
@@ -186,7 +186,7 @@ export function TicketsFilters({
 						<div className="flex flex-col gap-1.5">
 							<Label className="text-xs text-muted-foreground">Assigned agent</Label>
 							<Select value={assigneeFilter} onValueChange={onAssigneeFilterChange}>
-								<SelectTrigger className="h-9 rounded-lg text-sm">
+								<SelectTrigger className="h-9 text-sm">
 									<SelectValue placeholder="Agent" />
 								</SelectTrigger>
 								<SelectContent>
@@ -203,7 +203,7 @@ export function TicketsFilters({
 						<div className="flex flex-col gap-1.5">
 							<Label className="text-xs text-muted-foreground">Requester</Label>
 							<Select value={requesterFilter} onValueChange={onRequesterFilterChange}>
-								<SelectTrigger className="h-9 rounded-lg text-sm">
+								<SelectTrigger className="h-9 text-sm">
 									<SelectValue placeholder="User" />
 								</SelectTrigger>
 								<SelectContent>
@@ -219,16 +219,10 @@ export function TicketsFilters({
 					</div>
 
 					<DialogFooter className="sm:justify-between gap-2">
-						<Button
-							variant="ghost"
-							onClick={clearAll}
-							disabled={activeCount === 0}
-							className="rounded-lg">
+						<Button variant="ghost" onClick={clearAll} disabled={activeCount === 0}>
 							Clear all
 						</Button>
-						<Button onClick={() => setOpen(false)} className="rounded-lg">
-							Done
-						</Button>
+						<Button onClick={() => setOpen(false)}>Done</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
@@ -252,7 +246,7 @@ function ActiveFilterChip({
 	return (
 		<Badge
 			variant="secondary"
-			className="h-7 rounded-full px-2.5 gap-1 text-[11px] font-medium bg-secondary hover:bg-secondary/80">
+			className="h-6 px-2 gap-1 font-mono text-[10px] uppercase bg-secondary hover:bg-secondary/80">
 			<span className="text-muted-foreground">{label}:</span>
 			<span className="text-foreground">{display}</span>
 			<button

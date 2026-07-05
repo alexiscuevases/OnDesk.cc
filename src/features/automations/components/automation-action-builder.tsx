@@ -55,7 +55,7 @@ export function AutomationActionBuilder({ value, onChange, users, teams, cannedR
 			case "set_status":
 				return (
 					<Select value={(action.params.status as string) ?? "pending"} onValueChange={(v) => updateParams(index, { status: v })}>
-						<SelectTrigger className="h-8 flex-1 rounded-md text-xs">
+						<SelectTrigger className="h-8 flex-1 text-xs">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -69,7 +69,7 @@ export function AutomationActionBuilder({ value, onChange, users, teams, cannedR
 			case "set_priority":
 				return (
 					<Select value={(action.params.priority as string) ?? "medium"} onValueChange={(v) => updateParams(index, { priority: v })}>
-						<SelectTrigger className="h-8 flex-1 rounded-md text-xs">
+						<SelectTrigger className="h-8 flex-1 text-xs">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -83,7 +83,7 @@ export function AutomationActionBuilder({ value, onChange, users, teams, cannedR
 			case "assign_user":
 				return (
 					<Select value={(action.params.user_id as string) ?? ""} onValueChange={(v) => updateParams(index, { user_id: v })}>
-						<SelectTrigger className="h-8 flex-1 rounded-md text-xs">
+						<SelectTrigger className="h-8 flex-1 text-xs">
 							<SelectValue placeholder="Select user" />
 						</SelectTrigger>
 						<SelectContent>
@@ -96,7 +96,7 @@ export function AutomationActionBuilder({ value, onChange, users, teams, cannedR
 			case "assign_team":
 				return (
 					<Select value={(action.params.team_id as string) ?? ""} onValueChange={(v) => updateParams(index, { team_id: v })}>
-						<SelectTrigger className="h-8 flex-1 rounded-md text-xs">
+						<SelectTrigger className="h-8 flex-1 text-xs">
 							<SelectValue placeholder="Select team" />
 						</SelectTrigger>
 						<SelectContent>
@@ -109,7 +109,7 @@ export function AutomationActionBuilder({ value, onChange, users, teams, cannedR
 			case "send_canned_reply":
 				return (
 					<Select value={(action.params.canned_reply_id as string) ?? ""} onValueChange={(v) => updateParams(index, { canned_reply_id: v })}>
-						<SelectTrigger className="h-8 flex-1 rounded-md text-xs">
+						<SelectTrigger className="h-8 flex-1 text-xs">
 							<SelectValue placeholder="Select canned reply" />
 						</SelectTrigger>
 						<SelectContent>
@@ -125,7 +125,7 @@ export function AutomationActionBuilder({ value, onChange, users, teams, cannedR
 						value={(action.params.content as string) ?? ""}
 						onChange={(e) => updateParams(index, { content: e.target.value })}
 						placeholder="Note content"
-						className="min-h-[60px] flex-1 rounded-md text-xs"
+						className="min-h-[60px] flex-1 text-xs"
 					/>
 				);
 			case "escalate_to_human":
@@ -134,7 +134,7 @@ export function AutomationActionBuilder({ value, onChange, users, teams, cannedR
 						value={(action.params.note as string) ?? ""}
 						onChange={(e) => updateParams(index, { note: e.target.value })}
 						placeholder="Escalation note (optional)"
-						className="h-8 flex-1 rounded-md text-xs"
+						className="h-8 flex-1 text-xs"
 					/>
 				);
 			case "stop_processing":
@@ -144,10 +144,10 @@ export function AutomationActionBuilder({ value, onChange, users, teams, cannedR
 
 	return (
 		<div className="space-y-3">
-			<Label className="text-xs font-medium">Then</Label>
+			<Label className="console-label">Then</Label>
 			<div className="space-y-2">
 				{value.length === 0 && (
-					<p className="rounded-lg border border-dashed p-3 text-center text-xs text-muted-foreground">
+					<p className="border border-dashed p-3 text-center text-xs text-muted-foreground">
 						No actions configured.
 					</p>
 				)}
@@ -157,7 +157,7 @@ export function AutomationActionBuilder({ value, onChange, users, teams, cannedR
 							value={action.type}
 							onValueChange={(v) => updateAction(i, { type: v as AutomationActionType, params: {} })}
 						>
-							<SelectTrigger className="h-8 w-44 shrink-0 rounded-md text-xs">
+							<SelectTrigger className="h-8 w-44 shrink-0 text-xs">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -176,7 +176,7 @@ export function AutomationActionBuilder({ value, onChange, users, teams, cannedR
 				))}
 			</div>
 
-			<Button type="button" variant="outline" size="sm" onClick={addAction} className="h-7 rounded-md text-xs">
+			<Button type="button" variant="outline" size="sm" onClick={addAction} className="h-7 text-xs">
 				<Plus className="mr-1 size-3" />
 				Add action
 			</Button>

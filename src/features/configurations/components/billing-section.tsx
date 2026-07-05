@@ -47,9 +47,9 @@ const PLANS = [
 const PLAN_RANK: Record<SubscriptionPlan, number> = { starter: 0, core: 1, enterprise: 2 };
 
 function statusBadge(status: string) {
-	if (status === "active") return <Badge className="bg-green-500/10 text-green-600 border-green-500/20 text-[10px]">Active</Badge>;
-	if (status === "trialing") return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20 text-[10px]">Trial</Badge>;
-	if (status === "past_due") return <Badge className="bg-red-500/10 text-red-600 border-red-500/20 text-[10px]">Past due</Badge>;
+	if (status === "active") return <Badge className="bg-success/10 text-success border-success/20 text-[10px]">Active</Badge>;
+	if (status === "trialing") return <Badge className="bg-info/10 text-info border-info/20 text-[10px]">Trial</Badge>;
+	if (status === "past_due") return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[10px]">Past due</Badge>;
 	if (status === "canceled") return <Badge variant="secondary" className="text-[10px]">Canceled</Badge>;
 	return <Badge variant="secondary" className="text-[10px]">{status}</Badge>;
 }
@@ -84,9 +84,9 @@ function NoSubscription({ workspaceId, workspaceName }: { workspaceId: string; w
 
 	return (
 		<div className="grid gap-4">
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Choose a Plan</CardTitle>
+					<CardTitle className="console-label">Choose a Plan</CardTitle>
 					<CardDescription className="text-xs">Start your 14-day free trial — no credit card required upfront</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-5">
@@ -96,7 +96,7 @@ function NoSubscription({ workspaceId, workspaceName }: { workspaceId: string; w
 							<button
 								key={c}
 								onClick={() => setCycle(c)}
-								className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${cycle === c ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary/40"}`}>
+								className={`px-3 py-1.5 text-xs font-semibold border transition-all ${cycle === c ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary/40"}`}>
 								{c === "monthly" ? "Monthly" : "Annual (save 20%)"}
 							</button>
 						))}
@@ -111,10 +111,10 @@ function NoSubscription({ workspaceId, workspaceName }: { workspaceId: string; w
 								<button
 									key={p.id}
 									onClick={() => setPlan(p.id)}
-									className={`rounded-xl border p-4 text-left transition-all ${isSelected ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/40"}`}>
+									className={`border p-4 text-left transition-all ${isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
 									<div className="flex items-center justify-between mb-2">
 										<p className="text-xs font-bold">{p.name}</p>
-										<p className="text-sm font-black tabular-nums">${price}<span className="text-[10px] font-normal text-muted-foreground">{p.flat ? "/mo" : "/agent/mo"}</span></p>
+										<p className="text-sm font-black tracking-tight tabular-nums">${price}<span className="text-[10px] font-normal text-muted-foreground">{p.flat ? "/mo" : "/agent/mo"}</span></p>
 									</div>
 									<ul className="space-y-1">
 										{p.features.slice(0, 3).map((f) => (
@@ -130,24 +130,24 @@ function NoSubscription({ workspaceId, workspaceName }: { workspaceId: string; w
 					</div>
 
 					{/* Agent count */}
-					<div className="flex items-center justify-between gap-4 rounded-xl border p-3">
+					<div className="flex items-center justify-between gap-4 border p-3">
 						<div>
 							<p className="text-xs font-semibold">Number of agents</p>
 							<p className="text-[10px] text-muted-foreground">Active support agents in your workspace</p>
 						</div>
 						<div className="flex items-center gap-2">
-							<button onClick={() => setAgents(Math.max(1, agents - 1))} className="size-7 rounded-lg border flex items-center justify-center hover:border-primary/50 text-sm font-bold">-</button>
-							<span className="text-sm font-black tabular-nums w-6 text-center">{agents}</span>
-							<button onClick={() => setAgents(agents + 1)} className="size-7 rounded-lg border flex items-center justify-center hover:border-primary/50 text-sm font-bold">+</button>
+							<button onClick={() => setAgents(Math.max(1, agents - 1))} className="size-7 border flex items-center justify-center hover:border-primary/50 text-sm font-bold">-</button>
+							<span className="text-sm font-black tabular-nums w-6 text-center font-mono">{agents}</span>
+							<button onClick={() => setAgents(agents + 1)} className="size-7 border flex items-center justify-center hover:border-primary/50 text-sm font-bold">+</button>
 						</div>
 					</div>
 
 					{/* Summary + CTA */}
-					<div className="rounded-xl bg-secondary/50 p-3 flex items-center justify-between gap-4">
+					<div className="bg-secondary/50 p-3 flex items-center justify-between gap-4">
 						<div>
-							<p className="text-xs text-muted-foreground">Total</p>
-							<p className="text-lg font-black tabular-nums">${total}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
-							<p className="text-[10px] text-muted-foreground">{currentPlan.flat ? `Flat · up to ${currentPlan.maxAgents} agents` : `$${pricePerAgent} × ${effectiveAgents} agents`}</p>
+							<p className="console-label">Total</p>
+							<p className="text-lg font-black tracking-tight tabular-nums">${total}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
+							<p className="text-[10px] text-muted-foreground font-mono tabular-nums">{currentPlan.flat ? `Flat · up to ${currentPlan.maxAgents} agents` : `$${pricePerAgent} × ${effectiveAgents} agents`}</p>
 						</div>
 						<Button size="sm" className="gap-1.5 h-8 text-xs" onClick={handleCheckout} disabled={loading}>
 							{loading ? <Loader2 className="size-3 animate-spin" /> : <ArrowRight className="size-3" />}
@@ -216,11 +216,11 @@ function ActiveSubscription({ sub, workspaceId }: { sub: Subscription; workspace
 	return (
 		<div className="grid gap-4">
 			{/* Current plan */}
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
 					<div className="flex items-center justify-between">
 						<div>
-							<CardTitle className="text-sm font-semibold">Current Plan</CardTitle>
+							<CardTitle className="console-label">Current Plan</CardTitle>
 							<CardDescription className="text-xs">Your active subscription and usage</CardDescription>
 						</div>
 						{statusBadge(sub.status)}
@@ -229,7 +229,7 @@ function ActiveSubscription({ sub, workspaceId }: { sub: Subscription; workspace
 				<CardContent className="space-y-4">
 					<div className="flex items-start justify-between gap-4">
 						<div className="flex items-center gap-3">
-							<div className="size-10 rounded-xl flex items-center justify-center bg-primary/10">
+							<div className="size-10 flex items-center justify-center bg-primary/10">
 								<Zap className="size-4 text-primary" />
 							</div>
 							<div>
@@ -238,8 +238,8 @@ function ActiveSubscription({ sub, workspaceId }: { sub: Subscription; workspace
 							</div>
 						</div>
 						<div className="text-right">
-							<p className="text-xl font-black tabular-nums">${totalMonthly}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
-							<p className="text-[10px] text-muted-foreground">${pricePerAgent} × {sub.agent_count} agents</p>
+							<p className="text-xl font-black tracking-tight tabular-nums">${totalMonthly}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
+							<p className="text-[10px] text-muted-foreground font-mono tabular-nums">${pricePerAgent} × {sub.agent_count} agents</p>
 						</div>
 					</div>
 
@@ -249,14 +249,14 @@ function ActiveSubscription({ sub, workspaceId }: { sub: Subscription; workspace
 						<div>
 							<div className="flex items-center justify-center gap-1.5 mb-1">
 								<Users className="size-3 text-muted-foreground" />
-								<p className="text-[10px] text-muted-foreground">Agents</p>
+								<p className="console-label">Agents</p>
 							</div>
-							<p className="text-sm font-bold">{sub.agent_count}</p>
+							<p className="text-sm font-bold font-mono tabular-nums">{sub.agent_count}</p>
 						</div>
 						<div>
 							<div className="flex items-center justify-center gap-1.5 mb-1">
 								<CalendarDays className="size-3 text-muted-foreground" />
-								<p className="text-[10px] text-muted-foreground">Next billing</p>
+								<p className="console-label">Next billing</p>
 							</div>
 							<p className="text-sm font-bold">
 								{sub.current_period_end
@@ -267,18 +267,18 @@ function ActiveSubscription({ sub, workspaceId }: { sub: Subscription; workspace
 						<div>
 							<div className="flex items-center justify-center gap-1.5 mb-1">
 								<TrendingUp className="size-3 text-muted-foreground" />
-								<p className="text-[10px] text-muted-foreground">Annual total</p>
+								<p className="console-label">Annual total</p>
 							</div>
-							<p className="text-sm font-bold">${(totalMonthly * 12).toLocaleString()}</p>
+							<p className="text-sm font-bold font-mono tabular-nums">${(totalMonthly * 12).toLocaleString()}</p>
 						</div>
 					</div>
 
 					{sub.status === "trialing" && sub.trial_ends_at && (
 						<>
 							<Separator />
-							<div className="flex items-center gap-2 rounded-lg bg-blue-500/8 border border-blue-500/20 px-3 py-2">
-								<AlertCircle className="size-3.5 text-blue-500 shrink-0" />
-								<p className="text-[10px] text-blue-600">
+							<div className="flex items-center gap-2 bg-info/10 border border-info/20 px-3 py-2">
+								<AlertCircle className="size-3.5 text-info shrink-0" />
+								<p className="text-[10px] text-info">
 									Free trial ends on {new Date(sub.trial_ends_at * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
 								</p>
 							</div>
@@ -288,9 +288,9 @@ function ActiveSubscription({ sub, workspaceId }: { sub: Subscription; workspace
 					{sub.status === "past_due" && (
 						<>
 							<Separator />
-							<div className="flex items-center gap-2 rounded-lg bg-red-500/8 border border-red-500/20 px-3 py-2">
-								<AlertCircle className="size-3.5 text-red-500 shrink-0" />
-								<p className="text-[10px] text-red-600">
+							<div className="flex items-center gap-2 bg-destructive/10 border border-destructive/20 px-3 py-2">
+								<AlertCircle className="size-3.5 text-destructive shrink-0" />
+								<p className="text-[10px] text-destructive">
 									Your last payment failed. Update your payment method to keep your subscription active.
 								</p>
 							</div>
@@ -314,9 +314,9 @@ function ActiveSubscription({ sub, workspaceId }: { sub: Subscription; workspace
 			</Card>
 
 			{/* Upgrade / downgrade */}
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Available Plans</CardTitle>
+					<CardTitle className="console-label">Available Plans</CardTitle>
 					<CardDescription className="text-xs">Upgrade or downgrade at any time — changes are prorated</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-3">
@@ -324,14 +324,14 @@ function ActiveSubscription({ sub, workspaceId }: { sub: Subscription; workspace
 						const isUpgrade = PLAN_RANK[other.id] > PLAN_RANK[sub.plan];
 						const price = sub.cycle === "annual" ? other.priceAnnual : other.priceMonthly;
 						return (
-							<div key={other.id} className="rounded-xl border p-4 flex items-start gap-4">
-								<div className="size-9 rounded-lg flex items-center justify-center bg-primary/10 shrink-0">
+							<div key={other.id} className="border p-4 flex items-start gap-4">
+								<div className="size-9 flex items-center justify-center bg-primary/10 shrink-0">
 									<Zap className="size-4 text-primary" />
 								</div>
 								<div className="flex-1 min-w-0">
 									<div className="flex items-center justify-between gap-2">
 										<p className="text-sm font-bold">{other.name}</p>
-										<p className="text-sm font-black tabular-nums">
+										<p className="text-sm font-black tracking-tight tabular-nums">
 											${price}
 											<span className="text-[10px] font-normal text-muted-foreground">{other.flat ? "/mo" : "/agent/mo"}</span>
 										</p>
@@ -385,7 +385,7 @@ export function BillingSection() {
 
 	if (isError) {
 		return (
-			<div className="flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/5 p-4">
+			<div className="flex items-center gap-2 border border-destructive/20 bg-destructive/5 p-4">
 				<AlertCircle className="size-4 text-destructive shrink-0" />
 				<p className="text-xs text-destructive">Failed to load billing information. Please try again.</p>
 			</div>

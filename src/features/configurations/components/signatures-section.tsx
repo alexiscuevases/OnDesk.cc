@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, FileText, Star } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import { useSignatures } from "@/features/signatures/hooks/use-signature-queries";
 import { useCreateSignatureMutation, useUpdateSignatureMutation, useDeleteSignatureMutation } from "@/features/signatures/hooks/use-signature-mutations";
 import type { Signature } from "@/features/signatures/api/signatures-api";
@@ -49,47 +50,43 @@ export function SignaturesSection() {
 					<p className="text-xs text-muted-foreground">
 						Email signatures automatically appended to outgoing replies.
 					</p>
-					<Button size="sm" className="h-8 gap-1.5 rounded-lg text-xs font-semibold" onClick={() => setAddOpen(true)}>
+					<Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setAddOpen(true)}>
 						<Plus className="size-3.5" />
 						Add Signature
 					</Button>
 				</div>
 
-				<div className="grid grid-cols-2 gap-3">
-					<SummaryCard icon={FileText} label="Signatures" value={signatures.length} />
-					<SummaryCard icon={Star} label="Default" value={defaultCount} />
-				</div>
+				<StatGrid className="grid-cols-2">
+					<StatTile icon={FileText} label="Signatures" value={signatures.length} />
+					<StatTile icon={Star} label="Default" value={defaultCount} />
+				</StatGrid>
 
-				<Card className="border-0 shadow-sm">
+				<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Email Signatures</CardTitle>
+					<CardTitle className="console-label">Email Signatures</CardTitle>
 					<CardDescription className="text-xs">Personal signatures available on your account</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{signatures.length === 0 ? (
-						<div className="flex flex-col items-center gap-2 py-8 text-center">
-							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-								<FileText className="size-5 text-muted-foreground" />
-							</div>
-							<p className="text-sm font-medium">No signatures yet</p>
-							<p className="text-[11px] text-muted-foreground max-w-xs">
-								Add email signatures to automatically append to outgoing replies.
-							</p>
-						</div>
+						<EmptyState
+							icon={FileText}
+							title="No signatures yet"
+							description="Add email signatures to automatically append to outgoing replies."
+						/>
 					) : (
 						<div className="space-y-2">
 							{signatures.map((sig) => (
-								<div key={sig.id} className="flex items-start gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
+								<div key={sig.id} className="flex items-start gap-3 bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
 									<div className="flex-1 min-w-0">
 										<div className="flex items-center gap-2">
 											<p className="text-sm font-medium">{sig.name}</p>
 											{sig.is_default && (
-												<Badge variant="secondary" className="text-[10px] rounded-full px-2">
+												<Badge variant="secondary" className="text-[10px] px-2">
 													Default
 												</Badge>
 											)}
 										</div>
-										<pre className="text-[11px] text-muted-foreground mt-2 whitespace-pre-wrap font-mono bg-muted/50 rounded-lg p-2">
+										<pre className="text-[11px] text-muted-foreground mt-2 whitespace-pre-wrap font-mono bg-muted/50 p-2">
 											{sig.content}
 										</pre>
 									</div>
@@ -97,7 +94,7 @@ export function SignaturesSection() {
 										<Button
 											variant="ghost"
 											size="icon"
-											className="size-7 rounded-lg"
+											className="size-7"
 											onClick={() => {
 												setSelectedSig(sig);
 												setEditOpen(true);
@@ -108,7 +105,7 @@ export function SignaturesSection() {
 										<Button
 											variant="ghost"
 											size="icon"
-											className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+											className="size-7 text-destructive hover:text-destructive hover:bg-destructive/10"
 											onClick={() => {
 												setSelectedSig(sig);
 												setDeleteOpen(true);
@@ -129,19 +126,5 @@ export function SignaturesSection() {
 			<EditSignatureModal open={editOpen} onOpenChange={setEditOpen} signature={selectedSig} onConfirm={handleEdit} />
 			<DeleteSignatureModal open={deleteOpen} onOpenChange={setDeleteOpen} signature={selectedSig} onConfirm={handleDelete} />
 		</>
-	);
-}
-
-function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
-	return (
-		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
-			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-5 text-primary" />
-			</div>
-			<div>
-				<p className="text-xl font-bold">{value}</p>
-				<p className="text-[11px] text-muted-foreground">{label}</p>
-			</div>
-		</div>
 	);
 }

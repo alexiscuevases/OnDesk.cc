@@ -35,9 +35,9 @@ export function ProfileNotificationsSection() {
 
 	return (
 		<div className="grid gap-4">
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Email Notifications</CardTitle>
+					<CardTitle className="console-label text-primary dark:text-accent">Email Notifications</CardTitle>
 					<CardDescription className="text-xs">Choose which events trigger an email to you</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
@@ -60,9 +60,9 @@ export function ProfileNotificationsSection() {
 				</CardContent>
 			</Card>
 
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Push Notifications</CardTitle>
+					<CardTitle className="console-label text-primary dark:text-accent">Push Notifications</CardTitle>
 					<CardDescription className="text-xs">In-browser alerts while you work</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">

@@ -18,7 +18,8 @@ import {
 	Inbox,
 } from "lucide-react";
 import { useWorkspace } from "@/context/workspace-context";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { PanelHeader, EmptyState } from "@/shared/components/console";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -144,9 +145,9 @@ export function TicketsTable({
 					const company = contact?.company_id ? companyMap.get(contact.company_id) ?? null : null;
 					return (
 						<div className="flex items-center gap-2.5 max-w-70 lg:max-w-95">
-							<Avatar className="size-7 rounded-lg shrink-0">
-								<AvatarImage src={company?.logo_url ?? undefined} className="object-cover rounded-lg" />
-								<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[10px] font-bold">
+							<Avatar className="size-7 shrink-0">
+								<AvatarImage src={company?.logo_url ?? undefined} className="object-cover" />
+								<AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
 									{contact ? getInitials(contact.name) : "?"}
 								</AvatarFallback>
 							</Avatar>
@@ -232,7 +233,7 @@ export function TicketsTable({
 				cell: ({ row }) => (
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" size="icon" className="size-8 rounded-lg">
+							<Button variant="ghost" size="icon" className="size-8">
 								<MoreHorizontal className="size-4" />
 								<span className="sr-only">Actions</span>
 							</Button>
@@ -283,15 +284,17 @@ export function TicketsTable({
 	});
 
 	return (
-		<Card className="border-0 shadow-sm overflow-hidden">
-			<CardHeader className="pb-3">
-				<CardTitle className="text-sm font-semibold">All Tickets</CardTitle>
-				<CardDescription className="text-xs">
-					{isLoading && totalCount === 0
-						? "Loading..."
-						: `${totalCount} ticket${totalCount !== 1 ? "s" : ""} found`}
-				</CardDescription>
-			</CardHeader>
+		<Card className="gap-0 py-0 overflow-hidden">
+			<PanelHeader
+				label="All Tickets"
+				right={
+					<span className="console-label tabular-nums">
+						{isLoading && totalCount === 0
+							? "Loading..."
+							: `${totalCount} ticket${totalCount !== 1 ? "s" : ""} found`}
+					</span>
+				}
+			/>
 			<CardContent className="p-0">
 				<Table>
 					<TableHeader>
@@ -307,7 +310,7 @@ export function TicketsTable({
 										<TableHead
 											key={header.id}
 											style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
-											className={`text-[11px] font-semibold uppercase tracking-wider ${
+											className={`${
 												idx === 0 ? "pl-6" : ""
 											} ${idx === lastIdx ? "pr-6" : ""} ${
 												hideOnSmall ? (header.column.id === "team" ? "hidden lg:table-cell" : "hidden sm:table-cell") : ""
@@ -316,7 +319,7 @@ export function TicketsTable({
 												<button
 													type="button"
 													onClick={header.column.getToggleSortingHandler()}
-													className="flex items-center gap-1.5 hover:text-foreground transition-colors uppercase tracking-wider">
+													className="flex items-center gap-1.5 hover:text-foreground transition-colors">
 													{flexRender(header.column.columnDef.header, header.getContext())}
 													{sortDir === "asc" ? (
 														<ChevronUp className="size-3" />
@@ -338,16 +341,12 @@ export function TicketsTable({
 					<TableBody>
 						{table.getRowModel().rows.length === 0 ? (
 							<TableRow>
-								<TableCell colSpan={columns.length} className="py-14 text-center">
-									<div className="flex flex-col items-center gap-2">
-										<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-											<Inbox className="size-5 text-muted-foreground" />
-										</div>
-										<p className="text-sm font-medium">No tickets found</p>
-										<p className="text-[11px] text-muted-foreground">
-											Try adjusting your filters or search query.
-										</p>
-									</div>
+								<TableCell colSpan={columns.length} className="py-4">
+									<EmptyState
+										icon={Inbox}
+										title="No tickets found"
+										description="Try adjusting your filters or search query."
+									/>
 								</TableCell>
 							</TableRow>
 						) : (
@@ -381,11 +380,11 @@ export function TicketsTable({
 
 				<div className="flex items-center justify-between px-6 py-4 border-t">
 					<div className="flex items-center gap-3">
-						<p className="text-xs text-muted-foreground">
+						<p className="console-label tabular-nums">
 							Showing {pageStart}–{pageEnd} of {totalCount}
 						</p>
 						<div className="flex items-center gap-1.5">
-							<span className="text-xs text-muted-foreground">Rows:</span>
+							<span className="console-label">Rows:</span>
 							<Select value={String(pageSize)} onValueChange={(v) => onPageSizeChange(Number(v))}>
 								<SelectTrigger className="h-8 w-18 text-xs">
 									<SelectValue />
@@ -404,19 +403,19 @@ export function TicketsTable({
 						<Button
 							variant="outline"
 							size="icon"
-							className="size-8 rounded-lg"
+							className="size-8"
 							disabled={page <= 1 || isLoading}
 							onClick={() => onPageChange(Math.max(1, page - 1))}>
 							<ChevronLeft className="size-4" />
 							<span className="sr-only">Previous page</span>
 						</Button>
-						<span className="text-xs text-muted-foreground px-2">
+						<span className="console-label tabular-nums px-2">
 							Page {page} of {totalPages}
 						</span>
 						<Button
 							variant="outline"
 							size="icon"
-							className="size-8 rounded-lg"
+							className="size-8"
 							disabled={page >= totalPages || isLoading}
 							onClick={() => onPageChange(Math.min(totalPages, page + 1))}>
 							<ChevronRight className="size-4" />

@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, Users, UserCog } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import { useWorkspace } from "@/context/workspace-context";
 import { useTeams } from "@/features/teams/hooks/use-team-queries";
 import { useCreateTeamMutation, useUpdateTeamMutation, useDeleteTeamMutation } from "@/features/teams/hooks/use-team-mutations";
@@ -89,34 +90,30 @@ export function TeamsSection() {
 					<p className="text-xs text-muted-foreground">
 						Organize agents into teams for routing and auto-assignment.
 					</p>
-					<Button size="sm" className="h-8 gap-1.5 rounded-lg text-xs font-semibold" onClick={() => setAddOpen(true)}>
+					<Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setAddOpen(true)}>
 						<Plus className="size-3.5" />
 						Add Team
 					</Button>
 				</div>
 
-				<div className="grid grid-cols-3 gap-3">
-					<SummaryCard icon={Users} label="Teams" value={teams.length} />
-					<SummaryCard icon={UserCog} label="With leader" value={teamsWithLeader} />
-					<SummaryCard icon={UserCog} label="Agents" value={members.length} />
-				</div>
+				<StatGrid className="grid-cols-3">
+					<StatTile icon={Users} label="Teams" value={teams.length} />
+					<StatTile icon={UserCog} label="With leader" value={teamsWithLeader} />
+					<StatTile icon={UserCog} label="Agents" value={members.length} />
+				</StatGrid>
 
-				<Card className="border-0 shadow-sm">
+				<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Support Teams</CardTitle>
+					<CardTitle className="console-label">Support Teams</CardTitle>
 					<CardDescription className="text-xs">Teams configured in this workspace</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{teams.length === 0 ? (
-						<div className="flex flex-col items-center gap-2 py-8 text-center">
-							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-								<Users className="size-5 text-muted-foreground" />
-							</div>
-							<p className="text-sm font-medium">No teams yet</p>
-							<p className="text-[11px] text-muted-foreground max-w-xs">
-								Create teams to organize your agents and route tickets more efficiently.
-							</p>
-						</div>
+						<EmptyState
+							icon={Users}
+							title="No teams yet"
+							description="Create teams to organize your agents and route tickets more efficiently."
+						/>
 					) : (
 						<div className="space-y-2">
 							{teams.map((team) => {
@@ -127,10 +124,10 @@ export function TeamsSection() {
 									.slice(0, 2)
 									.toUpperCase();
 								return (
-									<div key={team.id} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
-										<Avatar className="size-10 rounded-lg">
+									<div key={team.id} className="flex items-center gap-3 bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
+										<Avatar className="size-10">
 											<AvatarImage src={team.logo_url ?? undefined} />
-											<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-bold">{initials}</AvatarFallback>
+											<AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">{initials}</AvatarFallback>
 										</Avatar>
 										<div className="flex-1 min-w-0">
 											<p className="text-sm font-medium">{team.name}</p>
@@ -140,7 +137,7 @@ export function TeamsSection() {
 											<Button
 												variant="ghost"
 												size="icon"
-												className="size-7 rounded-lg"
+												className="size-7"
 												onClick={() => {
 													setSelectedTeam(team);
 													setEditOpen(true);
@@ -151,7 +148,7 @@ export function TeamsSection() {
 											<Button
 												variant="ghost"
 												size="icon"
-												className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+												className="size-7 text-destructive hover:text-destructive hover:bg-destructive/10"
 												onClick={() => {
 													setSelectedTeam(team);
 													setDeleteOpen(true);
@@ -173,19 +170,5 @@ export function TeamsSection() {
 			<EditTeamModal open={editOpen} onOpenChange={setEditOpen} team={selectedTeam} agents={members} onConfirm={handleEdit} />
 			<DeleteTeamModal open={deleteOpen} onOpenChange={setDeleteOpen} team={selectedTeam} onConfirm={handleDelete} />
 		</>
-	);
-}
-
-function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
-	return (
-		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
-			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-5 text-primary" />
-			</div>
-			<div>
-				<p className="text-xl font-bold">{value}</p>
-				<p className="text-[11px] text-muted-foreground">{label}</p>
-			</div>
-		</div>
 	);
 }

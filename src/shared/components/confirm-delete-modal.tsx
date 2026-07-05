@@ -34,13 +34,13 @@ export function ConfirmDeleteModal({
 					<AlertDialogDescription>{description}</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel className="rounded-lg text-xs">Cancel</AlertDialogCancel>
+					<AlertDialogCancel className="text-xs">Cancel</AlertDialogCancel>
 					<AlertDialogAction
 						onClick={() => {
 							onConfirm();
 							onOpenChange(false);
 						}}
-						className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-xs">
+						className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs">
 						{confirmLabel}
 					</AlertDialogAction>
 				</AlertDialogFooter>

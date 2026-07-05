@@ -1,27 +1,13 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Plus, ChevronRight, Loader2, Sparkles } from "lucide-react";
+import { Plus, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { useWorkspaces } from "../hooks/use-workspace-queries";
 import { useAuth } from "@/context/auth-context";
-
-const AVATAR_COLORS = [
-	"bg-primary/10 text-primary",
-	"bg-[#659815]/20 text-[#659815]",
-	"bg-blue-500/10 text-blue-600",
-	"bg-purple-500/10 text-purple-600",
-	"bg-orange-500/10 text-orange-600",
-	"bg-pink-500/10 text-pink-600",
-];
-
-function getAvatarColor(id: string) {
-	let hash = 0;
-	for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) & 0xffffffff;
-	return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
+import { PulseLine } from "@/features/frontend/shared";
 
 function getRoleBadgeClass(role: string) {
-	if (role === "owner") return "bg-primary/10 text-primary border-primary/20";
-	if (role === "admin") return "bg-[#659815]/15 text-[#659815] border-[#659815]/25";
-	return "bg-muted text-muted-foreground border-border";
+	if (role === "owner") return "border-primary/25 text-primary bg-primary/5 dark:border-accent/30 dark:text-accent dark:bg-accent/10";
+	if (role === "admin") return "border-accent/30 text-accent bg-accent/8";
+	return "border-border text-muted-foreground bg-muted";
 }
 
 export function WorkspaceSelectorView() {
@@ -37,53 +23,55 @@ export function WorkspaceSelectorView() {
 		.toUpperCase() ?? "?";
 
 	return (
-		<div className="min-h-screen flex flex-col items-center justify-center hero-bg-gradient p-6 relative overflow-hidden">
-			{/* Dot grid background */}
-			<div className="dot-grid absolute inset-0 opacity-[0.035] pointer-events-none" />
-
-			<div className="w-full max-w-lg relative">
+		<div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+			<div className="w-full max-w-lg border border-border bg-card">
 				{/* Header */}
-				<div className="text-center space-y-3 mb-8">
-					<div className="mx-auto size-14 rounded-full bg-primary flex items-center justify-center shadow-sm ring-4 ring-primary/10 mb-4">
-						<span className="text-base font-bold text-primary-foreground">{userInitials}</span>
-					</div>
-					<h1 className="text-2xl font-bold tracking-tight">
-						Welcome back, {user?.name?.split(" ")[0]}
-					</h1>
-					<p className="text-sm text-muted-foreground">Select a workspace to continue</p>
+				<div className="border-b border-border px-6 py-3 flex items-center justify-between">
+					<span className="console-label text-primary dark:text-accent">
+						00 — Workspaces<span className="blink-cursor text-accent">_</span>
+					</span>
+					<span className="console-label hidden sm:block">{workspaces.length} available</span>
 				</div>
 
+				<div className="px-6 pt-8 pb-6">
+					<div className="flex items-center gap-4 mb-1">
+						<div className="size-12 bg-primary flex items-center justify-center shrink-0">
+							<span className="font-mono text-sm font-bold text-primary-foreground">{userInitials}</span>
+						</div>
+						<div>
+							<h1 className="text-2xl font-black tracking-tight">Welcome back, {user?.name?.split(" ")[0]}</h1>
+							<p className="text-sm text-muted-foreground">Select a workspace to continue</p>
+						</div>
+					</div>
+				</div>
+
+				<PulseLine className="h-6 w-full text-primary/40 dark:text-accent/40" strokeWidth={1.2} />
+
 				{/* Workspace list */}
-				<div className="space-y-2.5">
+				<div className="border-t border-border divide-y divide-border">
 					{isLoading ? (
 						<div className="flex items-center justify-center py-12">
 							<Loader2 className="size-5 animate-spin text-muted-foreground" />
 						</div>
 					) : workspaces.length === 0 ? (
-						<div className="text-center py-10 rounded-2xl border border-dashed border-border bg-card/60">
-							<div className="size-10 rounded-xl bg-primary/5 flex items-center justify-center mx-auto mb-3">
-								<Sparkles className="size-5 text-primary/40" />
+						<div className="text-center py-10">
+							<div className="size-10 border border-border bg-secondary/60 flex items-center justify-center mx-auto mb-3">
+								<Sparkles className="size-4.5 text-muted-foreground" />
 							</div>
-							<p className="text-sm font-medium text-muted-foreground">No workspaces yet</p>
+							<p className="font-mono text-xs uppercase tracking-[0.12em] font-semibold text-muted-foreground">No workspaces yet</p>
 							<p className="text-xs text-muted-foreground/60 mt-1">Create one to get started</p>
 						</div>
 					) : (
-						workspaces.map((ws) => (
+						workspaces.map((ws, i) => (
 							<button
 								key={ws.id}
-								onClick={() =>
-									navigate({ to: "/w/$slug/overview", params: { slug: ws.slug } })
-								}
-								className="w-full flex items-center gap-4 p-4 rounded-2xl border bg-card hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 text-left group">
+								onClick={() => navigate({ to: "/w/$slug/overview", params: { slug: ws.slug } })}
+								className="group relative w-full flex items-center gap-4 px-6 py-4 text-left transition-colors hover:bg-secondary/50">
+								<span className="console-label w-6 shrink-0 text-muted-foreground/50">{String(i + 1).padStart(2, "0")}</span>
 								{ws.logo_url ? (
-									<img
-										src={ws.logo_url}
-										alt={ws.name}
-										className="size-11 rounded-xl object-cover flex-shrink-0 shadow-sm"
-									/>
+									<img src={ws.logo_url} alt={ws.name} className="size-10 object-cover flex-shrink-0" />
 								) : (
-									<div
-										className={`size-11 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-sm ${getAvatarColor(ws.id)}`}>
+									<div className="size-10 bg-primary/10 text-primary dark:bg-accent/15 dark:text-accent flex items-center justify-center flex-shrink-0 font-mono font-bold text-sm">
 										{ws.name.slice(0, 2).toUpperCase()}
 									</div>
 								)}
@@ -91,31 +79,26 @@ export function WorkspaceSelectorView() {
 									<div className="flex items-center gap-2 mb-0.5">
 										<p className="font-semibold text-sm truncate">{ws.name}</p>
 										<span
-											className={`hidden sm:inline-flex shrink-0 items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border capitalize ${getRoleBadgeClass(ws.role)}`}>
+											className={`hidden sm:inline-flex shrink-0 items-center border px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-[0.08em] ${getRoleBadgeClass(ws.role)}`}>
 											{ws.role}
 										</span>
 									</div>
-									<p className="text-xs text-muted-foreground truncate">
-										{ws.description ?? `/${ws.slug}`}
-									</p>
+									<p className="font-mono text-[11px] text-muted-foreground truncate">{ws.description ?? `/${ws.slug}`}</p>
 								</div>
-								<ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+								<ArrowRight className="size-4 text-muted-foreground group-hover:text-accent group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+								<span className="scan-line" />
 							</button>
 						))
 					)}
 				</div>
 
 				{/* Create workspace */}
-				<div className="mt-4">
-					<button
-						onClick={() => navigate({ to: "/workspaces/new" })}
-						className="w-full flex items-center justify-center gap-2.5 p-4 rounded-2xl border border-dashed border-border hover:border-primary/40 hover:bg-primary/5 transition-all duration-150 text-sm text-muted-foreground hover:text-primary group">
-						<div className="size-6 rounded-lg border border-dashed border-muted-foreground/40 group-hover:border-primary/50 flex items-center justify-center transition-colors">
-							<Plus className="size-3.5" />
-						</div>
-						Create new workspace
-					</button>
-				</div>
+				<button
+					onClick={() => navigate({ to: "/workspaces/new" })}
+					className="w-full flex items-center justify-center gap-2.5 border-t border-dashed border-border px-6 py-4 font-mono text-xs uppercase tracking-[0.12em] font-semibold text-muted-foreground hover:text-primary hover:bg-primary/5 dark:hover:text-accent dark:hover:bg-accent/5 transition-colors group">
+					<Plus className="size-3.5" />
+					Create new workspace
+				</button>
 			</div>
 		</div>
 	);

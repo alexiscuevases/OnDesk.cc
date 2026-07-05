@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/shared/components/status-badge";
+import { EmptyState } from "@/shared/components/console";
 import type { Ticket } from "@/features/tickets/api/tickets-api";
 
 interface MergeTicketModalProps {
@@ -58,17 +59,17 @@ export function MergeTicketModal({ open, onOpenChange, selectedCount, mergeableT
 							placeholder="Search by ticket ID or subject..."
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="pl-9 h-9 rounded-lg"
+							className="pl-9 h-9"
 						/>
 					</div>
-					<div className="max-h-[300px] overflow-y-auto rounded-lg border">
+					<div className="max-h-[300px] overflow-y-auto border">
 						{filtered.length > 0 ? (
 							<div className="p-1">
 								{filtered.map((ticket) => (
 									<button
 										key={ticket.id}
 										onClick={() => setTargetId(ticket.id)}
-										className={`w-full flex items-start gap-3 p-2.5 rounded-lg hover:bg-secondary/80 transition-colors text-left ${
+										className={`w-full flex items-start gap-3 p-2.5 hover:bg-secondary/80 transition-colors text-left ${
 											targetId === ticket.id ? "bg-secondary" : ""
 										}`}>
 										<div className="flex-1 min-w-0">
@@ -88,18 +89,15 @@ export function MergeTicketModal({ open, onOpenChange, selectedCount, mergeableT
 								))}
 							</div>
 						) : (
-							<div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-								<AlertCircle className="size-8 mb-2 opacity-30" />
-								<p className="text-sm">No tickets found</p>
-							</div>
+							<EmptyState icon={AlertCircle} title="No tickets found" className="py-8" />
 						)}
 					</div>
 				</div>
 				<DialogFooter className="gap-2">
-					<Button variant="outline" onClick={() => handleOpenChange(false)} className="rounded-lg">
+					<Button variant="outline" onClick={() => handleOpenChange(false)}>
 						Cancel
 					</Button>
-					<Button onClick={handleConfirm} disabled={!targetId} className="rounded-lg">
+					<Button onClick={handleConfirm} disabled={!targetId}>
 						Merge Tickets
 					</Button>
 				</DialogFooter>

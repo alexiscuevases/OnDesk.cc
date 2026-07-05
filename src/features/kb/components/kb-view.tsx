@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useWorkspace } from "@/context/workspace-context";
 import { ConfirmDeleteModal } from "@/shared/components";
+import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import { useKbCategories, useKbArticles } from "../hooks/use-kb-queries";
 import {
 	useCreateKbCategoryMutation,
@@ -56,28 +57,28 @@ export function KbView() {
 					<Button
 						variant="outline"
 						onClick={() => setCategoryMode({ type: "create" })}
-						className="rounded-lg text-xs"
+						className="text-xs"
 					>
 						<FolderPlus className="mr-1 size-3.5" />
 						New category
 					</Button>
-					<Button onClick={() => setArticleMode({ type: "create" })} className="rounded-lg text-xs">
+					<Button onClick={() => setArticleMode({ type: "create" })} className="text-xs">
 						<Plus className="mr-1 size-3.5" />
 						New article
 					</Button>
 				</div>
 			</div>
 
-			<div className="grid grid-cols-3 gap-3">
-				<SummaryCard icon={BookOpen} label="Articles" value={articles.length} />
-				<SummaryCard icon={FileText} label="Published" value={publishedCount} />
-				<SummaryCard icon={FolderPlus} label="Categories" value={categories.length} />
-			</div>
+			<StatGrid className="grid-cols-3">
+				<StatTile icon={BookOpen} label="Articles" value={articles.length} />
+				<StatTile icon={FileText} label="Published" value={publishedCount} />
+				<StatTile icon={FolderPlus} label="Categories" value={categories.length} />
+			</StatGrid>
 
 			<div className="grid lg:grid-cols-[260px_1fr] gap-4">
-				<Card className="border-0 shadow-sm lg:sticky lg:top-4 lg:self-start">
+				<Card className="lg:sticky lg:top-4 lg:self-start">
 					<CardHeader className="pb-2">
-						<CardTitle className="text-sm font-semibold">Categories</CardTitle>
+						<CardTitle className="console-label">Categories</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-1">
 						<CategoryButton
@@ -114,12 +115,12 @@ export function KbView() {
 					</CardContent>
 				</Card>
 
-				<Card className="border-0 shadow-sm">
+				<Card>
 					<CardHeader>
 						<div className="flex items-center justify-between">
 							<div>
-								<CardTitle className="text-sm font-semibold">Articles</CardTitle>
-								<CardDescription className="text-xs">
+								<CardTitle className="console-label">Articles</CardTitle>
+								<CardDescription className="text-xs font-mono tabular-nums">
 									{visibleArticles.length} of {articles.length}
 								</CardDescription>
 							</div>
@@ -129,7 +130,7 @@ export function KbView() {
 									value={search}
 									onChange={(e) => setSearch(e.target.value)}
 									placeholder="Search title…"
-									className="pl-8 h-8 rounded-lg text-xs"
+									className="pl-8 h-8 text-xs"
 								/>
 							</div>
 						</div>
@@ -138,12 +139,7 @@ export function KbView() {
 						{isLoading ? (
 							<div className="p-6 text-center text-xs text-muted-foreground">Loading…</div>
 						) : visibleArticles.length === 0 ? (
-							<div className="flex flex-col items-center gap-2 py-10 text-center">
-								<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-									<BookOpen className="size-5 text-muted-foreground" />
-								</div>
-								<p className="text-sm font-medium">No articles</p>
-							</div>
+							<EmptyState icon={BookOpen} title="No articles" />
 						) : (
 							<ul className="divide-y">
 								{visibleArticles.map((a) => (
@@ -160,7 +156,7 @@ export function KbView() {
 												)}
 											</div>
 											{a.excerpt && <p className="mt-0.5 truncate text-xs text-muted-foreground">{a.excerpt}</p>}
-											<p className="mt-1 text-[10px] text-muted-foreground">
+											<p className="mt-1 text-[10px] text-muted-foreground font-mono tabular-nums">
 												{a.tags.length > 0 && `${a.tags.join(", ")} · `}
 												updated {new Date(a.updated_at * 1000).toLocaleDateString()} · {a.view_count} views
 											</p>
@@ -253,29 +249,16 @@ function CategoryButton({ label, count, active, onClick }: { label: string; coun
 	return (
 		<button
 			onClick={onClick}
-			className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors ${
+			className={`flex w-full items-center justify-between px-2.5 py-1.5 text-left text-xs transition-colors ${
 				active ? "bg-primary text-primary-foreground" : "hover:bg-secondary/60"
 			}`}
 		>
 			<span className="truncate">{label}</span>
-			<span className={`text-[10px] ${active ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{count}</span>
+			<span className={`text-[10px] font-mono tabular-nums ${active ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{count}</span>
 		</button>
 	);
 }
 
-function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
-	return (
-		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
-			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-5 text-primary" />
-			</div>
-			<div>
-				<p className="text-xl font-bold">{value}</p>
-				<p className="text-[11px] text-muted-foreground">{label}</p>
-			</div>
-		</div>
-	);
-}
 
 function CreateArticleWrapper({
 	workspaceId,

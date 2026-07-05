@@ -48,22 +48,22 @@ export function LogoUpload({ label = "Logo", initials, currentUrl, onUpload, fol
 	return (
 		<div className={cn("flex items-center gap-4", className)}>
 			<div className="relative group">
-				<Avatar className="size-16 rounded-xl cursor-pointer" onClick={() => inputRef.current?.click()}>
+				<Avatar className="size-16 cursor-pointer" onClick={() => inputRef.current?.click()}>
 					<AvatarImage src={preview ?? undefined} />
-					<AvatarFallback className="rounded-xl bg-primary text-primary-foreground text-lg font-bold">
+					<AvatarFallback className="bg-primary text-primary-foreground text-lg font-bold">
 						{initials}
 					</AvatarFallback>
 				</Avatar>
 				{uploading && (
-					<div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
+					<div className="absolute inset-0 flex items-center justify-center bg-black/40">
 						<div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
 					</div>
 				)}
 			</div>
 			<div className="flex flex-col gap-1.5">
-				<Label className="text-xs font-medium">{label}</Label>
+				<Label className="console-label">{label}</Label>
 				<div className="flex gap-2">
-					<Button type="button" variant="outline" size="sm" className="h-8 gap-1.5 text-xs rounded-lg" onClick={() => inputRef.current?.click()} disabled={uploading}>
+					<Button type="button" variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => inputRef.current?.click()} disabled={uploading}>
 						<Upload className="size-3" />
 						Upload
 					</Button>
@@ -72,7 +72,7 @@ export function LogoUpload({ label = "Logo", initials, currentUrl, onUpload, fol
 							type="button"
 							variant="ghost"
 							size="sm"
-							className="h-8 gap-1.5 text-xs rounded-lg text-muted-foreground"
+							className="h-8 gap-1.5 text-xs text-muted-foreground"
 							onClick={() => { setPreview(null); onUpload(""); }}
 							disabled={uploading}>
 							<X className="size-3" />

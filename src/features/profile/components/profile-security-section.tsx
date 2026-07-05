@@ -41,9 +41,9 @@ export function ProfileSecuritySection() {
 
 	return (
 		<div className="grid gap-4">
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Two-Factor Authentication</CardTitle>
+					<CardTitle className="console-label text-primary dark:text-accent">Two-Factor Authentication</CardTitle>
 					<CardDescription className="text-xs">Add an extra layer of security to your account</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
@@ -59,7 +59,7 @@ export function ProfileSecuritySection() {
 						/>
 					</div>
 					<Separator />
-					<div className="flex items-center gap-3 rounded-xl bg-secondary/60 p-3">
+					<div className="flex items-center gap-3 border border-border bg-secondary/60 p-3">
 						<ShieldCheck className="size-4 text-muted-foreground shrink-0" />
 						<p className="text-[11px] text-muted-foreground">
 							{twoFactorEnabled
@@ -70,9 +70,9 @@ export function ProfileSecuritySection() {
 				</CardContent>
 			</Card>
 
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Active Sessions</CardTitle>
+					<CardTitle className="console-label text-primary dark:text-accent">Active Sessions</CardTitle>
 					<CardDescription className="text-xs">Devices currently signed in to your account</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
@@ -82,7 +82,7 @@ export function ProfileSecuritySection() {
 							<div key={session.id}>
 								{i > 0 && <Separator className="mb-4" />}
 								<div className="flex items-center gap-3">
-									<div className="flex size-8 items-center justify-center rounded-lg bg-secondary shrink-0">
+									<div className="flex size-8 items-center justify-center bg-secondary shrink-0">
 										<Icon className="size-4 text-muted-foreground" />
 									</div>
 									<div className="flex-1 min-w-0">

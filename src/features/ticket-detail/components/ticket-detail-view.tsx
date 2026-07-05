@@ -63,7 +63,7 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 	if (isLoading) {
 		return (
 			<div className="flex flex-col items-center justify-center h-64 gap-3">
-				<p className="text-muted-foreground">Loading ticket...</p>
+				<p className="console-label">Loading ticket<span className="blink-cursor text-accent">_</span></p>
 			</div>
 		);
 	}
@@ -71,7 +71,7 @@ export function TicketDetailView({ ticketId, onBack }: { ticketId: string; onBac
 	if (!ticket) {
 		return (
 			<div className="flex flex-col items-center justify-center h-64 gap-3">
-				<p className="text-muted-foreground">Ticket not found</p>
+				<p className="console-label">Ticket not found</p>
 				<Button variant="outline" onClick={onBack}>
 					Go Back
 				</Button>

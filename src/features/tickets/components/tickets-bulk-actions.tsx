@@ -19,17 +19,17 @@ export function TicketsBulkActions({
 	onDelete,
 }: TicketsBulkActionsProps) {
 	return (
-		<Card className="border-primary/50 shadow-md">
+		<Card className="border-primary/50">
 			<CardContent className="p-4">
 				<div className="flex items-center justify-between">
-					<Badge variant="secondary" className="text-xs">
+					<Badge variant="secondary" className="font-mono tabular-nums">
 						{selectedCount} selected
 					</Badge>
 					<div className="flex items-center gap-2">
 						<Button
 							variant="outline"
 							size="sm"
-							className="h-8 gap-1.5 rounded-lg text-xs"
+							className="h-8 gap-1.5 text-xs"
 							onClick={onAssignTeam}>
 							<Users className="size-3.5" />
 							Assign Team
@@ -37,7 +37,7 @@ export function TicketsBulkActions({
 						<Button
 							variant="outline"
 							size="sm"
-							className="h-8 gap-1.5 rounded-lg text-xs"
+							className="h-8 gap-1.5 text-xs"
 							onClick={onAssignAgent}>
 							<UserPlus className="size-3.5" />
 							Assign Agent
@@ -45,7 +45,7 @@ export function TicketsBulkActions({
 						<Button
 							variant="outline"
 							size="sm"
-							className="h-8 gap-1.5 rounded-lg text-xs"
+							className="h-8 gap-1.5 text-xs"
 							onClick={onMerge}
 							disabled={selectedCount < 1}>
 							<Merge className="size-3.5" />
@@ -54,7 +54,7 @@ export function TicketsBulkActions({
 						<Button
 							variant="destructive"
 							size="sm"
-							className="h-8 gap-1.5 rounded-lg text-xs"
+							className="h-8 gap-1.5 text-xs"
 							onClick={onDelete}>
 							<Trash2 className="size-3.5" />
 							Delete

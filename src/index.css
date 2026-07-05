@@ -4,14 +4,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+    --font-sans: "Geist", sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
 @theme inline {
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
+    /* Console language: every radius tier collapses to the single knob (0) */
+    --radius-sm: var(--radius);
+    --radius-md: var(--radius);
     --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 4px);
-    --radius-2xl: calc(var(--radius) + 8px);
-    --radius-3xl: calc(var(--radius) + 12px);
-    --radius-4xl: calc(var(--radius) + 16px);
+    --radius-xl: var(--radius);
+    --radius-2xl: var(--radius);
+    --radius-3xl: var(--radius);
+    --radius-4xl: var(--radius);
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --color-card: var(--card);
@@ -27,6 +33,11 @@
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
     --color-destructive: var(--destructive);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-info: var(--info);
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
@@ -46,72 +57,82 @@
 }
 
 :root {
-    --radius: 0.825rem; /* Changed */
-    --background: #f6f9f8; /* Changed */
-    --foreground: #002219; /* Changed */
+    --radius: 0rem; /* Console language: hard corners everywhere */
+    --background: #f6f9f8;
+    --foreground: #002219;
     --card: oklch(1 0 0);
-    --card-foreground: var(--color-foreground); /* Changed */
+    --card-foreground: var(--color-foreground);
     --popover: oklch(1 0 0);
-    --popover-foreground: var(--color-foreground); /* Changed */
-    --primary: #00372c; /* Changed */
-    --primary-foreground: var(--color-background); /* Changed */
-    --secondary: #f1f6f4; /* Changed */
-    --secondary-foreground: #002920; /* Changed */
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: #659815; /* Changed */
-    --accent-foreground: var(--color-foreground); /* Changed */
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: var(--color-primary); /* Changed */
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --sidebar: var(--color-foreground); /* Changed */
-    --sidebar-foreground: oklch(1 0 0); /* Changed */
-    --sidebar-primary: var(--color-accent);  /* Changed */
-    --sidebar-primary-foreground: var(--color-foreground); /* Changed */
-    --sidebar-accent: #043127; /* Changed */
-    --sidebar-accent-foreground: oklch(1 0 0); /* Changed */
-    --sidebar-border: #043127; /* Changed */
-    --sidebar-ring: var(--color-accent); /* Changed */
+    --popover-foreground: var(--color-foreground);
+    --primary: #00372c;
+    --primary-foreground: var(--color-background);
+    --secondary: #eef4f1; /* green-tinted panel */
+    --secondary-foreground: #002920;
+    --muted: oklch(0.962 0.006 165);
+    --muted-foreground: oklch(0.49 0.03 172);
+    --accent: #659815;
+    --accent-foreground: var(--color-foreground);
+    --destructive: oklch(0.55 0.2 27);
+    --warning: oklch(0.62 0.14 65);
+    --warning-foreground: oklch(1 0 0);
+    --success: oklch(0.52 0.13 135);
+    --success-foreground: oklch(1 0 0);
+    --info: oklch(0.5 0.1 220);
+    --border: oklch(0.905 0.012 168); /* green-tinted hairline */
+    --input: oklch(0.885 0.014 168);
+    --ring: var(--color-primary);
+    --chart-1: oklch(0.46 0.09 175);  /* deep teal-green */
+    --chart-2: oklch(0.64 0.15 125);  /* pulse lime */
+    --chart-3: oklch(0.3 0.06 165);   /* ink green */
+    --chart-4: oklch(0.72 0.13 78);   /* amber */
+    --chart-5: oklch(0.58 0.06 210);  /* slate teal */
+    --sidebar: var(--pulse-ink-deep); /* console ink */
+    --sidebar-foreground: #e8f2ec;
+    --sidebar-primary: var(--pulse-lime);
+    --sidebar-primary-foreground: var(--pulse-ink-deep);
+    --sidebar-accent: #043127;
+    --sidebar-accent-foreground: oklch(1 0 0);
+    --sidebar-border: color-mix(in srgb, white 9%, var(--pulse-ink-deep));
+    --sidebar-ring: var(--pulse-lime);
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: #659815; /* Changed */
-    --primary-foreground: oklch(1 0 0); /* Changed */
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: var(--color-primary);
-    --sidebar-primary-foreground: var(--color-primary-foreground);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --background: #0a1410; /* ink console */
+    --foreground: #e6f1ea;
+    --card: #0f1c16;
+    --card-foreground: #e6f1ea;
+    --popover: #0f1c16;
+    --popover-foreground: #e6f1ea;
+    --primary: #a8e02e; /* pulse lime */
+    --primary-foreground: #001a13;
+    --secondary: #13231b;
+    --secondary-foreground: #dcefe3;
+    --muted: #13231b;
+    --muted-foreground: oklch(0.68 0.03 165);
+    --accent: #a8e02e;
+    --accent-foreground: #001a13;
+    --destructive: oklch(0.66 0.19 25);
+    --warning: oklch(0.75 0.14 70);
+    --warning-foreground: #001a13;
+    --success: oklch(0.72 0.16 132);
+    --success-foreground: #001a13;
+    --info: oklch(0.7 0.09 215);
+    --border: oklch(1 0 0 / 12%);
+    --input: oklch(1 0 0 / 16%);
+    --ring: var(--pulse-lime);
+    --chart-1: oklch(0.68 0.1 175);
+    --chart-2: oklch(0.78 0.17 125);
+    --chart-3: oklch(0.55 0.07 165);
+    --chart-4: oklch(0.78 0.13 78);
+    --chart-5: oklch(0.68 0.06 210);
+    --sidebar: #071009;
+    --sidebar-foreground: #e6f1ea;
+    --sidebar-primary: var(--pulse-lime);
+    --sidebar-primary-foreground: #001a13;
+    --sidebar-accent: #10231a;
+    --sidebar-accent-foreground: oklch(1 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --sidebar-ring: var(--pulse-lime);
 }
 
 @layer base {
@@ -166,6 +187,50 @@
 }
 .animate-ticker:hover {
   animation-play-state: paused;
+}
+
+/* ── Pulse console (dashboard) utilities ── */
+
+/* Mono telemetry micro-label: section headers, table heads, group labels */
+.console-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+
+/* Live status dot — pulsing ring, keep on a `rounded-full` element */
+.dot-live {
+  position: relative;
+}
+.dot-live::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: dot-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes dot-ping {
+  0% { transform: scale(1); opacity: 0.6; }
+  75%, 100% { transform: scale(2.4); opacity: 0; }
+}
+
+/* Lime scan-line that sweeps in on hover: place inside a `group relative` container */
+.scan-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: var(--color-accent);
+  transition: width 0.3s ease;
+}
+.group:hover > .scan-line,
+.group:focus-within > .scan-line {
+  width: 100%;
 }
 
 /* ── Frontend page shared utilities ── */

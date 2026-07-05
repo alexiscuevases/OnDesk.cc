@@ -78,20 +78,21 @@ export function GlobalAIAssistant() {
 				<Button
 					variant="ghost"
 					size="sm"
-					className="h-8 gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg dark:text-indigo-400 dark:hover:text-indigo-300 dark:hover:bg-indigo-500/10 transition-all duration-200"
+					className="h-8 gap-1.5 text-xs text-primary hover:text-primary hover:bg-primary/5 dark:text-accent dark:hover:text-accent dark:hover:bg-accent/10 transition-colors"
 				>
 					<Sparkles className="size-3.5 animate-pulse" />
 					Ask AI
 				</Button>
 			</SheetTrigger>
-			<SheetContent className="w-100 sm:w-160 border-l-border/40 p-0 flex flex-col h-full bg-background/95 backdrop-blur-xl">
-				<SheetHeader className="px-6 py-4 border-b border-border/50 bg-muted/20">
+			<SheetContent className="w-100 sm:w-160 border-l-border p-0 flex flex-col h-full bg-background">
+				<SheetHeader className="px-6 py-4 border-b border-border">
 					<div className="flex items-center gap-3">
-						<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-sm">
-							<Sparkles className="size-5 text-white" />
+						<div className="flex h-10 w-10 items-center justify-center bg-(--pulse-ink)">
+							<Sparkles className="size-5 text-(--pulse-lime)" />
 						</div>
 						<div>
-							<SheetTitle className="text-base font-semibold tracking-tight">Workspace AI</SheetTitle>
+							<span className="console-label text-primary dark:text-accent">AI — Assistant</span>
+							<SheetTitle className="text-base font-bold tracking-tight">Workspace AI</SheetTitle>
 							<SheetDescription className="text-xs">
 								Ask anything about {workspace.name}
 							</SheetDescription>
@@ -103,16 +104,16 @@ export function GlobalAIAssistant() {
 					{messages.map((msg, i) => (
 						<div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
 							{msg.role === "assistant" && (
-								<Avatar className="h-8 w-8 shrink-0 rounded-lg border shadow-sm">
-									<AvatarFallback className="bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-600">
+								<Avatar className="h-8 w-8 shrink-0 border border-border">
+									<AvatarFallback className="bg-(--pulse-ink) text-(--pulse-lime)">
 										<Bot className="size-4" />
 									</AvatarFallback>
 								</Avatar>
 							)}
-							<div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-[13px] leading-relaxed shadow-sm ${
+							<div className={`max-w-[85%] px-4 py-2.5 text-[13px] leading-relaxed ${
 								msg.role === "user"
-									? "bg-indigo-600 text-white rounded-tr-sm"
-									: "bg-muted/50 text-foreground border border-border/50 rounded-tl-sm dark:bg-muted/20"
+									? "bg-primary text-primary-foreground"
+									: "bg-secondary/60 text-foreground border border-border"
 							}`}
 								dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, "<br/>") }}
 							/>
@@ -121,21 +122,21 @@ export function GlobalAIAssistant() {
 
 					{isLoading && messages[messages.length - 1]?.content === "" && (
 						<div className="flex gap-3 justify-start">
-							<Avatar className="h-8 w-8 shrink-0 rounded-lg border shadow-sm">
-								<AvatarFallback className="bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-600">
+							<Avatar className="h-8 w-8 shrink-0 border border-border">
+								<AvatarFallback className="bg-(--pulse-ink) text-(--pulse-lime)">
 									<Bot className="size-4 animate-pulse" />
 								</AvatarFallback>
 							</Avatar>
-							<div className="bg-muted/50 border border-border/50 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5 h-10 w-fit">
-								<div className="w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-50 animate-bounce" />
-								<div className="w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-50 animate-bounce [animation-delay:-0.15s]" />
-								<div className="w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-50 animate-bounce [animation-delay:-0.3s]" />
+							<div className="bg-secondary/60 border border-border px-4 py-3 flex items-center gap-1.5 h-10 w-fit">
+								<div className="w-1.5 h-1.5 rounded-full bg-primary opacity-50 animate-bounce dark:bg-accent" />
+								<div className="w-1.5 h-1.5 rounded-full bg-primary opacity-50 animate-bounce [animation-delay:-0.15s] dark:bg-accent" />
+								<div className="w-1.5 h-1.5 rounded-full bg-primary opacity-50 animate-bounce [animation-delay:-0.3s] dark:bg-accent" />
 							</div>
 						</div>
 					)}
 				</div>
 
-				<div className="p-4 bg-background/80 backdrop-blur-md border-t border-border/50">
+				<div className="p-4 bg-background border-t border-border">
 					{messages.length === 1 && (
 						<div className="grid grid-cols-2 gap-2 mb-3">
 							{QUICK_ACTIONS.map(({ label, icon: Icon, prompt: p }) => (
@@ -143,7 +144,7 @@ export function GlobalAIAssistant() {
 									key={label}
 									variant="secondary"
 									size="sm"
-									className="h-auto py-2 px-3 text-[11px] rounded-lg gap-1.5 bg-muted/60 hover:bg-muted justify-start"
+									className="h-auto py-2 px-3 font-mono text-[10px] uppercase tracking-wide gap-1.5 border border-border bg-secondary/60 hover:bg-secondary justify-start"
 									onClick={() => handleSend(p)}
 									disabled={isLoading}
 								>
@@ -154,10 +155,10 @@ export function GlobalAIAssistant() {
 						</div>
 					)}
 
-					<div className="flex gap-2 relative bg-muted/30 rounded-xl border border-input focus-within:ring-1 focus-within:ring-indigo-500 transition-all p-1">
+					<div className="flex gap-2 relative bg-secondary/40 border border-input focus-within:ring-1 focus-within:ring-ring/40 focus-within:border-primary transition-colors p-1">
 						<textarea
 							placeholder="Ask about tickets, contacts, agents..."
-							className="flex-1 text-[13px] bg-transparent rounded-lg pl-3 pr-10 py-2.5 outline-none resize-none min-h-[44px] max-h-[120px]"
+							className="flex-1 text-[13px] bg-transparent pl-3 pr-10 py-2.5 outline-none resize-none min-h-[44px] max-h-[120px]"
 							rows={1}
 							value={prompt}
 							onChange={(e) => {
@@ -174,7 +175,7 @@ export function GlobalAIAssistant() {
 						/>
 						<Button
 							size="icon"
-							className="absolute right-2 bottom-2 shrink-0 h-7 w-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-sm transition-all"
+							className="absolute right-2 bottom-2 shrink-0 h-7 w-7 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
 							onClick={() => handleSend()}
 							disabled={!prompt.trim() || isLoading}
 						>

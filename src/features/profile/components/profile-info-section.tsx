@@ -23,21 +23,21 @@ export function ProfileInfoSection() {
 
 	return (
 		<div className="grid gap-4">
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Profile Picture</CardTitle>
+					<CardTitle className="console-label text-primary dark:text-accent">Profile Picture</CardTitle>
 					<CardDescription className="text-xs">Your photo is visible to customers and teammates</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<div className="flex items-center gap-4">
 						<div className="relative">
-							<Avatar className="size-16 rounded-xl">
-								<AvatarImage src={undefined} className="object-cover rounded-xl" />
-								<AvatarFallback className="rounded-xl bg-primary text-primary-foreground text-lg font-bold">
+							<Avatar className="size-16">
+								<AvatarImage src={undefined} className="object-cover" />
+								<AvatarFallback className="bg-primary text-primary-foreground font-mono text-lg font-bold">
 									{initials}
 								</AvatarFallback>
 							</Avatar>
-							<button className="absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full bg-background border shadow-sm hover:bg-secondary transition-colors">
+							<button className="absolute -bottom-1 -right-1 flex size-6 items-center justify-center bg-background border hover:bg-secondary transition-colors">
 								<Camera className="size-3 text-muted-foreground" />
 							</button>
 						</div>
@@ -45,15 +45,15 @@ export function ProfileInfoSection() {
 							<Button variant="outline" size="sm" className="h-7 text-xs">
 								Upload photo
 							</Button>
-							<p className="text-[10px] text-muted-foreground">JPG, PNG or GIF · Max 2MB</p>
+							<p className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">JPG, PNG or GIF · Max 2MB</p>
 						</div>
 					</div>
 				</CardContent>
 			</Card>
 
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Personal Information</CardTitle>
+					<CardTitle className="console-label text-primary dark:text-accent">Personal Information</CardTitle>
 					<CardDescription className="text-xs">Update your name and profile details</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
@@ -75,7 +75,7 @@ export function ProfileInfoSection() {
 							value={bio}
 							onChange={(e) => setBio(e.target.value)}
 							rows={3}
-							className="flex w-full rounded-md border border-input bg-transparent px-3 py-1.5 text-xs shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+							className="flex w-full border border-input bg-transparent px-3 py-1.5 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
 							placeholder="A short description about you..."
 						/>
 					</div>

@@ -1,9 +1,10 @@
 import { MessageSquare, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { useEffect, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { ConsoleTag, EmptyState, PanelHeader } from "@/shared/components/console";
 import type { TicketMessage } from "@/features/tickets/api/tickets-api";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
 import type { Contact } from "@/features/contacts/api/contacts-api";
@@ -34,7 +35,7 @@ function ShadowHtml({ html }: { html: string }) {
 			toggle.textContent = "··· Show quoted text";
 			toggle.style.cssText =
 				"display:inline-flex;align-items:center;font-size:11px;color:#888;" +
-				"background:transparent;border:1px solid #ddd;border-radius:6px;" +
+				"background:transparent;border:1px solid #ddd;border-radius:0;" +
 				"padding:2px 8px;cursor:pointer;margin-bottom:4px;";
 			content.style.cssText = "display:none;";
 			toggle.setAttribute("data-quote-toggle", "true");
@@ -86,7 +87,7 @@ function ShadowHtml({ html }: { html: string }) {
 				[data-mention] {
 				    color: var(--accent);
     				background-color: var(--background);
-					border-radius: 4px;
+					border-radius: 0;
 					padding: 0 4px;
 					font-weight: 500;
 				}
@@ -154,17 +155,16 @@ export function TicketConversation({ messages, members, contacts, workspace, com
 	}
 
 	return (
-		<Card className="border-0 shadow-sm">
-			<CardHeader className="pb-3">
-				<div className="flex items-center gap-2">
-					<MessageSquare className="size-4 text-primary" />
-					<CardTitle className="text-sm font-semibold">Conversation</CardTitle>
-					<Badge variant="secondary" className="text-[10px] rounded-full px-2 ml-auto">
+		<Card className="gap-0 py-0">
+			<PanelHeader
+				label="Conversation"
+				right={
+					<ConsoleTag>
 						{messages.length} message{messages.length !== 1 ? "s" : ""}
-					</Badge>
-				</div>
-			</CardHeader>
-			<CardContent>
+					</ConsoleTag>
+				}
+			/>
+			<CardContent className="p-4">
 				{messages.length > 0 ? (
 					<div className="space-y-4">
 						{messages.map((msg) => {
@@ -176,7 +176,7 @@ export function TicketConversation({ messages, members, contacts, workspace, com
 							return (
 								<div key={msg.id} className={isInternal ? "opacity-80" : ""}>
 									<div
-										className={`rounded-xl p-3.5 ${
+										className={`p-3.5 ${
 											isInternal
 												? "bg-warning/10 border border-warning/20 border-dashed"
 												: isAgent
@@ -184,26 +184,26 @@ export function TicketConversation({ messages, members, contacts, workspace, com
 													: "bg-secondary/60 border border-border"
 										}`}>
 										<div className="flex items-center gap-2.5 mb-2.5">
-											<Avatar className="size-8 rounded-lg shrink-0">
-												<AvatarImage src={avatarSrc} className="object-cover rounded-lg" />
+											<Avatar className="size-8 shrink-0">
+												<AvatarImage src={avatarSrc} className="object-cover" />
 												<AvatarFallback
-													className={`rounded-lg text-[10px] font-bold ${
+													className={`text-[10px] font-bold ${
 														isAgent ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
 													}`}>
 													{getInitials(authorName)}
 												</AvatarFallback>
 											</Avatar>
 											<div className="flex flex-col">
-												<span className="text-xs font-semibold">{authorName}</span>
-												{authorEmail && <span className="text-[10px] text-muted-foreground">{authorEmail}</span>}
+												<span className="font-mono text-xs font-semibold">{authorName}</span>
+												{authorEmail && <span className="font-mono text-[10px] text-muted-foreground">{authorEmail}</span>}
 											</div>
 											{isInternal && (
-												<Badge variant="outline" className="text-[9px] px-1.5 py-0 rounded-full border-warning text-warning ml-1">
+												<Badge variant="outline" className="text-[9px] px-1.5 py-0 border-warning text-warning ml-1">
 													<Eye className="size-2.5 mr-0.5" />
 													Internal
 												</Badge>
 											)}
-											<span className="text-[10px] text-muted-foreground ml-auto">
+											<span className="font-mono text-[10px] text-muted-foreground ml-auto">
 												{format(new Date(msg.created_at * 1000), "MMM d, h:mm a")}
 											</span>
 										</div>
@@ -214,11 +214,7 @@ export function TicketConversation({ messages, members, contacts, workspace, com
 						})}
 					</div>
 				) : (
-					<div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
-						<MessageSquare className="size-8 mb-2 opacity-30" />
-						<p className="text-sm">No messages yet</p>
-						<p className="text-xs">Start the conversation below</p>
-					</div>
+					<EmptyState icon={MessageSquare} title="No messages yet" description="Start the conversation below" />
 				)}
 			</CardContent>
 		</Card>

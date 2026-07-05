@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useWorkspace } from "@/context/workspace-context";
 import { ConfirmDeleteModal } from "@/shared/components";
+import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import { useAutomations } from "../hooks/use-automation-queries";
 import {
 	useCreateAutomationMutation,
@@ -70,36 +71,32 @@ export function AutomationsView() {
 				<p className="text-xs text-muted-foreground">
 					Rules that automatically act on tickets based on events or time.
 				</p>
-				<Button onClick={() => setFormMode({ type: "create" })} className="rounded-lg text-xs">
+				<Button onClick={() => setFormMode({ type: "create" })} className="text-xs">
 					<Plus className="mr-1 size-3.5" />
 					New automation
 				</Button>
 			</div>
 
-			<div className="grid grid-cols-3 gap-3">
-				<SummaryCard icon={Zap} label="Total" value={automations.length} />
-				<SummaryCard icon={Power} label="Enabled" value={enabledCount} />
-				<SummaryCard icon={Activity} label="Total runs" value={totalRuns} />
-			</div>
+			<StatGrid className="grid-cols-3">
+				<StatTile icon={Zap} label="Total" value={automations.length} />
+				<StatTile icon={Power} label="Enabled" value={enabledCount} />
+				<StatTile icon={Activity} label="Total runs" value={totalRuns} />
+			</StatGrid>
 
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Rules</CardTitle>
+					<CardTitle className="console-label">Rules</CardTitle>
 					<CardDescription className="text-xs">Ordered by run priority, then creation date</CardDescription>
 				</CardHeader>
 				<CardContent className="p-0">
 					{isLoading ? (
 						<div className="p-6 text-center text-xs text-muted-foreground">Loading…</div>
 					) : automations.length === 0 ? (
-						<div className="flex flex-col items-center gap-2 py-10 text-center">
-							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-								<Zap className="size-5 text-muted-foreground" />
-							</div>
-							<p className="text-sm font-medium">No automations yet</p>
-							<p className="text-[11px] text-muted-foreground max-w-xs">
-								Create your first rule to auto-assign, auto-reply, escalate, and more.
-							</p>
-						</div>
+						<EmptyState
+							icon={Zap}
+							title="No automations yet"
+							description="Create your first rule to auto-assign, auto-reply, escalate, and more."
+						/>
 					) : (
 						<ul className="divide-y">
 							{automations.map((automation) => (
@@ -149,19 +146,6 @@ export function AutomationsView() {
 	);
 }
 
-function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
-	return (
-		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
-			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-5 text-primary" />
-			</div>
-			<div>
-				<p className="text-xl font-bold">{value}</p>
-				<p className="text-[11px] text-muted-foreground">{label}</p>
-			</div>
-		</div>
-	);
-}
 
 function AutomationRow({
 	automation,
@@ -191,7 +175,7 @@ function AutomationRow({
 						{TRIGGER_LABELS[automation.trigger_type] ?? automation.trigger_type}
 					</Badge>
 					{automation.trigger_type.startsWith("scheduled.") && automation.schedule_minutes && (
-						<Badge variant="outline" className="text-[10px] font-normal">
+						<Badge variant="outline" className="text-[10px] font-normal font-mono">
 							after {automation.schedule_minutes}m
 						</Badge>
 					)}
@@ -199,7 +183,7 @@ function AutomationRow({
 				{automation.description && (
 					<p className="mt-0.5 truncate text-xs text-muted-foreground">{automation.description}</p>
 				)}
-				<p className="mt-1 text-[10px] text-muted-foreground">
+				<p className="mt-1 text-[10px] text-muted-foreground font-mono tabular-nums">
 					{automation.conditions.rules.length} condition{automation.conditions.rules.length === 1 ? "" : "s"} · {automation.actions.length} action
 					{automation.actions.length === 1 ? "" : "s"} · ran {automation.run_count}× ·{" "}
 					{automation.last_run_at ? `last ${new Date(automation.last_run_at * 1000).toLocaleString()}` : "never run"}

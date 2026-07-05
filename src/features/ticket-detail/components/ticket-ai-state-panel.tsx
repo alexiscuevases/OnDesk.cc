@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Bot, AlertTriangle, ChevronDown, ChevronUp, Play, OctagonX } from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PanelHeader } from "@/shared/components/console";
 import { format } from "date-fns";
 import { useTicketAiState } from "@/features/ai-agents/hooks/use-ai-agent-queries";
 import { useEscalateTicketAi, useResumeTicketAi } from "@/features/ai-agents/hooks/use-ai-agent-mutations";
@@ -32,7 +33,7 @@ function LogRow({ log }: { log: AiActionLog }) {
           <span className="text-muted-foreground ml-1">— {String(log.metadata.reason)}</span>
         )}
       </div>
-      <span className="text-muted-foreground shrink-0">
+      <span className="font-mono text-muted-foreground shrink-0">
         {format(new Date(log.created_at * 1000), "MMM d, h:mm a")}
       </span>
     </div>
@@ -69,30 +70,30 @@ export function TicketAiStatePanel({ ticketId }: Props) {
   }
 
   return (
-    <Card className="border-0 shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Bot className="size-3.5" />
-          AI Agent
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between">
+    <Card className="gap-0 py-0">
+      <PanelHeader
+        label="AI Agent"
+        right={
+          <Badge
+            variant={state.escalated ? "destructive" : "default"}
+            className="text-[9px] px-1.5 py-0">
+            {state.escalated ? "Escalated" : "Active"}
+          </Badge>
+        }
+      />
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Bot className="size-3.5 text-primary dark:text-accent shrink-0" />
           <div>
             <p className="text-xs font-medium">{agent_name ?? "AI Agent"}</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[10px] font-mono text-muted-foreground">
               {state.reply_count} auto-repl{state.reply_count === 1 ? "y" : "ies"}
             </p>
           </div>
-          <Badge
-            variant={state.escalated ? "destructive" : "default"}
-            className="text-[9px] px-1.5 py-0 rounded-full">
-            {state.escalated ? "Escalated" : "Active"}
-          </Badge>
         </div>
 
         {state.escalated && state.escalation_note && (
-          <div className="flex items-start gap-2 rounded-lg bg-destructive/10 px-3 py-2">
+          <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/20 px-3 py-2">
             <AlertTriangle className="size-3 text-destructive mt-0.5 shrink-0" />
             <p className="text-[10px] text-destructive">{state.escalation_note}</p>
           </div>
@@ -103,7 +104,7 @@ export function TicketAiStatePanel({ ticketId }: Props) {
             <Button
               size="sm"
               variant="outline"
-              className="h-7 gap-1 text-[11px] rounded-lg flex-1"
+              className="h-7 gap-1 text-[11px] flex-1"
               onClick={handleResume}
               disabled={resume.isPending}>
               <Play className="size-3" />
@@ -113,7 +114,7 @@ export function TicketAiStatePanel({ ticketId }: Props) {
             <Button
               size="sm"
               variant="outline"
-              className="h-7 gap-1 text-[11px] rounded-lg flex-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="h-7 gap-1 text-[11px] flex-1 text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={handleEscalate}
               disabled={escalate.isPending}>
               <OctagonX className="size-3" />
@@ -125,7 +126,7 @@ export function TicketAiStatePanel({ ticketId }: Props) {
         {logs.length > 0 && (
           <div>
             <button
-              className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setLogsOpen((v) => !v)}>
               {logsOpen ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
               {logsOpen ? "Hide" : "Show"} activity ({logs.length})

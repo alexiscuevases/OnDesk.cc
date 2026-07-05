@@ -91,20 +91,19 @@ export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewPro
 	}
 
 	return (
-		<div className="min-h-screen flex flex-col items-center justify-center hero-bg-gradient p-6 relative overflow-hidden">
-			<div className="dot-grid absolute inset-0 opacity-[0.035] pointer-events-none" />
-			<div className="w-full max-w-xl relative space-y-6">
+		<div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+			<div className="w-full max-w-xl space-y-6">
 				{/* Step indicator */}
-				<div className="flex items-center gap-3 text-xs mb-2">
+				<div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.15em] mb-2">
 					<div className="flex items-center gap-2">
-						<span className="size-6 rounded-full flex items-center justify-center text-[11px] font-bold bg-primary text-primary-foreground">
+						<span className="size-6 flex items-center justify-center font-mono text-[11px] font-bold bg-primary text-primary-foreground">
 							<Check className="size-3" />
 						</span>
 						<span className="text-muted-foreground">Details</span>
 					</div>
 					<div className="flex-1 h-px bg-border" />
 					<div className="flex items-center gap-2">
-						<span className="size-6 rounded-full flex items-center justify-center text-[11px] font-bold bg-primary text-primary-foreground">
+						<span className="size-6 flex items-center justify-center font-mono text-[11px] font-bold bg-primary text-primary-foreground">
 							2
 						</span>
 						<span className="font-semibold text-foreground">Plan</span>
@@ -112,26 +111,31 @@ export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewPro
 				</div>
 
 				{/* Header */}
-				<div className="text-center space-y-2">
-					<div className="mx-auto size-12 rounded-2xl bg-primary flex items-center justify-center mb-4 shadow-sm">
-						<Zap className="size-6 text-primary-foreground" />
+				<div className="space-y-2">
+					<div className="flex items-center gap-2">
+						<div className="size-9 bg-primary flex items-center justify-center">
+							<Zap className="size-4.5 text-primary-foreground" />
+						</div>
+						<span className="console-label text-primary dark:text-accent">
+							Select plan<span className="blink-cursor text-accent">_</span>
+						</span>
 					</div>
-					<h1 className="text-2xl font-bold tracking-tight">Choose your plan</h1>
+					<h1 className="text-2xl font-black tracking-tight">Choose your plan</h1>
 					<p className="text-sm text-muted-foreground">
 						Start your 14-day free trial — no credit card required upfront.
 					</p>
 				</div>
 
 				{/* Billing cycle toggle */}
-				<div className="flex items-center justify-center gap-2">
+				<div className="flex items-center gap-px border border-border bg-border w-fit">
 					{(["monthly", "annual"] as SubscriptionCycle[]).map((c) => (
 						<button
 							key={c}
 							onClick={() => setCycle(c)}
-							className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+							className={`px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors ${
 								cycle === c
-									? "bg-primary text-primary-foreground border-primary"
-									: "border-border text-muted-foreground hover:border-primary/40"
+									? "bg-primary text-primary-foreground"
+									: "bg-card text-muted-foreground hover:text-foreground"
 							}`}>
 							{c === "monthly" ? "Monthly" : "Annual (save 20%)"}
 						</button>
@@ -139,7 +143,7 @@ export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewPro
 				</div>
 
 				{/* Plan cards */}
-				<div className="grid gap-3 sm:grid-cols-3">
+				<div className="grid gap-px border border-border bg-border sm:grid-cols-3">
 					{PLANS.map((p) => {
 						const price = cycle === "annual" ? p.priceAnnual : p.priceMonthly;
 						const isSelected = plan === p.id;
@@ -147,11 +151,10 @@ export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewPro
 							<button
 								key={p.id}
 								onClick={() => setPlan(p.id)}
-								className={`rounded-xl border p-4 text-left transition-all ${
-									isSelected
-										? "border-primary bg-primary/5 shadow-sm"
-										: "border-border hover:border-primary/40"
+								className={`group relative p-4 text-left transition-colors ${
+									isSelected ? "bg-primary/5 dark:bg-accent/8" : "bg-card hover:bg-secondary/50"
 								}`}>
+								{isSelected && <span className="absolute top-0 left-0 right-0 h-0.5 bg-accent" />}
 								<div className="flex items-center justify-between mb-3">
 									<p className="text-sm font-bold">{p.name}</p>
 									<p className="text-lg font-black tabular-nums">
@@ -162,7 +165,7 @@ export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewPro
 								<ul className="space-y-1.5">
 									{p.features.map((f) => (
 										<li key={f} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-											<CheckCircle2 className="size-2.5 text-primary shrink-0" />
+											<CheckCircle2 className="size-2.5 text-accent shrink-0" />
 											{f}
 										</li>
 									))}
@@ -173,7 +176,7 @@ export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewPro
 				</div>
 
 				{/* Agent count */}
-				<div className="flex items-center justify-between gap-4 rounded-xl border p-4">
+				<div className="flex items-center justify-between gap-4 border p-4 bg-card">
 					<div>
 						<p className="text-sm font-semibold">Number of agents</p>
 						<p className="text-xs text-muted-foreground">Active support agents in your workspace</p>
@@ -181,22 +184,22 @@ export function SelectPlanView({ workspaceId, workspaceName }: SelectPlanViewPro
 					<div className="flex items-center gap-2">
 						<button
 							onClick={() => setAgents(Math.max(1, agents - 1))}
-							className="size-8 rounded-lg border flex items-center justify-center hover:border-primary/50 text-sm font-bold">
+							className="size-8 border flex items-center justify-center hover:border-primary text-sm font-mono font-bold">
 							-
 						</button>
-						<span className="text-sm font-black tabular-nums w-8 text-center">{agents}</span>
+						<span className="font-mono text-sm font-black tabular-nums w-8 text-center">{agents}</span>
 						<button
 							onClick={() => setAgents(agents + 1)}
-							className="size-8 rounded-lg border flex items-center justify-center hover:border-primary/50 text-sm font-bold">
+							className="size-8 border flex items-center justify-center hover:border-primary text-sm font-mono font-bold">
 							+
 						</button>
 					</div>
 				</div>
 
 				{/* Summary + CTA */}
-				<div className="rounded-xl bg-secondary/50 border p-4 flex items-center justify-between gap-4">
+				<div className="bg-secondary/50 border p-4 flex items-center justify-between gap-4">
 					<div>
-						<p className="text-xs text-muted-foreground">Total</p>
+						<p className="console-label">Total</p>
 						<p className="text-2xl font-black tabular-nums">
 							${total}
 							<span className="text-sm font-normal text-muted-foreground">/mo</span>

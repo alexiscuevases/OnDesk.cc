@@ -93,9 +93,9 @@ export function TeamTicketsTable({ tickets, contacts, companies, onOpenTicket, e
 					const company = contact?.company_id ? companyMap.get(contact.company_id) ?? null : null;
 					return (
 						<div className="flex items-center gap-2.5 min-w-0 max-w-md">
-							<Avatar className="size-7 rounded-lg shrink-0">
-								<AvatarImage src={company?.logo_url ?? undefined} className="object-cover rounded-lg" />
-								<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[10px] font-bold">
+							<Avatar className="size-7 shrink-0">
+								<AvatarImage src={company?.logo_url ?? undefined} className="object-cover" />
+								<AvatarFallback className="bg-primary/10 text-primary font-mono text-[10px] font-bold">
 									{contact ? getInitials(contact.name) : "?"}
 								</AvatarFallback>
 							</Avatar>
@@ -114,7 +114,7 @@ export function TeamTicketsTable({ tickets, contacts, companies, onOpenTicket, e
 				header: "AI",
 				enableSorting: false,
 				cell: ({ row }) => (
-					<TicketAiStatusBadge ticket={row.original} className="text-[10px] rounded-full px-2" />
+					<TicketAiStatusBadge ticket={row.original} className="text-[10px] px-2" />
 				),
 			},
 			{
@@ -137,7 +137,7 @@ export function TeamTicketsTable({ tickets, contacts, companies, onOpenTicket, e
 				header: "Updated",
 				size: 120,
 				cell: ({ row }) => (
-					<span className="text-xs text-muted-foreground whitespace-nowrap">
+					<span className="font-mono text-xs text-muted-foreground whitespace-nowrap tabular-nums">
 						{new Date(row.original.updated_at * 1000).toLocaleDateString()}
 					</span>
 				),
@@ -195,14 +195,12 @@ export function TeamTicketsTable({ tickets, contacts, companies, onOpenTicket, e
 									<TableHead
 										key={header.id}
 										style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
-										className={`text-[11px] font-semibold uppercase tracking-wider ${
-											idx === 0 ? "pl-4" : ""
-										} ${idx === lastIdx ? "pr-4" : ""}`}>
+										className={`${idx === 0 ? "pl-4" : ""} ${idx === lastIdx ? "pr-4" : ""}`}>
 										{header.isPlaceholder ? null : canSort ? (
 											<button
 												type="button"
 												onClick={header.column.getToggleSortingHandler()}
-												className="flex items-center gap-1.5 hover:text-foreground transition-colors uppercase tracking-wider">
+												className="flex items-center gap-1.5 hover:text-foreground transition-colors">
 												{flexRender(header.column.columnDef.header, header.getContext())}
 												{sortDir === "asc" ? (
 													<ChevronUp className="size-3" />
@@ -256,7 +254,7 @@ export function TeamTicketsTable({ tickets, contacts, companies, onOpenTicket, e
 			{totalCount > pageSize && (
 				<div className="flex items-center justify-between px-4 py-3 border-t">
 					<div className="flex items-center gap-3">
-						<p className="text-xs text-muted-foreground">
+						<p className="font-mono text-xs text-muted-foreground tabular-nums">
 							{pageStart}–{pageEnd} of {totalCount}
 						</p>
 						<div className="flex items-center gap-1.5">
@@ -284,19 +282,19 @@ export function TeamTicketsTable({ tickets, contacts, companies, onOpenTicket, e
 						<Button
 							variant="outline"
 							size="icon"
-							className="size-7 rounded-lg"
+							className="size-7"
 							disabled={!table.getCanPreviousPage()}
 							onClick={() => table.previousPage()}>
 							<ChevronLeft className="size-3.5" />
 							<span className="sr-only">Previous page</span>
 						</Button>
-						<span className="text-xs text-muted-foreground px-1.5">
+						<span className="font-mono text-xs text-muted-foreground px-1.5 tabular-nums">
 							{pageIndex + 1} / {Math.max(1, pageCount)}
 						</span>
 						<Button
 							variant="outline"
 							size="icon"
-							className="size-7 rounded-lg"
+							className="size-7"
 							disabled={!table.getCanNextPage()}
 							onClick={() => table.nextPage()}>
 							<ChevronRight className="size-3.5" />

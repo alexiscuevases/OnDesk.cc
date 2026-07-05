@@ -31,10 +31,10 @@ export function DeleteTicketModal({ open, onOpenChange, selectedCount, onConfirm
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel className="rounded-lg">Cancel</AlertDialogCancel>
+					<AlertDialogCancel>Cancel</AlertDialogCancel>
 					<AlertDialogAction
 						onClick={onConfirm}
-						className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg">
+						className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
 						<Trash2 className="size-3.5 mr-2" />
 						Delete Ticket{plural ? "s" : ""}
 					</AlertDialogAction>

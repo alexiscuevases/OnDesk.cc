@@ -11,9 +11,10 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PageHeader, PanelHeader, EmptyState, ConsoleTag } from "@/shared/components/console";
 import { useWorkspace } from "@/context/workspace-context";
 import { useNotifications } from "@/context/notifications-context";
 import { useNotificationsQuery } from "../hooks/use-notification-queries";
@@ -71,33 +72,32 @@ export function NotificationsView() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			<div className="flex items-start justify-between gap-4">
-				<div>
-					<h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
-					<p className="text-sm text-muted-foreground mt-1">
-						Stay on top of ticket activity, assignments, and SLA alerts
-					</p>
-				</div>
-				{unreadCount > 0 && (
-					<Button variant="outline" size="sm" onClick={markAllRead} className="shrink-0">
-						<CheckCheck className="size-4" />
-						Mark all read
-					</Button>
-				)}
-			</div>
+			<PageHeader
+				tag="07 — Notifications"
+				title="Notifications"
+				description="Stay on top of ticket activity, assignments, and SLA alerts"
+				actions={
+					unreadCount > 0 ? (
+						<Button variant="outline" size="sm" onClick={markAllRead} className="shrink-0">
+							<CheckCheck className="size-4" />
+							Mark all read
+						</Button>
+					) : undefined
+				}
+			/>
 
 			<Tabs value={filter} onValueChange={(v) => changeFilter(v as NotificationFilter)}>
 				<TabsList>
 					<TabsTrigger value="all">
 						All
-						<Badge variant="secondary" className="ml-1.5 h-5 rounded-full px-1.5 text-[10px]">
+						<Badge variant="secondary" className="ml-1.5 h-5 px-1.5 font-mono text-[10px] tabular-nums">
 							{totalCount}
 						</Badge>
 					</TabsTrigger>
 					<TabsTrigger value="unread">
 						Unread
 						{unreadCount > 0 && (
-							<Badge variant="secondary" className="ml-1.5 h-5 rounded-full px-1.5 text-[10px]">
+							<Badge variant="secondary" className="ml-1.5 h-5 px-1.5 font-mono text-[10px] tabular-nums">
 								{unreadCount}
 							</Badge>
 						)}
@@ -105,49 +105,42 @@ export function NotificationsView() {
 				</TabsList>
 			</Tabs>
 
-			<Card className="border-0 shadow-sm overflow-hidden">
-				<CardHeader className="pb-3">
-					<CardTitle className="text-sm font-semibold">
-						{filter === "unread" ? "Unread notifications" : "All notifications"}
-					</CardTitle>
-					<CardDescription className="text-xs">
-						{isLoading && total === 0
-							? "Loading…"
-							: `${total} notification${total !== 1 ? "s" : ""}`}
-					</CardDescription>
-				</CardHeader>
+			<Card className="gap-0 py-0 overflow-hidden">
+				<PanelHeader
+					label={filter === "unread" ? "Unread notifications" : "All notifications"}
+					right={
+						<ConsoleTag>
+							{isLoading && total === 0
+								? "Loading…"
+								: `${total} notification${total !== 1 ? "s" : ""}`}
+						</ConsoleTag>
+					}
+				/>
 				<CardContent className="p-0">
 					<Table>
 						<TableHeader>
 							<TableRow className="bg-secondary/50 hover:bg-secondary/50">
-								<TableHead style={{ width: 24 }} className="pl-6 text-[11px] font-semibold uppercase tracking-wider" />
-								<TableHead className="text-[11px] font-semibold uppercase tracking-wider">Type</TableHead>
-								<TableHead className="text-[11px] font-semibold uppercase tracking-wider">Notification</TableHead>
-								<TableHead className="text-[11px] font-semibold uppercase tracking-wider">When</TableHead>
-								<TableHead style={{ width: 48 }} className="pr-6 text-[11px] font-semibold uppercase tracking-wider" />
+								<TableHead style={{ width: 24 }} className="pl-6" />
+								<TableHead>Type</TableHead>
+								<TableHead>Notification</TableHead>
+								<TableHead>When</TableHead>
+								<TableHead style={{ width: 48 }} className="pr-6" />
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{notifications.length === 0 ? (
 								<TableRow>
-									<TableCell colSpan={5} className="py-14 text-center">
-										<div className="flex flex-col items-center gap-2">
-											<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-												{filter === "unread" ? (
-													<CheckCheck className="size-5 text-muted-foreground" />
-												) : (
-													<Inbox className="size-5 text-muted-foreground" />
-												)}
-											</div>
-											<p className="text-sm font-medium">
-												{filter === "unread" ? "No unread notifications" : "No notifications yet"}
-											</p>
-											<p className="text-[11px] text-muted-foreground">
-												{filter === "unread"
+									<TableCell colSpan={5} className="py-6">
+										<EmptyState
+											icon={filter === "unread" ? CheckCheck : Inbox}
+											title={filter === "unread" ? "No unread notifications" : "No notifications yet"}
+											description={
+												filter === "unread"
 													? "You're all caught up."
-													: "Activity from your workspace will show up here."}
-											</p>
-										</div>
+													: "Activity from your workspace will show up here."
+											}
+											className="py-0"
+										/>
 									</TableCell>
 								</TableRow>
 							) : (
@@ -164,13 +157,13 @@ export function NotificationsView() {
 												{n.read ? (
 													<div className="size-1.5 rounded-full bg-transparent" />
 												) : (
-													<div className="size-1.5 rounded-full bg-primary" />
+													<div className="size-1.5 rounded-full bg-accent" />
 												)}
 											</TableCell>
 											<TableCell>
 												<div className="flex items-center gap-2.5">
 													<NotificationIcon type={n.type} />
-													<span className="text-xs font-medium text-muted-foreground">
+													<span className="font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
 														{TYPE_LABELS[n.type]}
 													</span>
 												</div>
@@ -189,7 +182,7 @@ export function NotificationsView() {
 												</div>
 											</TableCell>
 											<TableCell>
-												<span className="text-xs text-muted-foreground whitespace-nowrap">
+												<span className="font-mono text-xs text-muted-foreground whitespace-nowrap tabular-nums">
 													{formatRelativeTime(n.created_at)}
 												</span>
 											</TableCell>
@@ -197,7 +190,7 @@ export function NotificationsView() {
 												<Button
 													variant="ghost"
 													size="icon"
-													className="size-7 rounded-md text-muted-foreground/50 hover:text-destructive"
+													className="size-7 text-muted-foreground/50 hover:text-destructive"
 													onClick={(e) => {
 														e.stopPropagation();
 														dismissNotification(n.id);
@@ -216,7 +209,7 @@ export function NotificationsView() {
 					{total > 0 && (
 						<div className="flex items-center justify-between px-6 py-4 border-t">
 							<div className="flex items-center gap-3">
-								<p className="text-xs text-muted-foreground">
+								<p className="font-mono text-xs text-muted-foreground tabular-nums">
 									Showing {pageStart}–{pageEnd} of {total}
 								</p>
 								<div className="flex items-center gap-1.5">
@@ -239,19 +232,19 @@ export function NotificationsView() {
 								<Button
 									variant="outline"
 									size="icon"
-									className="size-8 rounded-lg"
+									className="size-8"
 									disabled={page <= 1}
 									onClick={() => setPage((p) => Math.max(1, p - 1))}>
 									<ChevronLeft className="size-4" />
 									<span className="sr-only">Previous page</span>
 								</Button>
-								<span className="text-xs text-muted-foreground px-2">
+								<span className="font-mono text-xs text-muted-foreground px-2 tabular-nums">
 									Page {page} of {pageCount}
 								</span>
 								<Button
 									variant="outline"
 									size="icon"
-									className="size-8 rounded-lg"
+									className="size-8"
 									disabled={page >= pageCount}
 									onClick={() => setPage((p) => Math.min(pageCount, p + 1))}>
 									<ChevronRight className="size-4" />

@@ -119,20 +119,20 @@ export function TicketReplyBox({ ticketId, ticket, members = [], ccList = [], bc
 	}
 
 	return (
-		<Card className="border-0 shadow-sm">
+		<Card>
 			<CardContent className="pt-5">
 				<div className="flex items-center gap-2 mb-3">
 					<Button
 						variant={!isInternal ? "default" : "outline"}
 						size="sm"
-						className="h-7 text-[11px] rounded-full"
+						className="h-7 text-[11px]"
 						onClick={() => setIsInternal(false)}>
 						Reply
 					</Button>
 					<Button
 						variant={isInternal ? "default" : "outline"}
 						size="sm"
-						className={`h-7 text-[11px] rounded-full ${isInternal ? "bg-warning text-warning-foreground hover:bg-warning/90" : ""}`}
+						className={`h-7 text-[11px] ${isInternal ? "bg-warning text-warning-foreground hover:bg-warning/90" : ""}`}
 						onClick={() => setIsInternal(true)}>
 						<Eye className="size-3 mr-1" />
 						Internal Note
@@ -141,9 +141,9 @@ export function TicketReplyBox({ ticketId, ticket, members = [], ccList = [], bc
 
 				<div ref={editorWrapperRef} className="relative" onKeyDown={handleEditorKeyDown}>
 					{shortcutSuggestions.length > 0 && (
-						<div className="absolute bottom-full mb-1 left-0 z-50 w-72 bg-popover border border-border rounded-lg shadow-lg overflow-hidden">
+						<div className="absolute bottom-full mb-1 left-0 z-50 w-72 bg-popover border border-border overflow-hidden">
 							<div className="px-2 py-1 border-b bg-muted/40">
-								<span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+								<span className="console-label">
 									Canned Replies · <span className="font-mono">/{activeShortcutWord}</span>
 								</span>
 							</div>
@@ -157,28 +157,28 @@ export function TicketReplyBox({ ticketId, ticket, members = [], ccList = [], bc
 										}`}
 										onClick={() => handleSelectShortcut(cr)}
 										onMouseEnter={() => setSuggestionIndex(i)}>
-										<span className="text-[10px] text-muted-foreground font-mono bg-muted px-1 py-0.5 rounded shrink-0">{cr.shortcut}</span>
+										<span className="text-[10px] text-muted-foreground font-mono bg-muted px-1 py-0.5 shrink-0">{cr.shortcut}</span>
 										<span className="text-xs font-medium text-foreground truncate">{cr.name}</span>
 									</button>
 								))}
 							</div>
 						</div>
 					)}
-					<div className={`rounded-md border ${isInternal ? "border-warning/30" : "border-input"}`}>
+					<div className={`border ${isInternal ? "border-warning/30" : "border-input"}`}>
 						<TiptapEditor
 							ref={editorRef}
 							content={reply}
 							onChange={setReply}
 							placeholder={isInternal ? "Write an internal note..." : "Type your reply..."}
-							className={`border-0 rounded-b-none ${isInternal ? "bg-warning/5" : ""}`}
+							className={`border-0 ${isInternal ? "bg-warning/5" : ""}`}
 							minHeight="min-h-[96px]"
 							members={members}
 						/>
 						{!isInternal && defaultSignature && (
 							<>
 								<div className="border-t border-dashed border-muted-foreground/20" />
-								<div className="px-3 py-2 bg-muted/30 rounded-b-md text-xs text-muted-foreground">
-									<p className="font-medium text-[10px] uppercase tracking-wide mb-1 text-muted-foreground/50">
+								<div className="px-3 py-2 bg-muted/30 text-xs text-muted-foreground">
+									<p className="font-mono text-[10px] uppercase tracking-[0.15em] mb-1 text-muted-foreground/50">
 										Signature · {defaultSignature.name}
 									</p>
 									<div
@@ -198,7 +198,7 @@ export function TicketReplyBox({ ticketId, ticket, members = [], ccList = [], bc
 						/>
 						<Popover open={cannedOpen} onOpenChange={setCannedOpen}>
 							<PopoverTrigger asChild>
-								<Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5 text-muted-foreground rounded-lg">
+								<Button variant="ghost" size="sm" className="h-8 text-xs gap-1.5 text-muted-foreground">
 									<MessageSquareQuote className="size-3.5" />
 									Canned Replies
 								</Button>
@@ -226,7 +226,7 @@ export function TicketReplyBox({ ticketId, ticket, members = [], ccList = [], bc
 												onClick={() => handleSelectCannedReply(cr.content)}>
 												<span className="text-xs font-medium text-foreground">{cr.name}</span>
 												{cr.shortcut && (
-													<span className="text-[10px] text-muted-foreground font-mono bg-muted px-1 py-0.5 rounded">
+													<span className="text-[10px] text-muted-foreground font-mono bg-muted px-1 py-0.5">
 														{cr.shortcut}
 													</span>
 												)}
@@ -239,7 +239,7 @@ export function TicketReplyBox({ ticketId, ticket, members = [], ccList = [], bc
 					</div>
 					<Button
 						size="sm"
-						className="h-8 gap-1.5 rounded-lg text-xs font-semibold"
+						className="h-8 gap-1.5 text-xs font-semibold"
 						onClick={handleSend}
 						disabled={sendMessage.isPending || !reply.trim()}>
 						<Send className="size-3.5" />

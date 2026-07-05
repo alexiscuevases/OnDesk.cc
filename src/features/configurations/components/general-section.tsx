@@ -52,9 +52,9 @@ export function GeneralSection() {
 
 	return (
 		<div className="grid gap-4">
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Workspace Settings</CardTitle>
+					<CardTitle className="console-label">Workspace Settings</CardTitle>
 					<CardDescription className="text-xs">Basic workspace configuration</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
@@ -69,7 +69,7 @@ export function GeneralSection() {
 						<Label htmlFor="workspace-name" className="text-xs">
 							Workspace Name
 						</Label>
-						<Input id="workspace-name" value={name} onChange={(e) => setName(e.target.value)} className="h-9 rounded-lg" />
+						<Input id="workspace-name" value={name} onChange={(e) => setName(e.target.value)} className="h-9" />
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="workspace-description" className="text-xs">
@@ -80,12 +80,12 @@ export function GeneralSection() {
 							value={description}
 							onChange={(e) => setDescription(e.target.value)}
 							placeholder="Optional workspace description"
-							className="h-9 rounded-lg"
+							className="h-9"
 						/>
 					</div>
 					<div className="space-y-2">
 						<Label className="text-xs text-muted-foreground">Workspace Slug</Label>
-						<Input value={workspace.slug} readOnly className="h-9 rounded-lg bg-muted text-muted-foreground" />
+						<Input value={workspace.slug} readOnly className="h-9 bg-muted text-muted-foreground font-mono" />
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="workspace-prompt" className="text-xs">
@@ -99,12 +99,12 @@ export function GeneralSection() {
 							value={workspacePrompt}
 							onChange={(e) => setWorkspacePrompt(e.target.value)}
 							placeholder="e.g. We are Acme SaaS. Our tone is friendly but professional. Escalate any billing/refund topics. Use product terms: Workspace, Ticket, Agent..."
-							className="min-h-32 rounded-lg"
+							className="min-h-32"
 						/>
 					</div>
 					<Button
 						size="sm"
-						className="h-8 gap-1.5 rounded-lg text-xs font-semibold"
+						className="h-8 gap-1.5 text-xs"
 						onClick={handleSave}
 						disabled={updateWorkspace.isPending || !name.trim()}>
 						<Save className="size-3.5" />

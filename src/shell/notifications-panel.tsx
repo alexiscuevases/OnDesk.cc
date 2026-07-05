@@ -12,6 +12,7 @@ import {
 	formatRelativeTime,
 } from "@/features/notifications/components/notification-icon";
 import type { Notification } from "@/features/notifications/api/notifications-api";
+import { ConsoleTag, EmptyState } from "@/shared/components/console";
 
 export function NotificationsPanel() {
 	const {
@@ -42,7 +43,7 @@ export function NotificationsPanel() {
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
-				<Button variant="ghost" size="icon" className="relative size-8 rounded-lg">
+				<Button variant="ghost" size="icon" className="relative size-8">
 					<Bell className="size-4" />
 					{unreadCount > 0 && (
 						<span className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-accent-foreground">
@@ -53,11 +54,11 @@ export function NotificationsPanel() {
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="w-96 p-0" align="end" sideOffset={8}>
-				<div className="flex items-center justify-between px-4 py-3 border-b">
+				<div className="flex items-center justify-between px-4 py-3 border-b border-border">
 					<div className="flex items-center gap-2">
-						<h3 className="text-sm font-semibold">Notifications</h3>
+						<ConsoleTag className="text-primary dark:text-accent">Notifications</ConsoleTag>
 						{unreadCount > 0 && (
-							<Badge variant="secondary" className="text-[10px] rounded-full px-1.5 h-5">
+							<Badge variant="secondary" className="text-[10px]">
 								{unreadCount} new
 							</Badge>
 						)}
@@ -78,10 +79,7 @@ export function NotificationsPanel() {
 							<p className="text-sm">Loading…</p>
 						</div>
 					) : recentNotifications.length === 0 ? (
-						<div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-							<Bell className="size-8 mb-2 opacity-20" />
-							<p className="text-sm">No notifications</p>
-						</div>
+						<EmptyState icon={Bell} title="No notifications" />
 					) : (
 						recentNotifications.map((notif) => (
 							<div
@@ -114,7 +112,7 @@ export function NotificationsPanel() {
 								<Button
 									variant="ghost"
 									size="icon"
-									className="size-6 rounded-md shrink-0 mt-0.5 text-muted-foreground/40 hover:text-destructive"
+									className="size-6 shrink-0 mt-0.5 text-muted-foreground/40 hover:text-destructive"
 									onClick={(e) => {
 										e.stopPropagation();
 										dismissNotification(notif.id);
@@ -130,7 +128,7 @@ export function NotificationsPanel() {
 					<Button
 						variant="ghost"
 						size="sm"
-						className="w-full h-8 text-xs text-primary hover:text-primary/80 hover:bg-primary/5"
+						className="w-full h-8 font-mono text-[10px] uppercase tracking-[0.12em] text-primary hover:text-primary/80 hover:bg-primary/5"
 						onClick={handleViewAll}>
 						View all notifications
 					</Button>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, Mail, RefreshCw, Check, AlertCircle, X, ChevronDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -62,29 +63,29 @@ function MailboxList({
 				return (
 					<div
 						key={mailbox.id}
-						className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
-						<div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+						className="flex items-center gap-3 bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
+						<div className="flex size-9 items-center justify-center bg-primary/10">
 							<Mail className="size-5 text-primary" />
 						</div>
 						<div className="flex-1 min-w-0">
 							<div className="flex items-center gap-2">
-								<p className="text-sm font-medium truncate">{mailbox.email}</p>
-								<span className="shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+								<p className="text-sm font-medium truncate font-mono">{mailbox.email}</p>
+								<span className="shrink-0 bg-secondary px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
 									{getProviderLabel(mailbox.provider)}
 								</span>
 							</div>
 							<div className="flex items-center gap-1.5 mt-0.5">
 								{syncStatus === "synced" ? (
 									<>
-										<Check className="size-3 text-green-500" />
+										<Check className="size-3 text-success" />
 										<p className="text-[11px] text-muted-foreground">
 											Active · since {new Date(mailbox.created_at * 1000).toLocaleDateString()}
 										</p>
 									</>
 								) : syncStatus === "pending" ? (
 									<>
-										<AlertCircle className="size-3 text-amber-500" />
-										<p className="text-[11px] text-amber-500">Connected · webhook pending (needs HTTPS)</p>
+										<AlertCircle className="size-3 text-warning" />
+										<p className="text-[11px] text-warning">Connected · webhook pending (needs HTTPS)</p>
 									</>
 								) : (
 									<>
@@ -98,7 +99,7 @@ function MailboxList({
 							<Button
 								variant="outline"
 								size="sm"
-								className="h-7 gap-1.5 text-[11px] rounded-lg"
+								className="h-7 gap-1.5 text-[11px]"
 								onClick={() => onResync(mailbox.provider)}
 								disabled={isResyncing}>
 								<RefreshCw className="size-3" />
@@ -107,7 +108,7 @@ function MailboxList({
 							<Button
 								variant="ghost"
 								size="sm"
-								className="h-7 gap-1.5 text-[11px] rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+								className="h-7 gap-1.5 text-[11px] text-destructive hover:text-destructive hover:bg-destructive/10"
 								onClick={() => onDisconnect(mailbox)}
 								disabled={isDisconnecting}>
 								<X className="size-3" />
@@ -172,7 +173,7 @@ export function IntegrationsSection() {
 						<DropdownMenuTrigger asChild>
 							<Button
 								size="sm"
-								className="h-8 gap-1.5 rounded-lg text-xs font-semibold"
+								className="h-8 gap-1.5 text-xs"
 								disabled={isConnecting}>
 								<Plus className="size-3.5" />
 								{isConnecting ? "Redirecting..." : "Connect Account"}
@@ -192,15 +193,15 @@ export function IntegrationsSection() {
 					</DropdownMenu>
 				</div>
 
-				<div className="grid grid-cols-3 gap-3">
-					<SummaryCard icon={Mail} label="Connected" value={mailboxes.length} />
-					<SummaryCard icon={Check} label="Active" value={activeCount} />
-					<SummaryCard icon={AlertCircle} label="Issues" value={issueCount} />
-				</div>
+				<StatGrid className="grid-cols-3">
+					<StatTile icon={Mail} label="Connected" value={mailboxes.length} />
+					<StatTile icon={Check} label="Active" value={activeCount} />
+					<StatTile icon={AlertCircle} label="Issues" value={issueCount} tone={issueCount > 0 ? "warning" : "default"} />
+				</StatGrid>
 
-				<Card className="border-0 shadow-sm">
+				<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Email Accounts</CardTitle>
+					<CardTitle className="console-label">Email Accounts</CardTitle>
 					<CardDescription className="text-xs">Mailboxes currently synced into this workspace</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -209,15 +210,11 @@ export function IntegrationsSection() {
 							<RefreshCw className="size-4 animate-spin text-muted-foreground" />
 						</div>
 					) : mailboxes.length === 0 ? (
-						<div className="flex flex-col items-center gap-2 py-8 text-center">
-							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-								<Mail className="size-5 text-muted-foreground" />
-							</div>
-							<p className="text-sm font-medium">No accounts connected</p>
-							<p className="text-[11px] text-muted-foreground max-w-xs">
-								Connect a Microsoft Outlook or Gmail account to start receiving tickets from email.
-							</p>
-						</div>
+						<EmptyState
+							icon={Mail}
+							title="No accounts connected"
+							description="Connect a Microsoft Outlook or Gmail account to start receiving tickets from email."
+						/>
 					) : (
 						<MailboxList
 							mailboxes={mailboxes}
@@ -242,30 +239,16 @@ export function IntegrationsSection() {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel className="rounded-lg text-xs">Cancel</AlertDialogCancel>
+						<AlertDialogCancel className="text-xs">Cancel</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={handleDisconnect}
 							disabled={disconnectMutation.isPending}
-							className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-xs">
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs">
 							{disconnectMutation.isPending ? "Disconnecting..." : "Disconnect"}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
 		</>
-	);
-}
-
-function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
-	return (
-		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
-			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-5 text-primary" />
-			</div>
-			<div>
-				<p className="text-xl font-bold">{value}</p>
-				<p className="text-[11px] text-muted-foreground">{label}</p>
-			</div>
-		</div>
 	);
 }

@@ -15,8 +15,9 @@ import {
 } from "recharts";
 
 import { BarChart2 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageHeader, PanelHeader, EmptyState } from "@/shared/components/console";
 import { useQuery } from "@tanstack/react-query";
 import {
 	apiGetWorkspaceAnalytics,
@@ -24,13 +25,15 @@ import {
 } from "../api/analytics-api";
 
 const tooltipStyle = {
-	backgroundColor: "var(--color-card)",
+	backgroundColor: "var(--color-popover)",
 	border: "1px solid var(--color-border)",
-	borderRadius: "8px",
-	color: "var(--color-card-foreground)",
+	borderRadius: 0,
+	color: "var(--color-popover-foreground)",
 	fontSize: 12,
-	boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+	fontFamily: "var(--font-mono)",
 };
+
+const axisTick = { fill: "var(--color-muted-foreground)", fontSize: 10, fontFamily: "var(--font-mono)" };
 
 export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 	const { data: analytics } = useQuery({
@@ -53,89 +56,64 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 
 	return (
 		<div className="flex flex-col gap-6">
-			<div>
-				<h1 className="text-2xl font-bold tracking-tight text-balance">Analytics</h1>
-				<p className="text-sm text-muted-foreground mt-1">In-depth metrics and performance insights</p>
-			</div>
+			<PageHeader tag="04 — Analytics" title="Analytics" description="In-depth metrics and performance insights" />
 
 			<Tabs defaultValue="performance" className="w-full">
-				<TabsList className="bg-secondary/60 rounded-xl p-1 h-auto">
-					<TabsTrigger value="performance" className="rounded-lg text-xs data-[state=active]:shadow-sm">
-						Performance
-					</TabsTrigger>
-					<TabsTrigger value="trends" className="rounded-lg text-xs data-[state=active]:shadow-sm">
-						Trends
-					</TabsTrigger>
-					<TabsTrigger value="breakdown" className="rounded-lg text-xs data-[state=active]:shadow-sm">
-						Breakdown
-					</TabsTrigger>
+				<TabsList>
+					<TabsTrigger value="performance">Performance</TabsTrigger>
+					<TabsTrigger value="trends">Trends</TabsTrigger>
+					<TabsTrigger value="breakdown">Breakdown</TabsTrigger>
 				</TabsList>
 
 				<TabsContent value="performance" className="mt-4">
 					<div className="grid gap-4 lg:grid-cols-2">
-						<Card className="border-0 shadow-sm">
-							<CardHeader>
-								<CardTitle className="text-sm font-semibold">Team Performance</CardTitle>
-								<CardDescription className="text-xs">Ticket count vs resolved by team</CardDescription>
-							</CardHeader>
-							<CardContent>
+						<Card className="gap-0 py-0">
+							<PanelHeader label="Team performance" />
+							<CardContent className="p-4">
+								<p className="text-xs text-muted-foreground mb-4">Ticket count vs resolved by team</p>
 							{!hasTeamData ? (
-								<div className="flex flex-col items-center justify-center h-[300px] text-center">
-									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
-										<BarChart2 className="size-5 text-muted-foreground" />
-									</div>
-									<p className="text-sm font-medium">No team data yet</p>
-									<p className="text-[11px] text-muted-foreground mt-1">Data will appear once teams are assigned tickets.</p>
-								</div>
+								<EmptyState icon={BarChart2} title="No team data yet" description="Data will appear once teams are assigned tickets." className="h-[300px] py-0" />
 							) : (
 								<ResponsiveContainer width="100%" height={300}>
 									<BarChart data={teamPerformanceData} layout="vertical">
 										<CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-										<XAxis type="number" tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }} axisLine={false} tickLine={false} />
+										<XAxis type="number" tick={axisTick} axisLine={false} tickLine={false} />
 										<YAxis
 											dataKey="name"
 											type="category"
 											width={110}
-											tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+											tick={axisTick}
 											axisLine={false}
 											tickLine={false}
 										/>
 										<Tooltip contentStyle={tooltipStyle} />
-										<Bar dataKey="tickets" fill="var(--color-chart-1)" radius={[0, 6, 6, 0]} name="Open" />
-										<Bar dataKey="resolved" fill="var(--color-chart-2)" radius={[0, 6, 6, 0]} name="Resolved" />
+										<Bar dataKey="tickets" fill="var(--color-chart-1)" name="Open" />
+										<Bar dataKey="resolved" fill="var(--color-chart-2)" name="Resolved" />
 									</BarChart>
 								</ResponsiveContainer>
 							)}
 							</CardContent>
 						</Card>
 
-						<Card className="border-0 shadow-sm">
-							<CardHeader>
-								<CardTitle className="text-sm font-semibold">Avg. Response Time</CardTitle>
-								<CardDescription className="text-xs">Response time in hours throughout the day</CardDescription>
-							</CardHeader>
-							<CardContent>
+						<Card className="gap-0 py-0">
+							<PanelHeader label="Avg. response time" />
+							<CardContent className="p-4">
+								<p className="text-xs text-muted-foreground mb-4">Response time in hours throughout the day</p>
 							{!hasResponseData ? (
-								<div className="flex flex-col items-center justify-center h-[300px] text-center">
-									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
-										<BarChart2 className="size-5 text-muted-foreground" />
-									</div>
-									<p className="text-sm font-medium">No response time data yet</p>
-									<p className="text-[11px] text-muted-foreground mt-1">Data will appear once tickets are resolved.</p>
-								</div>
+								<EmptyState icon={BarChart2} title="No response time data yet" description="Data will appear once tickets are resolved." className="h-[300px] py-0" />
 							) : (
 								<ResponsiveContainer width="100%" height={300}>
 									<LineChart data={responseTimeData}>
 										<CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
 										<XAxis
 											dataKey="hour"
-											tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+											tick={axisTick}
 											interval={1}
 											axisLine={false}
 											tickLine={false}
 										/>
 										<YAxis
-											tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+											tick={axisTick}
 											domain={[0, 3]}
 											tickFormatter={(v) => `${v}h`}
 											axisLine={false}
@@ -160,20 +138,12 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 
 				<TabsContent value="trends" className="mt-4">
 					<div className="grid gap-4 lg:grid-cols-2">
-						<Card className="border-0 shadow-sm">
-							<CardHeader>
-								<CardTitle className="text-sm font-semibold">Resolution Health Trend</CardTitle>
-								<CardDescription className="text-xs">Resolved tickets vs created tickets over the last 8 weeks</CardDescription>
-							</CardHeader>
-							<CardContent>
+						<Card className="gap-0 py-0">
+							<PanelHeader label="Resolution health trend" />
+							<CardContent className="p-4">
+								<p className="text-xs text-muted-foreground mb-4">Resolved tickets vs created tickets over the last 8 weeks</p>
 							{!hasResolutionData ? (
-								<div className="flex flex-col items-center justify-center h-[300px] text-center">
-									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
-										<BarChart2 className="size-5 text-muted-foreground" />
-									</div>
-									<p className="text-sm font-medium">No trend data yet</p>
-									<p className="text-[11px] text-muted-foreground mt-1">Data will appear after a few weeks of activity.</p>
-								</div>
+								<EmptyState icon={BarChart2} title="No trend data yet" description="Data will appear after a few weeks of activity." className="h-[300px] py-0" />
 							) : (
 								<ResponsiveContainer width="100%" height={300}>
 									<AreaChart data={resolutionTrendData}>
@@ -186,13 +156,13 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 										<CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
 										<XAxis
 											dataKey="week"
-											tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+											tick={axisTick}
 											axisLine={false}
 											tickLine={false}
 										/>
 										<YAxis
 											domain={[0, 5]}
-											tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+											tick={axisTick}
 											axisLine={false}
 											tickLine={false}
 										/>
@@ -204,34 +174,26 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 							</CardContent>
 						</Card>
 
-						<Card className="border-0 shadow-sm">
-							<CardHeader>
-								<CardTitle className="text-sm font-semibold">Hourly Ticket Activity</CardTitle>
-								<CardDescription className="text-xs">Ticket creation distribution by hour over the last 30 days</CardDescription>
-							</CardHeader>
-							<CardContent>
+						<Card className="gap-0 py-0">
+							<PanelHeader label="Hourly ticket activity" />
+							<CardContent className="p-4">
+								<p className="text-xs text-muted-foreground mb-4">Ticket creation distribution by hour over the last 30 days</p>
 							{!hasHourlyData ? (
-								<div className="flex flex-col items-center justify-center h-[300px] text-center">
-									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
-										<BarChart2 className="size-5 text-muted-foreground" />
-									</div>
-									<p className="text-sm font-medium">No hourly data yet</p>
-									<p className="text-[11px] text-muted-foreground mt-1">Activity breakdown will appear once tickets start coming in.</p>
-								</div>
+								<EmptyState icon={BarChart2} title="No hourly data yet" description="Activity breakdown will appear once tickets start coming in." className="h-[300px] py-0" />
 							) : (
 								<ResponsiveContainer width="100%" height={300}>
 									<BarChart data={hourlyTicketData}>
 										<CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
 										<XAxis
 											dataKey="hour"
-											tick={{ fill: "var(--color-muted-foreground)", fontSize: 10 }}
+											tick={axisTick}
 											interval={2}
 											axisLine={false}
 											tickLine={false}
 										/>
-										<YAxis tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }} axisLine={false} tickLine={false} />
+										<YAxis tick={axisTick} axisLine={false} tickLine={false} />
 										<Tooltip contentStyle={tooltipStyle} />
-										<Bar dataKey="tickets" fill="var(--color-chart-1)" radius={[4, 4, 0, 0]} />
+										<Bar dataKey="tickets" fill="var(--color-chart-1)" />
 									</BarChart>
 								</ResponsiveContainer>
 							)}
@@ -242,33 +204,25 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 
 				<TabsContent value="breakdown" className="mt-4">
 					<div className="grid gap-4 lg:grid-cols-2">
-						<Card className="border-0 shadow-sm">
-							<CardHeader>
-								<CardTitle className="text-sm font-semibold">Priority Breakdown</CardTitle>
-								<CardDescription className="text-xs">Total tickets by priority level</CardDescription>
-							</CardHeader>
-							<CardContent>
+						<Card className="gap-0 py-0">
+							<PanelHeader label="Priority breakdown" />
+							<CardContent className="p-4">
+								<p className="text-xs text-muted-foreground mb-4">Total tickets by priority level</p>
 							{!hasPriorityData ? (
-								<div className="flex flex-col items-center justify-center h-[300px] text-center">
-									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
-										<BarChart2 className="size-5 text-muted-foreground" />
-									</div>
-									<p className="text-sm font-medium">No priority data yet</p>
-									<p className="text-[11px] text-muted-foreground mt-1">Priority breakdown will appear once tickets are created.</p>
-								</div>
+								<EmptyState icon={BarChart2} title="No priority data yet" description="Priority breakdown will appear once tickets are created." className="h-[300px] py-0" />
 							) : (
 								<ResponsiveContainer width="100%" height={300}>
 									<BarChart data={priorityBreakdown}>
 										<CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
 										<XAxis
 											dataKey="priority"
-											tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+											tick={axisTick}
 											axisLine={false}
 											tickLine={false}
 										/>
-										<YAxis tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }} axisLine={false} tickLine={false} />
+										<YAxis tick={axisTick} axisLine={false} tickLine={false} />
 										<Tooltip contentStyle={tooltipStyle} />
-										<Bar dataKey="count" radius={[6, 6, 0, 0]}>
+										<Bar dataKey="count">
 											{priorityBreakdown.map((entry, index) => (
 												<Cell key={`cell-${index}`} fill={entry.fill} />
 											))}
@@ -279,20 +233,12 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 							</CardContent>
 						</Card>
 
-						<Card className="border-0 shadow-sm">
-							<CardHeader>
-								<CardTitle className="text-sm font-semibold">Weekly Volume Trend</CardTitle>
-								<CardDescription className="text-xs">Open, resolved, and closed tickets over the last 7 days</CardDescription>
-							</CardHeader>
-							<CardContent>
+						<Card className="gap-0 py-0">
+							<PanelHeader label="Weekly volume trend" />
+							<CardContent className="p-4">
+								<p className="text-xs text-muted-foreground mb-4">Open, resolved, and closed tickets over the last 7 days</p>
 							{!hasVolumeData ? (
-								<div className="flex flex-col items-center justify-center h-[300px] text-center">
-									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary mb-3">
-										<BarChart2 className="size-5 text-muted-foreground" />
-									</div>
-									<p className="text-sm font-medium">No volume data yet</p>
-									<p className="text-[11px] text-muted-foreground mt-1">Weekly trends will appear once tickets start coming in.</p>
-								</div>
+								<EmptyState icon={BarChart2} title="No volume data yet" description="Weekly trends will appear once tickets start coming in." className="h-[300px] py-0" />
 							) : (
 								<ResponsiveContainer width="100%" height={300}>
 									<AreaChart data={ticketVolumeData}>
@@ -313,13 +259,13 @@ export function AnalyticsView({ workspaceId }: { workspaceId: string }) {
 										<CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
 										<XAxis
 											dataKey="date"
-											tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+											tick={axisTick}
 											axisLine={false}
 											tickLine={false}
 										/>
-										<YAxis tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }} axisLine={false} tickLine={false} />
+										<YAxis tick={axisTick} axisLine={false} tickLine={false} />
 										<Tooltip contentStyle={tooltipStyle} />
-										<Legend wrapperStyle={{ fontSize: 11 }} />
+										<Legend wrapperStyle={{ fontSize: 10, fontFamily: "var(--font-mono)", textTransform: "uppercase" as const }} />
 										<Area type="monotone" dataKey="open" stroke="var(--color-chart-1)" fill="url(#areaOpen)" strokeWidth={2} />
 										<Area type="monotone" dataKey="resolved" stroke="var(--color-chart-2)" fill="url(#areaResolved)" strokeWidth={2} />
 										<Area type="monotone" dataKey="closed" stroke="var(--color-chart-3)" fill="url(#areaClosed)" strokeWidth={2} />

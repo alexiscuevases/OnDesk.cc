@@ -27,9 +27,9 @@ export function NotificationsSection() {
 
 	return (
 		<div className="grid gap-4">
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Notification Preferences</CardTitle>
+					<CardTitle className="console-label">Notification Preferences</CardTitle>
 					<CardDescription className="text-xs">Manage how and when you receive alerts</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">

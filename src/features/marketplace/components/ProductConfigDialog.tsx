@@ -79,8 +79,8 @@ export const ProductConfigDialog: React.FC<ProductConfigDialogProps> = ({
 					
 					{/* Add more auth types or settings as needed */}
 					
-					<div className="pt-4">
-						<h4 className="text-sm font-semibold mb-2">Available Actions</h4>
+					<div className="pt-4 border-t border-border">
+						<h4 className="console-label text-primary dark:text-accent mb-2">Available Actions</h4>
 						<ul className="text-xs space-y-1 text-muted-foreground list-disc pl-4">
 							{product.actions.map((action) => (
 								<li key={action.name}>

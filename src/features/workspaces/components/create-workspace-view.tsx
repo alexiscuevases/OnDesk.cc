@@ -23,13 +23,13 @@ function toSlug(value: string) {
 
 function StepIndicator({ step }: { step: 1 | 2 }) {
 	return (
-		<div className="flex items-center gap-3 text-xs mb-8">
+		<div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.15em] mb-8">
 			<div className="flex items-center gap-2">
 				<span
-					className={`size-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-colors ${
+					className={`size-6 flex items-center justify-center font-mono text-[11px] font-bold transition-colors ${
 						step >= 1
 							? "bg-primary text-primary-foreground"
-							: "bg-muted text-muted-foreground"
+							: "border border-border bg-muted text-muted-foreground"
 					}`}>
 					{step > 1 ? <Check className="size-3" /> : "1"}
 				</span>
@@ -40,10 +40,10 @@ function StepIndicator({ step }: { step: 1 | 2 }) {
 			<div className="flex-1 h-px bg-border" />
 			<div className="flex items-center gap-2">
 				<span
-					className={`size-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-colors ${
+					className={`size-6 flex items-center justify-center font-mono text-[11px] font-bold transition-colors ${
 						step >= 2
 							? "bg-primary text-primary-foreground"
-							: "bg-muted text-muted-foreground"
+							: "border border-border bg-muted text-muted-foreground"
 					}`}>
 					2
 				</span>
@@ -87,23 +87,24 @@ export function CreateWorkspaceView() {
 	}
 
 	return (
-		<div className="min-h-screen flex flex-col items-center justify-center hero-bg-gradient p-6 relative overflow-hidden">
-			<div className="dot-grid absolute inset-0 opacity-[0.035] pointer-events-none" />
-
-			<div className="w-full max-w-md relative">
+		<div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+			<div className="w-full max-w-md">
 				{/* Step indicator */}
 				<StepIndicator step={1} />
 
 				{/* Header */}
-				<div className="text-center space-y-2 mb-8">
-					<h1 className="text-2xl font-bold tracking-tight">Create your workspace</h1>
+				<div className="space-y-2 mb-8">
+					<span className="console-label text-primary dark:text-accent">
+						New workspace<span className="blink-cursor text-accent">_</span>
+					</span>
+					<h1 className="text-2xl font-black tracking-tight">Create your workspace</h1>
 					<p className="text-sm text-muted-foreground">
 						A workspace is where your team manages tickets and customers.
 					</p>
 				</div>
 
 				{/* Form card */}
-				<div className="bg-card border rounded-2xl p-6 shadow-sm">
+				<div className="bg-card border p-6">
 					<form
 						onSubmit={(e) => {
 							e.preventDefault();
@@ -145,13 +146,13 @@ export function CreateWorkspaceView() {
 										URL identifier{" "}
 										<span className="text-muted-foreground font-normal text-xs">(auto-generated)</span>
 									</Label>
-									<div className="flex items-center rounded-lg border bg-muted/40 overflow-hidden focus-within:ring-2 focus-within:ring-ring">
-										<span className="px-3 text-sm text-muted-foreground border-r bg-muted/60 h-10 flex items-center select-none shrink-0">
+									<div className="flex items-center border bg-muted/40 overflow-hidden focus-within:ring-2 focus-within:ring-ring/30 focus-within:border-primary">
+										<span className="px-3 font-mono text-sm text-muted-foreground border-r bg-muted/60 h-10 flex items-center select-none shrink-0">
 											/w/
 										</span>
 										<input
 											id="slug"
-											className="flex-1 h-10 px-3 text-sm bg-transparent outline-none"
+											className="flex-1 h-10 px-3 font-mono text-sm bg-transparent outline-none"
 											placeholder="acme-corp"
 											value={field.state.value}
 											onChange={(e) => field.handleChange(toSlug(e.target.value))}
@@ -219,7 +220,7 @@ export function CreateWorkspaceView() {
 				{/* Back link */}
 				<button
 					onClick={() => navigate({ to: "/workspaces" })}
-					className="mt-4 w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors py-2">
+					className="mt-4 w-full flex items-center justify-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground transition-colors py-2">
 					<ArrowLeft className="size-3.5" />
 					Back to workspaces
 				</button>

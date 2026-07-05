@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2, MessageSquare, Keyboard } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import { useWorkspace } from "@/context/workspace-context";
 import { useCannedReplies } from "@/features/canned-replies/hooks/use-canned-reply-queries";
 import {
@@ -59,37 +60,33 @@ export function CannedRepliesSection() {
 					<p className="text-xs text-muted-foreground">
 						Quick response templates to reply faster to common questions.
 					</p>
-					<Button size="sm" className="h-8 gap-1.5 rounded-lg text-xs font-semibold" onClick={() => setAddOpen(true)}>
+					<Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setAddOpen(true)}>
 						<Plus className="size-3.5" />
 						Add Reply
 					</Button>
 				</div>
 
-				<div className="grid grid-cols-2 gap-3">
-					<SummaryCard icon={MessageSquare} label="Templates" value={replies.length} />
-					<SummaryCard icon={Keyboard} label="With shortcut" value={withShortcut} />
-				</div>
+				<StatGrid className="grid-cols-2">
+					<StatTile icon={MessageSquare} label="Templates" value={replies.length} />
+					<StatTile icon={Keyboard} label="With shortcut" value={withShortcut} />
+				</StatGrid>
 
-				<Card className="border-0 shadow-sm">
+				<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Canned Replies</CardTitle>
+					<CardTitle className="console-label">Canned Replies</CardTitle>
 					<CardDescription className="text-xs">Templates available to all agents in this workspace</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{replies.length === 0 ? (
-						<div className="flex flex-col items-center gap-2 py-8 text-center">
-							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-								<MessageSquare className="size-5 text-muted-foreground" />
-							</div>
-							<p className="text-sm font-medium">No canned replies yet</p>
-							<p className="text-[11px] text-muted-foreground max-w-xs">
-								Create quick response templates to reply faster to common questions.
-							</p>
-						</div>
+						<EmptyState
+							icon={MessageSquare}
+							title="No canned replies yet"
+							description="Create quick response templates to reply faster to common questions."
+						/>
 					) : (
 						<div className="space-y-2">
 							{replies.map((reply) => (
-								<div key={reply.id} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
+								<div key={reply.id} className="flex items-center gap-3 bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
 									<div className="flex-1 min-w-0">
 										<p className="text-sm font-medium">{reply.name}</p>
 										<p className="text-[11px] text-muted-foreground truncate mt-1">{reply.content}</p>
@@ -98,7 +95,7 @@ export function CannedRepliesSection() {
 										<Button
 											variant="ghost"
 											size="icon"
-											className="size-7 rounded-lg"
+											className="size-7"
 											onClick={() => {
 												setSelectedReply(reply);
 												setEditOpen(true);
@@ -109,7 +106,7 @@ export function CannedRepliesSection() {
 										<Button
 											variant="ghost"
 											size="icon"
-											className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+											className="size-7 text-destructive hover:text-destructive hover:bg-destructive/10"
 											onClick={() => {
 												setSelectedReply(reply);
 												setDeleteOpen(true);
@@ -144,19 +141,5 @@ export function CannedRepliesSection() {
 				onConfirm={handleDelete}
 			/>
 		</>
-	);
-}
-
-function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
-	return (
-		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
-			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-5 text-primary" />
-			</div>
-			<div>
-				<p className="text-xl font-bold">{value}</p>
-				<p className="text-[11px] text-muted-foreground">{label}</p>
-			</div>
-		</div>
 	);
 }

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useWorkspace } from "@/context/workspace-context";
 import { ConfirmDeleteModal } from "@/shared/components";
+import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import { useRoles, useCreateRoleMutation, useUpdateRoleMutation, useDeleteRoleMutation } from "../hooks/use-roles";
 import { RoleFormModal, type RoleFormValues } from "../modals/role-form-modal";
 import type { Permission, WorkspaceRole } from "../api/roles-api";
@@ -42,21 +43,21 @@ export function RolesView() {
 				<p className="text-xs text-muted-foreground">
 					Built-in roles plus optional custom roles you can assign to workspace members.
 				</p>
-				<Button onClick={() => setMode({ type: "create" })} className="rounded-lg text-xs">
+				<Button onClick={() => setMode({ type: "create" })} className="text-xs">
 					<Plus className="mr-1 size-3.5" />
 					New role
 				</Button>
 			</div>
 
-			<div className="grid grid-cols-3 gap-3">
-				<SummaryCard icon={ShieldCheck} label="Built-in" value={builtinDisplay.length} />
-				<SummaryCard icon={Shield} label="Custom" value={customRoles.length} />
-				<SummaryCard icon={KeyRound} label="Permissions" value={availablePerms.length} />
-			</div>
+			<StatGrid className="grid-cols-3">
+				<StatTile icon={ShieldCheck} label="Built-in" value={builtinDisplay.length} />
+				<StatTile icon={Shield} label="Custom" value={customRoles.length} />
+				<StatTile icon={KeyRound} label="Permissions" value={availablePerms.length} />
+			</StatGrid>
 
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Built-in roles</CardTitle>
+					<CardTitle className="console-label">Built-in roles</CardTitle>
 					<CardDescription className="text-xs">These three roles always exist and cannot be edited.</CardDescription>
 				</CardHeader>
 				<CardContent className="p-0">
@@ -68,24 +69,20 @@ export function RolesView() {
 				</CardContent>
 			</Card>
 
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Custom roles</CardTitle>
+					<CardTitle className="console-label">Custom roles</CardTitle>
 					<CardDescription className="text-xs">Created in this workspace.</CardDescription>
 				</CardHeader>
 				<CardContent className="p-0">
 					{isLoading ? (
 						<div className="p-6 text-center text-xs text-muted-foreground">Loading…</div>
 					) : customRoles.length === 0 ? (
-						<div className="flex flex-col items-center gap-2 py-10 text-center">
-							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-								<Shield className="size-5 text-muted-foreground" />
-							</div>
-							<p className="text-sm font-medium">No custom roles</p>
-							<p className="text-[11px] text-muted-foreground max-w-xs">
-								Add custom roles to grant a curated set of permissions.
-							</p>
-						</div>
+						<EmptyState
+							icon={Shield}
+							title="No custom roles"
+							description="Add custom roles to grant a curated set of permissions."
+						/>
 					) : (
 						<ul className="divide-y">
 							{customRoles.map((r) => (
@@ -136,19 +133,6 @@ export function RolesView() {
 	);
 }
 
-function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
-	return (
-		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
-			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-5 text-primary" />
-			</div>
-			<div>
-				<p className="text-xl font-bold">{value}</p>
-				<p className="text-[11px] text-muted-foreground">{label}</p>
-			</div>
-		</div>
-	);
-}
 
 function RoleRow({
 	role,
@@ -174,7 +158,7 @@ function RoleRow({
 				{role.description && (
 					<p className="mt-0.5 truncate text-xs text-muted-foreground">{role.description}</p>
 				)}
-				<p className="mt-1 text-[10px] text-muted-foreground">
+				<p className="mt-1 text-[10px] text-muted-foreground font-mono tabular-nums">
 					{role.permissions.length} permission{role.permissions.length === 1 ? "" : "s"}
 				</p>
 			</div>

@@ -30,6 +30,7 @@ import { useCreateCompanyMutation, useUpdateCompanyMutation, useDeleteCompanyMut
 import { useContacts, contactQueryKeys } from "@/features/contacts/hooks/use-contact-queries";
 import { apiUpdateContact } from "@/features/contacts/api/contacts-api";
 import { LogoUpload } from "@/shared/components";
+import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import type { Company } from "@/features/companies/api/companies-api";
 
 export function UsersCompaniesSection() {
@@ -138,21 +139,21 @@ export function UsersCompaniesSection() {
 					<p className="text-xs text-muted-foreground">
 						Group your contacts into companies for better customer context.
 					</p>
-					<Button size="sm" className="h-8 gap-1.5 rounded-lg text-xs font-semibold" onClick={openAddCompany}>
+					<Button size="sm" className="h-8 gap-1.5 text-xs" onClick={openAddCompany}>
 						<Plus className="size-3.5" />
 						Add Company
 					</Button>
 				</div>
 
-				<div className="grid grid-cols-3 gap-3">
-					<SummaryCard icon={Building2} label="Companies" value={companies.length} />
-					<SummaryCard icon={Users} label="Contacts" value={contacts.length} />
-					<SummaryCard icon={CheckCircle2} label="Unassigned" value={unassignedContacts.length} />
-				</div>
+				<StatGrid className="grid-cols-3">
+					<StatTile icon={Building2} label="Companies" value={companies.length} />
+					<StatTile icon={Users} label="Contacts" value={contacts.length} />
+					<StatTile icon={CheckCircle2} label="Unassigned" value={unassignedContacts.length} />
+				</StatGrid>
 
-				<Card className="border-0 shadow-sm">
+				<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Companies & Contacts</CardTitle>
+					<CardTitle className="console-label">Companies & Contacts</CardTitle>
 					<CardDescription className="text-xs">Manage company profiles and assign contacts to them</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -164,7 +165,7 @@ export function UsersCompaniesSection() {
 							<TabsTrigger value="unassigned" className="text-xs">
 								Unassigned Contacts
 								{unassignedContacts.length > 0 && (
-									<Badge variant="secondary" className="ml-1.5 text-[10px] rounded-full px-1.5">
+									<Badge variant="secondary" className="ml-1.5 text-[10px] px-1.5">
 										{unassignedContacts.length}
 									</Badge>
 								)}
@@ -172,15 +173,11 @@ export function UsersCompaniesSection() {
 						</TabsList>
 						<TabsContent value="companies" className="mt-4 space-y-2">
 							{companies.length === 0 ? (
-								<div className="flex flex-col items-center gap-2 py-8 text-center">
-									<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-										<Building2 className="size-5 text-muted-foreground" />
-									</div>
-									<p className="text-sm font-medium">No companies yet</p>
-									<p className="text-[11px] text-muted-foreground max-w-xs">
-										Add companies to group your contacts and get better context on your customers.
-									</p>
-								</div>
+								<EmptyState
+									icon={Building2}
+									title="No companies yet"
+									description="Add companies to group your contacts and get better context on your customers."
+								/>
 							) : companies.map((company) => {
 								const companyContacts = contacts.filter((c) => c.company_id === company.id);
 								const initials = company.name
@@ -190,11 +187,11 @@ export function UsersCompaniesSection() {
 									.slice(0, 2)
 									.toUpperCase();
 								return (
-									<div key={company.id} className="rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
+									<div key={company.id} className="bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
 										<div className="flex items-center gap-3 mb-3">
-											<Avatar className="size-10 rounded-lg">
+											<Avatar className="size-10">
 												<AvatarImage src={company.logo_url ?? undefined} />
-												<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs font-bold">
+												<AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
 													{initials}
 												</AvatarFallback>
 											</Avatar>
@@ -203,18 +200,18 @@ export function UsersCompaniesSection() {
 												{company.description && <p className="text-[11px] text-muted-foreground truncate">{company.description}</p>}
 											</div>
 											<div className="text-center shrink-0">
-												<p className="text-sm font-bold">{companyContacts.length}</p>
+												<p className="text-sm font-bold font-mono tabular-nums">{companyContacts.length}</p>
 												<p className="text-[10px] text-muted-foreground">contacts</p>
 											</div>
 											<div className="flex items-center gap-1 shrink-0">
-												<Button variant="ghost" size="icon" className="size-7 rounded-lg" onClick={() => openEditCompany(company)}>
+												<Button variant="ghost" size="icon" className="size-7" onClick={() => openEditCompany(company)}>
 													<Pencil className="size-3" />
 													<span className="sr-only">Edit company</span>
 												</Button>
 												<Button
 													variant="ghost"
 													size="icon"
-													className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+													className="size-7 text-destructive hover:text-destructive hover:bg-destructive/10"
 													onClick={() => openDeleteCompany(company)}>
 													<Trash2 className="size-3" />
 													<span className="sr-only">Delete company</span>
@@ -227,7 +224,7 @@ export function UsersCompaniesSection() {
 													<div key={contact.id} className="flex items-center gap-2 text-xs text-muted-foreground">
 														<div className="size-1 rounded-full bg-muted-foreground/40" />
 														<span>{contact.name}</span>
-														<span className="text-[10px]">({contact.email})</span>
+														<span className="text-[10px] font-mono">({contact.email})</span>
 													</div>
 												))}
 											</div>
@@ -247,9 +244,9 @@ export function UsersCompaniesSection() {
 								unassignedContacts.map((contact) => (
 									<div
 										key={contact.id}
-										className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
-										<Avatar className="size-8 rounded-lg">
-											<AvatarFallback className="rounded-lg bg-muted text-muted-foreground text-[11px] font-bold">
+										className="flex items-center gap-3 bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
+										<Avatar className="size-8">
+											<AvatarFallback className="bg-muted text-muted-foreground text-[11px] font-bold">
 												{contact.name
 													.split(" ")
 													.map((w) => w[0])
@@ -260,10 +257,10 @@ export function UsersCompaniesSection() {
 										</Avatar>
 										<div className="flex-1 min-w-0">
 											<p className="text-sm font-medium">{contact.name}</p>
-											<p className="text-[11px] text-muted-foreground">{contact.email}</p>
+											<p className="text-[11px] text-muted-foreground font-mono">{contact.email}</p>
 										</div>
 										<Select onValueChange={(companyId) => assignContactToCompany(contact.id, companyId)}>
-											<SelectTrigger className="w-40 h-7 rounded-lg text-[11px]">
+											<SelectTrigger className="w-40 h-7 text-[11px]">
 												<SelectValue placeholder="Assign to company" />
 											</SelectTrigger>
 											<SelectContent>
@@ -305,7 +302,7 @@ export function UsersCompaniesSection() {
 								id="company-name"
 								value={companyForm.name}
 								onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })}
-								className="h-9 rounded-lg"
+								className="h-9"
 							/>
 						</div>
 						<div className="grid gap-2">
@@ -317,7 +314,7 @@ export function UsersCompaniesSection() {
 								value={companyForm.description}
 								onChange={(e) => setCompanyForm({ ...companyForm, description: e.target.value })}
 								placeholder="Brief description of the company"
-								className="min-h-20 rounded-lg resize-none"
+								className="min-h-20 resize-none"
 							/>
 						</div>
 						<div className="grid gap-2">
@@ -329,14 +326,14 @@ export function UsersCompaniesSection() {
 								value={companyForm.domain}
 								onChange={(e) => setCompanyForm({ ...companyForm, domain: e.target.value })}
 								placeholder="example.com"
-								className="h-9 rounded-lg"
+								className="h-9 font-mono"
 							/>
 						</div>
 						<div className="grid gap-2">
 							<Label className="text-xs font-medium">Assign Contacts</Label>
 							<Popover open={companyContactSelectOpen} onOpenChange={setCompanyContactSelectOpen}>
 								<PopoverTrigger asChild>
-									<Button variant="outline" role="combobox" className="h-auto min-h-9 rounded-lg justify-start text-left font-normal">
+									<Button variant="outline" role="combobox" className="h-auto min-h-9 justify-start text-left font-normal">
 										<div className="flex flex-wrap gap-1 items-center">
 											{selectedCompanyContacts.length === 0 ? (
 												<span className="text-xs text-muted-foreground">Select contacts...</span>
@@ -345,7 +342,7 @@ export function UsersCompaniesSection() {
 													const contact = contacts.find((c) => c.id === contactId);
 													if (!contact) return null;
 													return (
-														<Badge key={contactId} variant="secondary" className="text-[10px] rounded-md px-1.5 py-0.5">
+														<Badge key={contactId} variant="secondary" className="text-[10px] px-1.5 py-0.5">
 															{contact.name}
 															<button
 																type="button"
@@ -383,7 +380,7 @@ export function UsersCompaniesSection() {
 															<Checkbox checked={isSelected} className="mr-2 size-4" />
 															<div className="flex-1">
 																<div className="font-medium">{contact.name}</div>
-																<div className="text-[10px] text-muted-foreground">{contact.email}</div>
+																<div className="text-[10px] text-muted-foreground font-mono">{contact.email}</div>
 															</div>
 														</CommandItem>
 													);
@@ -399,10 +396,10 @@ export function UsersCompaniesSection() {
 						</div>
 					</div>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setCompanyDialogOpen(false)} className="rounded-lg text-xs">
+						<Button variant="outline" onClick={() => setCompanyDialogOpen(false)} className="text-xs">
 							Cancel
 						</Button>
-						<Button onClick={handleSaveCompany} disabled={!companyForm.name} className="rounded-lg text-xs font-semibold">
+						<Button onClick={handleSaveCompany} disabled={!companyForm.name} className="text-xs">
 							{editingCompany ? "Save Changes" : "Create Company"}
 						</Button>
 					</DialogFooter>
@@ -418,29 +415,15 @@ export function UsersCompaniesSection() {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel className="rounded-lg text-xs">Cancel</AlertDialogCancel>
+						<AlertDialogCancel className="text-xs">Cancel</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={handleDeleteCompany}
-							className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-xs">
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs">
 							Delete Company
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
 		</>
-	);
-}
-
-function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
-	return (
-		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
-			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-5 text-primary" />
-			</div>
-			<div>
-				<p className="text-xl font-bold">{value}</p>
-				<p className="text-[11px] text-muted-foreground">{label}</p>
-			</div>
-		</div>
 	);
 }

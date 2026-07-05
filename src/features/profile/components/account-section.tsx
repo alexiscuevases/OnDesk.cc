@@ -16,9 +16,9 @@ export function AccountSection() {
 
 	return (
 		<div className="grid gap-4">
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Email Address</CardTitle>
+					<CardTitle className="console-label text-primary dark:text-accent">Email Address</CardTitle>
 					<CardDescription className="text-xs">Your login email and where notifications are sent</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
@@ -32,7 +32,7 @@ export function AccountSection() {
 								onChange={(e) => setEmail(e.target.value)}
 								className="h-8 text-xs flex-1"
 							/>
-							<Badge variant="secondary" className="text-[10px] h-8 px-2 rounded-md shrink-0">Verified</Badge>
+							<Badge variant="secondary" className="text-[10px] h-8 px-2 shrink-0">Verified</Badge>
 						</div>
 					</div>
 					<div className="flex justify-end">
@@ -41,9 +41,9 @@ export function AccountSection() {
 				</CardContent>
 			</Card>
 
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Change Password</CardTitle>
+					<CardTitle className="console-label text-primary dark:text-accent">Change Password</CardTitle>
 					<CardDescription className="text-xs">Use a strong password to keep your account secure</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
@@ -87,9 +87,9 @@ export function AccountSection() {
 				</CardContent>
 			</Card>
 
-			<Card className="border-0 shadow-sm border-destructive/20">
+			<Card className="border-destructive/40">
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold text-destructive">Danger Zone</CardTitle>
+					<CardTitle className="console-label text-destructive">Danger Zone</CardTitle>
 					<CardDescription className="text-xs">Irreversible actions for your account</CardDescription>
 				</CardHeader>
 				<CardContent>

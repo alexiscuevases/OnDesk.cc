@@ -84,19 +84,19 @@ export function TicketAIAssistant({ ticketId, onInsertContent }: TicketAIAssista
 				<Button
 					variant="ghost"
 					size="sm"
-					className="h-8 text-xs gap-1.5 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg dark:text-indigo-400 dark:hover:text-indigo-300 dark:hover:bg-indigo-500/10 transition-all duration-200">
+					className="h-8 text-xs gap-1.5 text-primary hover:text-primary hover:bg-primary/10 dark:text-accent dark:hover:text-accent dark:hover:bg-accent/10 transition-all duration-200">
 					<Sparkles className="size-3.5 animate-pulse" />
 					Ask AI
 				</Button>
 			</SheetTrigger>
-			<SheetContent className="w-100 sm:w-160 border-l-border/40 p-0 flex flex-col h-full bg-background/95 backdrop-blur-xl">
-				<SheetHeader className="px-6 py-4 border-b border-border/50 bg-muted/20">
+			<SheetContent className="w-100 sm:w-160 border-l-border p-0 flex flex-col h-full bg-background">
+				<SheetHeader className="px-6 py-4 border-b border-border bg-muted/20">
 					<div className="flex items-center gap-3">
-						<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-sm">
-							<Sparkles className="size-5 text-white" />
+						<div className="flex h-10 w-10 items-center justify-center bg-primary">
+							<Sparkles className="size-5 text-primary-foreground" />
 						</div>
 						<div>
-							<SheetTitle className="text-base font-semibold tracking-tight">AI Assistant</SheetTitle>
+							<SheetTitle className="text-base font-black tracking-tight">AI Assistant</SheetTitle>
 							<SheetDescription className="text-xs">Context-aware help for this specific ticket</SheetDescription>
 						</div>
 					</div>
@@ -106,8 +106,8 @@ export function TicketAIAssistant({ ticketId, onInsertContent }: TicketAIAssista
 					{messages.map((msg, i) => (
 						<div key={i} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
 							{msg.role === "assistant" && (
-								<Avatar className="h-8 w-8 shrink-0 rounded-lg border shadow-sm">
-									<AvatarFallback className="bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-600">
+								<Avatar className="h-8 w-8 shrink-0 border">
+									<AvatarFallback className="bg-primary/10 text-primary dark:text-accent">
 										<Bot className="size-4" />
 									</AvatarFallback>
 								</Avatar>
@@ -115,10 +115,10 @@ export function TicketAIAssistant({ ticketId, onInsertContent }: TicketAIAssista
 
 							<div className={`flex flex-col gap-2 max-w-[85%] ${msg.role === "user" ? "items-end" : "items-start"}`}>
 								<div
-									className={`rounded-2xl px-4 py-2.5 text-[13px] leading-relaxed shadow-sm ${
+									className={`px-4 py-2.5 text-[13px] leading-relaxed ${
 										msg.role === "user"
-											? "bg-indigo-600 text-white rounded-tr-sm"
-											: "bg-muted/50 text-foreground border border-border/50 rounded-tl-sm dark:bg-muted/20"
+											? "bg-primary text-primary-foreground"
+											: "bg-secondary/60 text-foreground border border-border"
 									}`}
 									dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, "<br/>") }}
 								/>
@@ -127,7 +127,7 @@ export function TicketAIAssistant({ ticketId, onInsertContent }: TicketAIAssista
 									<Button
 										variant="outline"
 										size="sm"
-										className="h-7 text-[10px] gap-1.5 rounded-full px-3"
+										className="h-7 text-[10px] gap-1.5 px-3"
 										onClick={() => {
 											// Convert LLM plain text to structured HTML before inserting into TipTap
 											onInsertContent(plainTextToHtml(msg.content));
@@ -144,28 +144,28 @@ export function TicketAIAssistant({ ticketId, onInsertContent }: TicketAIAssista
 					{/* Typing indicator shown while waiting for the first tokens */}
 					{isLoading && messages[messages.length - 1]?.content === "" && (
 						<div className="flex gap-3 justify-start">
-							<Avatar className="h-8 w-8 shrink-0 rounded-lg border shadow-sm">
-								<AvatarFallback className="bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-600">
+							<Avatar className="h-8 w-8 shrink-0 border">
+								<AvatarFallback className="bg-primary/10 text-primary dark:text-accent">
 									<Bot className="size-4 animate-pulse" />
 								</AvatarFallback>
 							</Avatar>
-							<div className="bg-muted/50 border border-border/50 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5 h-10 w-fit">
-								<div className="w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-50 animate-bounce" />
-								<div className="w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-50 animate-bounce [animation-delay:-0.15s]" />
-								<div className="w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-50 animate-bounce [animation-delay:-0.3s]" />
+							<div className="bg-secondary/60 border border-border px-4 py-3 flex items-center gap-1.5 h-10 w-fit">
+								<div className="w-1.5 h-1.5 rounded-full bg-primary opacity-50 animate-bounce" />
+								<div className="w-1.5 h-1.5 rounded-full bg-primary opacity-50 animate-bounce [animation-delay:-0.15s]" />
+								<div className="w-1.5 h-1.5 rounded-full bg-primary opacity-50 animate-bounce [animation-delay:-0.3s]" />
 							</div>
 						</div>
 					)}
 				</div>
 
-				<div className="p-4 bg-background/80 backdrop-blur-md border-t border-border/50">
+				<div className="p-4 bg-background border-t border-border">
 					{/* Quick action chips shown only at the start of a conversation */}
 					{messages.length === 1 && (
 						<div className="flex gap-2 mb-3 overflow-x-auto pb-1 custom-scrollbar hide-scrollbars whitespace-nowrap">
 							<Button
 								variant="secondary"
 								size="sm"
-								className="h-7 text-[11px] rounded-full px-3 gap-1.5 bg-muted/60 hover:bg-muted"
+								className="h-7 text-[11px] px-3 gap-1.5 bg-muted/60 hover:bg-muted"
 								onClick={() => handleSend("Summarize this ticket thread")}
 								disabled={isLoading}>
 								<History className="size-3" />
@@ -174,7 +174,7 @@ export function TicketAIAssistant({ ticketId, onInsertContent }: TicketAIAssista
 							<Button
 								variant="secondary"
 								size="sm"
-								className="h-7 text-[11px] rounded-full px-3 gap-1.5 bg-muted/60 hover:bg-muted"
+								className="h-7 text-[11px] px-3 gap-1.5 bg-muted/60 hover:bg-muted"
 								onClick={() => handleSend("Draft a polite professional response to the customer")}
 								disabled={isLoading}>
 								<MessageSquareText className="size-3" />
@@ -183,7 +183,7 @@ export function TicketAIAssistant({ ticketId, onInsertContent }: TicketAIAssista
 							<Button
 								variant="secondary"
 								size="sm"
-								className="h-7 text-[11px] rounded-full px-3 gap-1.5 bg-muted/60 hover:bg-muted"
+								className="h-7 text-[11px] px-3 gap-1.5 bg-muted/60 hover:bg-muted"
 								onClick={() => handleSend("Extract action items from this ticket")}
 								disabled={isLoading}>
 								<RefreshCcw className="size-3" />
@@ -192,10 +192,10 @@ export function TicketAIAssistant({ ticketId, onInsertContent }: TicketAIAssista
 						</div>
 					)}
 
-					<div className="flex gap-2 relative bg-muted/30 rounded-xl border border-input focus-within:ring-1 focus-within:ring-indigo-500 transition-all p-1">
+					<div className="flex gap-2 relative bg-muted/30 border border-input focus-within:ring-1 focus-within:ring-ring transition-all p-1">
 						<textarea
 							placeholder="Tell AI what you want to write..."
-							className="flex-1 text-[13px] bg-transparent rounded-lg pl-3 pr-10 py-2.5 outline-none resize-none min-h-[44px] max-h-[120px]"
+							className="flex-1 text-[13px] bg-transparent pl-3 pr-10 py-2.5 outline-none resize-none min-h-[44px] max-h-[120px]"
 							rows={1}
 							value={prompt}
 							onChange={(e) => {
@@ -212,13 +212,13 @@ export function TicketAIAssistant({ ticketId, onInsertContent }: TicketAIAssista
 						/>
 						<Button
 							size="icon"
-							className="absolute right-2 bottom-2 shrink-0 h-7 w-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-sm transition-all"
+							className="absolute right-2 bottom-2 shrink-0 h-7 w-7 transition-all"
 							onClick={() => handleSend()}
 							disabled={!prompt.trim() || isLoading}>
 							<Send className="size-3.5" />
 						</Button>
 					</div>
-					<div className="text-[10px] text-center text-muted-foreground mt-2 font-medium">
+					<div className="font-mono text-[10px] text-center text-muted-foreground mt-2">
 						AI can sometimes be incorrect. Please review the responses before sending.
 					</div>
 				</div>

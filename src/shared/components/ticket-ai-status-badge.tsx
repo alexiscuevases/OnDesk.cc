@@ -14,7 +14,7 @@ export function TicketAiStatusBadge({ ticket, className }: TicketAiStatusBadgePr
 		return (
 			<Badge
 				variant="outline"
-				className={`gap-1 rounded-full border-border/70 text-muted-foreground ${className ?? ""}`.trim()}>
+				className={`gap-1 border-border/70 text-muted-foreground ${className ?? ""}`.trim()}>
 				<Bot className="size-3" />
 				No AI
 			</Badge>
@@ -26,7 +26,7 @@ export function TicketAiStatusBadge({ ticket, className }: TicketAiStatusBadgePr
 			<Badge
 				variant="destructive"
 				title={ticket.ai_agent_name ?? "AI Agent"}
-				className={`gap-1 rounded-full ${className ?? ""}`.trim()}>
+				className={`gap-1 ${className ?? ""}`.trim()}>
 				<Bot className="size-3" />
 				Escalated
 			</Badge>
@@ -37,7 +37,7 @@ export function TicketAiStatusBadge({ ticket, className }: TicketAiStatusBadgePr
 		<Badge
 			variant="default"
 			title={ticket.ai_agent_name ?? "AI Agent"}
-			className={`gap-1 rounded-full bg-primary/10 text-primary hover:bg-primary/10 ${className ?? ""}`.trim()}>
+			className={`gap-1 bg-primary/10 text-primary hover:bg-primary/10 ${className ?? ""}`.trim()}>
 			<Bot className="size-3" />
 			Active
 		</Badge>

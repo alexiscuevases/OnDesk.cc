@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EmptyState } from "@/shared/components/console";
 import { useWorkspace } from "@/context/workspace-context";
 import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
 import type { WorkspaceMember } from "@/features/users/api/users-api";
@@ -65,28 +66,28 @@ export function AssignAgentModal({ open, onOpenChange, selectedCount, workspaceI
 							placeholder="Search agents..."
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="pl-9 h-9 rounded-lg"
+							className="pl-9 h-9"
 						/>
 					</div>
-					<div className="max-h-[300px] overflow-y-auto rounded-lg border">
+					<div className="max-h-[300px] overflow-y-auto border">
 						{filtered.length > 0 ? (
 							<div className="p-1">
 								{filtered.map((member) => (
 									<button
 										key={member.id}
 										onClick={() => setSelectedMember(member)}
-										className={`w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/80 transition-colors ${
+										className={`w-full flex items-center gap-3 p-2.5 hover:bg-secondary/80 transition-colors ${
 											selectedMember?.id === member.id ? "bg-secondary" : ""
 										}`}>
-										<Avatar className="size-8 rounded-lg">
-											<AvatarImage src={member.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-lg" />
-											<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
+										<Avatar className="size-8">
+											<AvatarImage src={member.logo_url ?? workspace.logo_url ?? undefined} className="object-cover" />
+											<AvatarFallback className="bg-primary text-primary-foreground text-[10px] font-bold">
 												{getInitials(member.name)}
 											</AvatarFallback>
 										</Avatar>
 										<div className="flex-1 min-w-0 text-left">
 											<p className="text-sm font-medium truncate">{member.name}</p>
-											<p className="text-xs text-muted-foreground truncate">{member.email}</p>
+											<p className="font-mono text-xs text-muted-foreground truncate">{member.email}</p>
 											<p className="text-[10px] text-muted-foreground capitalize">{member.workspace_role}</p>
 										</div>
 										{selectedMember?.id === member.id && (
@@ -96,18 +97,15 @@ export function AssignAgentModal({ open, onOpenChange, selectedCount, workspaceI
 								))}
 							</div>
 						) : (
-							<div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-								<UserPlus className="size-8 mb-2 opacity-30" />
-								<p className="text-sm">No agents found</p>
-							</div>
+							<EmptyState icon={UserPlus} title="No agents found" className="py-8" />
 						)}
 					</div>
 				</div>
 				<DialogFooter className="gap-2">
-					<Button variant="outline" onClick={() => handleOpenChange(false)} className="rounded-lg">
+					<Button variant="outline" onClick={() => handleOpenChange(false)}>
 						Cancel
 					</Button>
-					<Button onClick={handleConfirm} disabled={!selectedMember} className="rounded-lg">
+					<Button onClick={handleConfirm} disabled={!selectedMember}>
 						Assign Ticket{plural ? "s" : ""}
 					</Button>
 				</DialogFooter>

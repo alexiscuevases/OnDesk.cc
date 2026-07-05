@@ -19,6 +19,7 @@ import { AssignTeamModal } from "../modals/assign-team-modal";
 import { MergeTicketModal } from "../modals/merge-ticket-modal";
 import { NewTicketModal } from "../modals/new-ticket-modal";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/shared/components/console";
 import { Plus } from "lucide-react";
 import type {
 	TicketStatus,
@@ -158,31 +159,33 @@ export function TicketsView({
 
 	return (
 		<div className="flex flex-col gap-6">
-			<div className="flex items-start justify-between">
-				<div>
-					<h1 className="text-2xl font-bold tracking-tight text-balance">Tickets</h1>
-					<p className="text-sm text-muted-foreground mt-1">Manage and track all customer support tickets</p>
-				</div>
-				<Button onClick={() => setNewTicketOpen(true)}>
-					<Plus className="size-4" />
-					New Ticket
-				</Button>
-			</div>
+			<PageHeader
+				tag="02 — Tickets"
+				title="Tickets"
+				description="Manage and track all customer support tickets"
+				actions={
+					<Button onClick={() => setNewTicketOpen(true)}>
+						<Plus className="size-4" />
+						New Ticket
+					</Button>
+				}
+			/>
 
 			{/* Summary Stats */}
-			<div className="grid grid-cols-4 gap-3">
+			<div className="grid grid-cols-2 sm:grid-cols-4 gap-px border border-border bg-border">
 				{[
-					{ label: "Open", count: counts?.open ?? 0, color: "bg-chart-1" },
+					{ label: "Open", count: counts?.open ?? 0, color: "bg-info" },
 					{ label: "Pending", count: counts?.pending ?? 0, color: "bg-warning" },
 					{ label: "Resolved", count: counts?.resolved ?? 0, color: "bg-success" },
 					{ label: "Closed", count: counts?.closed ?? 0, color: "bg-muted-foreground" },
 				].map((stat) => (
-					<div key={stat.label} className="flex items-center gap-3 rounded-xl bg-card p-3.5 shadow-sm">
-						<div className={`size-2.5 rounded-full ${stat.color}`} />
+					<div key={stat.label} className="group relative flex items-center gap-3 bg-card p-3.5">
+						<div className={`size-2 rounded-full ${stat.color}`} />
 						<div>
-							<p className="text-lg font-bold">{stat.count}</p>
-							<p className="text-[11px] text-muted-foreground">{stat.label}</p>
+							<p className="text-lg font-black tracking-tight tabular-nums">{stat.count}</p>
+							<p className="console-label">{stat.label}</p>
 						</div>
+						<span className="scan-line" />
 					</div>
 				))}
 			</div>

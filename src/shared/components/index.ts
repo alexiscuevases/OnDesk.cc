@@ -4,3 +4,4 @@ export { UserAvatar } from "./user-avatar";
 export { LogoUpload } from "./logo-upload";
 export { ConfirmDeleteModal } from "./confirm-delete-modal";
 export { FormModal } from "./form-modal";
+export { ConsoleTag, PageHeader, StatGrid, StatTile, PanelHeader, EmptyState } from "./console";

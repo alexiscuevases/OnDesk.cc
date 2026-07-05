@@ -1,11 +1,12 @@
 import React from "react";
 import { useMarketplaceProducts } from "./hooks/useMarketplaceProducts";
 import { useWorkspaceProducts, useInstallProduct } from "./hooks/useWorkspaceProducts";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { PageHeader, StatGrid, StatTile, EmptyState } from "@/shared/components/console";
 import { ProductConfigDialog } from "./components/ProductConfigDialog";
 import { Search, Package, CheckCircle2, Zap, Settings2 } from "lucide-react";
 
@@ -33,67 +34,30 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ slug }) => {
 
 	return (
 		<div className="flex flex-col gap-6">
-			<div>
-				<h1 className="text-2xl font-bold tracking-tight text-balance">Marketplace</h1>
-				<p className="text-sm text-muted-foreground mt-1">Install integrations to extend your AI Agent's capabilities</p>
-			</div>
+			<PageHeader tag="05 — Marketplace" title="Marketplace" description="Install integrations to extend your AI Agent's capabilities" />
 
 			{/* KPI Summary */}
-			<div className="grid gap-4 sm:grid-cols-3">
-				<Card className="relative overflow-hidden border-0 shadow-sm">
-					<div className="absolute top-0 left-0 right-0 h-0.5 bg-primary" />
-					<CardHeader className="flex flex-row items-center justify-between pb-2">
-						<CardDescription className="text-xs font-semibold uppercase tracking-wider">Available</CardDescription>
-						<div className="flex size-8 items-center justify-center rounded-lg bg-primary/10">
-							<Package className="size-4 text-primary" />
-						</div>
-					</CardHeader>
-					<CardContent>
-						{isLoading ? (
-							<Skeleton className="h-8 w-10" />
-						) : (
-							<div className="text-3xl font-bold tracking-tight">{marketplaceProducts?.length ?? 0}</div>
-						)}
-						<p className="text-xs text-muted-foreground mt-1">Integrations available</p>
-					</CardContent>
-				</Card>
-
-				<Card className="relative overflow-hidden border-0 shadow-sm">
-					<div className="absolute top-0 left-0 right-0 h-0.5 bg-accent" />
-					<CardHeader className="flex flex-row items-center justify-between pb-2">
-						<CardDescription className="text-xs font-semibold uppercase tracking-wider">Installed</CardDescription>
-						<div className="flex size-8 items-center justify-center rounded-lg bg-accent/10">
-							<CheckCircle2 className="size-4 text-accent" />
-						</div>
-					</CardHeader>
-					<CardContent>
-						{isLoading ? (
-							<Skeleton className="h-8 w-10" />
-						) : (
-							<div className="text-3xl font-bold tracking-tight">{installedCount}</div>
-						)}
-						<p className="text-xs text-muted-foreground mt-1">Active integrations</p>
-					</CardContent>
-				</Card>
-
-				<Card className="relative overflow-hidden border-0 shadow-sm">
-					<div className="absolute top-0 left-0 right-0 h-0.5 bg-chart-2" />
-					<CardHeader className="flex flex-row items-center justify-between pb-2">
-						<CardDescription className="text-xs font-semibold uppercase tracking-wider">Actions</CardDescription>
-						<div className="flex size-8 items-center justify-center rounded-lg bg-secondary">
-							<Zap className="size-4 text-secondary-foreground" />
-						</div>
-					</CardHeader>
-					<CardContent>
-						{isLoading ? (
-							<Skeleton className="h-8 w-10" />
-						) : (
-							<div className="text-3xl font-bold tracking-tight">{totalActions}</div>
-						)}
-						<p className="text-xs text-muted-foreground mt-1">Total available actions</p>
-					</CardContent>
-				</Card>
-			</div>
+			<StatGrid className="sm:grid-cols-3">
+				<StatTile
+					label="Available"
+					icon={Package}
+					value={isLoading ? <Skeleton className="h-8 w-10" /> : (marketplaceProducts?.length ?? 0)}
+					hint="Integrations available"
+				/>
+				<StatTile
+					label="Installed"
+					icon={CheckCircle2}
+					tone="accent"
+					value={isLoading ? <Skeleton className="h-8 w-10" /> : installedCount}
+					hint="Active integrations"
+				/>
+				<StatTile
+					label="Actions"
+					icon={Zap}
+					value={isLoading ? <Skeleton className="h-8 w-10" /> : totalActions}
+					hint="Total available actions"
+				/>
+			</StatGrid>
 
 			{/* Search */}
 			<div className="flex items-center gap-3">
@@ -118,33 +82,27 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ slug }) => {
 			{isLoading ? (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{[1, 2, 3, 4, 5, 6].map((i) => (
-						<Skeleton key={i} className="h-52 w-full rounded-xl" />
+						<Skeleton key={i} className="h-52 w-full" />
 					))}
 				</div>
 			) : filteredProducts?.length === 0 ? (
-				<div className="flex flex-col items-center justify-center py-20 text-center">
-					<div className="flex size-12 items-center justify-center rounded-xl bg-secondary mb-3">
-						<Search className="size-5 text-muted-foreground" />
-					</div>
-					<p className="text-sm font-medium">No integrations found</p>
-					<p className="text-xs text-muted-foreground mt-1">Try a different search term</p>
-				</div>
+				<EmptyState icon={Search} title="No integrations found" description="Try a different search term" className="py-20" />
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{filteredProducts?.map((product) => {
 						const installed = installedProducts?.find((ip) => ip.id === product.id);
 
 						return (
-							<Card key={product.id} className="flex flex-col border-0 shadow-sm hover:shadow-md transition-all duration-300">
+							<Card key={product.id} className="group relative flex flex-col transition-colors hover:border-accent/60">
 								<CardHeader className="pb-3">
 									<div className="flex items-start justify-between gap-2">
 										<div className="flex items-center gap-3 min-w-0">
-											<div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+											<div className="flex size-9 items-center justify-center border border-border bg-primary/10 shrink-0">
 												<Package className="size-4 text-primary" />
 											</div>
 											<div className="min-w-0">
 												<CardTitle className="text-sm font-semibold leading-tight">{product.name}</CardTitle>
-												<p className="text-[10px] text-muted-foreground mt-0.5">{product.actions.length} actions</p>
+												<p className="font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground mt-0.5">{product.actions.length} actions</p>
 											</div>
 										</div>
 										{installed && (
@@ -214,6 +172,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ slug }) => {
 										/>
 									)}
 								</CardFooter>
+								<span className="scan-line" />
 							</Card>
 						);
 					})}

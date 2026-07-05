@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,7 +57,7 @@ function AgentMailboxesRow({
       <Button
         variant="ghost"
         size="sm"
-        className="h-7 gap-1.5 text-[11px] rounded-lg"
+        className="h-7 gap-1.5 text-[11px]"
         onClick={() => setOpen(true)}>
         <Mail className="size-3" />
         {mailboxes.length > 0 ? `${mailboxes.length} mailbox${mailboxes.length > 1 ? "es" : ""}` : "Assign mailbox"}
@@ -107,7 +108,7 @@ function AgentToolsRow({
       <Button
         variant="ghost"
         size="sm"
-        className="h-7 gap-1.5 text-[11px] rounded-lg"
+        className="h-7 gap-1.5 text-[11px]"
         onClick={() => setOpen(true)}>
         <Wrench className="size-3" />
         {tools.length > 0 ? `${tools.length} tool${tools.length > 1 ? "s" : ""}` : "Assign tools"}
@@ -188,22 +189,22 @@ export function AiAgentsSection() {
           </p>
           <Button
             size="sm"
-            className="rounded-lg text-xs gap-1.5"
+            className="text-xs gap-1.5"
             onClick={() => setCreateOpen(true)}>
             <Plus className="size-3.5" />
             New Agent
           </Button>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <SummaryCard icon={Bot} label="Total" value={agents.length} />
-          <SummaryCard icon={Power} label="Active" value={activeCount} />
-          <SummaryCard icon={Mail} label="Mailboxes" value={mailboxes.length} />
-        </div>
+        <StatGrid className="grid-cols-3">
+          <StatTile icon={Bot} label="Total" value={agents.length} />
+          <StatTile icon={Power} label="Active" value={activeCount} />
+          <StatTile icon={Mail} label="Mailboxes" value={mailboxes.length} />
+        </StatGrid>
 
-        <Card className="border-0 shadow-sm">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-semibold">Agents</CardTitle>
+            <CardTitle className="console-label">Agents</CardTitle>
             <CardDescription className="text-xs">Configure tools, mailboxes and confidence thresholds</CardDescription>
           </CardHeader>
           <CardContent>
@@ -212,22 +213,18 @@ export function AiAgentsSection() {
               <RefreshCw className="size-4 animate-spin text-muted-foreground" />
             </div>
           ) : agents.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-8 text-center">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-                <Bot className="size-5 text-muted-foreground" />
-              </div>
-              <p className="text-sm font-medium">No AI agents yet</p>
-              <p className="text-[11px] text-muted-foreground max-w-xs">
-                Create an agent and assign mailboxes to start automatically handling incoming tickets.
-              </p>
-            </div>
+            <EmptyState
+              icon={Bot}
+              title="No AI agents yet"
+              description="Create an agent and assign mailboxes to start automatically handling incoming tickets."
+            />
           ) : (
             <div className="space-y-2">
               {agents.map((agent) => (
                 <div
                   key={agent.id}
-                  className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
-                  <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+                  className="flex items-center gap-3 bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
+                  <div className="flex size-9 items-center justify-center bg-primary/10">
                     <Bot className="size-4 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -235,14 +232,14 @@ export function AiAgentsSection() {
                       <p className="text-sm font-medium">{agent.name}</p>
                       <Badge
                         variant={agent.status === "active" ? "default" : "secondary"}
-                        className="text-[9px] px-1.5 py-0 rounded-full">
+                        className="text-[9px] px-1.5 py-0">
                         {agent.status}
                       </Badge>
                     </div>
                     {agent.description && (
                       <p className="text-[11px] text-muted-foreground truncate">{agent.description}</p>
                     )}
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[10px] text-muted-foreground font-mono tabular-nums">
                       Confidence ≥ {agent.confidence_threshold} ·{" "}
                       {agent.max_auto_replies === 0
                         ? "unlimited replies"
@@ -253,7 +250,7 @@ export function AiAgentsSection() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 gap-1.5 text-[11px] rounded-lg border border-primary/20 text-primary hover:bg-primary/10"
+                      className="h-7 gap-1.5 text-[11px] border border-primary/20 text-primary hover:bg-primary/10"
                       onClick={() => {
                         setSelected(agent);
                         setTestOpen(true);
@@ -273,7 +270,7 @@ export function AiAgentsSection() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-7 rounded-lg"
+                      className="size-7"
                       onClick={() => {
                         setSelected(agent);
                         setEditOpen(true);
@@ -283,7 +280,7 @@ export function AiAgentsSection() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="size-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => {
                         setSelected(agent);
                         setDeleteOpen(true);
@@ -336,30 +333,16 @@ export function AiAgentsSection() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-lg text-xs">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="text-xs">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleteAgent.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg text-xs">
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs">
               {deleteAgent.isPending ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
-}
-
-function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
-      <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-        <Icon className="size-5 text-primary" />
-      </div>
-      <div>
-        <p className="text-xl font-bold">{value}</p>
-        <p className="text-[11px] text-muted-foreground">{label}</p>
-      </div>
-    </div>
   );
 }

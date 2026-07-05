@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useWorkspace } from "@/context/workspace-context";
 import { ConfirmDeleteModal } from "@/shared/components";
+import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import { useBusinessHours, useBusinessHoursStatus } from "../hooks/use-business-hours-queries";
 import {
 	useCreateBusinessHoursMutation,
@@ -62,21 +63,25 @@ export function BusinessHoursView() {
 				<p className="text-xs text-muted-foreground">
 					Operating hours and holidays. Used by SLA policies to pause clocks outside business hours.
 				</p>
-				<Button onClick={() => setMode({ type: "create" })} className="rounded-lg text-xs">
+				<Button onClick={() => setMode({ type: "create" })} className="text-xs">
 					<Plus className="mr-1 size-3.5" />
 					New calendar
 				</Button>
 			</div>
 
-			<div className="grid grid-cols-3 gap-3">
-				<SummaryCard icon={Clock} label="Calendars" value={calendars.length} />
-				<SummaryCard icon={Power} label="Enabled" value={enabledCount} />
-				<SummaryCard icon={Star} label="Default" value={defaultCal ? defaultCal.name : "—"} />
-			</div>
+			<StatGrid className="grid-cols-3">
+				<StatTile icon={Clock} label="Calendars" value={calendars.length} />
+				<StatTile icon={Power} label="Enabled" value={enabledCount} />
+				<StatTile
+					icon={Star}
+					label="Default"
+					value={<span className="block truncate text-lg">{defaultCal ? defaultCal.name : "—"}</span>}
+				/>
+			</StatGrid>
 
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Calendars</CardTitle>
+					<CardTitle className="console-label">Calendars</CardTitle>
 					<CardDescription className="text-xs">
 						The default calendar is used by any SLA policy that has business hours enabled without an explicit calendar.
 					</CardDescription>
@@ -85,15 +90,11 @@ export function BusinessHoursView() {
 					{isLoading ? (
 						<div className="p-6 text-center text-xs text-muted-foreground">Loading…</div>
 					) : calendars.length === 0 ? (
-						<div className="flex flex-col items-center gap-2 py-10 text-center">
-							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-								<Clock className="size-5 text-muted-foreground" />
-							</div>
-							<p className="text-sm font-medium">No business hours yet</p>
-							<p className="text-[11px] text-muted-foreground max-w-xs">
-								Create a calendar to define when your team is available.
-							</p>
-						</div>
+						<EmptyState
+							icon={Clock}
+							title="No business hours yet"
+							description="Create a calendar to define when your team is available."
+						/>
 					) : (
 						<ul className="divide-y">
 							{calendars.map((c) => (
@@ -133,27 +134,6 @@ export function BusinessHoursView() {
 	);
 }
 
-function SummaryCard({
-	icon: Icon,
-	label,
-	value,
-}: {
-	icon: React.ComponentType<{ className?: string }>;
-	label: string;
-	value: number | string;
-}) {
-	return (
-		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
-			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-5 text-primary" />
-			</div>
-			<div className="min-w-0">
-				<p className="truncate text-xl font-bold">{value}</p>
-				<p className="text-[11px] text-muted-foreground">{label}</p>
-			</div>
-		</div>
-	);
-}
 
 function CalendarRow({
 	calendar,
@@ -201,14 +181,14 @@ function CalendarRow({
 								variant="outline"
 								className={`text-[10px] font-medium ${
 									status.is_open
-										? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-										: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+										? "border-success/40 bg-success/10 text-success"
+										: "border-warning/40 bg-warning/10 text-warning"
 								}`}
 							>
 								{status.is_open ? "Open now" : "Closed"}
 							</Badge>
 						)}
-						<Badge variant="outline" className="text-[10px] font-normal text-muted-foreground">
+						<Badge variant="outline" className="text-[10px] font-normal text-muted-foreground font-mono">
 							{calendar.timezone}
 						</Badge>
 					</div>
@@ -222,18 +202,18 @@ function CalendarRow({
 							return (
 								<div
 									key={day}
-									className={`rounded-md border bg-background/40 px-2 py-1.5 text-center ${
+									className={`border bg-background/40 px-2 py-1.5 text-center ${
 										list.length === 0 ? "opacity-50" : ""
 									}`}
 								>
-									<p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+									<p className="console-label text-[9px]">
 										{DAY_LABELS[day]}
 									</p>
 									{list.length === 0 ? (
 										<p className="mt-0.5 text-[10px] text-muted-foreground">Closed</p>
 									) : (
 										list.map((p, i) => (
-											<p key={i} className="mt-0.5 text-[10px] tabular-nums">
+											<p key={i} className="mt-0.5 text-[10px] font-mono tabular-nums">
 												{minutesToTime(p.start_minute)}–{minutesToTime(p.end_minute)}
 											</p>
 										))
@@ -251,7 +231,7 @@ function CalendarRow({
 							variant="ghost"
 							size="sm"
 							onClick={() => setHolidayOpen(true)}
-							className="h-5 gap-1 rounded-md px-1.5 text-[10px]"
+							className="h-5 gap-1 px-1.5 text-[10px]"
 						>
 							<Plus className="size-3" /> Add
 						</Button>
@@ -261,11 +241,11 @@ function CalendarRow({
 							{upcomingHolidays.map((h) => (
 								<li key={h.id}>
 									<Badge variant="outline" className="gap-1 text-[10px] font-normal">
-										<span className="tabular-nums">{h.date}</span>
+										<span className="font-mono tabular-nums">{h.date}</span>
 										<span className="text-muted-foreground">·</span>
 										<span className="truncate max-w-[120px]">{h.name}</span>
 										{h.kind === "open" && h.start_minute != null && h.end_minute != null && (
-											<span className="text-muted-foreground">
+											<span className="text-muted-foreground font-mono tabular-nums">
 												{minutesToTime(h.start_minute)}–{minutesToTime(h.end_minute)}
 											</span>
 										)}

@@ -19,9 +19,9 @@ export function AppearanceSection() {
 
 	return (
 		<div className="grid gap-4">
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Theme</CardTitle>
+					<CardTitle className="console-label text-primary dark:text-accent">Theme</CardTitle>
 					<CardDescription className="text-xs">Choose how the interface looks for you</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -30,31 +30,35 @@ export function AppearanceSection() {
 							<button
 								key={t.id}
 								onClick={() => setTheme(t.id)}
-								className={`flex flex-col gap-1.5 rounded-xl border p-3 text-left transition-all ${
+								className={`group relative flex flex-col gap-1.5 border p-3 text-left transition-colors ${
 									theme === t.id
-										? "border-primary bg-primary/5 shadow-sm"
+										? "border-primary bg-primary/5"
 										: "border-border hover:border-primary/40 hover:bg-secondary/50"
 								}`}>
-								<div
-									className={`h-8 w-full rounded-lg border ${
-										t.id === "light"
-											? "bg-white border-gray-200"
-											: t.id === "dark"
-											? "bg-gray-900 border-gray-700"
-											: "bg-gradient-to-r from-white to-gray-900 border-gray-300"
-									}`}
-								/>
+								{t.id === "system" ? (
+									<div className="flex h-8 w-full overflow-hidden border border-border">
+										<div className="flex-1 bg-white" />
+										<div className="flex-1 bg-gray-900" />
+									</div>
+								) : (
+									<div
+										className={`h-8 w-full border ${
+											t.id === "light" ? "bg-white border-gray-200" : "bg-gray-900 border-gray-700"
+										}`}
+									/>
+								)}
 								<p className={`text-xs font-medium ${theme === t.id ? "text-primary" : "text-foreground"}`}>{t.label}</p>
 								<p className="text-[10px] text-muted-foreground">{t.description}</p>
+								<span className="scan-line" />
 							</button>
 						))}
 					</div>
 				</CardContent>
 			</Card>
 
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Display Preferences</CardTitle>
+					<CardTitle className="console-label text-primary dark:text-accent">Display Preferences</CardTitle>
 					<CardDescription className="text-xs">Adjust density and language for your workflow</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">

@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useWorkspace } from "@/context/workspace-context";
 import { ConfirmDeleteModal } from "@/shared/components";
+import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import { useSlaPolicies } from "../hooks/use-sla-queries";
 import {
 	useCreateSlaPolicyMutation,
@@ -63,35 +64,31 @@ export function SlaView() {
 				<p className="text-xs text-muted-foreground">
 					Targets for first response and resolution times by priority.
 				</p>
-				<Button onClick={() => setMode({ type: "create" })} className="rounded-lg text-xs">
+				<Button onClick={() => setMode({ type: "create" })} className="text-xs">
 					<Plus className="mr-1 size-3.5" />
 					New policy
 				</Button>
 			</div>
 
-			<div className="grid grid-cols-2 gap-3">
-				<SummaryCard icon={Gauge} label="Total policies" value={policies.length} />
-				<SummaryCard icon={Power} label="Enabled" value={enabledCount} />
-			</div>
+			<StatGrid className="grid-cols-2">
+				<StatTile icon={Gauge} label="Total policies" value={policies.length} />
+				<StatTile icon={Power} label="Enabled" value={enabledCount} />
+			</StatGrid>
 
-			<Card className="border-0 shadow-sm">
+			<Card>
 				<CardHeader>
-					<CardTitle className="text-sm font-semibold">Policies</CardTitle>
+					<CardTitle className="console-label">Policies</CardTitle>
 					<CardDescription className="text-xs">First matching policy wins (highest match priority).</CardDescription>
 				</CardHeader>
 				<CardContent className="p-0">
 					{isLoading ? (
 						<div className="p-6 text-center text-xs text-muted-foreground">Loading…</div>
 					) : policies.length === 0 ? (
-						<div className="flex flex-col items-center gap-2 py-10 text-center">
-							<div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-								<Gauge className="size-5 text-muted-foreground" />
-							</div>
-							<p className="text-sm font-medium">No SLA policies yet</p>
-							<p className="text-[11px] text-muted-foreground max-w-xs">
-								Create a policy to start measuring response and resolution times.
-							</p>
-						</div>
+						<EmptyState
+							icon={Gauge}
+							title="No SLA policies yet"
+							description="Create a policy to start measuring response and resolution times."
+						/>
 					) : (
 						<ul className="divide-y">
 							{policies.map((p) => (
@@ -140,19 +137,6 @@ export function SlaView() {
 	);
 }
 
-function SummaryCard({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
-	return (
-		<div className="flex items-center gap-3 rounded-xl bg-card p-4 shadow-sm">
-			<div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-				<Icon className="size-5 text-primary" />
-			</div>
-			<div>
-				<p className="text-xl font-bold">{value}</p>
-				<p className="text-[11px] text-muted-foreground">{label}</p>
-			</div>
-		</div>
-	);
-}
 
 function PolicyRow({
 	policy,
@@ -178,7 +162,7 @@ function PolicyRow({
 						</Badge>
 					)}
 					{policy.priority > 0 && (
-						<Badge variant="outline" className="text-[10px] font-normal">
+						<Badge variant="outline" className="text-[10px] font-normal font-mono">
 							priority {policy.priority}
 						</Badge>
 					)}
@@ -186,7 +170,7 @@ function PolicyRow({
 				{policy.description && (
 					<p className="mt-0.5 truncate text-xs text-muted-foreground">{policy.description}</p>
 				)}
-				<p className="mt-1 text-[10px] text-muted-foreground">
+				<p className="mt-1 text-[10px] text-muted-foreground font-mono tabular-nums">
 					Response: L {formatMinutes(policy.response_low)} · M {formatMinutes(policy.response_medium)} · H{" "}
 					{formatMinutes(policy.response_high)} · U {formatMinutes(policy.response_urgent)} | Resolution: L{" "}
 					{formatMinutes(policy.resolution_low)} · M {formatMinutes(policy.resolution_medium)} · H{" "}

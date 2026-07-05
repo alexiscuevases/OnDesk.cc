@@ -1,10 +1,11 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Ticket, Users, BarChart3, Settings, ChevronDown, ChevronRight, Building2, Plus, UserCircle, Palette, LogOut, ShieldCheck, ShoppingCart } from "lucide-react";
+import { LayoutDashboard, Ticket, Users, BarChart3, Settings, ChevronDown, ChevronRight, Plus, UserCircle, Palette, LogOut, ShieldCheck, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useWorkspace } from "@/context/workspace-context";
 import { useLogoutMutation } from "@/features/auth/hooks/use-auth-mutations";
 import { useWorkspaces } from "@/features/workspaces/hooks/use-workspace-queries";
 import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
+import { PulseLine } from "@/features/frontend/shared";
 import {
 	Sidebar,
 	SidebarContent,
@@ -27,7 +28,11 @@ import {
 	DropdownMenuTrigger,
 	DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
+
+const navItemClass =
+	"relative h-9 rounded-none text-[13px] transition-colors " +
+	"before:absolute before:left-0 before:top-1/2 before:h-4 before:w-0.5 before:-translate-y-1/2 before:bg-(--pulse-lime) before:opacity-0 before:transition-opacity " +
+	"data-[active=true]:before:opacity-100 data-[active=true]:bg-sidebar-accent data-[active=true]:text-(--pulse-lime) data-[active=true]:font-medium";
 
 export function WorkspaceSidebar() {
 	const { user } = useAuth();
@@ -68,32 +73,34 @@ export function WorkspaceSidebar() {
 
 	return (
 		<Sidebar collapsible="icon" className="border-r-0">
-			<SidebarHeader className="p-4 group-data-[collapsible=icon]:p-2">
+			<SidebarHeader className="p-3 group-data-[collapsible=icon]:p-2">
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+						<SidebarMenuButton
+							size="lg"
+							className="rounded-none data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
 							{workspace.logo_url ? (
-								<img src={workspace.logo_url} alt={workspace.name} className="size-9 rounded-xl object-cover" />
+								<img src={workspace.logo_url} alt={workspace.name} className="size-9 object-cover" />
 							) : (
-								<div className="flex aspect-square size-9 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
+								<div className="flex aspect-square size-9 items-center justify-center bg-sidebar-primary text-sidebar-primary-foreground font-mono text-xs font-bold">
 									{workspaceInitials}
 								</div>
 							)}
 							<div className="grid flex-1 text-left text-sm leading-tight">
 								<span className="truncate font-bold tracking-tight">{workspace.name}</span>
-								<span className="truncate text-[11px] text-sidebar-foreground/50">/{workspace.slug}</span>
+								<span className="truncate font-mono text-[10px] tracking-[0.08em] text-sidebar-foreground/50">/{workspace.slug}</span>
 							</div>
 							<ChevronDown className="size-4 text-sidebar-foreground/40" />
 						</SidebarMenuButton>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent className="w-64" side="bottom" align="start" sideOffset={4}>
-						<DropdownMenuLabel className="text-xs text-muted-foreground">Your workspaces</DropdownMenuLabel>
+						<DropdownMenuLabel className="console-label">Your workspaces</DropdownMenuLabel>
 						{workspaces.map((ws) => (
 							<DropdownMenuItem key={ws.id} onClick={() => navigate({ to: "/w/$slug/overview", params: { slug: ws.slug } })} className="gap-2">
 								{ws.logo_url ? (
-									<img src={ws.logo_url} alt={ws.name} className="size-6 rounded-md object-cover" />
+									<img src={ws.logo_url} alt={ws.name} className="size-6 object-cover" />
 								) : (
-									<div className="size-6 rounded-md bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+									<div className="size-6 bg-primary/10 flex items-center justify-center font-mono text-[10px] font-bold text-primary">
 										{ws.name.slice(0, 2).toUpperCase()}
 									</div>
 								)}
@@ -112,7 +119,9 @@ export function WorkspaceSidebar() {
 
 			<SidebarContent>
 				<SidebarGroup className="px-3 group-data-[collapsible=icon]:px-2">
-					<SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40 mb-1">Menu</SidebarGroupLabel>
+					<SidebarGroupLabel className="font-mono text-[10px] font-medium uppercase tracking-[0.25em] text-sidebar-foreground/35 mb-1">
+						01 — Menu
+					</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<SidebarMenu className="gap-0.5">
 							{navItems.map((item) => (
@@ -121,14 +130,14 @@ export function WorkspaceSidebar() {
 										asChild
 										isActive={currentPath === item.to || currentPath.startsWith(`${item.to}/`)}
 										tooltip={item.label}
-										className="h-9 rounded-lg text-[13px] transition-all">
+										className={navItemClass}>
 										<Link to={item.to}>
 											<item.icon className="size-[18px]" />
 											<span>{item.label}</span>
 										</Link>
 									</SidebarMenuButton>
 									{item.badge && (
-										<SidebarMenuBadge className="text-[10px] font-medium bg-sidebar-primary/20 text-sidebar-primary border-0 rounded-full px-2">
+										<SidebarMenuBadge className="font-mono text-[10px] bg-sidebar-primary/20 text-sidebar-primary border-0 px-1.5">
 											{item.badge}
 										</SidebarMenuBadge>
 									)}
@@ -140,23 +149,34 @@ export function WorkspaceSidebar() {
 			</SidebarContent>
 
 			<SidebarFooter className="p-3 group-data-[collapsible=icon]:p-2">
-				<Separator className="mb-3 bg-sidebar-border" />
+				<div className="group-data-[collapsible=icon]:hidden">
+					<PulseLine className="h-5 w-full text-(--pulse-lime)/60" strokeWidth={1.2} />
+					<div className="flex items-center justify-between border-t border-sidebar-border pt-2.5 pb-2 px-0.5">
+						<span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-sidebar-foreground/45">
+							<span className="relative size-1.5 rounded-full bg-(--pulse-lime) dot-live text-(--pulse-lime)" />
+							Online
+						</span>
+						<span className="font-mono text-[9px] uppercase tracking-[0.2em] text-sidebar-foreground/30">Pulse</span>
+					</div>
+				</div>
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<SidebarMenuButton
 									size="lg"
-									className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-lg">
-									<Avatar className="size-8 rounded-lg">
-										<AvatarImage src={currentMember?.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-lg" />
-										<AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
+									className="rounded-none data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+									<Avatar className="size-8">
+										<AvatarImage src={currentMember?.logo_url ?? workspace.logo_url ?? undefined} className="object-cover" />
+										<AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground font-mono text-xs font-bold">
 											{userInitials}
 										</AvatarFallback>
 									</Avatar>
 									<div className="grid flex-1 text-left text-sm leading-tight">
 										<span className="truncate font-semibold text-[13px]">{user?.name ?? "..."}</span>
-										<span className="truncate text-[11px] text-sidebar-foreground/50">{workspace.role}</span>
+										<span className="truncate font-mono text-[10px] uppercase tracking-[0.08em] text-sidebar-foreground/50">
+											{workspace.role}
+										</span>
 									</div>
 									<ChevronDown className="ml-auto size-4 text-sidebar-foreground/40" />
 								</SidebarMenuButton>
@@ -164,7 +184,7 @@ export function WorkspaceSidebar() {
 							<DropdownMenuContent className="w-60" side="top" align="start" sideOffset={4}>
 								<div className="px-2 py-2.5 border-b mb-1">
 									<p className="text-xs font-semibold truncate">{user?.name ?? "..."}</p>
-									<p className="text-[10px] text-muted-foreground truncate">{user?.email ?? ""}</p>
+									<p className="font-mono text-[10px] text-muted-foreground truncate">{user?.email ?? ""}</p>
 								</div>
 								<DropdownMenuItem
 									onClick={() => navigate({ to: "/w/$slug/profile", params: { slug } })}

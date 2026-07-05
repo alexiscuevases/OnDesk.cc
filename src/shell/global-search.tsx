@@ -10,6 +10,7 @@ import { useTeams } from "@/features/teams/hooks/use-team-queries";
 import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
 import { useContacts } from "@/features/contacts/hooks/use-contact-queries";
 import { useCompanies } from "@/features/companies/hooks/use-company-queries";
+import { EmptyState } from "@/shared/components/console";
 
 export function GlobalSearch() {
 	const [globalSearch, setGlobalSearch] = useState("");
@@ -75,7 +76,7 @@ export function GlobalSearch() {
 							setSearchOpen(e.target.value.length > 0);
 						}}
 						onFocus={() => globalSearch.length > 0 && setSearchOpen(true)}
-						className="pl-9 h-9 bg-secondary/60 border-0 rounded-lg focus-visible:bg-card focus-visible:ring-1"
+						className="pl-9 h-9 bg-secondary/60 border-0 focus-visible:bg-card focus-visible:ring-1"
 					/>
 				</div>
 			</PopoverTrigger>
@@ -84,7 +85,7 @@ export function GlobalSearch() {
 					<div className="max-h-96 overflow-y-auto">
 						{searchResults.tickets.length > 0 && (
 							<div className="p-2">
-								<div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+								<div className="console-label px-2 py-1.5 flex items-center gap-1.5">
 									<Hash className="size-3" />
 									Tickets
 								</div>
@@ -101,10 +102,10 @@ export function GlobalSearch() {
 												setSearchOpen(false);
 												setGlobalSearch("");
 											}}
-											className="w-full flex items-start gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors text-left">
-											<Avatar className="size-7 rounded-lg mt-0.5">
-												<AvatarImage src={companyLogo ?? undefined} className="object-cover rounded-lg" />
-												<AvatarFallback className="rounded-lg bg-secondary text-foreground text-[10px] font-bold">
+											className="w-full flex items-start gap-3 p-2 hover:bg-secondary/70 transition-colors text-left">
+											<Avatar className="size-7 mt-0.5">
+												<AvatarImage src={companyLogo ?? undefined} className="object-cover" />
+												<AvatarFallback className="bg-secondary text-foreground text-[10px] font-bold">
 													{contact ? getInitials(contact.name) : "?"}
 												</AvatarFallback>
 											</Avatar>
@@ -122,7 +123,7 @@ export function GlobalSearch() {
 						)}
 						{searchResults.contacts.length > 0 && (
 							<div className="p-2 border-t">
-								<div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+								<div className="console-label px-2 py-1.5 flex items-center gap-1.5">
 									<User className="size-3" />
 									Contacts
 								</div>
@@ -138,19 +139,19 @@ export function GlobalSearch() {
 												setSearchOpen(false);
 												setGlobalSearch("");
 											}}
-											className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors text-left">
-											<Avatar className="size-7 rounded-lg">
+											className="w-full flex items-center gap-3 p-2 hover:bg-secondary/70 transition-colors text-left">
+											<Avatar className="size-7">
 												<AvatarImage
 													src={contact.logo_url ?? companyLogo ?? undefined}
-													className="object-cover rounded-lg"
+													className="object-cover"
 												/>
-												<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
+												<AvatarFallback className="bg-primary text-primary-foreground text-[10px] font-bold">
 													{getInitials(contact.name)}
 												</AvatarFallback>
 											</Avatar>
 											<div className="flex-1 min-w-0">
 												<p className="text-sm font-medium truncate">{contact.name}</p>
-												<p className="text-xs text-muted-foreground truncate">{contact.email}</p>
+												<p className="text-xs font-mono text-muted-foreground truncate">{contact.email}</p>
 											</div>
 										</button>
 									);
@@ -159,7 +160,7 @@ export function GlobalSearch() {
 						)}
 						{searchResults.agents.length > 0 && (
 							<div className="p-2 border-t">
-								<div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+								<div className="console-label px-2 py-1.5 flex items-center gap-1.5">
 									<User className="size-3" />
 									Agents
 								</div>
@@ -173,10 +174,10 @@ export function GlobalSearch() {
 											setSearchOpen(false);
 											setGlobalSearch("");
 										}}
-										className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors text-left">
-										<Avatar className="size-7 rounded-lg">
-											<AvatarImage src={agent.logo_url ?? workspace.logo_url ?? undefined} className="object-cover rounded-lg" />
-											<AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-[10px] font-bold">
+										className="w-full flex items-center gap-3 p-2 hover:bg-secondary/70 transition-colors text-left">
+										<Avatar className="size-7">
+											<AvatarImage src={agent.logo_url ?? workspace.logo_url ?? undefined} className="object-cover" />
+											<AvatarFallback className="bg-primary text-primary-foreground text-[10px] font-bold">
 												{agent.name.slice(0, 2).toUpperCase()}
 											</AvatarFallback>
 										</Avatar>
@@ -190,7 +191,7 @@ export function GlobalSearch() {
 						)}
 						{searchResults.teams.length > 0 && (
 							<div className="p-2 border-t">
-								<div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+								<div className="console-label px-2 py-1.5 flex items-center gap-1.5">
 									<Users className="size-3" />
 									Teams
 								</div>
@@ -204,10 +205,10 @@ export function GlobalSearch() {
 											setSearchOpen(false);
 											setGlobalSearch("");
 										}}
-										className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/80 transition-colors text-left">
-										<Avatar className="size-7 rounded-lg">
-											<AvatarImage src={team.logo_url ?? undefined} className="object-cover rounded-lg" />
-											<AvatarFallback className="rounded-lg bg-primary/10 text-primary text-[9px] font-bold">
+										className="w-full flex items-center gap-3 p-2 hover:bg-secondary/70 transition-colors text-left">
+										<Avatar className="size-7">
+											<AvatarImage src={team.logo_url ?? undefined} className="object-cover" />
+											<AvatarFallback className="bg-primary/10 text-primary text-[9px] font-bold">
 												{team.name.slice(0, 2).toUpperCase()}
 											</AvatarFallback>
 										</Avatar>
@@ -221,10 +222,7 @@ export function GlobalSearch() {
 						)}
 					</div>
 				) : (
-					<div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-						<Search className="size-8 mb-2 opacity-30" />
-						<p className="text-sm">No results found</p>
-					</div>
+					<EmptyState icon={Search} title="No results found" className="py-8" />
 				)}
 			</PopoverContent>
 		</Popover>

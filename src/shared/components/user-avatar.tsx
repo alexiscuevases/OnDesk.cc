@@ -16,7 +16,8 @@ const sizeStyles = {
 };
 
 const shapeStyles = {
-	rounded: "rounded-lg",
+	// Squared by default in the console design language ("rounded" is kept for API compat).
+	rounded: "",
 	circle: "rounded-full",
 };
 
