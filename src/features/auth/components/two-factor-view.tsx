@@ -66,12 +66,15 @@ export default function TwoFactorView() {
 	}
 
 	return (
-		<AuthLayout orbVariant="center" backLink={{ to: "/auth/signin", label: "Back to sign in" }}>
-			<div className="text-center mb-8">
-				<div className="inline-flex items-center justify-center size-16 rounded-full bg-primary/10 mb-6">
-					<ShieldCheck className="size-8 text-primary" />
+		<AuthLayout code="2FA_VERIFY" backLink={{ to: "/auth/signin", label: "Back to sign in" }}>
+			<div className="mb-8">
+				<p className="font-mono text-[10px] tracking-[0.25em] uppercase text-accent font-bold mb-4">
+					02 — VERIFY CHANNEL<span className="blink-cursor">_</span>
+				</p>
+				<div className="inline-flex items-center justify-center size-14 border border-accent/40 bg-accent/5 mb-6">
+					<ShieldCheck className="size-7 text-accent" />
 				</div>
-				<h1 className="text-3xl font-bold mb-2">Check your email</h1>
+				<h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">Check your email</h1>
 				<p className="text-muted-foreground">
 					We sent a 6-digit code to <span className="text-foreground font-medium">{pending?.token ? "your email" : "…"}</span>
 				</p>
@@ -88,7 +91,7 @@ export default function TwoFactorView() {
 						placeholder="000000"
 						value={code}
 						onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-						className="text-center text-2xl tracking-[0.5em] h-14 font-mono"
+						className="text-center text-2xl tracking-[0.5em] h-14 font-mono rounded-none"
 					/>
 				</div>
 
@@ -96,7 +99,7 @@ export default function TwoFactorView() {
 					<p className="text-sm text-destructive text-center">{verifyMutation.error.message}</p>
 				)}
 				{resent && (
-					<p className="text-sm text-primary text-center">A new code was sent to your email.</p>
+					<p className="text-sm text-accent text-center">A new code was sent to your email.</p>
 				)}
 				{resendMutation.error && (
 					<p className="text-sm text-destructive text-center">{resendMutation.error.message}</p>
@@ -104,26 +107,29 @@ export default function TwoFactorView() {
 
 				<Button
 					type="submit"
-					className="w-full h-11 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300"
+					className="w-full h-12 rounded-none font-mono text-xs tracking-[0.15em] uppercase font-semibold"
 					size="lg"
 					disabled={verifyMutation.isPending || code.length !== 6}>
 					{verifyMutation.isPending ? "Verifying…" : "Verify"}
 				</Button>
 			</form>
 
-			<div className="mt-6 text-center text-sm text-muted-foreground">
+			<div className="mt-6 text-sm text-muted-foreground">
 				Didn't receive the code?{" "}
 				<button
 					type="button"
 					onClick={() => resendMutation.mutate()}
 					disabled={resendMutation.isPending || !pending}
-					className="text-primary hover:text-primary/80 font-medium transition-colors disabled:opacity-50">
+					className="text-primary hover:text-accent font-semibold transition-colors disabled:opacity-50">
 					{resendMutation.isPending ? "Sending…" : "Resend code"}
 				</button>
 			</div>
 
-			<div className="mt-4 p-3 rounded-lg bg-muted/50 border border-border">
-				<p className="text-xs text-muted-foreground text-center">
+			<div className="mt-6 border border-border">
+				<div className="px-4 py-2 border-b border-border">
+					<span className="font-mono text-[9px] tracking-[0.25em] text-primary">SECURITY NOTE</span>
+				</div>
+				<p className="px-4 py-3 text-xs text-muted-foreground">
 					The code expires in 10 minutes. Never share it with anyone.
 				</p>
 			</div>

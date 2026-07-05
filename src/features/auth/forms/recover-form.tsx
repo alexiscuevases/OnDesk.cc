@@ -52,7 +52,7 @@ export function RecoverForm({ onSubmit, isLoading = false, error = null }: Recov
 
 			{error && <p className="text-sm text-destructive text-center">{error}</p>}
 
-			<Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+			<Button type="submit" className="w-full h-12 rounded-none font-mono text-xs tracking-[0.15em] uppercase font-semibold" size="lg" disabled={isLoading}>
 				{isLoading ? "Sending…" : "Send recovery link"}
 			</Button>
 		</form>

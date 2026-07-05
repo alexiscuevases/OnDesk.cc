@@ -36,7 +36,7 @@ export function AuthOAuthBlock({ mode }: AuthOAuthBlockProps) {
 				<Button
 					asChild
 					variant="outline"
-					className="w-full h-11 gap-3 font-medium hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200"
+					className="w-full h-12 gap-3 rounded-none font-medium border-foreground/20 hover:border-primary hover:text-primary hover:bg-transparent transition-colors duration-200"
 				>
 					<a href={oauthHref("microsoft", mode)}>
 						<MicrosoftIcon />
@@ -46,7 +46,7 @@ export function AuthOAuthBlock({ mode }: AuthOAuthBlockProps) {
 				<Button
 					asChild
 					variant="outline"
-					className="w-full h-11 gap-3 font-medium hover:bg-primary/5 hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-200"
+					className="w-full h-12 gap-3 rounded-none font-medium border-foreground/20 hover:border-primary hover:text-primary hover:bg-transparent transition-colors duration-200"
 				>
 					<a href={oauthHref("google", mode)}>
 						<GoogleIcon />
@@ -59,10 +59,10 @@ export function AuthOAuthBlock({ mode }: AuthOAuthBlockProps) {
 				<div className="absolute inset-0 flex items-center">
 					<div className="w-full border-t border-border" />
 				</div>
-				<div className="relative flex justify-center text-xs">
+				<div className="relative flex justify-center">
 					<span
-						className="px-3 text-muted-foreground font-medium"
-						style={{ background: "var(--color-card)" }}
+						className="px-3 font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground"
+						style={{ background: "var(--color-background)" }}
 					>
 						{isSignIn ? "Or continue with email" : "Or sign up with email"}
 					</span>

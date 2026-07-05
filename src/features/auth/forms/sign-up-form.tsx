@@ -148,7 +148,7 @@ export function SignUpForm({ onSubmit, isLoading = false, error = null }: SignUp
 
 			{error && <p className="text-sm text-destructive text-center">{error}</p>}
 
-			<Button type="submit" className="w-full h-11 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/35 hover:-translate-y-0.5 transition-all duration-300" size="lg" disabled={isLoading}>
+			<Button type="submit" className="w-full h-12 rounded-none font-mono text-xs tracking-[0.15em] uppercase font-semibold" size="lg" disabled={isLoading}>
 				{isLoading ? "Creating account…" : "Create account"}
 			</Button>
 
