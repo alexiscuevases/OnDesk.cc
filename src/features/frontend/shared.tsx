@@ -99,6 +99,62 @@ export function MonoTag({ children, className = "" }: { children: React.ReactNod
     );
 }
 
+/** Editorial section header: hairline rule + numbered mono label + big title. */
+export function SectionRule({ index, label, title, right }: { index: string; label: string; title: React.ReactNode; right?: string }) {
+    return (
+        <div className="border-t border-border">
+            <div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-border">
+                <MonoTag className="text-primary">
+                    {index} — {label}
+                </MonoTag>
+                {right && <MonoTag className="hidden sm:block">{right}</MonoTag>}
+            </div>
+            <h2 className="px-6 md:px-12 pt-10 pb-2 text-4xl md:text-6xl font-black tracking-tight text-balance max-w-4xl">{title}</h2>
+        </div>
+    );
+}
+
+/** Small `+` crosshair mark placed at grid corners. */
+export function Cross({ className = "" }: { className?: string }) {
+    return (
+        <span className={`pointer-events-none absolute z-10 text-muted-foreground/50 font-mono text-sm leading-none select-none ${className}`} aria-hidden="true">
+            +
+        </span>
+    );
+}
+
+/** Rectangular editorial CTA link — lime fill slides up on hover. */
+export function CtaLink({ href, children, variant = "solid" }: { href: string; children: React.ReactNode; variant?: "solid" | "outline" | "lime" }) {
+    if (variant === "outline") {
+        return (
+            <a
+                href={href}
+                className="group inline-flex items-center justify-center gap-2 border border-foreground/25 px-7 py-4 font-mono text-xs tracking-[0.15em] uppercase font-semibold text-foreground hover:border-primary hover:text-primary transition-colors duration-200">
+                {children}
+            </a>
+        );
+    }
+    if (variant === "lime") {
+        return (
+            <a
+                href={href}
+                className="group relative inline-flex items-center justify-center gap-2 overflow-hidden px-7 py-4 font-mono text-xs tracking-[0.15em] uppercase font-bold text-(--pulse-ink-deep)"
+                style={{ background: "var(--pulse-lime)" }}>
+                <span className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-white/90" />
+                <span className="relative z-10 flex items-center gap-2">{children}</span>
+            </a>
+        );
+    }
+    return (
+        <a
+            href={href}
+            className="group relative inline-flex items-center justify-center gap-2 overflow-hidden bg-primary px-7 py-4 font-mono text-xs tracking-[0.15em] uppercase font-semibold text-primary-foreground">
+            <span className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300" style={{ background: "var(--pulse-lime)" }} />
+            <span className="relative z-10 flex items-center gap-2 group-hover:text-(--pulse-ink-deep) transition-colors duration-300">{children}</span>
+        </a>
+    );
+}
+
 /** Pill badge shown above section headings. */
 export function SectionBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
     return (

@@ -1,5 +1,5 @@
 import { SiteLayout } from "./site-layout";
-import { useInView, useCounter, useMountVisible, PulseLine, MonoTag } from "./shared";
+import { useInView, useCounter, useMountVisible, PulseLine, MonoTag, SectionRule, Cross, CtaLink } from "./shared";
 import {
 	ArrowRight,
 	ArrowUpRight,
@@ -143,66 +143,10 @@ const NEW_TICKETS: LiveTicket[] = [
 const PRIORITY_ON_DARK = {
 	high: "text-red-400",
 	medium: "text-amber-300",
-	low: "text-[var(--pulse-lime)]",
+	low: "text-(--pulse-lime)",
 };
 
 // ─── primitives ──────────────────────────────────────────────────────────────
-
-/** Editorial section header: hairline rule + numbered mono label + big title. */
-function SectionRule({ index, label, title, right }: { index: string; label: string; title: React.ReactNode; right?: string }) {
-	return (
-		<div className="border-t border-border">
-			<div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-border">
-				<MonoTag className="text-primary">
-					{index} — {label}
-				</MonoTag>
-				{right && <MonoTag className="hidden sm:block">{right}</MonoTag>}
-			</div>
-			<h2 className="px-6 md:px-12 pt-10 pb-2 text-4xl md:text-6xl font-black tracking-tight text-balance max-w-4xl">{title}</h2>
-		</div>
-	);
-}
-
-/** Small `+` crosshair mark placed at grid corners. */
-function Cross({ className = "" }: { className?: string }) {
-	return (
-		<span className={`pointer-events-none absolute z-10 text-muted-foreground/50 font-mono text-sm leading-none select-none ${className}`} aria-hidden="true">
-			+
-		</span>
-	);
-}
-
-/** Primary rectangular CTA — lime fill slides up on hover. */
-function CtaLink({ href, children, variant = "solid" }: { href: string; children: React.ReactNode; variant?: "solid" | "outline" | "lime" }) {
-	if (variant === "outline") {
-		return (
-			<a
-				href={href}
-				className="group inline-flex items-center justify-center gap-2 border border-foreground/25 px-7 py-4 font-mono text-xs tracking-[0.15em] uppercase font-semibold text-foreground hover:border-primary hover:text-primary transition-colors duration-200">
-				{children}
-			</a>
-		);
-	}
-	if (variant === "lime") {
-		return (
-			<a
-				href={href}
-				className="group relative inline-flex items-center justify-center gap-2 overflow-hidden px-7 py-4 font-mono text-xs tracking-[0.15em] uppercase font-bold text-[var(--pulse-ink-deep)]"
-				style={{ background: "var(--pulse-lime)" }}>
-				<span className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-white/90" />
-				<span className="relative z-10 flex items-center gap-2">{children}</span>
-			</a>
-		);
-	}
-	return (
-		<a
-			href={href}
-			className="group relative inline-flex items-center justify-center gap-2 overflow-hidden bg-primary px-7 py-4 font-mono text-xs tracking-[0.15em] uppercase font-semibold text-primary-foreground">
-			<span className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300" style={{ background: "var(--pulse-lime)" }} />
-			<span className="relative z-10 flex items-center gap-2 group-hover:text-[var(--pulse-ink-deep)] transition-colors duration-300">{children}</span>
-		</a>
-	);
-}
 
 // ─── page ────────────────────────────────────────────────────────────────────
 
@@ -340,9 +284,9 @@ function LiveConsole() {
 			{/* console header */}
 			<div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
 				<span className="font-mono text-[11px] tracking-[0.2em] text-white/60">
-					PULSE://LIVE_FEED<span className="blink-cursor text-[var(--pulse-lime)]">▌</span>
+					PULSE://LIVE_FEED<span className="blink-cursor text-(--pulse-lime)">▌</span>
 				</span>
-				<span className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-[var(--pulse-lime)]">
+				<span className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-(--pulse-lime)">
 					<span className="size-1.5 rounded-full animate-pulse" style={{ background: "var(--pulse-lime)" }} />
 					REC
 				</span>
@@ -358,9 +302,9 @@ function LiveConsole() {
 				{tickets.map((t, i) => (
 					<div
 						key={t.id + i}
-						className={`px-5 py-4 ${i === 0 ? "animate-in fade-in slide-in-from-top-2 duration-500 bg-white/[0.04]" : ""}`}>
+						className={`px-5 py-4 ${i === 0 ? "animate-in fade-in slide-in-from-top-2 duration-500 bg-white/4" : ""}`}>
 						<div className="flex items-center gap-3 font-mono text-[11px] mb-1.5">
-							<span className="text-[var(--pulse-lime)]">{t.id}</span>
+							<span className="text-(--pulse-lime)">{t.id}</span>
 							<span className={`uppercase tracking-wider ${PRIORITY_ON_DARK[t.priority]}`}>[{t.priority}]</span>
 							<span className="ml-auto text-white/35">{t.time}</span>
 						</div>
@@ -661,7 +605,7 @@ function FinalCta() {
 					</CtaLink>
 					<a
 						href="/pricing"
-						className="inline-flex items-center justify-center gap-2 border border-white/25 px-7 py-4 font-mono text-xs tracking-[0.15em] uppercase font-semibold text-white hover:border-[var(--pulse-lime)] hover:text-[var(--pulse-lime)] transition-colors duration-200">
+						className="inline-flex items-center justify-center gap-2 border border-white/25 px-7 py-4 font-mono text-xs tracking-[0.15em] uppercase font-semibold text-white hover:border-(--pulse-lime) hover:text-(--pulse-lime) transition-colors duration-200">
 						View pricing
 					</a>
 				</div>
