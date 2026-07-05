@@ -1,8 +1,6 @@
 import { SiteLayout } from "./site-layout";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Clock, Sparkles, Rss } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useInView, SectionBadge } from "./shared";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { useInView, useMountVisible, PulseLine, MonoTag, SectionRule, Cross } from "./shared";
 
 type Tag = "AI" | "Product" | "Guide" | "Agency" | "Solo & Small Teams";
 
@@ -26,8 +24,8 @@ const POSTS: Post[] = [
 			"A deep dive into the classification, context-retrieval, and reply-generation pipeline that powers Pulse AI Agents — and the edge cases we had to solve.",
 		author: "Daniel Park",
 		role: "CTO",
-		date: "Feb 18, 2025",
-		readTime: "8 min",
+		date: "FEB 18, 2025",
+		readTime: "8 MIN",
 		tag: "AI",
 		featured: true,
 	},
@@ -37,18 +35,19 @@ const POSTS: Post[] = [
 		excerpt: "SLA breaches hurt CSAT, renewals, and morale. Here is the framework we recommend to teams scaling from 5 to 50 agents.",
 		author: "Sophie Laurent",
 		role: "Head of Customer Success",
-		date: "Feb 11, 2025",
-		readTime: "6 min",
+		date: "FEB 11, 2025",
+		readTime: "6 MIN",
 		tag: "Guide",
 	},
 	{
 		slug: "running-client-support-as-an-agency",
 		title: "How agencies manage support for 8+ clients without losing their mind",
-		excerpt: "The tools, workflows, and rituals that high-performing support agencies use to keep every client's queue clean — without context-switching all day.",
+		excerpt:
+			"The tools, workflows, and rituals that high-performing support agencies use to keep every client's queue clean — without context-switching all day.",
 		author: "Sophie Laurent",
 		role: "Head of Customer Success",
-		date: "Feb 4, 2025",
-		readTime: "7 min",
+		date: "FEB 4, 2025",
+		readTime: "7 MIN",
 		tag: "Agency",
 	},
 	{
@@ -58,8 +57,8 @@ const POSTS: Post[] = [
 			"A case study on combining AI auto-replies, skill-based routing, and structured shift scheduling to achieve a dramatic satisfaction turnaround.",
 		author: "Sophie Laurent",
 		role: "Head of Customer Success",
-		date: "Jan 28, 2025",
-		readTime: "5 min",
+		date: "JAN 28, 2025",
+		readTime: "5 MIN",
 		tag: "Guide",
 	},
 	{
@@ -69,8 +68,8 @@ const POSTS: Post[] = [
 			"Most self-service portals fail because they are hard to find and harder to search. Here is what we learned building the portal feature for Pulse.",
 		author: "Aisha Okafor",
 		role: "Head of Product",
-		date: "Jan 21, 2025",
-		readTime: "7 min",
+		date: "JAN 21, 2025",
+		readTime: "7 MIN",
 		tag: "Product",
 	},
 	{
@@ -79,247 +78,227 @@ const POSTS: Post[] = [
 		excerpt: "Manual tags drift. AI auto-tags don't — if you seed them correctly. A practical guide to building a tag taxonomy that scales.",
 		author: "Aisha Okafor",
 		role: "Head of Product",
-		date: "Jan 14, 2025",
-		readTime: "6 min",
+		date: "JAN 14, 2025",
+		readTime: "6 MIN",
 		tag: "AI",
 	},
 	{
 		slug: "solo-support-without-burning-out",
 		title: "Running support solo: how to handle 200+ requests a week without burning out",
-		excerpt: "Canned replies, smart inboxes, and a few AI rules can do the work of a second hire. A practical guide for freelancers and solopreneurs managing client support.",
+		excerpt:
+			"Canned replies, smart inboxes, and a few AI rules can do the work of a second hire. A practical guide for freelancers and solopreneurs managing client support.",
 		author: "Aisha Okafor",
 		role: "Head of Product",
-		date: "Jan 7, 2025",
-		readTime: "6 min",
+		date: "JAN 7, 2025",
+		readTime: "6 MIN",
 		tag: "Solo & Small Teams",
 	},
 ];
-
-const TAG_STYLES: Record<Tag, string> = {
-	AI: "bg-primary/10 text-primary border-primary/25",
-	Product: "bg-accent/10 text-accent border-accent/25",
-	Guide: "bg-success/10 text-success border-success/25",
-	Agency: "bg-accent/10 text-accent border-accent/25",
-	"Solo & Small Teams": "bg-success/10 text-success border-success/25",
-};
 
 const TAGS: Tag[] = ["AI", "Product", "Guide", "Agency", "Solo & Small Teams"];
 
 const featured = POSTS.find((p) => p.featured)!;
 const rest = POSTS.filter((p) => !p.featured);
 
-function AuthorInitials({ name }: { name: string }) {
-	return (
-		<div className="size-8 rounded-full bg-primary/15 flex items-center justify-center text-xs font-bold text-primary shrink-0">
-			{name
-				.split(" ")
-				.map((n) => n[0])
-				.join("")}
-		</div>
-	);
-}
-
 export default function BlogPage() {
-	const [heroVisible, setHeroVisible] = useState(false);
-	useEffect(() => {
-		const id = requestAnimationFrame(() => setHeroVisible(true));
-		return () => cancelAnimationFrame(id);
-	}, []);
+	const visible = useMountVisible();
 
 	return (
 		<SiteLayout>
-			{/* ── HERO ── */}
-			<section className="relative pt-16 pb-20 md:pt-28 md:pb-24 overflow-hidden border-b border-border">
-				<div className="absolute inset-0 pointer-events-none">
-					<div className="absolute inset-0 bg-linear-to-br from-primary/6 via-background to-accent/4" />
+			<div className="mx-auto max-w-350 border-x border-border">
+				{/* ── HERO ── */}
+				<section className="relative border-b border-border overflow-hidden">
 					<div
-						className="absolute inset-0 opacity-[0.025]"
-						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "40px 40px" }}
+						className="absolute top-0 right-0 w-1/2 h-full opacity-[0.04] pointer-events-none"
+						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "28px 28px" }}
 					/>
-				</div>
-				<div className="container mx-auto px-4 text-center max-w-2xl relative">
-					<div className={`transition-all duration-1000 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-						<SectionBadge icon={Rss} label="Pulse Blog" />
-						<h1 className="text-5xl md:text-[5rem] font-black mb-5 text-balance tracking-tight" style={{ lineHeight: 1.04 }}>
+
+					<div
+						className={`relative px-6 md:px-12 pt-16 md:pt-24 pb-14 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						<div className="flex items-center gap-3 mb-10">
+							<span className="relative flex size-2">
+								<span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping" />
+								<span className="relative inline-flex size-2 rounded-full bg-accent" />
+							</span>
+							<MonoTag className="text-foreground/70">
+								DISPATCHES — FIELD NOTES & GUIDES<span className="blink-cursor text-accent">_</span>
+							</MonoTag>
+						</div>
+
+						<h1 className="max-w-4xl text-5xl md:text-7xl font-black leading-[1.02] tracking-tighter mb-8 text-balance">
 							Insights for{" "}
-							<span
-								style={{
-									background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
-									WebkitBackgroundClip: "text",
-									WebkitTextFillColor: "transparent",
-									backgroundClip: "text",
-								}}>
+							<span className="relative inline-block px-2 text-primary-foreground" style={{ background: "var(--color-primary)" }}>
 								every support team
 							</span>
 						</h1>
-						<p
-							className={`text-xl text-muted-foreground text-pretty leading-relaxed transition-all duration-1000 delay-150 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+
+						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
 							Guides, product updates, and stories from teams, agencies, and solos building better support.
 						</p>
 					</div>
-				</div>
-			</section>
 
-			{/* Tag filter row */}
-			<div className="border-b border-border" style={{ background: "var(--color-card)" }}>
-				<div className="container mx-auto px-4 py-3 flex gap-2 overflow-x-auto scrollbar-none">
-					<span
-						className="text-xs font-semibold px-3 py-1.5 rounded-full shrink-0 shadow-sm"
-						style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}>
-						All
-					</span>
-					{TAGS.map((tag) => (
-						<span
-							key={tag}
-							className={`text-xs font-semibold px-3 py-1.5 rounded-full border cursor-pointer hover:border-primary/40 hover:text-foreground transition-all duration-200 shrink-0 hover:-translate-y-0.5 ${TAG_STYLES[tag]}`}>
-							{tag}
+					{/* tag ticker row */}
+					<div className="flex flex-wrap items-center gap-2 px-6 md:px-12 py-4 border-t border-border">
+						<span className="px-3 py-1.5 bg-primary text-primary-foreground font-mono text-[10px] tracking-[0.15em] uppercase font-bold">
+							All
 						</span>
-					))}
-				</div>
-			</div>
+						{TAGS.map((tag) => (
+							<span
+								key={tag}
+								className="px-3 py-1.5 border border-border font-mono text-[10px] tracking-[0.15em] uppercase text-muted-foreground cursor-pointer hover:border-primary/50 hover:text-foreground transition-colors duration-200">
+								{tag}
+							</span>
+						))}
+					</div>
 
-			<BlogPostsSection />
-			<BlogCtaSection />
+					{/* EKG divider */}
+					<div className="border-t border-border text-accent">
+						<PulseLine className="w-full h-10 block" />
+					</div>
+				</section>
+
+				{/* ── FEATURED DISPATCH ── */}
+				<FeaturedDispatch />
+
+				{/* ── ARCHIVE ── */}
+				<ArchiveSection />
+
+				{/* ── NEWSLETTER ── */}
+				<NewsletterBand />
+			</div>
 		</SiteLayout>
 	);
 }
 
-function BlogPostsSection() {
-	const { ref, inView } = useInView({ threshold: 0.04 });
+function FeaturedDispatch() {
+	const { ref, inView } = useInView({ threshold: 0.05 });
 	return (
-		<section ref={ref} className="container mx-auto px-4 py-16 md:py-24 max-w-5xl">
-			{/* Featured post */}
-			<div className={`mb-14 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-				<p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.18em] mb-5">Featured</p>
-				<a
-					href={`/blog/${featured.slug}`}
-					className="group relative flex flex-col md:flex-row gap-8 p-8 rounded-3xl border overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
-					style={{ background: "var(--color-card)", borderColor: "var(--color-border)" }}>
-					{/* Hover glow */}
-					<div
-						className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-						style={{ background: "radial-gradient(ellipse at 0% 0%, color-mix(in srgb, var(--color-primary) 6%, transparent), transparent 60%)" }}
-					/>
-					<div
-						className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-						style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent)" }}
-					/>
-					<div className="flex-1 flex flex-col gap-4 relative z-10">
-						<span
-							className={`self-start inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${TAG_STYLES[featured.tag]}`}>
-							{featured.tag}
-						</span>
-						<h2 className="text-2xl md:text-3xl font-black text-balance leading-snug group-hover:text-primary transition-colors duration-200">
-							{featured.title}
-						</h2>
-						<p className="text-muted-foreground leading-relaxed text-pretty">{featured.excerpt}</p>
-						<div className="flex items-center gap-3 mt-auto">
-							<AuthorInitials name={featured.author} />
-							<div className="text-xs">
-								<p className="font-semibold text-foreground">{featured.author}</p>
-								<p className="text-muted-foreground">{featured.date}</p>
-							</div>
-							<div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
-								<Clock className="size-3" />
-								{featured.readTime} read
-							</div>
-						</div>
-					</div>
-					<div className="md:w-56 shrink-0 flex items-center justify-end relative z-10">
-						<div
-							className="flex items-center gap-2 font-semibold text-sm transition-all duration-200 group-hover:gap-3"
-							style={{ color: "var(--color-primary)" }}>
-							Read article
-							<ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
-						</div>
-					</div>
-				</a>
+		<section ref={ref as React.RefObject<HTMLElement>}>
+			<div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-border">
+				<MonoTag className="text-primary">01 — FEATURED DISPATCH</MonoTag>
+				<span className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-muted-foreground">
+					<span className="size-1.5 rounded-full bg-accent animate-pulse" />
+					LATEST TRANSMISSION
+				</span>
 			</div>
 
-			{/* Post grid */}
-			<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-				{rest.map((post, i) => (
-					<a
-						key={post.slug}
-						href={`/blog/${post.slug}`}
-						className={`group relative flex flex-col gap-4 p-6 rounded-2xl border overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-xl ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-						style={{ background: "var(--color-card)", borderColor: "var(--color-border)", transitionDelay: `${i * 60 + 150}ms` }}>
-						{/* Hover glow */}
-						<div
-							className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
-							style={{
-								background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 7%, transparent), transparent 70%)",
-							}}
-						/>
-						<div
-							className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
-							style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 28%, transparent)" }}
-						/>
-						<span
-							className={`self-start inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border relative z-10 ${TAG_STYLES[post.tag]}`}>
-							{post.tag}
+			<a
+				href={`/blog/${featured.slug}`}
+				className={`group grid lg:grid-cols-12 border-b border-border transition-all duration-700 hover:bg-accent/5 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+				{/* meta rail */}
+				<div className="lg:col-span-3 px-6 md:px-12 lg:pr-8 pt-10 pb-2 lg:pb-10 lg:border-r border-border">
+					<div className="flex lg:flex-col items-center lg:items-start gap-4 lg:gap-3 font-mono text-[10px] tracking-[0.2em] uppercase">
+						<span className="border border-accent/40 text-accent px-2 py-1 font-bold">{featured.tag}</span>
+						<span className="text-muted-foreground">{featured.date}</span>
+						<span className="text-muted-foreground">{featured.readTime} READ</span>
+					</div>
+				</div>
+
+				{/* content */}
+				<div className="lg:col-span-9 px-6 md:px-12 pt-4 lg:pt-10 pb-10">
+					<h2 className="text-3xl md:text-5xl font-black tracking-tight text-balance leading-tight mb-5 group-hover:text-primary transition-colors duration-200">
+						{featured.title}
+					</h2>
+					<p className="text-muted-foreground leading-relaxed max-w-3xl mb-8">{featured.excerpt}</p>
+					<div className="flex items-center justify-between">
+						<p className="font-mono text-[11px] tracking-wider text-muted-foreground">
+							<span className="text-foreground font-bold">{featured.author.toUpperCase()}</span> · {featured.role.toUpperCase()}
+						</p>
+						<span className="inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.15em] uppercase font-bold text-primary group-hover:text-accent transition-colors">
+							Read article <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
 						</span>
-						<h2 className="text-base font-bold leading-snug text-balance group-hover:text-primary transition-colors duration-200 relative z-10">
-							{post.title}
-						</h2>
-						<p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 text-pretty flex-1 relative z-10">{post.excerpt}</p>
-						<div className="flex items-center gap-2.5 mt-auto pt-3 border-t border-border relative z-10">
-							<AuthorInitials name={post.author} />
-							<div className="text-xs min-w-0">
-								<p className="font-semibold text-foreground truncate">{post.author}</p>
-								<p className="text-muted-foreground">{post.date}</p>
+					</div>
+				</div>
+			</a>
+		</section>
+	);
+}
+
+function ArchiveSection() {
+	const { ref, inView } = useInView({ threshold: 0.04 });
+	return (
+		<section ref={ref as React.RefObject<HTMLElement>}>
+			<SectionRule index="02" label="ARCHIVE" title="All dispatches" right={`${POSTS.length} ENTRIES ON FILE`} />
+			<div className="h-10" />
+
+			<div className="relative border-t border-border">
+				<Cross className="-top-2 -left-1.5" />
+				<Cross className="-top-2 -right-1.5" />
+				<div className="divide-y divide-border border-b border-border">
+					{rest.map((post, i) => (
+						<a
+							key={post.slug}
+							href={`/blog/${post.slug}`}
+							className={`group grid md:grid-cols-12 gap-3 md:gap-6 px-6 md:px-12 py-7 transition-all duration-500 hover:bg-accent/5 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}
+							style={{ transitionDelay: `${i * 60}ms` }}>
+							{/* index + tag */}
+							<div className="md:col-span-2 flex md:flex-col items-center md:items-start gap-3 font-mono text-[10px] tracking-[0.2em] uppercase">
+								<span className="text-muted-foreground/50">{String(i + 2).padStart(2, "0")}</span>
+								<span className="border border-accent/40 text-accent px-2 py-1 font-bold">{post.tag}</span>
 							</div>
-							<div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-								<Clock className="size-3" />
-								{post.readTime}
+
+							{/* title + excerpt */}
+							<div className="md:col-span-7 min-w-0">
+								<h3 className="text-lg md:text-xl font-black tracking-tight leading-snug mb-2 group-hover:text-primary transition-colors duration-200">
+									{post.title}
+								</h3>
+								<p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{post.excerpt}</p>
 							</div>
-						</div>
-					</a>
-				))}
+
+							{/* meta */}
+							<div className="md:col-span-3 flex md:flex-col md:items-end justify-between gap-2">
+								<div className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground md:text-right">
+									<span className="block text-foreground font-bold">{post.author.toUpperCase()}</span>
+									<span className="block mt-1">
+										{post.date} · {post.readTime}
+									</span>
+								</div>
+								<ArrowUpRight className="size-4 text-muted-foreground group-hover:text-accent transition-colors shrink-0" />
+							</div>
+						</a>
+					))}
+				</div>
 			</div>
 		</section>
 	);
 }
 
-function BlogCtaSection() {
+function NewsletterBand() {
 	const { ref, inView } = useInView();
 	return (
-		<section ref={ref} className="container mx-auto px-4 py-20">
+		<section ref={ref as React.RefObject<HTMLElement>} className="relative text-white overflow-hidden" style={{ background: "var(--pulse-ink-deep)" }}>
+			<div className="absolute inset-0 flex items-center opacity-30 pointer-events-none" style={{ color: "var(--pulse-lime)" }}>
+				<PulseLine className="w-full h-40" strokeWidth={0.8} />
+			</div>
+
 			<div
-				className={`relative max-w-5xl mx-auto rounded-3xl overflow-hidden p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
-				style={{
-					background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 75%, var(--color-accent)) 100%)",
-					boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
-				}}>
-				<div
-					className="absolute inset-0 opacity-[0.07] pointer-events-none"
-					style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "32px 32px" }}
-				/>
-				<div className="absolute -top-16 -right-16 size-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-				<div className="relative z-10">
-					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 border border-white/25 text-sm font-medium text-white mb-8">
-						<Sparkles className="size-3.5" /> Stay in the loop
-					</div>
-					<h2 className="text-4xl md:text-5xl font-black mb-5 text-white text-balance tracking-tight">Never miss an article</h2>
-					<p className="text-xl text-white/75 mb-10 max-w-xl mx-auto leading-relaxed">
-						One email per week with our best articles on AI support, ops, and product updates. No spam, ever.
-					</p>
-					<form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
-						<input
-							type="email"
-							placeholder="you@company.com"
-							className="flex-1 h-12 px-4 rounded-xl border border-white/30 bg-white/15 text-white placeholder:text-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-white/40 focus:bg-white/20 transition-all"
-						/>
-						<Button
-							type="submit"
-							className="shrink-0 group h-12 px-6 bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300"
-							style={{ color: "var(--color-primary)" }}>
-							Subscribe
-							<ArrowRight className="ml-1.5 size-3.5 group-hover:translate-x-0.5 transition-transform" />
-						</Button>
-					</form>
-					<p className="text-xs text-white/50 mt-4">No spam. Unsubscribe at any time.</p>
-				</div>
+				className={`relative px-6 md:px-12 py-24 md:py-32 text-center transition-all duration-1000 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+				<MonoTag className="block mb-8 text-white/50">03 — SUBSCRIBE · ONE EMAIL / WEEK · NO SPAM</MonoTag>
+				<h2 className="text-4xl md:text-6xl font-black tracking-tighter text-balance mb-6 max-w-4xl mx-auto">
+					Never miss a <span style={{ color: "var(--pulse-lime)" }}>dispatch.</span>
+				</h2>
+				<p className="text-white/55 text-lg md:text-xl mb-12 max-w-xl mx-auto">
+					Our best articles on AI support, ops, and product updates — straight to your inbox.
+				</p>
+
+				<form className="flex flex-col sm:flex-row max-w-md mx-auto border border-white/25 focus-within:border-(--pulse-lime) transition-colors" onSubmit={(e) => e.preventDefault()}>
+					<input
+						type="email"
+						required
+						placeholder="YOU@COMPANY.COM"
+						className="flex-1 h-14 px-5 bg-transparent text-white placeholder:text-white/40 font-mono text-xs tracking-[0.15em] focus:outline-none"
+					/>
+					<button
+						type="submit"
+						className="group relative inline-flex items-center justify-center gap-2 overflow-hidden px-7 h-14 font-mono text-xs tracking-[0.15em] uppercase font-bold text-(--pulse-ink-deep) shrink-0"
+						style={{ background: "var(--pulse-lime)" }}>
+						<span className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-white/90" />
+						<span className="relative z-10 flex items-center gap-2">
+							Subscribe <ArrowRight className="size-3.5 group-hover:translate-x-0.5 transition-transform" />
+						</span>
+					</button>
+				</form>
+				<p className="font-mono text-[10px] tracking-[0.2em] text-white/35 mt-5">UNSUBSCRIBE AT ANY TIME</p>
 			</div>
 		</section>
 	);

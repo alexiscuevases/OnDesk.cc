@@ -1,10 +1,9 @@
 import { SiteLayout } from "./site-layout";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, TrendingDown, Clock, Users, Zap, ChevronRight, Quote, BarChart3, Shield, Globe, TrendingUp } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
-import { useInView, useCounter, SectionBadge } from "./shared";
+import { ArrowRight, ArrowUpRight, Star, TrendingDown, Clock, Users, Zap, BarChart3, Shield, Globe } from "lucide-react";
+import { useState } from "react";
+import { useInView, useCounter, useMountVisible, PulseLine, MonoTag, SectionRule, Cross, CtaLink, DarkCta } from "./shared";
 
-const INDUSTRIES = ["All", "Technology", "Retail", "Agency", "Finance", "Education"];
+const INDUSTRIES = ["All", "Technology", "Retail", "Agency", "Finance", "Healthcare", "Education"];
 
 const CASE_STUDIES = [
 	{
@@ -26,7 +25,7 @@ const CASE_STUDIES = [
 		quote: "We evaluated six tools. Pulse was the only one that had a truly native Microsoft Teams orchestration — not just a webhook bolted on.",
 		author: "Marcus Rivera",
 		role: "IT Director",
-		plan: "Enterprise",
+		plan: "ENTERPRISE",
 		featured: true,
 	},
 	{
@@ -47,7 +46,7 @@ const CASE_STUDIES = [
 		quote: "Last holiday season was the first in five years where I wasn't personally working weekends to keep tickets green.",
 		author: "Priya Patel",
 		role: "VP Operations",
-		plan: "Professional",
+		plan: "PROFESSIONAL",
 		featured: false,
 	},
 	{
@@ -56,8 +55,10 @@ const CASE_STUDIES = [
 		logo: "BS",
 		color: "bg-indigo-500",
 		tagline: "8 clients. 1 inbox. Zero context-switching.",
-		challenge: "BrightSupport managed email support for 8 SaaS clients across 4 different tools. Agents constantly switched tabs, mixed up client voices, and lacked any cross-client reporting to show clients what they were actually getting.",
-		solution: "Consolidated all clients into Pulse with separate client workspaces, custom inboxes per client, and a shared analytics view for reporting. Each agent was scoped to their assigned clients only.",
+		challenge:
+			"BrightSupport managed email support for 8 SaaS clients across 4 different tools. Agents constantly switched tabs, mixed up client voices, and lacked any cross-client reporting to show clients what they were actually getting.",
+		solution:
+			"Consolidated all clients into Pulse with separate client workspaces, custom inboxes per client, and a shared analytics view for reporting. Each agent was scoped to their assigned clients only.",
 		results: [
 			{ metric: "8", label: "Clients in one workspace", icon: Users },
 			{ metric: "60%", label: "Less time on context-switching", icon: Clock },
@@ -67,7 +68,7 @@ const CASE_STUDIES = [
 		quote: "We onboard new clients in under an hour now. The isolation between client workspaces is exactly what we needed to feel confident nothing would bleed across.",
 		author: "James Okafor",
 		role: "Operations Lead",
-		plan: "Core",
+		plan: "CORE",
 		featured: false,
 	},
 	{
@@ -76,8 +77,10 @@ const CASE_STUDIES = [
 		logo: "TD",
 		color: "bg-teal-500",
 		tagline: "Solo consultant. 3 products. Zero dropped requests.",
-		challenge: "Mia Torres managed client support solo for three SaaS products she'd built. Requests came through email, a contact form, and Twitter DMs. She was constantly dropping things and losing track of who she'd replied to.",
-		solution: "Connected all 3 channels to Pulse Starter in one afternoon. Set up canned replies for her 10 most common questions and an auto-reply for nights and weekends.",
+		challenge:
+			"Mia Torres managed client support solo for three SaaS products she'd built. Requests came through email, a contact form, and Twitter DMs. She was constantly dropping things and losing track of who she'd replied to.",
+		solution:
+			"Connected all 3 channels to Pulse Starter in one afternoon. Set up canned replies for her 10 most common questions and an auto-reply for nights and weekends.",
 		results: [
 			{ metric: "< 10 min", label: "Setup time", icon: Zap },
 			{ metric: "3", label: "Products managed solo", icon: Users },
@@ -87,7 +90,7 @@ const CASE_STUDIES = [
 		quote: "I was running support across three inboxes and two browsers. Pulse Starter pulled it all together in an afternoon. I haven't missed a message since.",
 		author: "Mia Torres",
 		role: "Independent Consultant",
-		plan: "Starter",
+		plan: "STARTER",
 		featured: false,
 	},
 	{
@@ -109,7 +112,7 @@ const CASE_STUDIES = [
 		quote: "In healthcare, a data breach is existential. Pulse gave us the controls and sovereign audit trails that legacy tools never could.",
 		author: "Dr. Sandra Lin",
 		role: "CISO",
-		plan: "Enterprise",
+		plan: "ENTERPRISE",
 		featured: false,
 	},
 	{
@@ -131,7 +134,7 @@ const CASE_STUDIES = [
 		quote: "The AI triage alone paid for 18 months of our subscription in a single month.",
 		author: "James Okonkwo",
 		role: "Head of IT",
-		plan: "Professional",
+		plan: "PROFESSIONAL",
 		featured: false,
 	},
 	{
@@ -153,7 +156,7 @@ const CASE_STUDIES = [
 		quote: "For the first time, our regional managers see the same data at the same time. That alone changed how we run our Monday standups.",
 		author: "Lena Hoffmann",
 		role: "Global Support Manager",
-		plan: "Enterprise",
+		plan: "ENTERPRISE",
 		featured: false,
 	},
 	{
@@ -175,31 +178,19 @@ const CASE_STUDIES = [
 		quote: "Our IT team finally has time to work on strategic projects instead of resetting passwords 300 times a day.",
 		author: "Prof. David Osei",
 		role: "VP Information Technology",
-		plan: "Professional",
+		plan: "PROFESSIONAL",
 		featured: false,
 	},
 ];
 
 export default function CustomersPage() {
+	const visible = useMountVisible();
 	const [activeIndustry, setActiveIndustry] = useState("All");
-	const [heroVisible, setHeroVisible] = useState(false);
-	const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
-	const statsRef = useInView();
-	const c1200 = useCounter(1200, 1200, statsRef.inView);
-	const c40 = useCounter(40, 900, statsRef.inView);
-	const c73 = useCounter(73, 1100, statsRef.inView);
-	const c49 = useCounter(49, 1300, statsRef.inView);
-
-	useEffect(() => {
-		const id = requestAnimationFrame(() => setHeroVisible(true));
-		return () => cancelAnimationFrame(id);
-	}, []);
-
-	const onMove = useCallback((e: MouseEvent) => setMousePos({ x: e.clientX, y: e.clientY }), []);
-	useEffect(() => {
-		window.addEventListener("mousemove", onMove);
-		return () => window.removeEventListener("mousemove", onMove);
-	}, [onMove]);
+	const { ref: statsRef, inView: statsInView } = useInView();
+	const c1200 = useCounter(1200, 1200, statsInView);
+	const c40 = useCounter(40, 900, statsInView);
+	const c73 = useCounter(73, 1100, statsInView);
+	const c49 = useCounter(49, 1300, statsInView);
 
 	const filtered = activeIndustry === "All" ? CASE_STUDIES : CASE_STUDIES.filter((c) => c.industry === activeIndustry);
 	const featured = CASE_STUDIES.find((c) => c.featured)!;
@@ -207,157 +198,158 @@ export default function CustomersPage() {
 
 	return (
 		<SiteLayout>
-			{/* ── HERO ── */}
-			<section className="relative pt-16 pb-20 md:pt-28 md:pb-24 border-b border-border overflow-hidden">
-				<div className="absolute inset-0 pointer-events-none">
-					<div className="absolute inset-0 bg-linear-to-br from-primary/6 via-background to-accent/4" />
+			<div className="mx-auto max-w-350 border-x border-border">
+				{/* ── HERO ── */}
+				<section className="relative border-b border-border overflow-hidden">
 					<div
-						className="absolute size-150 -translate-x-1/2 -translate-y-1/2 rounded-full blur-[100px] transition-all duration-700 pointer-events-none"
-						style={{ left: mousePos.x, top: mousePos.y, background: "color-mix(in srgb, var(--color-primary) 10%, transparent)" }}
+						className="absolute top-0 right-0 w-1/2 h-full opacity-[0.04] pointer-events-none"
+						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "28px 28px" }}
 					/>
+
 					<div
-						className="absolute inset-0 opacity-[0.025]"
-						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "40px 40px" }}
-					/>
-				</div>
-				<div className="container mx-auto px-4 text-center max-w-3xl relative">
-					<div className={`transition-all duration-1000 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-						<SectionBadge icon={Star} label="1,200+ teams. Real results." />
-						<h1 className="text-5xl md:text-[5rem] font-black mb-5 text-balance tracking-tight" style={{ lineHeight: 1.04 }}>
-							Customer{" "}
-							<span
-								style={{
-									background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
-									WebkitBackgroundClip: "text",
-									WebkitTextFillColor: "transparent",
-									backgroundClip: "text",
-								}}>
-								stories
+						className={`relative px-6 md:px-12 pt-16 md:pt-24 pb-14 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						<div className="flex items-center gap-3 mb-10">
+							<span className="relative flex size-2">
+								<span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping" />
+								<span className="relative inline-flex size-2 rounded-full bg-accent" />
+							</span>
+							<MonoTag className="text-foreground/70">
+								CASE_FILES — 1,200+ TEAMS ON RECORD<span className="blink-cursor text-accent">_</span>
+							</MonoTag>
+						</div>
+
+						<h1 className="max-w-4xl text-5xl md:text-7xl font-black leading-[1.02] tracking-tighter mb-8 text-balance">
+							Real teams,{" "}
+							<span className="relative inline-block px-2 text-primary-foreground" style={{ background: "var(--color-primary)" }}>
+								real results
 							</span>
 						</h1>
-						<p
-							className={`text-xl text-muted-foreground leading-relaxed text-pretty transition-all duration-1000 delay-150 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-							Real results from support teams, agencies, and solo operators around the world.
+
+						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
+							Documented outcomes from support teams, agencies, and solo operators around the world.
 						</p>
 					</div>
 
-					{/* Stat strip */}
-					<div
-						ref={statsRef.ref as React.RefObject<HTMLDivElement>}
-						className={`grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mt-14 transition-all duration-1000 delay-400 ${heroVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						{[
-							{ icon: Users, displayValue: `${c1200.toLocaleString()}+`, label: "Customers worldwide" },
-							{ icon: Globe, displayValue: `${c40}+`, label: "Countries served" },
-							{ icon: TrendingUp, displayValue: `${c73}%`, label: "Avg. ticket deflection" },
-							{ icon: Star, displayValue: `${(c49 / 10).toFixed(1)}/5`, label: "Average CSAT rating" },
-						].map(({ icon: Icon, displayValue, label }, i) => (
-							<div
-								key={label}
-								className={`group relative flex flex-col items-center gap-1.5 py-6 px-4 rounded-2xl border transition-all duration-700 hover:-translate-y-1 hover:shadow-lg overflow-hidden cursor-default ${statsRef.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-								style={{ background: "var(--color-card)", borderColor: "var(--color-border)", transitionDelay: `${i * 80}ms` }}>
+					{/* stats row */}
+					<div ref={statsRef as React.RefObject<HTMLDivElement>} className="relative border-t border-border">
+						<Cross className="-top-2 -left-1.5" />
+						<Cross className="-top-2 -right-1.5" />
+						<div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-border">
+							{[
+								{ value: `${c1200.toLocaleString()}+`, label: "CUSTOMERS WORLDWIDE" },
+								{ value: `${c40}+`, label: "COUNTRIES SERVED" },
+								{ value: `${c73}%`, label: "AVG TICKET DEFLECTION" },
+								{ value: `${(c49 / 10).toFixed(1)}/5`, label: "AVERAGE CSAT RATING" },
+							].map(({ value, label }, i) => (
 								<div
-									className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-									style={{
-										background:
-											"radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 70%)",
-									}}
-								/>
-								<Icon className="size-4 text-primary mb-0.5 group-hover:scale-110 transition-transform duration-300 relative z-10" />
-								<span
-									className="text-2xl font-black relative z-10"
-									style={{ color: "var(--color-primary)", fontVariantNumeric: "tabular-nums" }}>
-									{displayValue}
-								</span>
-								<span className="text-xs text-muted-foreground relative z-10">{label}</span>
-							</div>
-						))}
+									key={label}
+									className={`px-4 md:px-10 py-8 transition-all duration-700 ${statsInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+									style={{ transitionDelay: `${i * 100}ms` }}>
+									<div className="text-3xl md:text-4xl font-black tracking-tighter mb-2" style={{ fontVariantNumeric: "tabular-nums" }}>
+										{value}
+									</div>
+									<div className="font-mono text-[10px] tracking-[0.2em] text-primary font-semibold">{label}</div>
+								</div>
+							))}
+						</div>
 					</div>
-				</div>
-			</section>{" "}
-			{activeIndustry === "All" && <FeaturedCaseStudy featured={featured} />}
-			{/* Filter bar + grid */}
-			<CaseStudiesGrid rest={rest} activeIndustry={activeIndustry} setActiveIndustry={setActiveIndustry} />
-			<CustomersCtaSection />
+
+					{/* EKG divider */}
+					<div className="border-t border-border text-accent">
+						<PulseLine className="w-full h-10 block" />
+					</div>
+				</section>
+
+				{/* ── FEATURED CASE ── */}
+				{activeIndustry === "All" && <FeaturedCase featured={featured} />}
+
+				{/* ── CASE INDEX ── */}
+				<CasesIndex rest={rest} activeIndustry={activeIndustry} setActiveIndustry={setActiveIndustry} />
+
+				{/* ── CTA ── */}
+				<DarkCta
+					tag="03 — YOUR TURN · NO CREDIT CARD REQUIRED"
+					headline={
+						<>
+							Ready to write your own <span style={{ color: "var(--pulse-lime)" }}>story?</span>
+						</>
+					}
+					desc="Join 1,200+ support teams that have already transformed how they handle tickets."
+					primary={{ href: "/auth/signup", label: "Start free trial" }}
+					secondary={{ href: "/contact", label: "Talk to sales" }}
+				/>
+			</div>
 		</SiteLayout>
 	);
 }
 
-function FeaturedCaseStudy({ featured }: { featured: (typeof CASE_STUDIES)[0] }) {
+function FeaturedCase({ featured }: { featured: (typeof CASE_STUDIES)[0] }) {
 	const { ref, inView } = useInView({ threshold: 0.05 });
 	return (
-		<section ref={ref} className="container mx-auto px-4 py-20 max-w-6xl">
-			<div
-				className={`rounded-3xl border overflow-hidden transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-				style={{
-					borderColor: "color-mix(in srgb, var(--color-primary) 20%, transparent)",
-					background: "color-mix(in srgb, var(--color-primary) 4%, transparent)",
-				}}>
-				<div className="grid md:grid-cols-2 gap-0">
-					{/* Left — story */}
-					<div className="p-10 flex flex-col gap-6" style={{ borderRight: "1px solid color-mix(in srgb, var(--color-primary) 10%, transparent)" }}>
-						<div className="flex items-center gap-3">
-							<div className={`size-12 rounded-xl ${featured.color} flex items-center justify-center text-white font-black text-sm shrink-0`}>
-								{featured.logo}
-							</div>
-							<div>
-								<p className="font-bold">{featured.company}</p>
-								<p className="text-xs text-muted-foreground">
-									{featured.industry} · {featured.plan} plan
-								</p>
-							</div>
-							<span
-								className="ml-auto text-xs px-2.5 py-1 rounded-full font-bold"
-								style={{ background: "var(--color-primary)", color: "var(--color-primary-foreground)" }}>
-								Featured
-							</span>
-						</div>
-						<h2 className="text-2xl font-black text-balance leading-snug">{featured.tagline}</h2>
-						<div>
-							<p className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground mb-2">The challenge</p>
-							<p className="text-sm text-muted-foreground leading-relaxed">{featured.challenge}</p>
+		<section ref={ref as React.RefObject<HTMLElement>}>
+			<div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-border">
+				<MonoTag className="text-primary">01 — FEATURED CASE</MonoTag>
+				<span className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-muted-foreground">
+					<span className="size-1.5 rounded-full bg-accent animate-pulse" />
+					CASE_001 / {featured.company.toUpperCase()}
+				</span>
+			</div>
+
+			<div className={`grid lg:grid-cols-12 border-b border-border transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+				{/* story */}
+				<div className="lg:col-span-7 px-6 md:px-12 py-12 lg:border-r border-border flex flex-col">
+					<div className="flex items-center gap-4 mb-8">
+						<div className={`size-12 ${featured.color} flex items-center justify-center text-white font-black text-sm shrink-0`}>
+							{featured.logo}
 						</div>
 						<div>
-							<p className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground mb-2">The solution</p>
-							<p className="text-sm text-muted-foreground leading-relaxed">{featured.solution}</p>
-						</div>
-						<div className="mt-auto pt-4" style={{ borderTop: "1px solid color-mix(in srgb, var(--color-primary) 10%, transparent)" }}>
-							<div className="flex gap-1 mb-3">
-								{Array.from({ length: 5 }).map((_, i) => (
-									<Star key={i} className="size-3.5 fill-primary text-primary" />
-								))}
-							</div>
-							<blockquote className="text-sm text-foreground leading-relaxed mb-3 flex gap-2">
-								<Quote className="size-4 text-primary shrink-0 mt-0.5" />"{featured.quote}"
-							</blockquote>
-							<p className="text-sm font-bold">{featured.author}</p>
-							<p className="text-xs text-muted-foreground">
-								{featured.role}, {featured.company}
+							<p className="font-bold">{featured.company}</p>
+							<p className="font-mono text-[10px] tracking-[0.15em] uppercase text-muted-foreground mt-0.5">
+								{featured.industry} · {featured.plan} PLAN
 							</p>
 						</div>
 					</div>
-					{/* Right — metrics */}
-					<div className="p-10 flex flex-col gap-6">
-						<p className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground">Results</p>
-						<div className="grid grid-cols-2 gap-4 flex-1">
-							{featured.results.map(({ metric, label, icon: Icon }) => (
-								<div
-									key={label}
-									className="group/metric flex flex-col gap-2 p-5 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-									style={{ background: "var(--color-card)", borderColor: "var(--color-border)" }}>
-									<Icon className="size-4" style={{ color: "var(--color-primary)" }} />
-									<p className="text-3xl font-black transition-colors duration-200" style={{ color: "var(--color-primary)" }}>
-										{metric}
-									</p>
-									<p className="text-xs text-muted-foreground leading-snug">{label}</p>
-								</div>
-							))}
-						</div>
-						<Button size="xl" asChild className="group w-full mt-auto font-bold">
-							<a href="/contact">
-								Get similar results
-								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
-							</a>
-						</Button>
+
+					<h2 className="text-3xl md:text-4xl font-black tracking-tight text-balance mb-8">{featured.tagline}</h2>
+
+					<div className="mb-6">
+						<p className="font-mono text-[10px] tracking-[0.25em] text-accent font-bold mb-2">THE CHALLENGE</p>
+						<p className="text-sm text-muted-foreground leading-relaxed">{featured.challenge}</p>
+					</div>
+					<div className="mb-8">
+						<p className="font-mono text-[10px] tracking-[0.25em] text-accent font-bold mb-2">THE SOLUTION</p>
+						<p className="text-sm text-muted-foreground leading-relaxed">{featured.solution}</p>
+					</div>
+
+					<div className="mt-auto border-t border-border pt-6">
+						<blockquote className="text-base md:text-lg font-medium leading-relaxed mb-4">"{featured.quote}"</blockquote>
+						<p className="font-mono text-xs tracking-wider text-muted-foreground">
+							<span className="text-foreground font-bold">{featured.author.toUpperCase()}</span> · {featured.role.toUpperCase()} —{" "}
+							{featured.company.toUpperCase()}
+						</p>
+					</div>
+				</div>
+
+				{/* metrics */}
+				<div className="lg:col-span-5 border-t lg:border-t-0 border-border flex flex-col">
+					<div className="px-6 md:px-10 py-3 border-b border-border">
+						<MonoTag className="text-primary">RESULTS</MonoTag>
+					</div>
+					<div className="grid grid-cols-2 gap-px bg-border flex-1">
+						{featured.results.map(({ metric, label, icon: Icon }) => (
+							<div key={label} className="bg-background px-6 py-8 flex flex-col justify-center">
+								<Icon className="size-4 text-accent mb-3" />
+								<p className="text-3xl md:text-4xl font-black tracking-tighter mb-2" style={{ fontVariantNumeric: "tabular-nums" }}>
+									{metric}
+								</p>
+								<p className="font-mono text-[10px] tracking-[0.15em] uppercase text-muted-foreground leading-relaxed">{label}</p>
+							</div>
+						))}
+					</div>
+					<div className="border-t border-border p-6">
+						<CtaLink href="/contact">
+							Get similar results <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+						</CtaLink>
 					</div>
 				</div>
 			</div>
@@ -365,7 +357,7 @@ function FeaturedCaseStudy({ featured }: { featured: (typeof CASE_STUDIES)[0] })
 	);
 }
 
-function CaseStudiesGrid({
+function CasesIndex({
 	rest,
 	activeIndustry,
 	setActiveIndustry,
@@ -376,154 +368,76 @@ function CaseStudiesGrid({
 }) {
 	const { ref, inView } = useInView({ threshold: 0.04 });
 	return (
-		<section ref={ref} className="border-t border-border py-16" style={{ background: "color-mix(in srgb, var(--color-muted) 10%, transparent)" }}>
-			<div className="container mx-auto px-4">
-				{/* Industry filter */}
-				<div className="flex flex-wrap justify-center gap-2 mb-10">
-					{INDUSTRIES.map((ind) => (
-						<button
-							key={ind}
-							onClick={() => setActiveIndustry(ind)}
-							className={`relative px-4 py-1.5 rounded-full text-sm font-semibold border transition-all duration-200 hover:-translate-y-0.5 ${activeIndustry === ind ? "text-primary-foreground shadow-md" : "text-muted-foreground hover:text-foreground"}`}
-							style={
-								activeIndustry === ind
-									? {
-										background: "var(--color-primary)",
-										borderColor: "var(--color-primary)",
-										boxShadow: "0 4px 14px -4px color-mix(in srgb, var(--color-primary) 50%, transparent)",
-									}
-									: { background: "var(--color-card)", borderColor: "var(--color-border)" }
-							}>
-							{ind}
-							{activeIndustry === ind && (
-								<span
-									className="absolute -top-0.5 -right-0.5 size-2 rounded-full animate-pulse"
-									style={{ background: "var(--color-accent)" }}
-								/>
-							)}
-						</button>
-					))}
-				</div>
-				{/* Cards grid */}
-				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+		<section ref={ref as React.RefObject<HTMLElement>}>
+			<SectionRule index="02" label="CASE INDEX" title="Browse the files" right={`${CASE_STUDIES.length} CASES DOCUMENTED`} />
+			<div className="h-6" />
+
+			{/* mono filter buttons */}
+			<div className="flex flex-wrap gap-2 px-6 md:px-12 pb-10">
+				{INDUSTRIES.map((ind) => (
+					<button
+						key={ind}
+						onClick={() => setActiveIndustry(ind)}
+						className={`px-4 py-2 border font-mono text-[11px] tracking-[0.15em] uppercase font-semibold transition-colors duration-200 ${
+							activeIndustry === ind
+								? "bg-primary text-primary-foreground border-primary"
+								: "text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+						}`}>
+						{ind}
+					</button>
+				))}
+			</div>
+
+			<div className="relative border-t border-border">
+				<Cross className="-top-2 -left-1.5" />
+				<Cross className="-top-2 -right-1.5" />
+				<div key={activeIndustry} className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-border border-b border-border animate-in fade-in duration-300">
 					{rest.map(({ company, industry, logo, color, tagline, results, quote, author, role, plan }, i) => (
 						<div
 							key={company}
-							className={`group relative flex flex-col gap-5 p-7 rounded-2xl border overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-							style={{ background: "var(--color-card)", borderColor: "var(--color-border)", boxShadow: "0 2px 16px -4px rgba(0,0,0,0.06)", transitionDelay: `${i * 70}ms` }}>
-							<div
-								className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-								style={{
-									background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 6%, transparent), transparent 70%)",
-								}}
-							/>
-							<div
-								className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-								style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 28%, transparent)" }}
-							/>
-							{/* Header */}
-							<div className="flex items-center gap-3 relative z-10">
-								<div className={`size-10 rounded-xl ${color} flex items-center justify-center text-white font-black text-xs shrink-0`}>
-									{logo}
-								</div>
+							className={`group relative bg-background px-6 md:px-8 py-8 flex flex-col transition-all duration-500 ${inView ? "opacity-100" : "opacity-0"}`}
+							style={{ transitionDelay: `${i * 60}ms` }}>
+							<span className="absolute top-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-500 bg-accent" />
+
+							{/* header */}
+							<div className="flex items-center gap-3 mb-6">
+								<div className={`size-10 ${color} flex items-center justify-center text-white font-black text-xs shrink-0`}>{logo}</div>
 								<div className="flex-1 min-w-0">
 									<p className="font-bold text-sm truncate">{company}</p>
-									<p className="text-xs text-muted-foreground">{industry}</p>
+									<p className="font-mono text-[9px] tracking-[0.15em] uppercase text-muted-foreground mt-0.5">{industry}</p>
 								</div>
-								<span
-									className="text-xs px-2 py-0.5 rounded-full border font-semibold shrink-0"
-									style={{
-										background: "color-mix(in srgb, var(--color-primary) 10%, transparent)",
-										color: "var(--color-primary)",
-										borderColor: "color-mix(in srgb, var(--color-primary) 25%, transparent)",
-									}}>
+								<span className="font-mono text-[9px] tracking-[0.15em] border border-border px-1.5 py-0.5 text-muted-foreground shrink-0">
 									{plan}
 								</span>
 							</div>
-							{/* Tagline */}
-							<h3 className="text-sm font-bold leading-snug relative z-10 group-hover:text-primary transition-colors duration-200">{tagline}</h3>
-							{/* Top 2 metrics */}
-							<div className="grid grid-cols-2 gap-3 relative z-10">
-								{results.slice(0, 2).map(({ metric, label, icon: Icon }) => (
-									<div
-										key={label}
-										className="flex flex-col gap-1.5 p-3 rounded-xl border transition-all duration-300"
-										style={{
-											background: "color-mix(in srgb, var(--color-primary) 4%, transparent)",
-											borderColor: "color-mix(in srgb, var(--color-primary) 12%, transparent)",
-										}}>
-										<Icon className="size-3.5" style={{ color: "var(--color-primary)" }} />
-										<p className="text-xl font-black" style={{ color: "var(--color-primary)" }}>
+
+							<h3 className="text-lg font-black tracking-tight leading-snug mb-6 group-hover:text-primary transition-colors duration-200">
+								{tagline}
+							</h3>
+
+							{/* top 2 metrics */}
+							<div className="grid grid-cols-2 border-y border-border divide-x divide-border mb-6">
+								{results.slice(0, 2).map(({ metric, label }) => (
+									<div key={label} className="py-4 pr-3 first:pl-0 pl-4">
+										<p className="text-2xl font-black tracking-tighter text-primary mb-1" style={{ fontVariantNumeric: "tabular-nums" }}>
 											{metric}
 										</p>
-										<p className="text-[11px] text-muted-foreground leading-snug">{label}</p>
+										<p className="font-mono text-[9px] tracking-widest uppercase text-muted-foreground leading-relaxed">{label}</p>
 									</div>
 								))}
 							</div>
-							{/* Quote */}
-							<blockquote
-								className="text-xs text-muted-foreground leading-relaxed italic pl-3 flex-1 relative z-10"
-								style={{ borderLeft: "2px solid color-mix(in srgb, var(--color-primary) 35%, transparent)" }}>
-								"{quote}"
-							</blockquote>
-							{/* Author */}
-							<div className="flex items-center justify-between pt-3 border-t border-border relative z-10">
-								<div>
-									<p className="text-xs font-bold">{author}</p>
-									<p className="text-[11px] text-muted-foreground">{role}</p>
+
+							<blockquote className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">"{quote}"</blockquote>
+
+							<div className="flex items-center justify-between pt-4 border-t border-border">
+								<div className="font-mono text-[10px] tracking-wider text-muted-foreground min-w-0">
+									<span className="text-foreground font-bold">{author.toUpperCase()}</span>
+									<span className="block mt-0.5 truncate">{role.toUpperCase()}</span>
 								</div>
-								<ChevronRight className="size-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+								<ArrowUpRight className="size-4 text-muted-foreground group-hover:text-accent transition-colors shrink-0" />
 							</div>
 						</div>
 					))}
-				</div>
-			</div>
-		</section>
-	);
-}
-
-function CustomersCtaSection() {
-	const { ref, inView } = useInView();
-	return (
-		<section ref={ref} className="container mx-auto px-4 py-20">
-			<div
-				className={`relative max-w-5xl mx-auto rounded-3xl overflow-hidden p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
-				style={{
-					background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 75%, var(--color-accent)) 100%)",
-					boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
-				}}>
-				<div
-					className="absolute inset-0 opacity-[0.07] pointer-events-none"
-					style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "32px 32px" }}
-				/>
-				<div className="absolute -top-16 -right-16 size-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-				<div className="relative z-10">
-					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 border border-white/25 text-sm font-semibold text-white mb-8">
-						<Star className="size-3.5" /> 1,200+ happy teams
-					</div>
-					<h2 className="text-4xl md:text-5xl font-black mb-5 text-white text-balance tracking-tight">Ready to write your own story?</h2>
-					<p className="text-xl text-white/75 mb-10 max-w-xl mx-auto leading-relaxed">
-						Join 1,200+ support teams that have already transformed how they handle tickets. No credit card required.
-					</p>
-					<div className="flex flex-col sm:flex-row gap-3 justify-center">
-						<Button
-							size="xl"
-							asChild
-							className="group bg-white hover:bg-white/90 font-bold"
-							style={{ color: "var(--color-primary)" }}>
-							<a href="/auth/signup">
-								Start free trial
-								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
-							</a>
-						</Button>
-						<Button
-							size="xl"
-							variant="outline"
-							asChild
-							className="text-white border-white/35 hover:bg-white/10">
-							<a href="/contact">Talk to sales</a>
-						</Button>
-					</div>
 				</div>
 			</div>
 		</section>

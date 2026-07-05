@@ -1,5 +1,4 @@
 import { SiteLayout } from "./site-layout";
-import { Button } from "@/components/ui/button";
 import {
 	Bot,
 	Zap,
@@ -7,19 +6,16 @@ import {
 	BarChart3,
 	Settings,
 	CreditCard,
-	ChevronRight,
 	Search,
-	LifeBuoy,
 	MessageSquare,
 	BookOpen,
-	Clock,
-	ThumbsUp,
 	FileText,
 	ArrowRight,
+	ArrowUpRight,
 	Video,
 } from "lucide-react";
 import { useState } from "react";
-import { useInView, SectionBadge } from "./shared";
+import { useInView, useMountVisible, PulseLine, MonoTag, SectionRule, Cross, DarkCta } from "./shared";
 
 interface Article {
 	title: string;
@@ -122,185 +118,172 @@ const QUICK_LINKS = [
 ];
 
 export default function HelpCenterPage() {
+	const visible = useMountVisible();
 	const [query, setQuery] = useState("");
 
 	const filtered = query.trim().length > 1 ? ALL_ARTICLES.filter((a) => a.title.toLowerCase().includes(query.toLowerCase())) : [];
 
 	return (
 		<SiteLayout>
-			{/* ── HERO ── */}
-			<section className="relative pt-16 pb-20 md:pt-28 md:pb-24 border-b border-border overflow-hidden">
-				<div className="absolute inset-0 pointer-events-none">
-					<div className="absolute inset-0 bg-linear-to-br from-primary/6 via-background to-accent/4" />
+			<div className="mx-auto max-w-350 border-x border-border">
+				{/* ── HERO ── */}
+				<section className="relative border-b border-border overflow-hidden">
 					<div
-						className="absolute inset-0 opacity-[0.025]"
-						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "40px 40px" }}
+						className="absolute top-0 right-0 w-1/2 h-full opacity-[0.04] pointer-events-none"
+						style={{ backgroundImage: "radial-gradient(circle, var(--color-primary) 1px, transparent 1px)", backgroundSize: "28px 28px" }}
 					/>
-				</div>
-				<div className="container mx-auto px-4 max-w-2xl text-center relative">
-					<SectionBadge icon={LifeBuoy} label="Help Center" />
-					<h1 className="text-5xl md:text-[5rem] font-black mb-5 text-balance tracking-tight" style={{ lineHeight: 1.04 }}>
-						How can{" "}
-						<span
-							style={{
-								background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)",
-								WebkitBackgroundClip: "text",
-								WebkitTextFillColor: "transparent",
-								backgroundClip: "text",
-							}}>
-							we help?
-						</span>
-					</h1>
-					<p className="text-xl text-muted-foreground mb-8 text-pretty leading-relaxed">Find answers, browse guides, or reach out — we're here for every kind of Pulse user.</p>
 
-					{/* Search */}
-					<div className="relative">
-						<Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none z-10" />
-						<input
-							type="search"
-							value={query}
-							onChange={(e) => setQuery(e.target.value)}
-							placeholder="Search articles..."
-							className="w-full h-14 pl-12 pr-4 rounded-2xl border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none transition-all shadow-sm"
-							style={{ background: "var(--color-card)", borderColor: "var(--color-border)" }}
-							onFocus={(e) => {
-								e.currentTarget.style.boxShadow = `0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent)`;
-								e.currentTarget.style.borderColor = `color-mix(in srgb, var(--color-primary) 40%, transparent)`;
-							}}
-							onBlur={(e) => {
-								e.currentTarget.style.boxShadow = "";
-								e.currentTarget.style.borderColor = "";
-							}}
-						/>
+					<div
+						className={`relative px-6 md:px-12 pt-16 md:pt-24 pb-14 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+						<div className="flex items-center gap-3 mb-10">
+							<span className="relative flex size-2">
+								<span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping" />
+								<span className="relative inline-flex size-2 rounded-full bg-accent" />
+							</span>
+							<MonoTag className="text-foreground/70">
+								KNOWLEDGE_BASE — 350+ ARTICLES INDEXED<span className="blink-cursor text-accent">_</span>
+							</MonoTag>
+						</div>
+
+						<h1 className="max-w-4xl text-5xl md:text-7xl font-black leading-[1.02] tracking-tighter mb-8 text-balance">
+							How can{" "}
+							<span className="relative inline-block px-2 text-primary-foreground" style={{ background: "var(--color-primary)" }}>
+								we help?
+							</span>
+						</h1>
+
+						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10">
+							Find answers, browse guides, or reach out — we're here for every kind of Pulse user.
+						</p>
+
+						{/* search console */}
+						<div className="max-w-2xl">
+							<div className="border border-border bg-background focus-within:border-primary transition-colors">
+								<div className="flex items-center justify-between px-4 py-2 border-b border-border">
+									<span className="font-mono text-[10px] tracking-[0.25em] text-primary">QUERY</span>
+									<span className="font-mono text-[10px] tracking-widest text-muted-foreground/60">{ALL_ARTICLES.length}+ DOCS INDEXED</span>
+								</div>
+								<div className="relative">
+									<Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-accent pointer-events-none" />
+									<input
+										type="search"
+										value={query}
+										onChange={(e) => setQuery(e.target.value)}
+										placeholder="Search the index..."
+										className="w-full h-14 pl-12 pr-4 bg-transparent text-sm text-foreground placeholder:text-muted-foreground placeholder:font-mono placeholder:text-xs placeholder:tracking-widest placeholder:uppercase focus:outline-none"
+									/>
+								</div>
+							</div>
+
+							{/* inline results */}
+							{filtered.length > 0 && (
+								<div className="mt-2 border border-border bg-background divide-y divide-border text-left">
+									{filtered.slice(0, 6).map((a, i) => (
+										<a key={i} href={a.href} className="group flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent/5 transition-colors">
+											<span className="font-mono text-[10px] text-accent shrink-0">▸</span>
+											<span className="flex-1 group-hover:text-primary transition-colors">{a.title}</span>
+											<span className="font-mono text-[9px] tracking-widest uppercase text-muted-foreground/60">{a.category}</span>
+										</a>
+									))}
+								</div>
+							)}
+							{query.trim().length > 1 && filtered.length === 0 && (
+								<p className="mt-3 text-sm text-muted-foreground">
+									No articles matched.{" "}
+									<a href="/contact" className="text-primary underline-offset-2 hover:underline">
+										Contact support
+									</a>
+								</p>
+							)}
+
+							{/* popular chips */}
+							{query.length === 0 && (
+								<div className="mt-4 flex flex-wrap gap-2">
+									{POPULAR_QUERIES.map((p) => (
+										<button
+											key={p}
+											onClick={() => setQuery(p)}
+											className="px-3 py-1.5 border border-border font-mono text-[10px] tracking-[0.15em] uppercase text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors duration-200">
+											{p}
+										</button>
+									))}
+								</div>
+							)}
+						</div>
 					</div>
 
-					{/* Inline search results */}
-					{filtered.length > 0 && (
-						<div className="mt-2 rounded-xl border border-border bg-card shadow-lg overflow-hidden text-left">
-							{filtered.slice(0, 6).map((a, i) => (
-								<a
-									key={i}
-									href={a.href}
-									className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted/50 transition-colors border-b border-border last:border-0">
-									<BookOpen className="size-4 shrink-0 text-muted-foreground" />
-									<span className="flex-1">{a.title}</span>
-									<span className="text-xs text-muted-foreground">{a.category}</span>
-								</a>
-							))}
-						</div>
-					)}
-					{query.trim().length > 1 && filtered.length === 0 && (
-						<p className="mt-3 text-sm text-muted-foreground">
-							No articles matched.{" "}
-							<a href="/contact" className="text-primary underline-offset-2 hover:underline">
-								Contact support
-							</a>
-						</p>
-					)}
-
-					{/* Popular chips */}
-					{query.length === 0 && (
-						<div className="mt-6 flex flex-wrap justify-center gap-2">
-							{POPULAR_QUERIES.map((p, i) => (
-								<button
-									key={p}
-									onClick={() => setQuery(p)}
-									className="text-xs px-3 py-1.5 rounded-full border text-muted-foreground hover:text-foreground transition-all duration-200 hover:-translate-y-0.5 animate-in fade-in slide-in-from-bottom-2"
-									style={{
-										background: "var(--color-card)",
-										borderColor: "var(--color-border)",
-										animationDelay: `${i * 60}ms`,
-										animationFillMode: "both",
-									}}
-									onMouseEnter={(e) => {
-										e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-primary) 40%, transparent)";
-									}}
-									onMouseLeave={(e) => {
-										e.currentTarget.style.borderColor = "var(--color-border)";
-									}}>
-									{p}
-								</button>
-							))}
-						</div>
-					)}
-				</div>
-			</section>
-
-			{/* Trust bar */}
-			<HelpTrustBar />
-
-			{/* Quick links */}
-			<QuickLinksSection />
-
-			{/* Categories */}
-			<CategoriesSection />
-
-			<HelpCtaSection />
-		</SiteLayout>
-	);
-}
-
-function HelpTrustBar() {
-	const { ref, inView } = useInView();
-	const items = [
-		{ icon: Clock, stat: "< 1 hr", label: "Avg. response time" },
-		{ icon: ThumbsUp, stat: "98%", label: "Satisfaction rate" },
-		{ icon: BookOpen, stat: "350+", label: "Articles published" },
-	];
-	return (
-		<section ref={ref} className="border-b border-border" style={{ background: "var(--color-card)" }}>
-			<div className="container mx-auto px-4">
-				<div className="grid grid-cols-3 divide-x divide-border max-w-2xl mx-auto">
-					{items.map(({ icon: Icon, stat, label }, i) => (
-						<div
-							key={label}
-							className={`flex flex-col sm:flex-row items-center justify-center gap-2 py-5 px-4 text-center sm:text-left transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
-							style={{ transitionDelay: `${i * 100}ms` }}>
-							<Icon className="size-4 shrink-0" style={{ color: "var(--color-primary)" }} />
-							<div>
-								<div className="text-sm font-black" style={{ color: "var(--color-primary)" }}>
-									{stat}
+					{/* trust stats row */}
+					<div className="relative border-t border-border">
+						<Cross className="-top-2 -left-1.5" />
+						<Cross className="-top-2 -right-1.5" />
+						<div className="grid grid-cols-3 divide-x divide-border">
+							{[
+								{ value: "< 1 HR", label: "AVG RESPONSE TIME" },
+								{ value: "98%", label: "SATISFACTION RATE" },
+								{ value: "350+", label: "ARTICLES PUBLISHED" },
+							].map(({ value, label }) => (
+								<div key={label} className="px-4 md:px-10 py-6">
+									<div className="text-2xl md:text-3xl font-black tracking-tighter mb-1.5" style={{ fontVariantNumeric: "tabular-nums" }}>
+										{value}
+									</div>
+									<div className="font-mono text-[9px] md:text-[10px] tracking-[0.2em] text-primary font-semibold">{label}</div>
 								</div>
-								<div className="text-xs text-muted-foreground">{label}</div>
-							</div>
+							))}
 						</div>
-					))}
-				</div>
+					</div>
+
+					{/* EKG divider */}
+					<div className="border-t border-border text-accent">
+						<PulseLine className="w-full h-10 block" />
+					</div>
+				</section>
+
+				{/* ── QUICK ACCESS ── */}
+				<QuickLinksSection />
+
+				{/* ── INDEX ── */}
+				<CategoriesSection />
+
+				{/* ── CTA ── */}
+				<DarkCta
+					tag="03 — ESCALATE · HUMAN SUPPORT"
+					headline={
+						<>
+							Talk to a <span style={{ color: "var(--pulse-lime)" }}>human.</span>
+						</>
+					}
+					desc="Our support team typically responds within 2 hours on business days."
+					primary={{ href: "/contact", label: "Contact support" }}
+					secondary={{ href: "/status", label: "Check system status" }}
+				/>
 			</div>
-		</section>
+		</SiteLayout>
 	);
 }
 
 function QuickLinksSection() {
 	const { ref, inView } = useInView();
 	return (
-		<section ref={ref} className="container mx-auto px-4 pt-14 pb-0 max-w-5xl">
-			<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+		<section ref={ref as React.RefObject<HTMLElement>}>
+			<div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-border">
+				<MonoTag className="text-primary">01 — QUICK ACCESS</MonoTag>
+				<MonoTag className="hidden sm:block">SHORTCUTS</MonoTag>
+			</div>
+
+			<div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border border-b border-border">
 				{QUICK_LINKS.map(({ icon: Icon, label, description, href }, i) => (
 					<a
 						key={label}
 						href={href}
-						className={`group relative flex items-center gap-3 p-4 rounded-2xl border overflow-hidden transition-all duration-500 hover:-translate-y-1.5 hover:shadow-lg ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-						style={{ background: "var(--color-card)", borderColor: "var(--color-border)", transitionDelay: `${i * 80}ms` }}>
-						<div
-							className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
-							style={{
-								background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 70%)",
-							}}
-						/>
-						<div
-							className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
-							style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 28%, transparent)" }}
-						/>
-						<div
-							className="size-10 rounded-xl flex items-center justify-center shrink-0 relative z-10 transition-transform duration-300 group-hover:scale-110"
-							style={{ background: "color-mix(in srgb, var(--color-primary) 10%, transparent)" }}>
-							<Icon className="size-4" style={{ color: "var(--color-primary)" }} />
+						className={`group relative bg-background px-6 py-6 flex items-center gap-4 transition-all duration-500 hover:bg-accent/5 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+						style={{ transitionDelay: `${i * 80}ms` }}>
+						<span className="absolute top-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-500 bg-accent" />
+						<Icon className="size-4 text-accent shrink-0" />
+						<div className="min-w-0">
+							<div className="text-sm font-bold group-hover:text-primary transition-colors">{label}</div>
+							<div className="font-mono text-[9px] tracking-widest uppercase text-muted-foreground mt-1">{description}</div>
 						</div>
-						<div className="relative z-10">
-							<div className="text-sm font-bold">{label}</div>
-							<div className="text-xs text-muted-foreground">{description}</div>
-						</div>
+						<ArrowUpRight className="size-3.5 text-muted-foreground/0 group-hover:text-accent transition-colors ml-auto shrink-0" />
 					</a>
 				))}
 			</div>
@@ -311,122 +294,54 @@ function QuickLinksSection() {
 function CategoriesSection() {
 	const { ref, inView } = useInView({ threshold: 0.04 });
 	return (
-		<section ref={ref} className="container mx-auto px-4 py-14 md:py-20">
-			<h2
-				className={`text-xl font-bold mb-6 max-w-5xl mx-auto transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-				Browse by category
-			</h2>
-			<div className="max-w-5xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-				{CATEGORIES.map(({ icon: Icon, label, description, count, articles }, i) => (
-					<div
-						key={label}
-						className={`group relative flex flex-col gap-4 p-6 rounded-2xl border overflow-hidden transition-all duration-500 hover:-translate-y-1.5 hover:shadow-xl ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
-						style={{ background: "var(--color-card)", borderColor: "var(--color-border)", transitionDelay: `${i * 70 + 100}ms` }}>
-						<div
-							className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-							style={{
-								background: "radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-primary) 6%, transparent), transparent 70%)",
-							}}
-						/>
-						<div
-							className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-							style={{ boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 28%, transparent)" }}
-						/>
-						<div className="flex items-center justify-between relative z-10">
-							<div className="flex items-center gap-3">
-								<div
-									className="size-10 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110"
-									style={{ background: "color-mix(in srgb, var(--color-primary) 10%, transparent)" }}>
-									<Icon className="size-5" style={{ color: "var(--color-primary)" }} />
-								</div>
-								<div>
-									<h2 className="text-sm font-bold">{label}</h2>
-									<p className="text-xs text-muted-foreground">{description}</p>
-								</div>
-							</div>
-							<span
-								className="text-xs text-muted-foreground rounded-full px-2 py-0.5 shrink-0 font-semibold"
-								style={{ background: "color-mix(in srgb, var(--color-muted) 60%, transparent)" }}>
-								{count}
-							</span>
-						</div>
-						<ul className="space-y-2 border-t border-border pt-4 relative z-10">
-							{articles.map((a) => (
-								<li key={a.title}>
-									<a
-										href={a.href}
-										className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground group/link transition-colors">
-										<ChevronRight className="size-3 shrink-0 text-muted-foreground/40 group-hover/link:text-primary group-hover/link:translate-x-0.5 transition-all" />
-										<span className="flex-1">{a.title}</span>
-										{a.popular && (
-											<span
-												className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full border"
-												style={{
-													background: "color-mix(in srgb, var(--color-primary) 10%, transparent)",
-													color: "var(--color-primary)",
-													borderColor: "color-mix(in srgb, var(--color-primary) 25%, transparent)",
-												}}>
-												Popular
-											</span>
-										)}
-									</a>
-								</li>
-							))}
-						</ul>
-						<a
-							href={`/help/${label.toLowerCase().replace(/\s+/g, "-")}`}
-							className="flex items-center gap-1 text-xs font-semibold mt-auto group/more relative z-10 transition-colors"
-							style={{ color: "var(--color-primary)" }}>
-							View all {count} articles
-							<ArrowRight className="size-3 group-hover/more:translate-x-0.5 transition-transform" />
-						</a>
-					</div>
-				))}
-			</div>
-		</section>
-	);
-}
+		<section ref={ref as React.RefObject<HTMLElement>}>
+			<SectionRule index="02" label="INDEX" title="Browse by category" right={`${CATEGORIES.length} CATEGORIES / 350+ DOCS`} />
+			<div className="h-10" />
 
-function HelpCtaSection() {
-	const { ref, inView } = useInView();
-	return (
-		<section ref={ref} className="container mx-auto px-4 py-20">
-			<div
-				className={`relative max-w-5xl mx-auto rounded-3xl overflow-hidden p-12 md:p-20 text-center transition-all duration-1000 ${inView ? "opacity-100 scale-100" : "opacity-0 scale-95"}`}
-				style={{
-					background: "linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 75%, var(--color-accent)) 100%)",
-					boxShadow: "0 40px 100px -20px color-mix(in srgb, var(--color-primary) 40%, transparent)",
-				}}>
-				<div
-					className="absolute inset-0 opacity-[0.07] pointer-events-none"
-					style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "32px 32px" }}
-				/>
-				<div className="absolute -top-16 -right-16 size-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-				<div className="relative z-10">
-					<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 border border-white/25 text-sm font-semibold text-white mb-8">
-						<MessageSquare className="size-3.5" /> Still need help?
-					</div>
-					<h2 className="text-4xl md:text-5xl font-black mb-5 text-white text-balance tracking-tight">Talk to a human</h2>
-					<p className="text-xl text-white/75 mb-10 max-w-xl mx-auto leading-relaxed">
-						Our support team typically responds within 2 hours on business days.
-					</p>
-					<div className="flex flex-col sm:flex-row gap-3 justify-center">
-						<Button
-							asChild
-							className="group h-12 px-8 bg-white hover:bg-white/90 hover:-translate-y-0.5 transition-all duration-300 font-bold"
-							style={{ color: "var(--color-primary)" }}>
-							<a href="/contact">
-								Contact support
-								<ArrowRight className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
+			<div className="relative border-t border-border">
+				<Cross className="-top-2 -left-1.5" />
+				<Cross className="-top-2 -right-1.5" />
+				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-border border-b border-border">
+					{CATEGORIES.map(({ icon: Icon, label, description, count, articles }, i) => (
+						<div
+							key={label}
+							className={`group relative bg-background px-6 md:px-8 py-8 flex flex-col transition-all duration-500 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+							style={{ transitionDelay: `${i * 70}ms` }}>
+							<span className="absolute top-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-500 bg-accent" />
+
+							<div className="flex items-center justify-between mb-2">
+								<span className="font-mono text-[11px] tracking-[0.25em] text-muted-foreground/60">CAT_0{i + 1}</span>
+								<span className="font-mono text-[10px] tracking-widest text-accent">{count} DOCS</span>
+							</div>
+							<div className="flex items-center gap-3 mb-2">
+								<Icon className="size-4 text-accent shrink-0" />
+								<h2 className="font-black tracking-tight">{label}</h2>
+							</div>
+							<p className="text-xs text-muted-foreground leading-relaxed mb-6">{description}</p>
+
+							<ul className="divide-y divide-border border-y border-border mb-6">
+								{articles.map((a) => (
+									<li key={a.title}>
+										<a href={a.href} className="group/link flex items-center gap-2.5 py-2.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+											<span className="font-mono text-[10px] text-muted-foreground/40 group-hover/link:text-accent transition-colors shrink-0">▸</span>
+											<span className="flex-1">{a.title}</span>
+											{a.popular && (
+												<span className="shrink-0 font-mono text-[8px] tracking-[0.2em] border border-accent/40 text-accent px-1.5 py-0.5">
+													POPULAR
+												</span>
+											)}
+										</a>
+									</li>
+								))}
+							</ul>
+
+							<a
+								href={`/help/${label.toLowerCase().replace(/\s+/g, "-")}`}
+								className="mt-auto inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.15em] uppercase font-bold text-primary hover:text-accent transition-colors">
+								View all {count} articles <ArrowRight className="size-3" />
 							</a>
-						</Button>
-						<Button
-							variant="outline"
-							asChild
-							className="h-12 px-8 text-white border-white/35 hover:bg-white/10 hover:-translate-y-0.5 transition-all duration-300">
-							<a href="/status">Check system status</a>
-						</Button>
-					</div>
+						</div>
+					))}
 				</div>
 			</div>
 		</section>
