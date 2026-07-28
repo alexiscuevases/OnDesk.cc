@@ -126,7 +126,7 @@ export function TestAiAgentModal({ open, onOpenChange, agent }: TestAiAgentModal
                   )}>
                   <div
                     className={cn(
-                      "flex size-8 shrink-0 select-none items-center justify-center rounded-md border shadow-sm",
+                      "flex size-8 shrink-0 select-none items-center justify-center border",
                       msg.role === "user" ? "bg-primary text-primary-foreground border-primary" : "bg-background"
                     )}>
                     {msg.role === "user" ? <User className="size-4" /> : <Bot className="size-4" />}
@@ -191,10 +191,10 @@ function TraceMessage({ trace }: { trace: TestAiAgentResponse["traces"][number] 
 
   if (type === "execute") {
     return (
-      <div className="w-full max-w-[90%] rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+      <div className="w-full max-w-[90%] border bg-card text-card-foreground overflow-hidden">
         <div className="px-3 py-2 border-b bg-muted/50 flex items-center justify-between">
           <span className="text-xs font-medium flex items-center gap-1.5">
-            <Activity className="size-3.5 text-blue-500" />
+            <Activity className="size-3.5 text-info" />
             Tool Execution
           </span>
           <span className="text-[10px] text-muted-foreground font-mono bg-background px-1.5 py-0.5 rounded border">

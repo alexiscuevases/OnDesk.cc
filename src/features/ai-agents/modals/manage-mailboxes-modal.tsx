@@ -57,7 +57,7 @@ export function ManageMailboxesModal({
                 <p className="text-sm font-medium truncate">{m.mailbox_email}</p>
                 <Badge
                   variant={m.enabled ? "default" : "secondary"}
-                  className="text-[9px] px-1.5 py-0 rounded-full mt-0.5">
+                  className="text-[9px] px-1.5 py-0 mt-0.5">
                   {m.enabled ? "Active" : "Paused"}
                 </Badge>
               </div>
