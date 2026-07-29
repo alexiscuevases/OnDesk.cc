@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { PulseLine } from "@/features/frontend/shared";
+import { DEFAULT_LOCALE, localizePath, readStoredLocale } from "@/i18n";
 
 type OrbVariant = "left-right" | "right-left" | "center";
 
@@ -24,6 +25,12 @@ const TELEMETRY = [
 
 export function AuthLayout({ children, backLink, code = "AUTH" }: AuthLayoutProps) {
 	const [visible, setVisible] = useState(false);
+
+	// Auth screens live outside the `{-$lang}` route tree, so there's no locale
+	// context here. Links back to the marketing site honour an explicit language
+	// choice if the visitor made one, so they don't get dropped into English.
+	// (Translating the auth screens themselves is still pending — see docs/i18n.md.)
+	const homeHref = localizePath("/", readStoredLocale() ?? DEFAULT_LOCALE);
 
 	useEffect(() => {
 		const id = requestAnimationFrame(() => setVisible(true));
@@ -50,9 +57,9 @@ export function AuthLayout({ children, backLink, code = "AUTH" }: AuthLayoutProp
 
 				{/* brand statement */}
 				<div className="flex-1 flex flex-col justify-center px-8 xl:px-12">
-					<Link to="/" className="inline-block font-black text-3xl tracking-tighter mb-6 w-fit">
+					<a href={homeHref} className="inline-block font-black text-3xl tracking-tighter mb-6 w-fit">
 						Pulse<span style={{ color: "var(--pulse-lime)" }}>.</span>
-					</Link>
+					</a>
 					<p className="text-3xl xl:text-4xl font-black tracking-tight leading-tight text-balance mb-10 max-w-sm">
 						Support that never <span style={{ color: "var(--pulse-lime)" }}>skips a beat.</span>
 					</p>
@@ -93,12 +100,24 @@ export function AuthLayout({ children, backLink, code = "AUTH" }: AuthLayoutProp
 				{/* top bar */}
 				<div className="relative flex items-center justify-between px-6 md:px-10 py-4 border-b border-border">
 					{backLink ? (
-						<Link
-							to={backLink.to}
-							className="group flex items-center gap-2 font-mono text-[11px] tracking-[0.15em] uppercase font-semibold text-muted-foreground hover:text-primary transition-colors duration-200">
-							<ArrowLeft className="size-3.5 group-hover:-translate-x-0.5 transition-transform duration-200" />
-							{backLink.label}
-						</Link>
+						// "/" points at the marketing site (outside this route tree, and
+						// locale-prefixed), so it needs a plain anchor; in-app targets keep
+						// typed client-side routing.
+						backLink.to === "/" ? (
+							<a
+								href={homeHref}
+								className="group flex items-center gap-2 font-mono text-[11px] tracking-[0.15em] uppercase font-semibold text-muted-foreground hover:text-primary transition-colors duration-200">
+								<ArrowLeft className="size-3.5 group-hover:-translate-x-0.5 transition-transform duration-200" />
+								{backLink.label}
+							</a>
+						) : (
+							<Link
+								to={backLink.to}
+								className="group flex items-center gap-2 font-mono text-[11px] tracking-[0.15em] uppercase font-semibold text-muted-foreground hover:text-primary transition-colors duration-200">
+								<ArrowLeft className="size-3.5 group-hover:-translate-x-0.5 transition-transform duration-200" />
+								{backLink.label}
+							</Link>
+						)
 					) : (
 						<span />
 					)}

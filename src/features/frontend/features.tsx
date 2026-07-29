@@ -11,116 +11,39 @@ import {
 	Sparkles,
 } from "lucide-react";
 import { useInView, useCounter, useMountVisible, PulseLine, MonoTag, SectionRule, Cross, CtaLink, DarkCta } from "./shared";
+import { useI18n, useLocalizedSeo, type Dictionary } from "@/i18n";
 
-const TABS = ["All", "Omnichannel", "AI Automation", "Marketplace", "Intelligence", "Security"];
+// Filter tabs are matched by these stable ids, never by their labels — so
+// translating a tab can't break the filter.
+type TabId = keyof Dictionary["features"]["tabs"];
 
-const ALL_FEATURES = [
-	{
-		icon: Bot,
-		title: "Autonomous Resolution",
-		description: "Pulse AI resolves up to 80% of support volume without human intervention. Pulse handles the routine so your team focuses on what actually needs a human.",
-		bullets: [
-			"Intent & sentiment detection",
-			"Zero-latency auto-resolution",
-			"Seamless agent handoff",
-			"Self-learning resolution engine",
-		],
-		tabs: ["All", "Omnichannel", "AI Automation"],
-		stat: "80%",
-		statLabel: "AUTONOMOUS RESOLUTION",
-	},
-	{
-		icon: Zap,
-		title: "Intelligent Routing",
-		description: "Dynamic workload balancing that routes every ticket based on agent expertise, priority, and real-time operational capacity.",
-		bullets: [
-			"Skill-based matchmaking",
-			"Predictive SLA enforcement",
-			"Priority queue orchestration",
-			"Capacity-aware distribution",
-		],
-		tabs: ["All", "AI Automation", "Intelligence"],
-		stat: "< 30s",
-		statLabel: "MAX ROUTING LATENCY",
-	},
-	{
-		icon: MessageSquare,
-		title: "Omnichannel Unification",
-		description: "Converge WhatsApp, Email, Teams, and Voice into a single, unified thread. No silos, just fluid conversations.",
-		bullets: [
-			"Native WhatsApp & Teams",
-			"Unified customer context",
-			"Cross-channel history",
-			"Instant channel switching",
-		],
-		tabs: ["All", "Omnichannel"],
-		stat: "10+",
-		statLabel: "CHANNELS UNIFIED",
-	},
-	{
-		icon: Sparkles,
-		title: "Pulse Marketplace",
-		description: "Empower your agents with a deep ecosystem of integrations that bring business data directly into the support flow.",
-		bullets: [
-			"CRM & Billing deep-links",
-			"Custom app development SDK",
-			"One-click tool activation",
-			"Automated workflow actions",
-		],
-		tabs: ["All", "Marketplace"],
-		stat: "50+",
-		statLabel: "INTEGRATIONS AVAILABLE",
-	},
-	{
-		icon: BarChart3,
-		title: "Predictive Intelligence",
-		description: "Move beyond descriptive reports. Leverage AI to forecast volume trends and identify friction points before they escalate.",
-		bullets: [
-			"Volume forecasting models",
-			"Automated friction analysis",
-			"Agent performance scoring",
-			"Business impact reporting",
-		],
-		tabs: ["All", "Intelligence"],
-		stat: "4.9★",
-		statLabel: "AVG. CSAT IMPACT",
-	},
-	{
-		icon: Shield,
-		title: "Security & Reliability",
-		description: "SOC 2, GDPR, and 99.99% uptime — built for teams that can't afford downtime, at any scale.",
-		bullets: [
-			"SOC 2 Type II compliance",
-			"Regional data residency",
-			"Advanced RBAC & SSO",
-			"End-to-end data encryption",
-		],
-		tabs: ["All", "Security"],
-		stat: "99.99%",
-		statLabel: "UPTIME GUARANTEE",
-	},
-];
+const TABS: readonly TabId[] = ["all", "omnichannel", "aiAutomation", "marketplace", "intelligence", "security"];
+
+/**
+ * Module structure. `stat` values are numeric so they can be formatted per
+ * locale (99.99% in English, 99,99% in Spanish).
+ */
+const MODULES = [
+	{ key: "resolution", icon: Bot, stat: { value: 80, suffix: "%" }, tabs: ["all", "omnichannel", "aiAutomation"] },
+	{ key: "routing", icon: Zap, stat: { value: 30, prefix: "< ", suffix: "s" }, tabs: ["all", "aiAutomation", "intelligence"] },
+	{ key: "omnichannel", icon: MessageSquare, stat: { value: 10, suffix: "+" }, tabs: ["all", "omnichannel"] },
+	{ key: "marketplace", icon: Sparkles, stat: { value: 50, suffix: "+" }, tabs: ["all", "marketplace"] },
+	{ key: "intelligence", icon: BarChart3, stat: { value: 4.9, suffix: "★", decimals: 1 }, tabs: ["all", "intelligence"] },
+	{ key: "security", icon: Shield, stat: { value: 99.99, suffix: "%", decimals: 2 }, tabs: ["all", "security"] },
+] as const;
 
 const SOCIAL_PROOF = [
-	{
-		quote: "I switched from three different email inboxes to Pulse in a weekend. Now everything is in one place and I'm not dropping client requests.",
-		author: "Mia Torres",
-		role: "Independent Consultant, Torres Digital",
-	},
-	{
-		quote: "Pulse Core gave our agency exactly what we needed — separate client workflows and real visibility into what's happening across all our accounts.",
-		author: "James Okafor",
-		role: "Operations Lead, BrightSupport Agency",
-	},
-	{
-		quote: "Pulse transformed our support from a cost center into a CSAT driver. The autonomous routing paid back in week one.",
-		author: "Marcus Chen",
-		role: "Director of Ops, FinStream",
-	},
-];
+	{ key: "torres", author: "Mia Torres" },
+	{ key: "bright", author: "James Okafor" },
+	{ key: "finstream", author: "Marcus Chen" },
+] as const;
 
 export default function FeaturesPage() {
-	const [activeTab, setActiveTab] = useState("All");
+	const { dict, locale, t, num } = useI18n();
+	useLocalizedSeo({ ...dict.meta.features, path: "/features", locale });
+
+	const hero = dict.features.hero;
+	const [activeTab, setActiveTab] = useState<TabId>("all");
 	const visible = useMountVisible();
 
 	const { ref: statsRef, inView: statsInView } = useInView();
@@ -128,7 +51,10 @@ export default function FeaturesPage() {
 	const c30 = useCounter(30, 1200, statsInView);
 	const c999 = useCounter(999, 1300, statsInView);
 
-	const filtered = ALL_FEATURES.filter((f) => f.tabs.includes(activeTab));
+	const filtered = MODULES.filter((m) => (m.tabs as readonly string[]).includes(activeTab));
+
+	const decimal = (value: number, decimals: number) =>
+		num(value, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
 	return (
 		<SiteLayout>
@@ -148,29 +74,27 @@ export default function FeaturesPage() {
 								<span className="relative inline-flex size-2 rounded-full bg-accent" />
 							</span>
 							<MonoTag className="text-foreground/70">
-								SYS.MODULES — FULL CAPABILITY INDEX<span className="blink-cursor text-accent">_</span>
+								{hero.eyebrow}
+								<span className="blink-cursor text-accent">_</span>
 							</MonoTag>
 						</div>
 
 						<h1 className="max-w-4xl text-5xl md:text-7xl font-black leading-[1.02] tracking-tighter mb-8 text-balance">
-							Built for the{" "}
+							{hero.headline.lead}{" "}
 							<span className="relative inline-block px-2 text-primary-foreground" style={{ background: "var(--color-primary)" }}>
-								next era
+								{hero.headline.highlight}
 							</span>{" "}
-							of support
+							{hero.headline.trail}
 						</h1>
 
-						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10">
-							From unified inbox to AI automation — everything you need to deliver great support, whether you're a solo consultant or a
-							global team.
-						</p>
+						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10">{hero.subhead}</p>
 
 						<div className="flex flex-col sm:flex-row gap-3">
 							<CtaLink href="/auth/signup">
-								Start free trial <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+								{hero.ctaPrimary} <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
 							</CtaLink>
 							<CtaLink href="/pricing" variant="outline">
-								See pricing
+								{hero.ctaSecondary}
 							</CtaLink>
 						</div>
 					</div>
@@ -181,10 +105,10 @@ export default function FeaturesPage() {
 						<Cross className="-top-2 -right-1.5" />
 						<div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-border">
 							{[
-								{ value: `${c80}%`, label: "AUTO-RESOLVED" },
-								{ value: `<${c30}s`, label: "ROUTING LATENCY" },
-								{ value: `${(c999 / 10).toFixed(2)}%`, label: "UPTIME SLA" },
-								{ value: "4.9★", label: "BUSINESS IMPACT" },
+								{ value: `${num(c80)}%`, label: dict.features.stats.autoResolved },
+								{ value: `<${num(c30)}s`, label: dict.features.stats.routingLatency },
+								{ value: `${decimal(c999 / 10, 2)}%`, label: dict.features.stats.uptimeSla },
+								{ value: `${decimal(4.9, 1)}★`, label: dict.features.stats.businessImpact },
 							].map(({ value, label }, i) => (
 								<div
 									key={label}
@@ -207,10 +131,13 @@ export default function FeaturesPage() {
 
 				{/* ── CAPABILITY INDEX ── */}
 				<section>
-					<SectionRule index="01" label="CAPABILITY INDEX" title="The Pulse ecosystem" right={`${ALL_FEATURES.length} MODULES REGISTERED`} />
-					<p className="px-6 md:px-12 pb-8 text-lg text-muted-foreground max-w-2xl">
-						The pillars of the most advanced support orchestration platform. Filter by domain.
-					</p>
+					<SectionRule
+						index="01"
+						label={dict.features.index.sectionLabel}
+						title={dict.features.index.sectionTitle}
+						right={t(dict.features.index.sectionRight, { count: num(MODULES.length) })}
+					/>
+					<p className="px-6 md:px-12 pb-8 text-lg text-muted-foreground max-w-2xl">{dict.features.index.intro}</p>
 
 					{/* mono filter tabs */}
 					<div className="flex flex-wrap gap-2 px-6 md:px-12 pb-10">
@@ -220,12 +147,13 @@ export default function FeaturesPage() {
 								<button
 									key={tab}
 									onClick={() => setActiveTab(tab)}
+									aria-pressed={isActive}
 									className={`px-4 py-2 border font-mono text-[11px] tracking-[0.15em] uppercase font-semibold transition-colors duration-200 ${
 										isActive
 											? "bg-primary text-primary-foreground border-primary"
 											: "text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
 									}`}>
-									{tab}
+									{dict.features.tabs[tab]}
 								</button>
 							);
 						})}
@@ -235,35 +163,42 @@ export default function FeaturesPage() {
 						<Cross className="-top-2 -left-1.5" />
 						<Cross className="-top-2 -right-1.5" />
 						<div key={activeTab} className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-border border-b border-border animate-in fade-in duration-300">
-							{filtered.map(({ icon: Icon, title, description, bullets, stat, statLabel }, i) => (
-								<div key={title} className="group relative bg-background px-6 md:px-10 py-10 flex flex-col">
-									<span className="absolute top-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-500 bg-accent" />
+							{filtered.map(({ key, icon: Icon, stat }, i) => {
+								const copy = dict.features.modules[key];
+								const decimals = "decimals" in stat ? stat.decimals : 0;
+								const prefix = "prefix" in stat ? stat.prefix : "";
+								return (
+									<div key={key} className="group relative bg-background px-6 md:px-10 py-10 flex flex-col">
+										<span className="absolute top-0 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-500 bg-accent" />
 
-									<div className="flex items-center justify-between mb-8">
-										<span className="font-mono text-[11px] tracking-[0.25em] text-muted-foreground/60">0{i + 1}</span>
-										<Icon className="size-5 text-accent" />
-									</div>
-
-									<div className="mb-6">
-										<div className="text-3xl font-black tracking-tighter text-primary" style={{ fontVariantNumeric: "tabular-nums" }}>
-											{stat}
+										<div className="flex items-center justify-between mb-8">
+											<span className="font-mono text-[11px] tracking-[0.25em] text-muted-foreground/60">0{i + 1}</span>
+											<Icon className="size-5 text-accent" />
 										</div>
-										<div className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground mt-1">{statLabel}</div>
+
+										<div className="mb-6">
+											<div className="text-3xl font-black tracking-tighter text-primary" style={{ fontVariantNumeric: "tabular-nums" }}>
+												{prefix}
+												{decimal(stat.value, decimals)}
+												{stat.suffix}
+											</div>
+											<div className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground mt-1">{copy.statLabel}</div>
+										</div>
+
+										<h3 className="text-xl font-black tracking-tight mb-2.5">{copy.title}</h3>
+										<p className="text-sm text-muted-foreground leading-relaxed mb-6">{copy.description}</p>
+
+										<ul className="space-y-2.5 mt-auto">
+											{copy.bullets.map((b) => (
+												<li key={b} className="flex items-center gap-3 text-sm text-muted-foreground">
+													<CheckCircle2 className="size-3.5 text-accent shrink-0" />
+													{b}
+												</li>
+											))}
+										</ul>
 									</div>
-
-									<h3 className="text-xl font-black tracking-tight mb-2.5">{title}</h3>
-									<p className="text-sm text-muted-foreground leading-relaxed mb-6">{description}</p>
-
-									<ul className="space-y-2.5 mt-auto">
-										{bullets.map((b) => (
-											<li key={b} className="flex items-center gap-3 text-sm text-muted-foreground">
-												<CheckCircle2 className="size-3.5 text-accent shrink-0" />
-												{b}
-											</li>
-										))}
-									</ul>
-								</div>
-							))}
+								);
+							})}
 						</div>
 					</div>
 				</section>
@@ -273,15 +208,16 @@ export default function FeaturesPage() {
 
 				{/* ── CTA ── */}
 				<DarkCta
-					tag="03 — DEPLOY · 14-DAY TRIAL · NO COMMITMENT"
+					tag={dict.features.finalCta.tag}
 					headline={
 						<>
-							Deploy Pulse in <span style={{ color: "var(--pulse-lime)" }}>minutes.</span>
+							{dict.features.finalCta.headline.lead}{" "}
+							<span style={{ color: "var(--pulse-lime)" }}>{dict.features.finalCta.headline.highlight}</span>
 						</>
 					}
-					desc="Experience the power of autonomous support. Full access trial, no commitment required."
-					primary={{ href: "/auth/signup", label: "Start free trial" }}
-					secondary={{ href: "/contact", label: "Talk to sales" }}
+					desc={dict.features.finalCta.desc}
+					primary={{ href: "/auth/signup", label: dict.features.finalCta.primary }}
+					secondary={{ href: "/contact", label: dict.features.finalCta.secondary }}
 				/>
 			</div>
 		</SiteLayout>
@@ -289,31 +225,40 @@ export default function FeaturesPage() {
 }
 
 function FieldReports() {
+	const { dict } = useI18n();
+	const section = dict.features.fieldReports;
 	const { ref, inView } = useInView();
+
 	return (
 		<section ref={ref as React.RefObject<HTMLElement>} className="border-b border-border">
 			<div className="flex items-center justify-between px-6 md:px-12 py-4 border-y border-border">
-				<MonoTag className="text-primary">02 — FIELD REPORTS</MonoTag>
+				<MonoTag className="text-primary">{section.sectionLabel}</MonoTag>
 				<span className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-muted-foreground">
 					<span className="size-1.5 rounded-full bg-accent animate-pulse" />
-					VERIFIED CUSTOMERS
+					{section.sectionRight}
 				</span>
 			</div>
 
 			<div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
-				{SOCIAL_PROOF.map(({ quote, author, role }, i) => (
-					<div
-						key={author}
-						className={`flex flex-col px-6 md:px-10 py-10 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-						style={{ transitionDelay: `${i * 120}ms` }}>
-						<span className="font-mono text-[10px] tracking-[0.25em] text-accent font-bold mb-6">LOG_0{i + 1}</span>
-						<p className="text-base font-medium leading-relaxed flex-1 mb-8">"{quote}"</p>
-						<div className="font-mono text-[11px] tracking-wider text-muted-foreground border-t border-border pt-4">
-							<span className="text-foreground font-bold">{author.toUpperCase()}</span>
-							<span className="block mt-1">{role.toUpperCase()}</span>
+				{SOCIAL_PROOF.map(({ key, author }, i) => {
+					const copy = section.items[key];
+					return (
+						<div
+							key={key}
+							className={`flex flex-col px-6 md:px-10 py-10 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+							style={{ transitionDelay: `${i * 120}ms` }}>
+							<span className="font-mono text-[10px] tracking-[0.25em] text-accent font-bold mb-6">
+								{section.logPrefix}
+								{i + 1}
+							</span>
+							<p className="text-base font-medium leading-relaxed flex-1 mb-8">"{copy.quote}"</p>
+							<div className="font-mono text-[11px] tracking-wider text-muted-foreground border-t border-border pt-4">
+								<span className="text-foreground font-bold">{author.toUpperCase()}</span>
+								<span className="block mt-1">{copy.role.toUpperCase()}</span>
+							</div>
 						</div>
-					</div>
-				))}
+					);
+				})}
 			</div>
 		</section>
 	);

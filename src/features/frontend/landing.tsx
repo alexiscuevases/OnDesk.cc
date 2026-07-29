@@ -18,139 +18,71 @@ import {
 	Building2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useI18n, useLocalizedSeo, type Dictionary } from "@/i18n";
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
+type Priority = "high" | "medium" | "low";
+type TicketKey = keyof Dictionary["landing"]["console"]["tickets"];
+
 interface LiveTicket {
 	id: string;
-	title: string;
-	priority: "high" | "medium" | "low";
+	/** Dictionary key for the ticket subject. */
+	key: TicketKey;
+	priority: Priority;
 	status: "open" | "ai-resolving" | "resolved";
 	time: string;
-	agent: string;
+	agent: "ai" | "unassigned";
 }
 
-// ─── data ────────────────────────────────────────────────────────────────────
+// ─── structure ───────────────────────────────────────────────────────────────
+// Icons, ids, ordering and hrefs stay in code; all copy is looked up by key.
 
 const PERSONAS = [
-	{
-		icon: Users,
-		label: "Support Teams",
-		href: "/solutions/support-teams",
-		desc: "Manage high-volume queues with automation, routing, and real-time analytics.",
-	},
-	{
-		icon: Building2,
-		label: "Agencies",
-		href: "/solutions/agencies",
-		desc: "Run support for multiple clients from a single, organized workspace.",
-	},
-	{
-		icon: UserCheck,
-		label: "Solo & Small Teams",
-		href: "/solutions/solo-small-teams",
-		desc: "Keep every request organized without the complexity. Set up in minutes.",
-	},
-];
+	{ key: "supportTeams", icon: Users, href: "/solutions/support-teams" },
+	{ key: "agencies", icon: Building2, href: "/solutions/agencies" },
+	{ key: "solo", icon: UserCheck, href: "/solutions/solo-small-teams" },
+] as const;
 
 const FEATURES = [
-	{
-		id: "unification",
-		icon: Layers,
-		index: "01",
-		label: "Unification",
-		title: "All your channels, one place",
-		description: "Email, chat, web widgets — everything lands in a single inbox. No more tab-switching, no more missed messages.",
-		bullets: ["Unified inbox for every channel", "Multi-source sync", "Consistent experience everywhere"],
-	},
-	{
-		id: "automation",
-		icon: Bot,
-		index: "02",
-		label: "Automation",
-		title: "Classify, route, and resolve automatically",
-		description: "AI triages incoming tickets, routes them to the right place, and resolves the common ones — instantly.",
-		bullets: ["Smart AI classification", "Dynamic routing rules", "End-to-end auto-resolution"],
-	},
-	{
-		id: "marketplace",
-		icon: Puzzle,
-		index: "03",
-		label: "Marketplace",
-		title: "Extend with the tools you already use",
-		description: "Connect your CRM, billing system, or any tool you rely on. A growing ecosystem of integrations.",
-		bullets: ["One-click integrations", "Custom app ecosystem", "Extensible API"],
-	},
-	{
-		id: "platform",
-		icon: Users,
-		index: "04",
-		label: "Platform",
-		title: "Manage people, queues, and workflows",
-		description: "Whether it's one person or a hundred, Pulse gives you the controls to stay organized and balance load.",
-		bullets: ["Team & workload balancing", "Advanced workflow builder", "Performance analytics"],
-	},
-];
+	{ key: "unification", icon: Layers, index: "01" },
+	{ key: "automation", icon: Bot, index: "02" },
+	{ key: "marketplace", icon: Puzzle, index: "03" },
+	{ key: "platform", icon: Users, index: "04" },
+] as const;
 
+/** Author and company are proper nouns — never translated. */
 const TESTIMONIALS = [
-	{
-		quote: "Unifying our channels through Pulse reduced resolution time by 70%. Our team finally has breathing room.",
-		author: "Sarah Chen",
-		role: "Head of Customer Success",
-		company: "Contoso Ltd.",
-		segment: "SUPPORT TEAMS",
-	},
-	{
-		quote: "Managing 8 clients used to mean 8 different tools. Pulse collapsed it into one. Our clients are happier and we win new business because of how we report on it.",
-		author: "James Okafor",
-		role: "Operations Lead",
-		company: "BrightSupport Agency",
-		segment: "AGENCIES",
-	},
-	{
-		quote: "I run support solo for three SaaS products. Pulse is the first tool that didn't feel like it was built for a 50-person team. Setup took 10 minutes.",
-		author: "Mia Torres",
-		role: "Independent Consultant",
-		company: "Torres Digital",
-		segment: "SOLO & SMALL TEAMS",
-	},
-];
-
-const TICKER_ITEMS = [
-	"CONTOSO ▲ 70% FASTER RESOLUTION",
-	"FABRIKAM ▲ 8 CLIENTS · ONE INBOX",
-	"NORTHWIND ▲ 12K TICKETS / MO",
-	"TAILWIND ▲ 96% CSAT",
-	"LITWARE ▲ SETUP IN 5 MIN",
-	"WINGTIP ▲ 99.99% UPTIME",
-	"PROSEWARE ▲ 41% AUTO-RESOLVED",
-	"ADVENTURE WORKS ▲ 24/7 COVERAGE",
-];
+	{ key: "contoso", author: "Sarah Chen", company: "Contoso Ltd." },
+	{ key: "bright", author: "James Okafor", company: "BrightSupport Agency" },
+	{ key: "torres", author: "Mia Torres", company: "Torres Digital" },
+] as const;
 
 const INITIAL_TICKETS: LiveTicket[] = [
-	{ id: "#4821", title: "Invoice not received after payment", priority: "high", status: "ai-resolving", time: "0s", agent: "AI Agent" },
-	{ id: "#4820", title: "Onboarding support — Acme Inc.", priority: "medium", status: "resolved", time: "42s", agent: "AI Agent" },
-	{ id: "#4819", title: "Feature request: dark mode toggle", priority: "low", status: "resolved", time: "1m", agent: "AI Agent" },
-	{ id: "#4818", title: "Can't access my account dashboard", priority: "high", status: "open", time: "2m", agent: "Unassigned" },
+	{ id: "#4821", key: "invoice", priority: "high", status: "ai-resolving", time: "0s", agent: "ai" },
+	{ id: "#4820", key: "onboarding", priority: "medium", status: "resolved", time: "42s", agent: "ai" },
+	{ id: "#4819", key: "darkMode", priority: "low", status: "resolved", time: "1m", agent: "ai" },
+	{ id: "#4818", key: "dashboard", priority: "high", status: "open", time: "2m", agent: "unassigned" },
 ];
 
 const NEW_TICKETS: LiveTicket[] = [
-	{ id: "#4825", title: "Refund request — order #8812", priority: "medium", status: "ai-resolving", time: "now", agent: "AI Agent" },
-	{ id: "#4824", title: "Password reset email not arriving", priority: "low", status: "ai-resolving", time: "now", agent: "AI Agent" },
-	{ id: "#4823", title: "Urgent: client site unreachable", priority: "high", status: "open", time: "now", agent: "Unassigned" },
+	{ id: "#4825", key: "refund", priority: "medium", status: "ai-resolving", time: "", agent: "ai" },
+	{ id: "#4824", key: "passwordReset", priority: "low", status: "ai-resolving", time: "", agent: "ai" },
+	{ id: "#4823", key: "siteDown", priority: "high", status: "open", time: "", agent: "unassigned" },
 ];
 
-const PRIORITY_ON_DARK = {
+const PRIORITY_ON_DARK: Record<Priority, string> = {
 	high: "text-red-400",
 	medium: "text-amber-300",
 	low: "text-(--pulse-lime)",
 };
 
-// ─── primitives ──────────────────────────────────────────────────────────────
-
 // ─── page ────────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
+	const { dict, locale } = useI18n();
+	useLocalizedSeo({ ...dict.meta.home, path: "/", locale });
+
 	return (
 		<SiteLayout>
 			{/* Editorial rails: the whole page lives inside two hairline verticals */}
@@ -171,6 +103,8 @@ export default function LandingPage() {
 // ─── hero ────────────────────────────────────────────────────────────────────
 
 function Hero() {
+	const { dict, path } = useI18n();
+	const t = dict.landing.hero;
 	const visible = useMountVisible();
 	const [activePersona, setActivePersona] = useState(0);
 
@@ -192,27 +126,30 @@ function Hero() {
 							<span className="relative inline-flex size-2 rounded-full bg-accent" />
 						</span>
 						<MonoTag className="text-foreground/70">
-							LIVE — AI SUPPORT OPERATING SYSTEM<span className="blink-cursor text-accent">_</span>
+							{t.eyebrow}
+							<span className="blink-cursor text-accent">_</span>
 						</MonoTag>
 					</div>
 
 					<h1 className="text-[13vw] sm:text-6xl md:text-7xl xl:text-[5.2rem] font-black leading-[0.98] tracking-tighter mb-10">
-						Support that
+						{/* The trailing space is invisible next to the <br>, but keeps the
+						    heading's text content readable for crawlers and screen readers. */}
+						{t.headline.lead}{" "}
 						<br />
-						never{" "}
 						<span className="relative inline-block px-2 text-primary-foreground" style={{ background: "var(--color-primary)" }}>
-							skips
+							{t.headline.highlight}
 						</span>{" "}
-						a beat.
+						{t.headline.trail}
 					</h1>
 
 					{/* persona index — numbered editorial list */}
 					<div className="border-t border-border mb-10">
-						{PERSONAS.map(({ label, href, desc }, i) => {
+						{PERSONAS.map(({ key, href }, i) => {
+							const persona = dict.landing.personas[key];
 							const isActive = activePersona === i;
 							return (
 								<button
-									key={label}
+									key={key}
 									onClick={() => setActivePersona(i)}
 									className={`w-full text-left border-b border-border transition-colors duration-200 ${isActive ? "" : "hover:bg-muted/50"}`}
 									style={isActive ? { background: "color-mix(in srgb, var(--color-accent) 7%, transparent)" } : undefined}>
@@ -221,18 +158,18 @@ function Hero() {
 											{String(i + 1).padStart(2, "0")}
 										</span>
 										<span className={`text-base md:text-lg font-bold tracking-tight ${isActive ? "text-foreground" : "text-muted-foreground"}`}>
-											{label}
+											{persona.label}
 										</span>
 										{isActive && <ArrowUpRight className="size-4 text-accent ml-auto shrink-0 self-center" />}
 									</div>
 									{isActive && (
 										<div className="px-1 pb-4 pl-11 animate-in fade-in slide-in-from-top-1 duration-300">
-											<p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-2">{desc}</p>
+											<p className="text-muted-foreground text-sm md:text-base leading-relaxed mb-2">{persona.desc}</p>
 											<a
-												href={href}
+												href={path(href)}
 												onClick={(e) => e.stopPropagation()}
 												className="inline-flex items-center gap-1.5 font-mono text-[11px] tracking-[0.15em] uppercase text-primary hover:text-accent transition-colors">
-												See how it works <ArrowRight className="size-3" />
+												{t.seeHow} <ArrowRight className="size-3" />
 											</a>
 										</div>
 									)}
@@ -243,10 +180,10 @@ function Hero() {
 
 					<div className="flex flex-col sm:flex-row gap-3">
 						<CtaLink href="/auth/signup">
-							Start free — 14 days <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+							{t.ctaPrimary} <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
 						</CtaLink>
 						<CtaLink href="/pricing" variant="outline">
-							See pricing
+							{t.ctaSecondary}
 						</CtaLink>
 					</div>
 				</div>
@@ -266,6 +203,8 @@ function Hero() {
 }
 
 function LiveConsole() {
+	const { dict } = useI18n();
+	const c = dict.landing.console;
 	const [tickets, setTickets] = useState<LiveTicket[]>(INITIAL_TICKETS);
 	const [ticketIdx, setTicketIdx] = useState(0);
 
@@ -284,11 +223,12 @@ function LiveConsole() {
 			{/* console header */}
 			<div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
 				<span className="font-mono text-[11px] tracking-[0.2em] text-white/60">
-					PULSE://LIVE_FEED<span className="blink-cursor text-(--pulse-lime)">▌</span>
+					{c.feed}
+					<span className="blink-cursor text-(--pulse-lime)">▌</span>
 				</span>
 				<span className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-(--pulse-lime)">
 					<span className="size-1.5 rounded-full animate-pulse" style={{ background: "var(--pulse-lime)" }} />
-					REC
+					{c.rec}
 				</span>
 			</div>
 
@@ -299,20 +239,22 @@ function LiveConsole() {
 
 			{/* ticket rows */}
 			<div className="flex-1 divide-y divide-white/8">
-				{tickets.map((t, i) => (
+				{tickets.map((ticket, i) => (
 					<div
-						key={t.id + i}
+						key={ticket.id + i}
 						className={`px-5 py-4 ${i === 0 ? "animate-in fade-in slide-in-from-top-2 duration-500 bg-white/4" : ""}`}>
 						<div className="flex items-center gap-3 font-mono text-[11px] mb-1.5">
-							<span className="text-(--pulse-lime)">{t.id}</span>
-							<span className={`uppercase tracking-wider ${PRIORITY_ON_DARK[t.priority]}`}>[{t.priority}]</span>
-							<span className="ml-auto text-white/35">{t.time}</span>
+							<span className="text-(--pulse-lime)">{ticket.id}</span>
+							<span className={`uppercase tracking-wider ${PRIORITY_ON_DARK[ticket.priority]}`}>
+								[{c.priority[ticket.priority]}]
+							</span>
+							<span className="ml-auto text-white/35">{ticket.time || c.time.now}</span>
 						</div>
 						<div className="flex items-center gap-3">
 							<Ticket className="size-3.5 shrink-0 text-white/30" />
-							<span className="flex-1 truncate text-sm text-white/85">{t.title}</span>
-							<span className="font-mono text-[10px] tracking-wider shrink-0 uppercase" style={{ color: t.status === "open" ? "rgba(255,255,255,0.4)" : "var(--pulse-lime)" }}>
-								{t.status === "ai-resolving" ? "⚡ AI RESOLVING" : t.status === "resolved" ? "✓ RESOLVED" : "○ OPEN"}
+							<span className="flex-1 truncate text-sm text-white/85">{c.tickets[ticket.key]}</span>
+							<span className="font-mono text-[10px] tracking-wider shrink-0 uppercase" style={{ color: ticket.status === "open" ? "rgba(255,255,255,0.4)" : "var(--pulse-lime)" }}>
+								{ticket.status === "ai-resolving" ? c.statusResolving : ticket.status === "resolved" ? c.statusResolved : c.statusOpen}
 							</span>
 						</div>
 					</div>
@@ -321,9 +263,9 @@ function LiveConsole() {
 
 			{/* console footer telemetry */}
 			<div className="px-5 py-3.5 border-t border-white/10 flex flex-wrap gap-x-6 gap-y-1 font-mono text-[10px] tracking-widest text-white/45">
-				<span>LATENCY 0.3S</span>
-				<span style={{ color: "var(--pulse-lime)" }}>AI-RESOLVED 68%</span>
-				<span>UPTIME 99.99%</span>
+				<span>{c.latency}</span>
+				<span style={{ color: "var(--pulse-lime)" }}>{c.aiResolved}</span>
+				<span>{c.uptime}</span>
 			</div>
 		</div>
 	);
@@ -332,10 +274,12 @@ function LiveConsole() {
 // ─── ticker ──────────────────────────────────────────────────────────────────
 
 function Ticker() {
+	const { dict } = useI18n();
+	const items = dict.landing.ticker;
 	return (
 		<div className="relative overflow-hidden border-b border-border py-3.5 bg-muted/30">
 			<div className="flex gap-12 animate-ticker whitespace-nowrap">
-				{[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+				{[...items, ...items].map((item, i) => (
 					<span key={i} className="font-mono text-[11px] tracking-[0.15em] text-muted-foreground shrink-0 select-none">
 						<span className="text-accent mr-2">●</span>
 						{item}
@@ -351,16 +295,18 @@ function Ticker() {
 // ─── stats ───────────────────────────────────────────────────────────────────
 
 function Stats() {
+	const { dict, num } = useI18n();
+	const s = dict.landing.stats;
 	const { ref, inView } = useInView();
 	const c80 = useCounter(80, 1200, inView);
 	const c50 = useCounter(50, 1400, inView);
 	const c95 = useCounter(95, 1300, inView);
 
 	const stats = [
-		{ display: `${c80}%`, label: "FASTER RESOLUTION", sub: "vs. traditional helpdesks" },
-		{ display: `${c50}K+`, label: "TICKETS / MONTH", sub: "handled across workspaces" },
-		{ display: `${c95}%`, label: "CUSTOMER SATISFACTION", sub: "average CSAT score" },
-		{ display: "1→∞", label: "SOLO TO ENTERPRISE", sub: "scales with your team" },
+		{ display: `${num(c80)}%`, ...s.fasterResolution },
+		{ display: `${num(c50)}K+`, ...s.ticketsPerMonth },
+		{ display: `${num(c95)}%`, ...s.satisfaction },
+		{ display: "1→∞", ...s.scale },
 	];
 
 	return (
@@ -388,22 +334,23 @@ function Stats() {
 // ─── features bento ──────────────────────────────────────────────────────────
 
 function FeaturesBento() {
+	const { dict } = useI18n();
+	const b = dict.landing.bento;
 	const { ref, inView } = useInView();
+
 	return (
 		<section id="features" ref={ref as React.RefObject<HTMLElement>}>
-			<SectionRule index="02" label="PLATFORM" title="Built for how you actually work" right="4 MODULES / 1 SYSTEM" />
-			<p className="px-6 md:px-12 pb-10 text-lg text-muted-foreground max-w-2xl">
-				Four modules, one heartbeat. Everything your support operation needs — nothing it doesn't.
-			</p>
+			<SectionRule index="02" label={b.sectionLabel} title={b.sectionTitle} right={b.sectionRight} />
+			<p className="px-6 md:px-12 pb-10 text-lg text-muted-foreground max-w-2xl">{b.intro}</p>
 
 			<div className="relative border-t border-border">
 				<Cross className="-top-2 left-1/2 -translate-x-1/2 hidden md:block" />
 				<div className="grid md:grid-cols-2 gap-px bg-border border-b border-border">
-					{FEATURES.map((f, i) => {
-						const Icon = f.icon;
+					{FEATURES.map(({ key, icon: Icon, index }, i) => {
+						const f = b[key];
 						return (
 							<div
-								key={f.id}
+								key={key}
 								className={`group relative bg-background px-6 md:px-12 py-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
 								style={{ transitionDelay: `${i * 120}ms` }}>
 								{/* lime scan-line grows on hover */}
@@ -411,7 +358,7 @@ function FeaturesBento() {
 
 								<div className="flex items-center justify-between mb-8">
 									<MonoTag className="text-primary">
-										{f.index} / {f.label}
+										{index} / {f.label}
 									</MonoTag>
 									<Icon className="size-5 text-accent" />
 								</div>
@@ -420,19 +367,19 @@ function FeaturesBento() {
 								<p className="text-muted-foreground leading-relaxed mb-6">{f.description}</p>
 
 								<ul className="space-y-2.5 mb-8">
-									{f.bullets.map((b) => (
-										<li key={b} className="flex items-center gap-3 text-sm text-muted-foreground">
+									{f.bullets.map((bullet) => (
+										<li key={bullet} className="flex items-center gap-3 text-sm text-muted-foreground">
 											<CheckCircle2 className="size-3.5 text-accent shrink-0" />
-											{b}
+											{bullet}
 										</li>
 									))}
 								</ul>
 
 								<div className="border border-border p-5 bg-muted/20">
-									{f.id === "unification" && <WidgetVisual />}
-									{f.id === "automation" && <AIAgentVisual />}
-									{f.id === "marketplace" && <MarketplaceVisual />}
-									{f.id === "platform" && <TeamsVisual />}
+									{key === "unification" && <WidgetVisual />}
+									{key === "automation" && <AIAgentVisual />}
+									{key === "marketplace" && <MarketplaceVisual />}
+									{key === "platform" && <TeamsVisual />}
 								</div>
 							</div>
 						);
@@ -445,28 +392,32 @@ function FeaturesBento() {
 
 // ─── how it works — dark band ────────────────────────────────────────────────
 
+const PROCESS_STEPS = [
+	{ key: "connect", step: "01", icon: Layers },
+	{ key: "sort", step: "02", icon: Bot },
+	{ key: "resolve", step: "03", icon: Sparkles },
+] as const;
+
 function HowItWorks() {
+	const { dict } = useI18n();
+	const p = dict.landing.process;
 	const { ref, inView } = useInView();
-	const steps = [
-		{ step: "01", title: "Connect your channels", desc: "Bring every conversation into one place — email, chat, forms. Takes minutes, not days.", icon: Layers },
-		{ step: "02", title: "Let AI do the sorting", desc: "Pulse classifies, prioritizes, and routes every request automatically. No manual triage.", icon: Bot },
-		{ step: "03", title: "Resolve faster", desc: "Your team focuses on what actually needs a human. Everything else gets handled.", icon: Sparkles },
-	];
+
 	return (
 		<section ref={ref as React.RefObject<HTMLElement>} className="relative text-white border-b border-border" style={{ background: "var(--pulse-ink)" }}>
 			{/* header */}
 			<div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-white/10">
 				<span className="font-mono text-[11px] tracking-[0.25em]" style={{ color: "var(--pulse-lime)" }}>
-					03 — PROCESS
+					{p.sectionLabel}
 				</span>
-				<span className="hidden sm:block font-mono text-[11px] tracking-[0.25em] text-white/40">REQUEST → RESOLVED</span>
+				<span className="hidden sm:block font-mono text-[11px] tracking-[0.25em] text-white/40">{p.sectionRight}</span>
 			</div>
 
 			<div className={`px-6 md:px-12 pt-14 pb-4 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 				<h2 className="text-4xl md:text-6xl font-black tracking-tight text-balance max-w-3xl mb-3">
-					From request to resolved — <span style={{ color: "var(--pulse-lime)" }}>in seconds.</span>
+					{p.headline.lead} <span style={{ color: "var(--pulse-lime)" }}>{p.headline.highlight}</span>
 				</h2>
-				<p className="text-white/50 text-lg">Three steps. Works for any size.</p>
+				<p className="text-white/50 text-lg">{p.subhead}</p>
 			</div>
 
 			{/* EKG connecting the steps */}
@@ -475,7 +426,7 @@ function HowItWorks() {
 			</div>
 
 			<div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10 border-t border-white/10">
-				{steps.map(({ step, title, desc, icon: Icon }, i) => (
+				{PROCESS_STEPS.map(({ key, step, icon: Icon }, i) => (
 					<div
 						key={step}
 						className={`px-6 md:px-12 py-12 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
@@ -484,8 +435,8 @@ function HowItWorks() {
 							<span className="font-mono text-5xl font-black text-white/15">/{step}</span>
 							<Icon className="size-5" style={{ color: "var(--pulse-lime)" }} />
 						</div>
-						<h3 className="text-xl font-bold mb-3">{title}</h3>
-						<p className="text-sm text-white/50 leading-relaxed">{desc}</p>
+						<h3 className="text-xl font-bold mb-3">{p.steps[key].title}</h3>
+						<p className="text-sm text-white/50 leading-relaxed">{p.steps[key].desc}</p>
 					</div>
 				))}
 			</div>
@@ -496,6 +447,8 @@ function HowItWorks() {
 // ─── testimonials ────────────────────────────────────────────────────────────
 
 function Testimonials() {
+	const { dict } = useI18n();
+	const section = dict.landing.testimonials;
 	const { ref, inView } = useInView();
 	const [active, setActive] = useState(0);
 
@@ -504,15 +457,16 @@ function Testimonials() {
 		return () => clearInterval(iv);
 	}, []);
 
-	const t = TESTIMONIALS[active];
+	const current = TESTIMONIALS[active];
+	const copy = section.items[current.key];
 
 	return (
 		<section ref={ref as React.RefObject<HTMLElement>} className="border-b border-border">
 			<div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-border">
-				<MonoTag className="text-primary">04 — TRANSMISSIONS</MonoTag>
+				<MonoTag className="text-primary">{section.sectionLabel}</MonoTag>
 				<span className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-muted-foreground">
 					<span className="size-1.5 rounded-full bg-accent animate-pulse" />
-					INCOMING
+					{section.incoming}
 				</span>
 			</div>
 
@@ -521,15 +475,16 @@ function Testimonials() {
 				<div className="lg:col-span-3 lg:border-r border-b lg:border-b-0 border-border flex lg:flex-col">
 					{TESTIMONIALS.map((item, i) => (
 						<button
-							key={i}
+							key={item.key}
 							onClick={() => setActive(i)}
 							className={`flex-1 lg:flex-none text-left px-6 md:px-8 py-5 border-r lg:border-r-0 lg:border-b border-border last:border-r-0 transition-colors duration-200 ${i === active ? "" : "hover:bg-muted/40"}`}
 							style={i === active ? { background: "color-mix(in srgb, var(--color-accent) 8%, transparent)" } : undefined}>
 							<span className={`block font-mono text-[10px] tracking-[0.2em] mb-1 ${i === active ? "text-accent font-bold" : "text-muted-foreground/60"}`}>
-								LOG_{String(i + 1).padStart(2, "0")}
+								{section.logPrefix}
+								{String(i + 1).padStart(2, "0")}
 							</span>
 							<span className={`hidden sm:block text-xs font-semibold tracking-wide ${i === active ? "text-foreground" : "text-muted-foreground"}`}>
-								{item.segment}
+								{section.items[item.key].segment}
 							</span>
 						</button>
 					))}
@@ -540,10 +495,11 @@ function Testimonials() {
 					<div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
 						<MessageSquare className="size-6 text-accent mb-6" />
 						<blockquote className="text-2xl md:text-[2rem] font-bold tracking-tight leading-snug text-balance mb-8 max-w-3xl">
-							"{t.quote}"
+							"{copy.quote}"
 						</blockquote>
 						<div className="font-mono text-xs tracking-wider text-muted-foreground">
-							<span className="text-foreground font-bold">{t.author.toUpperCase()}</span> · {t.role.toUpperCase()} — {t.company.toUpperCase()}
+							<span className="text-foreground font-bold">{current.author.toUpperCase()}</span> · {copy.role.toUpperCase()} —{" "}
+							{current.company.toUpperCase()}
 						</div>
 					</div>
 				</div>
@@ -554,25 +510,29 @@ function Testimonials() {
 
 // ─── trust strip ─────────────────────────────────────────────────────────────
 
+const TRUST_ITEMS = [
+	{ key: "setup", icon: Zap },
+	{ key: "compliance", icon: Shield },
+	{ key: "uptime", icon: Globe },
+	{ key: "seats", icon: UserCheck },
+] as const;
+
 function TrustStrip() {
+	const { dict } = useI18n();
+	const trust = dict.landing.trust;
 	const { ref, inView } = useInView();
-	const items = [
-		{ icon: Zap, title: "SETUP IN 5 MIN", desc: "No IT team required" },
-		{ icon: Shield, title: "SOC 2 & GDPR", desc: "Enterprise-grade security" },
-		{ icon: Globe, title: "99.9% UPTIME SLA", desc: "Reliable at any scale" },
-		{ icon: UserCheck, title: "1 OR 1,000 SEATS", desc: "Freelancer to global org" },
-	];
+
 	return (
 		<section ref={ref as React.RefObject<HTMLElement>} className="border-b border-border">
 			<div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border">
-				{items.map(({ icon: Icon, title, desc }, i) => (
+				{TRUST_ITEMS.map(({ key, icon: Icon }, i) => (
 					<div
-						key={title}
+						key={key}
 						className={`flex flex-col gap-2 px-6 md:px-8 py-8 transition-all duration-700 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}
 						style={{ transitionDelay: `${i * 80}ms` }}>
 						<Icon className="size-4 text-accent mb-1" />
-						<p className="font-mono text-[11px] tracking-[0.15em] font-bold">{title}</p>
-						<p className="text-xs text-muted-foreground">{desc}</p>
+						<p className="font-mono text-[11px] tracking-[0.15em] font-bold">{trust[key].title}</p>
+						<p className="text-xs text-muted-foreground">{trust[key].desc}</p>
 					</div>
 				))}
 			</div>
@@ -583,7 +543,10 @@ function TrustStrip() {
 // ─── final CTA ───────────────────────────────────────────────────────────────
 
 function FinalCta() {
+	const { dict, path } = useI18n();
+	const cta = dict.landing.finalCta;
 	const { ref, inView } = useInView();
+
 	return (
 		<section ref={ref as React.RefObject<HTMLElement>} className="relative text-white overflow-hidden" style={{ background: "var(--pulse-ink-deep)" }}>
 			{/* giant background EKG */}
@@ -592,21 +555,19 @@ function FinalCta() {
 			</div>
 
 			<div className={`relative px-6 md:px-12 py-24 md:py-32 text-center transition-all duration-1000 ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-				<MonoTag className="block mb-8 text-white/50">05 — DEPLOY · NO CREDIT CARD · 14-DAY TRIAL</MonoTag>
+				<MonoTag className="block mb-8 text-white/50">{cta.eyebrow}</MonoTag>
 				<h2 className="text-5xl md:text-7xl font-black tracking-tighter text-balance mb-6 max-w-4xl mx-auto">
-					Put support on <span style={{ color: "var(--pulse-lime)" }}>autopilot.</span>
+					{cta.headline.lead} <span style={{ color: "var(--pulse-lime)" }}>{cta.headline.highlight}</span>
 				</h2>
-				<p className="text-white/55 text-lg md:text-xl mb-12 max-w-xl mx-auto">
-					Works for freelancers, agencies, and growing teams. Live in five minutes.
-				</p>
+				<p className="text-white/55 text-lg md:text-xl mb-12 max-w-xl mx-auto">{cta.subhead}</p>
 				<div className="flex flex-col sm:flex-row justify-center gap-4">
 					<CtaLink href="/auth/signup" variant="lime">
-						Start free trial <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+						{cta.ctaPrimary} <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
 					</CtaLink>
 					<a
-						href="/pricing"
+						href={path("/pricing")}
 						className="inline-flex items-center justify-center gap-2 border border-white/25 px-7 py-4 font-mono text-xs tracking-[0.15em] uppercase font-semibold text-white hover:border-(--pulse-lime) hover:text-(--pulse-lime) transition-colors duration-200">
-						View pricing
+						{cta.ctaSecondary}
 					</a>
 				</div>
 			</div>
@@ -616,36 +577,36 @@ function FinalCta() {
 
 // ─── feature visuals ─────────────────────────────────────────────────────────
 
+const AI_STEPS = ["received", "classifying", "knowledge", "sent"] as const;
+
 function AIAgentVisual() {
+	const { dict } = useI18n();
+	const visual = dict.landing.visuals.aiAgent;
 	const [step, setStep] = useState(0);
-	const steps = [
-		{ label: "Ticket received", detail: '"Invoice not received after payment"' },
-		{ label: "AI classifying…", detail: "Category: Billing · Priority: High" },
-		{ label: "Knowledge base search", detail: "Found 2 relevant articles in 0.3s" },
-		{ label: "Response sent", detail: "Resolution delivered. CSAT request queued." },
-	];
+
 	useEffect(() => {
-		const iv = setInterval(() => setStep((s) => (s + 1) % steps.length), 1800);
+		const iv = setInterval(() => setStep((s) => (s + 1) % AI_STEPS.length), 1800);
 		return () => clearInterval(iv);
 	}, []);
+
 	return (
 		<div className="space-y-2.5">
 			<div className="flex items-center gap-2 mb-4">
 				<Bot className="size-4 text-accent" />
-				<p className="font-mono text-[11px] tracking-wider text-muted-foreground">AI_AGENT // AVG_RESOLVE 18S</p>
+				<p className="font-mono text-[11px] tracking-wider text-muted-foreground">{visual.header}</p>
 				<span className="ml-auto size-1.5 rounded-full bg-accent animate-pulse" />
 			</div>
-			{steps.map((s, i) => (
+			{AI_STEPS.map((key, i) => (
 				<div
-					key={i}
+					key={key}
 					className={`flex items-start gap-3 p-2.5 border transition-all duration-300 ${i === step ? "border-accent/50 bg-accent/5" : i < step ? "opacity-45 border-border" : "opacity-25 border-border"}`}>
 					<div className={`mt-0.5 size-4 border flex items-center justify-center shrink-0 ${i < step ? "border-accent bg-accent/15" : i === step ? "border-accent" : "border-muted-foreground/30"}`}>
 						{i < step && <CheckCircle2 className="size-3 text-accent" />}
 						{i === step && <span className="size-1.5 bg-accent animate-pulse block" />}
 					</div>
 					<div>
-						<p className={`text-xs font-semibold ${i === step ? "text-foreground" : "text-muted-foreground"}`}>{s.label}</p>
-						<p className="text-xs text-muted-foreground mt-0.5">{s.detail}</p>
+						<p className={`text-xs font-semibold ${i === step ? "text-foreground" : "text-muted-foreground"}`}>{visual.steps[key].label}</p>
+						<p className="text-xs text-muted-foreground mt-0.5">{visual.steps[key].detail}</p>
 					</div>
 				</div>
 			))}
@@ -654,12 +615,13 @@ function AIAgentVisual() {
 }
 
 function WidgetVisual() {
+	const { dict } = useI18n();
 	return (
 		<div className="relative h-64 w-full border border-dashed border-primary/25 flex items-center justify-center overflow-hidden bg-background">
 			<div className="absolute top-4 left-4 right-4 flex items-center gap-2 py-2 px-3 border border-border bg-card">
 				<Globe className="size-3 text-muted-foreground" />
 				<div className="h-1.5 w-24 bg-muted rounded-full" />
-				<span className="ml-auto font-mono text-[9px] text-muted-foreground/60">WIDGET.EMBED</span>
+				<span className="ml-auto font-mono text-[9px] text-muted-foreground/60">{dict.landing.visuals.widget.embed}</span>
 			</div>
 			<div className="absolute bottom-6 right-6 size-12 rounded-full bg-primary shadow-lg shadow-primary/40 flex items-center justify-center animate-bounce" style={{ animationDuration: "3s" }}>
 				<MessageSquare className="size-5 text-white" />
@@ -696,17 +658,22 @@ function MarketplaceVisual() {
 }
 
 function TeamsVisual() {
+	const { dict, num } = useI18n();
+	const visual = dict.landing.visuals.teams;
+
+	// Agent names are proper nouns; the AI row is a product label, so it's localized.
 	const agents = [
 		{ name: "Lena M.", tickets: 12, status: "online" },
 		{ name: "Carlos R.", tickets: 9, status: "online" },
 		{ name: "Priya S.", tickets: 7, status: "busy" },
-		{ name: "AI Agent", tickets: 41, status: "online" },
+		{ name: visual.agentAi, tickets: 41, status: "online" },
 	];
+
 	return (
 		<div className="space-y-2">
 			<div className="flex items-center justify-between mb-3">
-				<p className="font-mono text-[11px] tracking-wider text-muted-foreground">QUEUE_OVERVIEW</p>
-				<span className="font-mono text-[10px] text-accent">4 ACTIVE</span>
+				<p className="font-mono text-[11px] tracking-wider text-muted-foreground">{visual.header}</p>
+				<span className="font-mono text-[10px] text-accent">{visual.active}</span>
 			</div>
 			{agents.map((a) => (
 				<div key={a.name} className="flex items-center gap-3 p-2.5 border border-border bg-card hover:bg-muted/30 transition-colors">
@@ -716,7 +683,9 @@ function TeamsVisual() {
 					</div>
 					<div className="flex-1 min-w-0">
 						<p className="text-sm font-medium">{a.name}</p>
-						<p className="font-mono text-[10px] text-muted-foreground">{a.tickets} TICKETS</p>
+						<p className="font-mono text-[10px] text-muted-foreground">
+							{num(a.tickets)} {visual.ticketsLabel}
+						</p>
 					</div>
 					<div className="h-1 w-20 bg-muted overflow-hidden">
 						<div className="h-full bg-accent" style={{ width: `${Math.min(100, (a.tickets / 50) * 100)}%` }} />

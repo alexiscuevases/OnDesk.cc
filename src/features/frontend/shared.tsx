@@ -6,6 +6,21 @@
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { ArrowRight } from "lucide-react";
+import { useI18n } from "@/i18n";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCALE
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Rewrites an internal href for the active locale. Every marketing page renders
+ * inside the `{-$lang}` layout, so routing all CTA links through this keeps a
+ * visitor inside their language even on pages whose copy isn't translated yet.
+ */
+function useLocalizedHref() {
+    const { path } = useI18n();
+    return (href: string) => (href.startsWith("/") && !href.startsWith("//") ? path(href) : href);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HOOKS
@@ -125,7 +140,9 @@ export function Cross({ className = "" }: { className?: string }) {
 }
 
 /** Rectangular editorial CTA link — lime fill slides up on hover. */
-export function CtaLink({ href, children, variant = "solid" }: { href: string; children: React.ReactNode; variant?: "solid" | "outline" | "lime" }) {
+export function CtaLink({ href: rawHref, children, variant = "solid" }: { href: string; children: React.ReactNode; variant?: "solid" | "outline" | "lime" }) {
+    const href = useLocalizedHref()(rawHref);
+
     if (variant === "outline") {
         return (
             <a
@@ -171,6 +188,7 @@ export function DarkCta({
     secondary?: { href: string; label: string };
 }) {
     const { ref, inView } = useInView();
+    const localize = useLocalizedHref();
     return (
         <section
             ref={ref as React.RefObject<HTMLElement>}
@@ -190,7 +208,7 @@ export function DarkCta({
                     </CtaLink>
                     {secondary && (
                         <a
-                            href={secondary.href}
+                            href={localize(secondary.href)}
                             className="inline-flex items-center justify-center gap-2 border border-white/25 px-7 py-4 font-mono text-xs tracking-[0.15em] uppercase font-semibold text-white hover:border-(--pulse-lime) hover:text-(--pulse-lime) transition-colors duration-200">
                             {secondary.label}
                         </a>
