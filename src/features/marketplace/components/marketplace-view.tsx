@@ -63,8 +63,10 @@ export function MarketplaceView() {
 	const workspaceId = workspace.id;
 	const slug = workspace.slug;
 
-	const { data: products = [], isLoading: loadingProducts } = useMarketplaceProducts(workspaceId);
-	const { data: installs = [], isLoading: loadingInstalls } = useWorkspaceProducts(slug);
+	const { data: products = [], isLoading: loadingProducts, error: productsError } = useMarketplaceProducts(workspaceId);
+	const { data: installs = [], isLoading: loadingInstalls, error: installsError } = useWorkspaceProducts(slug);
+	// A failed fetch must never look like an empty catalog.
+	const loadError = productsError ?? installsError;
 
 	const createConnector = useCreateConnector(workspaceId, slug);
 	const updateConnector = useUpdateConnector(workspaceId, slug);
@@ -193,6 +195,18 @@ export function MarketplaceView() {
 				/>
 			</StatGrid>
 
+			{loadError && (
+				<div className="flex items-start gap-2 border border-destructive/40 bg-destructive/10 p-3">
+					<AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-destructive" />
+					<div className="min-w-0">
+						<p className="text-xs font-medium text-destructive">Could not load connectors</p>
+						<p className="mt-0.5 font-mono text-[11px] text-destructive/80">
+							{loadError instanceof Error ? loadError.message : String(loadError)}
+						</p>
+					</div>
+				</div>
+			)}
+
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
 					<TabsList>
@@ -227,14 +241,18 @@ export function MarketplaceView() {
 					</div>
 				) : filtered.length === 0 ? (
 					<EmptyState
-						icon={Search}
-						title={search ? "No connectors found" : "No connectors yet"}
+						icon={loadError ? AlertTriangle : Search}
+						title={loadError ? "Catalog unavailable" : search ? "No connectors found" : "No connectors yet"}
 						description={
-							search ? "Try a different search term" : "Create a connector to give your agents access to an API."
+							loadError
+								? "The catalog could not be loaded — see the error above."
+								: search
+									? "Try a different search term"
+									: "Create a connector to give your agents access to an API."
 						}
 						className="py-20"
 						action={
-							!search ? (
+							!search && !loadError ? (
 								<Button size="sm" onClick={() => setModal({ type: "create" })} className="text-xs">
 									<Plus className="mr-1 size-3.5" />
 									New connector
