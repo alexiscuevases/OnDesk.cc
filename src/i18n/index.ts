@@ -19,7 +19,7 @@ export { loadDictionary, peekDictionary, type Dictionary } from "./dictionaries"
 export { I18nProvider, LocaleLink } from "./context";
 export { useI18n, useLocale, type I18nValue } from "./i18n-context";
 
-export { interpolate, formatNumber, formatUsd } from "./format";
+export { interpolate, formatNumber, formatUsd, pluralize, type PluralForms } from "./format";
 
 export { useLocalizedSeo } from "./seo";
 

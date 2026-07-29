@@ -2,7 +2,7 @@ import { useMemo, useCallback, type ReactNode } from "react";
 import { localizePath, splitLocalePath, type Locale } from "./config";
 import type { Dictionary } from "./dictionaries";
 import { storeLocale } from "./detect";
-import { formatNumber, formatUsd, interpolate } from "./format";
+import { formatNumber, formatUsd, interpolate, pluralize } from "./format";
 import { I18nContext, useI18n, type I18nValue } from "./i18n-context";
 
 export function I18nProvider({
@@ -34,6 +34,8 @@ export function I18nProvider({
 			dict,
 			path,
 			t: interpolate,
+			pl: (forms, count, vars) =>
+				interpolate(pluralize(forms, count, locale), { count: formatNumber(count, locale), ...vars }),
 			num: (v, options) => formatNumber(v, locale, options),
 			usd: (v) => formatUsd(v, locale),
 			switchLocale,

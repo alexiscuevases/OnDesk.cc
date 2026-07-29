@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Info } from "lucide-react";
 import { SiteLayout } from "./site-layout";
 import { useInView, useMountVisible, PulseLine, MonoTag, CtaLink } from "./shared";
+import { useI18n } from "@/i18n";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared editorial layout for legal documents (privacy, terms).
@@ -29,6 +30,21 @@ interface LegalPageProps {
 	secondaryLink: { href: string; label: string };
 	aside: { title: string; desc: string; email: string };
 	sections: LegalSection[];
+}
+
+/**
+ * Shown only on translated versions: these documents are binding, so a courtesy
+ * translation has to say which language governs. Empty string in the
+ * authoritative locale, which renders nothing.
+ */
+function PrevailingLanguageNotice({ text }: { text: string }) {
+	if (!text) return null;
+	return (
+		<div className="flex items-start gap-3 border border-accent/30 bg-accent/5 px-4 py-3 mb-8 max-w-2xl">
+			<Info className="size-4 text-accent shrink-0 mt-0.5" />
+			<p className="text-xs text-muted-foreground leading-relaxed">{text}</p>
+		</div>
+	);
 }
 
 function SectionBody({ body }: { body: LegalBodyPart[] }) {
@@ -84,6 +100,8 @@ export function LegalPage({
 	aside,
 	sections,
 }: LegalPageProps) {
+	const { dict, t } = useI18n();
+	const chrome = dict.legal.chrome;
 	const visible = useMountVisible();
 	const [activeId, setActiveId] = useState<string>(sections[0].id);
 
@@ -123,7 +141,7 @@ export function LegalPage({
 								<span className="relative inline-flex size-2 rounded-full bg-accent" />
 							</span>
 							<MonoTag className="text-foreground/70">
-								LEGAL — {code}<span className="blink-cursor text-accent">_</span>
+								{chrome.eyebrow} — {code}<span className="blink-cursor text-accent">_</span>
 							</MonoTag>
 						</div>
 
@@ -136,17 +154,19 @@ export function LegalPage({
 
 						<div className="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-6">
 							<span>
-								LAST UPDATED: <span className="text-foreground font-bold">{lastUpdated}</span>
+								{chrome.lastUpdated} <span className="text-foreground font-bold">{lastUpdated}</span>
 							</span>
 							<span>{entity}</span>
-							<span>{sections.length} CLAUSES</span>
+							<span>{t(chrome.clauses, { count: sections.length })}</span>
 						</div>
 
-						<p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-10">{description}</p>
+						<p className="text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-8">{description}</p>
+
+						<PrevailingLanguageNotice text={chrome.prevailingNotice} />
 
 						<div className="flex flex-col sm:flex-row gap-3">
 							<CtaLink href="/contact">
-								Questions? Contact us <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+								{chrome.contactCta} <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
 							</CtaLink>
 							<CtaLink href={secondaryLink.href} variant="outline">
 								{secondaryLink.label}
@@ -165,7 +185,7 @@ export function LegalPage({
 					{/* Sticky index */}
 					<aside className="hidden lg:block lg:col-span-3 border-r border-border">
 						<div className="sticky top-24 px-6 py-8">
-							<p className="font-mono text-[10px] tracking-[0.25em] text-primary mb-5">INDEX</p>
+							<p className="font-mono text-[10px] tracking-[0.25em] text-primary mb-5">{chrome.index}</p>
 							<nav>
 								{sections.map(({ id, title }, i) => {
 									const isActive = activeId === id;
@@ -212,9 +232,9 @@ export function LegalPage({
 
 						{/* end-of-document mark */}
 						<div className="flex items-center justify-between px-6 md:px-12 py-5 font-mono text-[10px] tracking-[0.25em] text-muted-foreground/60">
-							<span>END OF DOCUMENT</span>
+							<span>{chrome.endOfDocument}</span>
 							<span>
-								SIG.END<span className="blink-cursor text-accent">▌</span>
+								{chrome.signalEnd}<span className="blink-cursor text-accent">▌</span>
 							</span>
 						</div>
 					</div>

@@ -11,6 +11,33 @@ export function interpolate(template: string, vars: Record<string, string | numb
 	);
 }
 
+/**
+ * Plural forms a dictionary entry must supply. English only distinguishes
+ * one/other, which covers Spanish too; a language with more categories (Polish,
+ * Arabic, …) would add its keys here and `pluralize` would pick them up.
+ */
+export interface PluralForms {
+	one: string;
+	other: string;
+}
+
+const pluralRulesCache = new Map<Locale, Intl.PluralRules>();
+
+/**
+ * Picks the right plural form for `count` using the locale's own rules, rather
+ * than the `count !== 1 ? "s" : ""` trick, which only works in English.
+ */
+export function pluralize(forms: PluralForms, count: number, locale: Locale): string {
+	let rules = pluralRulesCache.get(locale);
+	if (!rules) {
+		rules = new Intl.PluralRules(locale);
+		pluralRulesCache.set(locale, rules);
+	}
+	const category = rules.select(count);
+	// Fall back to `other` for any category this entry doesn't define.
+	return category === "one" ? forms.one : forms.other;
+}
+
 // Formatters are cached — constructing Intl objects per render is measurably slow.
 const numberCache = new Map<string, Intl.NumberFormat>();
 

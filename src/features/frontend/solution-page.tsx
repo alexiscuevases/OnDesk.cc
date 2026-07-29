@@ -18,271 +18,124 @@ import {
 	TrendingUp,
 	UserCheck,
 } from "lucide-react";
+import { useI18n, useLocalizedSeo, type Dictionary } from "@/i18n";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Types
+// Segment configuration
+//
+// Structure only: icons, ordering, proper nouns, route path and meta key. All
+// copy is looked up from `dict.solutions[segment]` by these same keys, so a
+// translation can never reorder a section or repoint a link.
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface Feature {
-	icon: React.ElementType;
-	title: string;
-	desc: string;
-}
+type Segment = "supportTeams" | "agencies" | "solo";
 
-interface Step {
-	icon: React.ElementType;
-	title: string;
-	desc: string;
-}
+type StatKey = keyof Dictionary["solutions"]["supportTeams"]["stats"];
+type FeatureKey = keyof Dictionary["solutions"]["supportTeams"]["features"];
+type StepKey = keyof Dictionary["solutions"]["supportTeams"]["steps"];
 
-interface Stat {
-	value: string;
-	label: string;
-	icon: React.ElementType;
-}
-
-interface Testimonial {
-	quote: string;
-	author: string;
-	role: string;
-	company: string;
-}
-
-interface SolutionData {
+interface SegmentConfig {
 	badgeIcon: React.ElementType;
-	badge: string;
-	/** Mono telemetry code shown in the hero eyebrow, e.g. `SEG_01 / SUPPORT_TEAMS` */
-	code: string;
-	headline: string;
-	headlineGradient: string;
-	headlineAfter?: string;
-	description: string;
-	stats: Stat[];
-	featuresHeadline: string;
-	features: Feature[];
-	stepsHeadline: string;
-	steps: Step[];
-	testimonial: Testimonial;
-	ctaBadge: string;
-	ctaHeadline: string;
-	ctaDesc: string;
+	stats: { key: StatKey; icon: React.ElementType }[];
+	features: { key: FeatureKey; icon: React.ElementType }[];
+	steps: { key: StepKey; icon: React.ElementType }[];
+	author: string;
+	company: string;
+	path: string;
+	metaKey: keyof Dictionary["meta"];
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Segment data
-// ─────────────────────────────────────────────────────────────────────────────
-
-const SUPPORT_TEAMS_DATA: SolutionData = {
-	badgeIcon: Users,
-	badge: "For Support Teams",
-	code: "SEG_01 / SUPPORT_TEAMS",
-	headline: "Handle more tickets",
-	headlineGradient: "without growing",
-	headlineAfter: "your team",
-	description:
-		"Pulse brings every channel, agent, and workflow into a single command center. Stop context-switching. Start resolving.",
-	stats: [
-		{ value: "80%", label: "Faster resolution", icon: Clock },
-		{ value: "50K+", label: "Tickets/month handled", icon: Layers },
-		{ value: "95%", label: "Customer satisfaction", icon: Star },
-	],
-	featuresHeadline: "Everything your support team needs",
-	features: [
-		{
-			icon: Bot,
-			title: "AI-powered triage",
-			desc: "Auto-classify, prioritize, and route every ticket the moment it arrives. No manual sorting, no missed requests.",
-		},
-		{
-			icon: Users,
-			title: "Team & workload management",
-			desc: "See your entire team's queue at a glance. Balance loads automatically and prevent agent burnout.",
-		},
-		{
-			icon: Clock,
-			title: "SLA tracking",
-			desc: "Define SLAs per channel or priority. Get alerts before deadlines slip — never miss a commitment again.",
-		},
-		{
-			icon: BarChart3,
-			title: "Performance analytics",
-			desc: "Measure resolution times, CSAT scores, and agent output from one unified dashboard.",
-		},
-	],
-	stepsHeadline: "From chaos to resolved — in minutes",
-	steps: [
-		{
-			icon: Layers,
-			title: "Connect your channels",
-			desc: "Bring email, chat, and social into one inbox. Takes minutes, not days.",
-		},
-		{
-			icon: Zap,
-			title: "Define your rules",
-			desc: "Set SLAs, routing logic, and automation flows once. Pulse handles the rest.",
-		},
-		{
-			icon: Bot,
-			title: "Let AI handle the volume",
-			desc: "Pulse classifies and routes every ticket while your team focuses on what actually needs a human.",
-		},
-	],
-	testimonial: {
-		quote:
-			"Unifying our channels through Pulse reduced resolution time by 70%. The AI classification acts with surgical precision — our team finally has breathing room.",
+const SEGMENTS: Record<Segment, SegmentConfig> = {
+	supportTeams: {
+		badgeIcon: Users,
+		stats: [
+			{ key: "resolution", icon: Clock },
+			{ key: "volume", icon: Layers },
+			{ key: "satisfaction", icon: Star },
+		],
+		features: [
+			{ key: "triage", icon: Bot },
+			{ key: "team", icon: Users },
+			{ key: "sla", icon: Clock },
+			{ key: "analytics", icon: BarChart3 },
+		],
+		steps: [
+			{ key: "connect", icon: Layers },
+			{ key: "rules", icon: Zap },
+			{ key: "ai", icon: Bot },
+		],
 		author: "Sarah Chen",
-		role: "Head of Customer Success",
 		company: "Contoso Ltd.",
+		path: "/solutions/support-teams",
+		metaKey: "solutionSupportTeams",
 	},
-	ctaBadge: "Support Teams",
-	ctaHeadline: "Ready to put your queue on autopilot?",
-	ctaDesc: "14-day free trial. No credit card. Unified support and automation from day one.",
-};
-
-const AGENCIES_DATA: SolutionData = {
-	badgeIcon: Building2,
-	badge: "For Agencies",
-	code: "SEG_02 / AGENCIES",
-	headline: "Manage every client's support",
-	headlineGradient: "from one place",
-	description:
-		"One platform. Multiple clients. Full visibility. Stop juggling tabs and tools — Pulse gives your agency a professional support operation at scale.",
-	stats: [
-		{ value: "8+", label: "Clients per workspace", icon: Building2 },
-		{ value: "60%", label: "Less operational overhead", icon: TrendingUp },
-		{ value: "100%", label: "Client data isolation", icon: Shield },
-	],
-	featuresHeadline: "Built for agencies that run support for others",
-	features: [
-		{
-			icon: Building2,
-			title: "Multi-client workspaces",
-			desc: "Every client gets a fully isolated environment with their own channels, agents, and data. No cross-contamination.",
-		},
-		{
-			icon: Globe,
-			title: "Branded client inboxes",
-			desc: "Set up custom-branded inboxes for each client. Your agency delivers a polished, professional experience.",
-		},
-		{
-			icon: BarChart3,
-			title: "Cross-client reporting",
-			desc: "Aggregate or per-client reports in one click. Show your clients exactly what your team is delivering.",
-		},
-		{
-			icon: Lock,
-			title: "Role-based access",
-			desc: "Control exactly who sees what. Assign agents to specific clients only — no accidental data exposure.",
-		},
-	],
-	stepsHeadline: "Onboard a new client in under an hour",
-	steps: [
-		{
-			icon: Building2,
-			title: "Create a client workspace",
-			desc: "Each client gets their own isolated space in minutes. No technical setup required.",
-		},
-		{
-			icon: Inbox,
-			title: "Connect their channels",
-			desc: "Plug in their email, chat widget, and social accounts. Pulse unifies them immediately.",
-		},
-		{
-			icon: BarChart3,
-			title: "Report and retain",
-			desc: "Generate per-client performance reports that prove your agency's value — and help you win renewals.",
-		},
-	],
-	testimonial: {
-		quote:
-			"Managing 8 clients used to mean 8 different tools. Pulse collapsed it into one. Our team is faster, our clients are happier, and we win new business because of how we report on it.",
+	agencies: {
+		badgeIcon: Building2,
+		stats: [
+			{ key: "resolution", icon: Building2 },
+			{ key: "volume", icon: TrendingUp },
+			{ key: "satisfaction", icon: Shield },
+		],
+		features: [
+			{ key: "triage", icon: Building2 },
+			{ key: "team", icon: Globe },
+			{ key: "sla", icon: BarChart3 },
+			{ key: "analytics", icon: Lock },
+		],
+		steps: [
+			{ key: "connect", icon: Building2 },
+			{ key: "rules", icon: Inbox },
+			{ key: "ai", icon: BarChart3 },
+		],
 		author: "James Okafor",
-		role: "Operations Lead",
 		company: "BrightSupport Agency",
+		path: "/solutions/agencies",
+		metaKey: "solutionAgencies",
 	},
-	ctaBadge: "Agencies",
-	ctaHeadline: "Your clients deserve better support. Start delivering it.",
-	ctaDesc: "14-day free trial. Set up your first client workspace in under an hour.",
-};
-
-const SOLO_SMALL_TEAMS_DATA: SolutionData = {
-	badgeIcon: UserCheck,
-	badge: "For Solo & Small Teams",
-	code: "SEG_03 / SOLO_SMALL_TEAMS",
-	headline: "Stay on top of every request",
-	headlineGradient: "without the complexity",
-	description:
-		"Built for one person or a small crew. Pulse keeps your requests organized, your responses fast, and your clients happy — without enterprise overhead.",
-	stats: [
-		{ value: "< 5 min", label: "To your first ticket", icon: Zap },
-		{ value: "All", label: "Channels in one place", icon: Inbox },
-		{ value: "1 → 50", label: "Scales with your team", icon: Users },
-	],
-	featuresHeadline: "Simple by design. Powerful when you need it.",
-	features: [
-		{
-			icon: Inbox,
-			title: "Unified inbox",
-			desc: "Every email, chat, and form submission in one place. Stop switching tabs to find what needs a reply.",
-		},
-		{
-			icon: Zap,
-			title: "No-code automations",
-			desc: "Set up auto-replies, routing, and tags in minutes. No engineers. No complexity. Just results.",
-		},
-		{
-			icon: MessageSquare,
-			title: "Canned replies",
-			desc: "Save your best responses and reuse them with one click. Handle common questions in seconds.",
-		},
-		{
-			icon: Users,
-			title: "Grows with you",
-			desc: "Start solo. Add a teammate when you're ready. Pricing that makes sense at every stage — no sudden jumps.",
-		},
-	],
-	stepsHeadline: "Up and running in an afternoon",
-	steps: [
-		{
-			icon: Zap,
-			title: "Connect in 5 minutes",
-			desc: "Plug in your email or chat widget. No IT department required — just a few clicks.",
-		},
-		{
-			icon: Layers,
-			title: "Organize once",
-			desc: "Set up simple tags, priorities, and routing. One afternoon of setup, months of payoff.",
-		},
-		{
-			icon: Bot,
-			title: "Respond faster",
-			desc: "AI suggestions and canned replies help you close tickets before coffee gets cold.",
-		},
-	],
-	testimonial: {
-		quote:
-			"I run support solo for three SaaS products. Pulse is the first tool that didn't feel like it was built for a 50-person team. Setup took 10 minutes. Now I actually enjoy answering tickets.",
+	solo: {
+		badgeIcon: UserCheck,
+		stats: [
+			{ key: "resolution", icon: Zap },
+			{ key: "volume", icon: Inbox },
+			{ key: "satisfaction", icon: Users },
+		],
+		features: [
+			{ key: "triage", icon: Inbox },
+			{ key: "team", icon: Zap },
+			{ key: "sla", icon: MessageSquare },
+			{ key: "analytics", icon: Users },
+		],
+		steps: [
+			{ key: "connect", icon: Zap },
+			{ key: "rules", icon: Layers },
+			{ key: "ai", icon: Bot },
+		],
 		author: "Mia Torres",
-		role: "Independent Consultant",
 		company: "Torres Digital",
+		path: "/solutions/solo-small-teams",
+		metaKey: "solutionSolo",
 	},
-	ctaBadge: "Solo & Small Teams",
-	ctaHeadline: "Keep it simple. Keep it fast. Keep every client happy.",
-	ctaDesc: "Free for 14 days. No credit card. No enterprise contract. Just great support.",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared page component
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function SolutionPage({ data }: { data: SolutionData }) {
+export function SolutionPage({ segment }: { segment: Segment }) {
+	const { dict, locale, path } = useI18n();
+	const config = SEGMENTS[segment];
+	const copy = dict.solutions[segment];
+	const chrome = dict.solutions.chrome;
+
+	useLocalizedSeo({ ...dict.meta[config.metaKey], path: config.path, locale });
+
 	const visible = useMountVisible();
 	const { ref: featuresRef, inView: featuresInView } = useInView();
 	const { ref: stepsRef, inView: stepsInView } = useInView();
 	const { ref: testimonialRef, inView: testimonialInView } = useInView();
 	const { ref: ctaRef, inView: ctaInView } = useInView();
 
-	const BadgeIcon = data.badgeIcon;
+	const BadgeIcon = config.badgeIcon;
 
 	return (
 		<SiteLayout>
@@ -304,31 +157,31 @@ export function SolutionPage({ data }: { data: SolutionData }) {
 								<span className="relative inline-flex size-2 rounded-full bg-accent" />
 							</span>
 							<MonoTag className="text-foreground/70">
-								{data.code}
+								{copy.code}
 								<span className="blink-cursor text-accent">_</span>
 							</MonoTag>
 							<span className="hidden sm:flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground border-l border-border pl-3">
 								<BadgeIcon className="size-3 text-accent" />
-								{data.badge}
+								{copy.badge}
 							</span>
 						</div>
 
 						<h1 className="max-w-4xl text-5xl md:text-7xl font-black leading-[1.02] tracking-tighter mb-8 text-balance">
-							{data.headline}{" "}
+							{copy.headline.lead}{" "}
 							<span className="relative inline-block px-2 text-primary-foreground" style={{ background: "var(--color-primary)" }}>
-								{data.headlineGradient}
+								{copy.headline.highlight}
 							</span>
-							{data.headlineAfter && <> {data.headlineAfter}</>}
+							{copy.headline.trail && <> {copy.headline.trail}</>}
 						</h1>
 
-						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10">{data.description}</p>
+						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10">{copy.description}</p>
 
 						<div className="flex flex-col sm:flex-row gap-3">
 							<CtaLink href="/auth/signup">
-								Start free trial <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+								{chrome.ctaPrimary} <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
 							</CtaLink>
 							<CtaLink href="/pricing" variant="outline">
-								See pricing
+								{chrome.ctaSecondary}
 							</CtaLink>
 						</div>
 					</div>
@@ -338,15 +191,17 @@ export function SolutionPage({ data }: { data: SolutionData }) {
 						<Cross className="-top-2 -left-1.5" />
 						<Cross className="-top-2 -right-1.5" />
 						<div className="grid grid-cols-3 divide-x divide-border">
-							{data.stats.map(({ value, label }, i) => (
+							{config.stats.map(({ key }, i) => (
 								<div
-									key={label}
+									key={key}
 									className={`px-4 md:px-10 py-8 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
 									style={{ transitionDelay: `${i * 100 + 300}ms` }}>
 									<div className="text-3xl md:text-5xl font-black tracking-tighter mb-2" style={{ fontVariantNumeric: "tabular-nums" }}>
-										{value}
+										{copy.stats[key].value}
 									</div>
-									<div className="font-mono text-[10px] tracking-[0.2em] uppercase text-primary font-semibold">{label}</div>
+									<div className="font-mono text-[10px] tracking-[0.2em] uppercase text-primary font-semibold">
+										{copy.stats[key].label}
+									</div>
 								</div>
 							))}
 						</div>
@@ -360,15 +215,20 @@ export function SolutionPage({ data }: { data: SolutionData }) {
 
 				{/* ── FEATURES ── */}
 				<section ref={featuresRef as React.RefObject<HTMLElement>}>
-					<SectionRule index="01" label="CAPABILITIES" title={data.featuresHeadline} right="BUILT-IN / NO ADD-ONS" />
+					<SectionRule
+						index="01"
+						label={chrome.capabilitiesLabel}
+						title={copy.featuresHeadline}
+						right={chrome.capabilitiesRight}
+					/>
 					<div className="h-10" />
 
 					<div className="relative border-t border-border">
 						<Cross className="-top-2 left-1/2 -translate-x-1/2 hidden sm:block" />
 						<div className="grid sm:grid-cols-2 gap-px bg-border border-b border-border">
-							{data.features.map(({ icon: Icon, title, desc }, i) => (
+							{config.features.map(({ key, icon: Icon }, i) => (
 								<div
-									key={title}
+									key={key}
 									className={`group relative bg-background px-6 md:px-12 py-10 transition-all duration-700 ${featuresInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
 									style={{ transitionDelay: `${i * 100 + 100}ms` }}>
 									{/* lime scan-line grows on hover */}
@@ -378,8 +238,8 @@ export function SolutionPage({ data }: { data: SolutionData }) {
 										<span className="font-mono text-[11px] tracking-[0.25em] text-muted-foreground/60">0{i + 1}</span>
 										<Icon className="size-5 text-accent" />
 									</div>
-									<h3 className="text-xl md:text-2xl font-black tracking-tight mb-2.5">{title}</h3>
-									<p className="text-sm md:text-base text-muted-foreground leading-relaxed">{desc}</p>
+									<h3 className="text-xl md:text-2xl font-black tracking-tight mb-2.5">{copy.features[key].title}</h3>
+									<p className="text-sm md:text-base text-muted-foreground leading-relaxed">{copy.features[key].desc}</p>
 								</div>
 							))}
 						</div>
@@ -393,13 +253,13 @@ export function SolutionPage({ data }: { data: SolutionData }) {
 					style={{ background: "var(--pulse-ink)" }}>
 					<div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-white/10">
 						<span className="font-mono text-[11px] tracking-[0.25em]" style={{ color: "var(--pulse-lime)" }}>
-							02 — PROCESS
+							{chrome.processLabel}
 						</span>
-						<span className="hidden sm:block font-mono text-[11px] tracking-[0.25em] text-white/40">REQUEST → RESOLVED</span>
+						<span className="hidden sm:block font-mono text-[11px] tracking-[0.25em] text-white/40">{chrome.processRight}</span>
 					</div>
 
 					<div className={`px-6 md:px-12 pt-14 pb-4 transition-all duration-700 ${stepsInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-						<h2 className="text-4xl md:text-6xl font-black tracking-tight text-balance max-w-3xl">{data.stepsHeadline}</h2>
+						<h2 className="text-4xl md:text-6xl font-black tracking-tight text-balance max-w-3xl">{copy.stepsHeadline}</h2>
 					</div>
 
 					{/* EKG connecting the steps */}
@@ -408,17 +268,17 @@ export function SolutionPage({ data }: { data: SolutionData }) {
 					</div>
 
 					<div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10 border-t border-white/10">
-						{data.steps.map(({ icon: Icon, title, desc }, i) => (
+						{config.steps.map(({ key, icon: Icon }, i) => (
 							<div
-								key={title}
+								key={key}
 								className={`px-6 md:px-12 py-12 transition-all duration-700 ${stepsInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
 								style={{ transitionDelay: `${i * 150 + 150}ms` }}>
 								<div className="flex items-center justify-between mb-8">
 									<span className="font-mono text-5xl font-black text-white/15">/0{i + 1}</span>
 									<Icon className="size-5" style={{ color: "var(--pulse-lime)" }} />
 								</div>
-								<h3 className="text-xl font-bold mb-3">{title}</h3>
-								<p className="text-sm text-white/50 leading-relaxed">{desc}</p>
+								<h3 className="text-xl font-bold mb-3">{copy.steps[key].title}</h3>
+								<p className="text-sm text-white/50 leading-relaxed">{copy.steps[key].desc}</p>
 							</div>
 						))}
 					</div>
@@ -427,10 +287,10 @@ export function SolutionPage({ data }: { data: SolutionData }) {
 				{/* ── TESTIMONIAL ── */}
 				<section ref={testimonialRef as React.RefObject<HTMLElement>} className="border-b border-border">
 					<div className="flex items-center justify-between px-6 md:px-12 py-4 border-b border-border">
-						<MonoTag className="text-primary">03 — TRANSMISSION</MonoTag>
+						<MonoTag className="text-primary">{chrome.transmissionLabel}</MonoTag>
 						<span className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-muted-foreground">
 							<span className="size-1.5 rounded-full bg-accent animate-pulse" />
-							VERIFIED CUSTOMER
+							{chrome.verifiedCustomer}
 						</span>
 					</div>
 
@@ -438,11 +298,11 @@ export function SolutionPage({ data }: { data: SolutionData }) {
 						className={`px-6 md:px-12 py-14 md:py-20 transition-all duration-700 ${testimonialInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
 						<MessageSquare className="size-6 text-accent mb-6" />
 						<blockquote className="text-2xl md:text-[2rem] font-bold tracking-tight leading-snug text-balance mb-8 max-w-3xl">
-							"{data.testimonial.quote}"
+							"{copy.testimonial.quote}"
 						</blockquote>
 						<div className="font-mono text-xs tracking-wider text-muted-foreground">
-							<span className="text-foreground font-bold">{data.testimonial.author.toUpperCase()}</span> ·{" "}
-							{data.testimonial.role.toUpperCase()} — {data.testimonial.company.toUpperCase()}
+							<span className="text-foreground font-bold">{config.author.toUpperCase()}</span> ·{" "}
+							{copy.testimonial.role.toUpperCase()} — {config.company.toUpperCase()}
 						</div>
 					</div>
 				</section>
@@ -459,17 +319,19 @@ export function SolutionPage({ data }: { data: SolutionData }) {
 
 					<div
 						className={`relative px-6 md:px-12 py-24 md:py-32 text-center transition-all duration-1000 ${ctaInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-						<MonoTag className="block mb-8 text-white/50">04 — DEPLOY · {data.ctaBadge.toUpperCase()}</MonoTag>
-						<h2 className="text-4xl md:text-6xl font-black tracking-tighter text-balance mb-6 max-w-4xl mx-auto">{data.ctaHeadline}</h2>
-						<p className="text-white/55 text-lg md:text-xl mb-12 max-w-xl mx-auto">{data.ctaDesc}</p>
+						<MonoTag className="block mb-8 text-white/50">
+							{chrome.deployLabel} · {copy.ctaBadge.toUpperCase()}
+						</MonoTag>
+						<h2 className="text-4xl md:text-6xl font-black tracking-tighter text-balance mb-6 max-w-4xl mx-auto">{copy.ctaHeadline}</h2>
+						<p className="text-white/55 text-lg md:text-xl mb-12 max-w-xl mx-auto">{copy.ctaDesc}</p>
 						<div className="flex flex-col sm:flex-row justify-center gap-4">
 							<CtaLink href="/auth/signup" variant="lime">
-								Start free trial <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+								{chrome.ctaPrimary} <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
 							</CtaLink>
 							<a
-								href="/pricing"
+								href={path("/pricing")}
 								className="inline-flex items-center justify-center gap-2 border border-white/25 px-7 py-4 font-mono text-xs tracking-[0.15em] uppercase font-semibold text-white hover:border-(--pulse-lime) hover:text-(--pulse-lime) transition-colors duration-200">
-								See pricing
+								{chrome.ctaSecondary}
 							</a>
 						</div>
 					</div>
@@ -484,13 +346,13 @@ export function SolutionPage({ data }: { data: SolutionData }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function SupportTeamsPage() {
-	return <SolutionPage data={SUPPORT_TEAMS_DATA} />;
+	return <SolutionPage segment="supportTeams" />;
 }
 
 export function AgenciesPage() {
-	return <SolutionPage data={AGENCIES_DATA} />;
+	return <SolutionPage segment="agencies" />;
 }
 
 export function SoloSmallTeamsPage() {
-	return <SolutionPage data={SOLO_SMALL_TEAMS_DATA} />;
+	return <SolutionPage segment="solo" />;
 }
