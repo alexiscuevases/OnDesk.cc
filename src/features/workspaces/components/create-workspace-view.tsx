@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useForm } from "@tanstack/react-form";
 import { zodValidator } from "@tanstack/zod-form-adapter";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createWorkspaceSchema, type CreateWorkspaceValues } from "../schemas/workspace.schema";
 import { useCreateWorkspaceMutation } from "../hooks/use-workspace-mutations";
 import { SelectPlanView } from "./select-plan-view";
+import { StepIndicator } from "./workspace-step-indicator";
 import type { Workspace } from "../api/workspaces-api";
 
 function toSlug(value: string) {
@@ -19,40 +20,6 @@ function toSlug(value: string) {
 		.replace(/[^a-z0-9-]/g, "")
 		.replace(/-+/g, "-")
 		.slice(0, 50);
-}
-
-function StepIndicator({ step }: { step: 1 | 2 }) {
-	return (
-		<div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.15em] mb-8">
-			<div className="flex items-center gap-2">
-				<span
-					className={`size-6 flex items-center justify-center font-mono text-[11px] font-bold transition-colors ${
-						step >= 1
-							? "bg-primary text-primary-foreground"
-							: "border border-border bg-muted text-muted-foreground"
-					}`}>
-					{step > 1 ? <Check className="size-3" /> : "1"}
-				</span>
-				<span className={step === 1 ? "font-semibold text-foreground" : "text-muted-foreground"}>
-					Details
-				</span>
-			</div>
-			<div className="flex-1 h-px bg-border" />
-			<div className="flex items-center gap-2">
-				<span
-					className={`size-6 flex items-center justify-center font-mono text-[11px] font-bold transition-colors ${
-						step >= 2
-							? "bg-primary text-primary-foreground"
-							: "border border-border bg-muted text-muted-foreground"
-					}`}>
-					2
-				</span>
-				<span className={step === 2 ? "font-semibold text-foreground" : "text-muted-foreground"}>
-					Plan
-				</span>
-			</div>
-		</div>
-	);
 }
 
 export function CreateWorkspaceView() {
@@ -90,7 +57,7 @@ export function CreateWorkspaceView() {
 		<div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
 			<div className="w-full max-w-md">
 				{/* Step indicator */}
-				<StepIndicator step={1} />
+				<StepIndicator step={1} className="mb-8" />
 
 				{/* Header */}
 				<div className="space-y-2 mb-8">
