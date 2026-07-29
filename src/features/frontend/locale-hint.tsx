@@ -24,19 +24,20 @@ import {
  */
 export function LocaleHint() {
 	const { locale, switchLocale } = useI18n();
-	const [suggested, setSuggested] = useState<Locale | null>(null);
+
+	// An explicit prior choice settles it without any async work: either they're
+	// already where they want to be, or we point them back to it. Derived at
+	// mount because neither the cookie nor the URL changes without a reload.
+	const [suggested, setSuggested] = useState<Locale | null>(() => {
+		if (hasDismissedLocaleHint()) return null;
+		const stored = readStoredLocale();
+		return stored && stored !== locale ? stored : null;
+	});
 	const [copy, setCopy] = useState<{ message: string; action: string; dismiss: string } | null>(null);
 
 	useEffect(() => {
-		if (hasDismissedLocaleHint()) return;
-
-		// An explicit prior choice settles it — either they're already where they
-		// want to be, or we point them back to it.
-		const stored = readStoredLocale();
-		if (stored) {
-			if (stored !== locale) setSuggested(stored);
-			return;
-		}
+		// Only ask the edge when the visitor hasn't chosen for themselves.
+		if (hasDismissedLocaleHint() || readStoredLocale()) return;
 
 		let cancelled = false;
 		(async () => {
