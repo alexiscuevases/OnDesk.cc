@@ -138,6 +138,12 @@ export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promis
       systemPrompt,
       incomingMessage: `Please reply to this support ticket from ${contact.name}.`,
       agentTools,
+      toolContext: {
+        workspaceId: aiAgent.workspace_id,
+        aiAgentId: aiAgent.id,
+        ticketId: ticket.id,
+        triggeredBy: "agent",
+      },
     });
   } catch (err: unknown) {
     console.error("AI pipeline: Workers AI call failed", err);

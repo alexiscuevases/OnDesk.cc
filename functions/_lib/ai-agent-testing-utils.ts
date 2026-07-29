@@ -1,4 +1,5 @@
-import type { PublicWorkspaceProduct, ExecuteActionToken, ParsedAgentOutput } from "./types";
+import type { PublicWorkspaceProduct, ParsedAgentOutput } from "./types";
+import { toolIdFor } from "./tool-executor";
 
 /**
  * Parses JSON action payload from the AI response.
@@ -124,98 +125,60 @@ export function parseStructuredTokens(raw: string): ParsedAgentOutput {
 }
 
 /**
- * Looks up the matching product + action from the agentTools list and performs
- * the HTTP fetch.
- */
-export async function executeAction(
-	token: ExecuteActionToken,
-	agentTools: PublicWorkspaceProduct[], // Type simplified to decouple from db module exactly
-): Promise<Record<string, unknown>> {
-	for (const product of agentTools) {
-		const prefix = `${String(product.name).replace(/\s+/g, "_")}_`;
-		if (!token.actionId.startsWith(prefix)) continue;
-
-		const extractedName = token.actionId.substring(prefix.length);
-		const action = (product.actions as Record<string, unknown>[]).find((a: Record<string, unknown>) => a.name === extractedName);
-		if (!action) continue;
-
-		const config = (product.configuration as Record<string, string>) || {};
-		let url = String((action as Record<string, unknown>).endpoint || "");
-		const headers: Record<string, string> = { "Content-Type": "application/json" };
-
-		if (product.auth_type === "api_key" && config.apiKey) {
-			headers["Authorization"] = `Bearer ${config.apiKey}`;
-		}
-
-		const options: RequestInit = { method: action.method as string | undefined, headers };
-
-		if (action.method === "GET") {
-			const qs = new URLSearchParams(Object.fromEntries(Object.entries(token.params).map(([k, v]) => [k, String(v)])));
-			url += `?${qs.toString()}`;
-		} else {
-			options.body = JSON.stringify(token.params);
-		}
-
-		try {
-			const response = await fetch(url as string | URL | Request, options);
-			const result = await response.json();
-			if (!response.ok) {
-				return { error: `HTTP ${response.status}`, detail: result };
-			}
-			return result as Record<string, unknown>;
-		} catch (err: unknown) {
-			return { error: `Fetch failed: ${(err as Error)?.message ?? String(err)}` };
-		}
-	}
-
-	return { error: `Tool not found: ${token.actionId}` };
-}
-
-/**
  * Builds the AVAILABLE TOOLS section from the agent's assigned tools.
- * Groups actions by their product for readability, adds parameter enum hints,
- * and guards against excessively large tool sections that waste context.
+ * Groups actions by their connector for readability, adds parameter enum hints,
+ * flags write actions that need human approval, and guards against excessively
+ * large tool sections that waste context.
  */
 export function buildToolsSection(agentTools: PublicWorkspaceProduct[]): string {
 	if (!agentTools || agentTools.length === 0) {
 		return "AVAILABLE TOOLS: None. Do not attempt to call any tool.";
 	}
 
-	const MAX_TOOLS_CHARS = 6_000; // Guard: prevent runaway context size
+	const MAX_TOOLS_CHARS = 8_000; // Guard: prevent runaway context size
 
 	const lines: string[] = ["AVAILABLE TOOLS:"];
+	let hasAny = false;
 
 	for (const product of agentTools) {
-		const productName = String(product.name);
-		const prefix = productName.replace(/\s+/g, "_");
-		const actions = Array.isArray(product.actions) ? (product.actions as Record<string, unknown>[]) : [];
-
+		const actions = (product.actions ?? []).filter((action) => action.enabled !== false);
 		if (actions.length === 0) continue;
+		hasAny = true;
 
-		lines.push(`\n[${productName}]${product.description ? ` — ${String(product.description)}` : ""}`);
+		lines.push(`\n[${product.name}]${product.description ? ` — ${product.description}` : ""}`);
 
 		for (const action of actions) {
-			const actionId = `${prefix}_${String(action.name)}`;
-			const actionDesc = String(action.description ?? "");
-			const actionParams = Array.isArray(action.parameters) ? (action.parameters as Record<string, unknown>[]) : [];
+			const actionId = toolIdFor(product.name, action.name);
+			const params = Array.isArray(action.parameters) ? action.parameters : [];
 
 			const paramsText =
-				actionParams.length > 0
-					? actionParams
+				params.length > 0
+					? params
 							.map((p) => {
-								const type = String(p.type ?? "string");
 								const req = p.required ? ", REQUIRED" : ", optional";
-								const desc = p.description ? `: ${String(p.description)}` : "";
-								const enumVals = Array.isArray(p.enum) ? ` [enum: ${(p.enum as unknown[]).map(String).join(" | ")}]` : "";
-								return `    • ${String(p.name)} (${type}${req})${enumVals}${desc}`;
+								const where = p.in && p.in !== "body" ? `, ${p.in}` : "";
+								const enumVals = Array.isArray(p.enum) && p.enum.length > 0 ? ` [enum: ${p.enum.join(" | ")}]` : "";
+								const desc = p.description ? `: ${p.description}` : "";
+								return `    • ${p.name} (${p.type ?? "string"}${req}${where})${enumVals}${desc}`;
 							})
 							.join("\n")
 					: "    • (no parameters)";
 
 			lines.push(`  actionId: "${actionId}"`);
-			lines.push(`  Description: ${actionDesc}`);
+			lines.push(`  Description: ${action.description}`);
+			if (action.requires_confirmation) {
+				lines.push(
+					"  ⚠ WRITE ACTION — REQUIRES HUMAN APPROVAL. Never call this yourself. If the customer needs it, ESCALATE and explain what should be done.",
+				);
+			} else if (action.is_read_only === false) {
+				lines.push("  ⚠ This action modifies data in the external system. Only call it when the customer has clearly asked for it.");
+			}
 			lines.push(`  Parameters:\n${paramsText}`);
 		}
+	}
+
+	if (!hasAny) {
+		return "AVAILABLE TOOLS: None. Do not attempt to call any tool.";
 	}
 
 	const section = lines.join("\n");

@@ -59,6 +59,12 @@ export const onRequest = withWorkspace<"id">(async ({ request, env, payload, par
           history,
           incomingMessage,
           agentTools,
+          toolContext: {
+            workspaceId,
+            aiAgentId: agent.id,
+            userId: payload.sub,
+            triggeredBy: "user",
+          },
           collectTraces: true,
         });
 

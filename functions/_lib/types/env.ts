@@ -32,4 +32,7 @@ export interface Env {
 	STRIPE_ENTERPRISE_ANNUAL_PRICE_ID: string;
 	// Cron / scheduled jobs (bearer token sent in Authorization header)
 	CRON_SECRET?: string;
+	// AES-GCM key material for marketplace connector credentials at rest.
+	// Falls back to JWT_SECRET when unset (rotating it invalidates stored creds).
+	CREDENTIALS_SECRET?: string;
 }

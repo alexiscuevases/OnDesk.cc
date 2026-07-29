@@ -12,7 +12,11 @@
     "pages:deploy": "npm run build && wrangler pages deploy dist",
     "db:create": "wrangler d1 create pulse-db",
     "db:migrate:remote": "wrangler d1 execute pulse-db --remote --file=functions/_db/schema.sql",
-    "db:migrate:local": "wrangler d1 execute pulse-db --local --file=functions/_db/schema.sql"
+    "db:migrate:local": "wrangler d1 execute pulse-db --local --file=functions/_db/schema.sql",
+    "db:migrate:marketplace:local": "wrangler d1 execute pulse-db --local --file=functions/_db/migrations/001_marketplace_connectors.sql",
+    "db:migrate:marketplace:remote": "wrangler d1 execute pulse-db --remote --file=functions/_db/migrations/001_marketplace_connectors.sql",
+    "db:seed:marketplace:local": "wrangler d1 execute pulse-db --local --file=functions/_db/seeds/marketplace_templates.sql",
+    "db:seed:marketplace:remote": "wrangler d1 execute pulse-db --remote --file=functions/_db/seeds/marketplace_templates.sql"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.0",

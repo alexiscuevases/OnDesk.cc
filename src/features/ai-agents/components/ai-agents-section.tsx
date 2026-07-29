@@ -32,8 +32,8 @@ import { EditAiAgentModal } from "../modals/edit-ai-agent-modal";
 import { ManageMailboxesModal } from "../modals/manage-mailboxes-modal";
 import { ManageToolsModal } from "../modals/manage-tools-modal";
 import { TestAiAgentModal } from "../modals/test-ai-agent-modal";
-import { useAgentTools, useAssignTool, useRemoveTool } from "../hooks/use-agent-tools";
-import { useWorkspaceProducts } from "@/features/marketplace/hooks/useWorkspaceProducts";
+import { useAgentTools, useAssignTool, useRemoveTool, useUpdateToolActions } from "../hooks/use-agent-tools";
+import { useWorkspaceProducts } from "@/features/marketplace";
 
 function AgentMailboxesRow({
   workspaceId,
@@ -102,6 +102,7 @@ function AgentToolsRow({
 
   const assign = useAssignTool(agent.id);
   const remove = useRemoveTool(agent.id);
+  const limitActions = useUpdateToolActions(agent.id);
 
   return (
     <>
@@ -122,6 +123,12 @@ function AgentToolsRow({
         allWorkspaceProducts={allProducts ?? []}
         onAssign={(id) => assign.mutate(id, { onError: (err) => toast.error(err.message) })}
         onUnassign={(id) => remove.mutate(id, { onError: (err) => toast.error(err.message) })}
+        onLimitActions={(id, allowedActions) =>
+          limitActions.mutate(
+            { workspaceProductId: id, allowedActions },
+            { onError: (err) => toast.error(err.message) },
+          )
+        }
       />
     </>
   );

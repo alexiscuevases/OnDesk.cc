@@ -5,8 +5,18 @@ import type {
 	AgentLoopTrace,
 	AgentLoopResult,
 } from "./types";
-import { parseStructuredTokens, executeAction } from "./ai-agent-testing-utils";
+import { parseStructuredTokens } from "./ai-agent-testing-utils";
+import { runTool, toModelResult } from "./tool-runner";
 import { AI_LIMITS, AI_MODEL } from "./configs";
+
+/** Identifies who/what the tool calls belong to, for credentials + audit log. */
+export interface AgentToolContext {
+  workspaceId: string;
+  aiAgentId?: string | null;
+  ticketId?: string | null;
+  userId?: string | null;
+  triggeredBy?: "agent" | "user";
+}
 
 interface RunAgenticLoopInput {
   env: Env;
@@ -14,6 +24,8 @@ interface RunAgenticLoopInput {
   history?: Array<{ role: "user" | "assistant"; content: string }>;
   incomingMessage?: string;
   agentTools: PublicWorkspaceProduct[];
+  /** Required for the agent to actually execute connector actions. */
+  toolContext?: AgentToolContext;
   model?: string;
   maxActions?: number;
   maxTokens?: number;
@@ -27,6 +39,7 @@ export async function runAgenticLoop(input: RunAgenticLoopInput): Promise<AgentL
     history = [],
     incomingMessage,
     agentTools,
+    toolContext,
     model = AI_MODEL,
     maxActions = AI_LIMITS.MAX_ACTIONS,
     maxTokens = AI_LIMITS.MAX_TOKENS,
@@ -92,7 +105,23 @@ export async function runAgenticLoop(input: RunAgenticLoopInput): Promise<AgentL
       executedActions.add(fingerprint);
       actionCount++;
 
-      const toolResult = await executeAction(parsed.action, agentTools);
+      const toolResult = toolContext
+        ? toModelResult(
+            await runTool({
+              env,
+              workspaceId: toolContext.workspaceId,
+              tools: agentTools,
+              actionId: parsed.action.actionId,
+              params: parsed.action.params,
+              triggeredBy: toolContext.triggeredBy ?? "agent",
+              aiAgentId: toolContext.aiAgentId,
+              ticketId: toolContext.ticketId,
+              userId: toolContext.userId,
+              // Write actions stay gated behind a human even in test runs.
+              allowConfirmationRequired: false,
+            }),
+          )
+        : { ok: false, error: "Tool execution is not available in this context." };
       stepTrace.toolResult = toolResult;
       if (collectTraces) traces.push(stepTrace);
 

@@ -210,3 +210,82 @@ export async function hashRefreshToken(token: string): Promise<string> {
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
+
+// ─── AES-GCM secret box (third-party API credentials at rest) ─────────────────
+//
+// Marketplace connectors hold customer-owned secrets (Stripe secret keys,
+// Calendly PATs…). Those are reversible by design — the worker must replay them
+// on every outbound call — so they are encrypted with AES-256-GCM instead of
+// hashed. The key is derived from an env secret; the ciphertext is
+// self-describing so the format can be rotated later.
+
+const SECRET_BOX_PREFIX = "aesgcm.v1";
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary);
+}
+
+function base64ToBytes(value: string): Uint8Array {
+  const binary = atob(value);
+  return new Uint8Array(Array.from(binary, (c) => c.charCodeAt(0)));
+}
+
+async function deriveSecretBoxKey(secret: string): Promise<CryptoKey> {
+  const enc = new TextEncoder();
+  // Domain-separated so the same env secret can also sign JWTs safely.
+  const digest = await crypto.subtle.digest("SHA-256", enc.encode(`pulse.secretbox.v1:${secret}`));
+  return crypto.subtle.importKey("raw", digest, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+}
+
+/** Encrypt a UTF-8 string. Returns "aesgcm.v1.<iv_b64>.<ciphertext_b64>". */
+export async function encryptSecret(plaintext: string, secret: string): Promise<string> {
+  const key = await deriveSecretBoxKey(secret);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    key,
+    new TextEncoder().encode(plaintext)
+  );
+  return `${SECRET_BOX_PREFIX}.${bytesToBase64(iv)}.${bytesToBase64(new Uint8Array(ciphertext))}`;
+}
+
+/** Decrypt a value produced by encryptSecret. Returns null when unreadable. */
+export async function decryptSecret(payload: string, secret: string): Promise<string | null> {
+  const parts = payload.split(".");
+  if (parts.length !== 4 || `${parts[0]}.${parts[1]}` !== SECRET_BOX_PREFIX) return null;
+
+  try {
+    const key = await deriveSecretBoxKey(secret);
+    const iv = base64ToBytes(parts[2]);
+    const ciphertext = base64ToBytes(parts[3]);
+    const plaintext = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: iv as unknown as ArrayBuffer },
+      key,
+      ciphertext as unknown as ArrayBuffer
+    );
+    return new TextDecoder().decode(plaintext);
+  } catch {
+    return null;
+  }
+}
+
+/** Encrypt a JSON-serialisable record (used for connector credential bags). */
+export async function encryptJson(value: Record<string, unknown>, secret: string): Promise<string> {
+  return encryptSecret(JSON.stringify(value), secret);
+}
+
+/** Decrypt a record written by encryptJson. Returns {} when unreadable. */
+export async function decryptJson(payload: string | null, secret: string): Promise<Record<string, string>> {
+  if (!payload) return {};
+  const plaintext = await decryptSecret(payload, secret);
+  if (!plaintext) return {};
+  try {
+    const parsed = JSON.parse(plaintext);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return parsed as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
