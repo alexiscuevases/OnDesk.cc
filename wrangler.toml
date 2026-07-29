@@ -44,6 +44,18 @@ index_name = "ondesk-memories"
 binding = "VECTORIZE_KB"
 index_name = "ondesk-kb"
 
+# ── Marketplace connector credentials ─────────────────────────────────────────
+# CREDENTIALS_SECRET is the master key used to derive the AES-256-GCM key that
+# encrypts each workspace's third-party API credentials (workspace_products.
+# credentials). Falls back to JWT_SECRET when unset.
+#
+#   wrangler pages secret put CREDENTIALS_SECRET --project-name pulse
+#   wrangler pages secret put CREDENTIALS_SECRET --project-name pulse --env preview
+#
+# Set on both environments (they share one D1 database, so they must share the
+# key). NEVER rotate it: stored credentials become undecryptable and every
+# workspace admin has to re-enter their tokens. See docs/marketplace.md.
+
 # ── Email secrets (Resend) ────────────────────────────────────────────────────
 # Sign up at resend.com, verify your domain, then run:
 #
