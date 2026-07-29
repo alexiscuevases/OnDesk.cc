@@ -46,8 +46,8 @@ export function NotificationsPanel() {
 				<Button variant="ghost" size="icon" className="relative size-8">
 					<Bell className="size-4" />
 					{unreadCount > 0 && (
-						<span className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-accent-foreground">
-							{unreadCount}
+						<span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[9px] font-bold text-accent-foreground tabular-nums">
+							{unreadCount > 99 ? "+99" : unreadCount}
 						</span>
 					)}
 					<span className="sr-only">Notifications</span>
