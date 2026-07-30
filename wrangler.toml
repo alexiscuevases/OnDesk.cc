@@ -56,11 +56,25 @@ index_name = "ondesk-kb"
 # key). NEVER rotate it: stored credentials become undecryptable and every
 # workspace admin has to re-enter their tokens. See docs/marketplace.md.
 
-# ── Email secrets (Resend) ────────────────────────────────────────────────────
-# Sign up at resend.com, verify your domain, then run:
+# ── Email (Cloudflare Email Sending) ──────────────────────────────────────────
+# Pages Functions do not support the `send_email` Workers binding, so we call the
+# Email Sending REST API instead:
 #
-#   wrangler secret put RESEND_API_KEY          (e.g. re_xxxxxxxx)
-#   wrangler secret put RESEND_FROM_EMAIL       (e.g. noreply@yourdomain.com)
+#   POST /accounts/{CF_ACCOUNT_ID}/email/sending/send
+#
+# 1. Onboard the sending domain (adds SPF + DKIM records):
+#
+#      wrangler email sending enable pulse.ondesk.cc
+#      wrangler email sending dns get pulse.ondesk.cc     # verify propagation
+#
+# 2. Create an account-scoped API token with permission to send email, then:
+#
+#      wrangler pages secret put EMAIL_API_TOKEN --project-name pulse
+#      wrangler pages secret put CF_ACCOUNT_ID   --project-name pulse
+#      wrangler pages secret put EMAIL_FROM      --project-name pulse   (e.g. no-reply@pulse.ondesk.cc)
+#
+# EMAIL_FROM_NAME is optional and defaults to "OnDesk". The EMAIL_FROM domain
+# must be the onboarded one, or sends fail with a sender-not-verified error.
 
 # ── Stripe secrets ────────────────────────────────────────────────────────────
 # Set these via: wrangler secret put <KEY>

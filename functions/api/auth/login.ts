@@ -66,7 +66,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 			const lockedUntil = now + LOCK_DURATION_SECONDS;
 			await lockUser(env.DB, user.id, lockedUntil);
 			try {
-				await sendEmail(env.RESEND_API_KEY, env.RESEND_FROM_EMAIL, {
+				await sendEmail(env, {
 					to: user.email,
 					subject: "Your OnDesk account has been locked",
 					html: accountLockedEmail(env.APP_URL, user.name),
@@ -111,7 +111,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 		await createTwoFactorCode(env.DB, user.id, codeHash, TWO_FA_CODE_TTL);
 
 		try {
-			await sendEmail(env.RESEND_API_KEY, env.RESEND_FROM_EMAIL, {
+			await sendEmail(env, {
 				to: user.email,
 				subject: "Your OnDesk sign-in code",
 				html: twoFactorCodeEmail(code, user.name),

@@ -1,8 +1,11 @@
 export interface Env {
 	APP_URL: string;
 	JWT_SECRET: string;
-	RESEND_API_KEY: string;
-	RESEND_FROM_EMAIL: string;
+	// Cloudflare Email Sending (REST API — Pages Functions have no send_email binding)
+	CF_ACCOUNT_ID: string;
+	EMAIL_API_TOKEN: string;
+	EMAIL_FROM: string;
+	EMAIL_FROM_NAME?: string;
 	// Cloudfalre
 	DB: D1Database;
 	STORAGE: R2Bucket;

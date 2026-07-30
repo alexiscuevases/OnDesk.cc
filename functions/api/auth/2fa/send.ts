@@ -35,7 +35,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 	await createTwoFactorCode(env.DB, user.id, codeHash, TWO_FA_CODE_TTL);
 
 	try {
-		await sendEmail(env.RESEND_API_KEY, env.RESEND_FROM_EMAIL, {
+		await sendEmail(env, {
 			to: user.email,
 			subject: "Your new OnDesk sign-in code",
 			html: twoFactorCodeEmail(code, user.name),

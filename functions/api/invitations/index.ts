@@ -12,6 +12,8 @@ import {
 } from "../../_lib/db";
 import { withAuth } from "../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../_lib/http";
+import { sendEmail, emailConfigured, invitationEmail } from "../../_lib/email";
+import type { Env } from "../../_lib/types";
 
 const INVITATION_TTL = 60 * 60 * 24 * 7; // 7 days
 const VALID_ROLES = ["owner", "admin", "agent"];
@@ -24,33 +26,19 @@ function generateInvitationToken(): string {
 		.join("");
 }
 
-async function sendInvitationEmail(env: unknown, to: string, role: string, token: string): Promise<void> {
-	const e = env as Record<string, string>;
-	const appUrl = e.APP_URL ?? "http://localhost:8788";
+async function sendInvitationEmail(env: Env, to: string, role: string, token: string): Promise<void> {
+	const appUrl = env.APP_URL ?? "http://localhost:8788";
 	const inviteUrl = `${appUrl}/auth/signup?invite=${token}`;
-	const resendKey = e.RESEND_API_KEY;
 
-	if (!resendKey) {
+	if (!emailConfigured(env)) {
 		console.log(`[DEV] Invitation link for ${to}: ${inviteUrl}`);
 		return;
 	}
 
-	await fetch("https://api.resend.com/emails", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${resendKey}`,
-		},
-		body: JSON.stringify({
-			from: "OnDesk.cc <no-reply@pulse.ondesk.cc>",
-			to: [to],
-			subject: "You've been invited to join a workspace",
-			html: `
-            <p>You've been invited to join a workspace on <strong>OnDesk.cc</strong> as <strong>${role}</strong>.</p>
-            <p><a href="${inviteUrl}" style="background:#000;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block;">Accept Invitation</a></p>
-            <p>This invitation expires in 7 days. If you did not expect this, you can ignore this email.</p>
-          `,
-		}),
+	await sendEmail(env, {
+		to,
+		subject: "You've been invited to join a workspace",
+		html: invitationEmail(inviteUrl, role),
 	});
 }
 

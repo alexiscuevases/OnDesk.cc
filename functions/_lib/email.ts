@@ -1,22 +1,84 @@
+import type { Env } from "./types";
+
 interface EmailOptions {
 	to: string;
 	subject: string;
 	html: string;
+	/** Plain-text alternative. Derived from `html` when omitted. */
+	text?: string;
 }
 
-export async function sendEmail(apiKey: string, from: string, opts: EmailOptions): Promise<void> {
-	const res = await fetch("https://api.resend.com/emails", {
+/** Slice of Env that Cloudflare Email Sending needs. */
+type EmailEnv = Pick<Env, "CF_ACCOUNT_ID" | "EMAIL_API_TOKEN" | "EMAIL_FROM" | "EMAIL_FROM_NAME">;
+
+interface SendResponse {
+	success: boolean;
+	errors?: { code: number; message: string }[];
+	result?: { delivered?: string[]; permanent_bounces?: string[]; queued?: string[] } | null;
+}
+
+const DEFAULT_FROM_NAME = "OnDesk";
+
+export function emailConfigured(env: EmailEnv): boolean {
+	return Boolean(env.CF_ACCOUNT_ID && env.EMAIL_API_TOKEN && env.EMAIL_FROM);
+}
+
+/**
+ * Sends a transactional email through the Cloudflare Email Sending REST API.
+ * Pages Functions can't use the `send_email` Workers binding, so we call the
+ * account-scoped REST endpoint with an API token instead.
+ */
+export async function sendEmail(env: EmailEnv, opts: EmailOptions): Promise<void> {
+	if (!emailConfigured(env)) {
+		throw new Error("Email is not configured (CF_ACCOUNT_ID, EMAIL_API_TOKEN, EMAIL_FROM)");
+	}
+
+	const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/email/sending/send`, {
 		method: "POST",
 		headers: {
-			Authorization: `Bearer ${apiKey}`,
+			Authorization: `Bearer ${env.EMAIL_API_TOKEN}`,
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({ from, to: opts.to, subject: opts.subject, html: opts.html }),
+		body: JSON.stringify({
+			from: { address: env.EMAIL_FROM, name: env.EMAIL_FROM_NAME ?? DEFAULT_FROM_NAME },
+			to: opts.to,
+			subject: opts.subject,
+			html: opts.html,
+			text: opts.text ?? htmlToText(opts.html),
+		}),
 	});
-	if (!res.ok) {
-		const body = await res.text().catch(() => "");
-		throw new Error(`Email delivery failed (${res.status}): ${body}`);
+
+	const body = (await res.json().catch(() => null)) as SendResponse | null;
+
+	if (!res.ok || !body?.success) {
+		const detail = body?.errors?.map((e) => `${e.code} ${e.message}`).join("; ") || `HTTP ${res.status}`;
+		throw new Error(`Email delivery failed (${res.status}): ${detail}`);
 	}
+
+	const bounced = body.result?.permanent_bounces;
+	if (bounced?.length) {
+		throw new Error(`Email permanently bounced: ${bounced.join(", ")}`);
+	}
+}
+
+/** Plain-text fallback so messages aren't HTML-only (helps spam scoring). */
+function htmlToText(html: string): string {
+	return html
+		.replace(/<(style|script|head)\b[\s\S]*?<\/\1>/gi, "")
+		.replace(/<a\b[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, "$2 ($1)")
+		.replace(/<br\s*\/?>/gi, "\n")
+		.replace(/<\/(p|div|h[1-6]|li|tr)>/gi, "\n\n")
+		.replace(/<[^>]+>/g, "")
+		.replace(/&nbsp;/g, " ")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&quot;/g, '"')
+		.replace(/&#39;|&apos;/g, "'")
+		.replace(/&amp;/g, "&")
+		.replace(/[ \t]+/g, " ")
+		.replace(/^ +| +$/gm, "")
+		.replace(/\n{3,}/g, "\n\n")
+		.trim();
 }
 
 // ─── Templates ───────────────────────────────────────────────────────────────
@@ -71,6 +133,14 @@ export function accountLockedEmail(appUrl: string, name: string): string {
     <a href="${appUrl}/auth/recover" class="btn">Reset password</a>
     <p>If this wasn't you, please reset your password immediately to secure your account.</p>
   `);
+}
+
+export function invitationEmail(inviteUrl: string, role: string): string {
+	return `
+            <p>You've been invited to join a workspace on <strong>OnDesk.cc</strong> as <strong>${role}</strong>.</p>
+            <p><a href="${inviteUrl}" style="background:#000;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block;">Accept Invitation</a></p>
+            <p>This invitation expires in 7 days. If you did not expect this, you can ignore this email.</p>
+          `;
 }
 
 export function twoFactorCodeEmail(code: string, name: string): string {

@@ -34,7 +34,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 	const resetUrl = `${env.APP_URL}/auth/reset-password?token=${token}`;
 
 	try {
-		await sendEmail(env.RESEND_API_KEY, env.RESEND_FROM_EMAIL, {
+		await sendEmail(env, {
 			to: user.email,
 			subject: "Reset your OnDesk password",
 			html: passwordResetEmail(env.APP_URL, resetUrl, user.name),
