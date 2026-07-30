@@ -1,6 +1,16 @@
 export interface Env {
 	APP_URL: string;
+	/** Signs pulse's own session cookies (HS256). These never leave this origin. */
 	JWT_SECRET: string;
+	// ── OnDesk SSO ──────────────────────────────────────────────────────────
+	// Pulse authenticates nobody: it is an OIDC Relying Party of the control
+	// plane. See functions/_lib/sso.ts.
+	/** Defaults to https://ondesk.cc when unset. */
+	ONDESK_ISSUER?: string;
+	ONDESK_CLIENT_ID: string;
+	ONDESK_CLIENT_SECRET: string;
+	/** Verifies inbound mirror-sync webhooks from ondesk. */
+	ONDESK_WEBHOOK_SECRET: string;
 	// Cloudflare Email Sending (REST API — Pages Functions have no send_email binding)
 	CF_ACCOUNT_ID: string;
 	EMAIL_API_TOKEN: string;

@@ -1,113 +1,76 @@
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, Monitor, Smartphone } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { ShieldCheck, Monitor, Smartphone, ExternalLink, KeyRound } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
-import { apiToggle2FA } from "@/features/auth/api/auth-api";
-import { authQueryKeys } from "@/features/auth/hooks/use-auth-mutations";
+
+const ONDESK_URL = import.meta.env.VITE_ONDESK_URL ?? "https://ondesk.cc";
 
 const activeSessions = [
 	{ id: "1", device: "Chrome on macOS", location: "Buenos Aires, AR", current: true, icon: Monitor },
 	{ id: "2", device: "Safari on iPhone", location: "Buenos Aires, AR", current: false, icon: Smartphone },
 ];
 
+/**
+ * Account security is an OnDesk concern: the password, two-factor and the
+ * connected Google/Microsoft identities are shared across every product, so
+ * Pulse links out rather than keeping a second, divergent copy of the controls.
+ */
 export function ProfileSecuritySection() {
-	const { user, setUser } = useAuth();
-	const queryClient = useQueryClient();
-	const [twoFactorEnabled, setTwoFactorEnabled] = useState(user?.two_factor_enabled ?? false);
-
-	const toggleMutation = useMutation({
-		mutationFn: (enabled: boolean) => apiToggle2FA(enabled),
-		onMutate: (enabled) => setTwoFactorEnabled(enabled),
-		onSuccess: (_, enabled) => {
-			if (user) {
-				const updated = { ...user, two_factor_enabled: enabled };
-				setUser(updated);
-				queryClient.setQueryData(authQueryKeys.me, updated);
-			}
-			toast.success(enabled ? "Two-factor authentication enabled" : "Two-factor authentication disabled");
-		},
-		onError: (err, enabled) => {
-			setTwoFactorEnabled(!enabled);
-			toast.error(err instanceof Error ? err.message : "Failed to update 2FA");
-		},
-	});
+	const { user } = useAuth();
 
 	return (
-		<div className="grid gap-4">
+		<div className="flex flex-col gap-6">
 			<Card>
 				<CardHeader>
-					<CardTitle className="console-label text-primary dark:text-accent">Two-Factor Authentication</CardTitle>
-					<CardDescription className="text-xs">Add an extra layer of security to your account</CardDescription>
+					<CardTitle className="flex items-center gap-2">
+						<ShieldCheck className="size-4" />
+						Account security
+					</CardTitle>
+					<CardDescription>
+						Your password, two-factor authentication and connected accounts are managed on your
+						OnDesk account and apply everywhere you sign in.
+					</CardDescription>
 				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="flex items-center justify-between">
-						<div>
-							<Label className="text-xs">Enable 2FA via email</Label>
-							<p className="text-[10px] text-muted-foreground">Require a 6-digit code each time you sign in</p>
-						</div>
-						<Switch
-							checked={twoFactorEnabled}
-							onCheckedChange={(checked) => toggleMutation.mutate(checked)}
-							disabled={toggleMutation.isPending}
-						/>
+				<CardContent className="flex flex-col gap-4">
+					<div className="text-sm">
+						<p className="text-muted-foreground text-xs">Signed in as</p>
+						<p className="font-medium">{user?.email}</p>
 					</div>
 					<Separator />
-					<div className="flex items-center gap-3 border border-border bg-secondary/60 p-3">
-						<ShieldCheck className="size-4 text-muted-foreground shrink-0" />
-						<p className="text-[11px] text-muted-foreground">
-							{twoFactorEnabled
-								? "2FA is active. A verification code will be sent to your email on each sign-in."
-								: "We recommend enabling 2FA for all accounts that handle customer data."}
-						</p>
+					<div className="flex flex-wrap gap-2">
+						<Button asChild variant="outline">
+							<a href={`${ONDESK_URL}/account/security`} target="_blank" rel="noreferrer">
+								<KeyRound className="size-3.5" />
+								Manage on OnDesk
+								<ExternalLink className="size-3.5" />
+							</a>
+						</Button>
 					</div>
 				</CardContent>
 			</Card>
 
 			<Card>
 				<CardHeader>
-					<CardTitle className="console-label text-primary dark:text-accent">Active Sessions</CardTitle>
-					<CardDescription className="text-xs">Devices currently signed in to your account</CardDescription>
+					<CardTitle>Active sessions</CardTitle>
+					<CardDescription>Devices currently signed in to Pulse.</CardDescription>
 				</CardHeader>
-				<CardContent className="space-y-4">
-					{activeSessions.map((session, i) => {
-						const Icon = session.icon;
-						return (
-							<div key={session.id}>
-								{i > 0 && <Separator className="mb-4" />}
-								<div className="flex items-center gap-3">
-									<div className="flex size-8 items-center justify-center bg-secondary shrink-0">
-										<Icon className="size-4 text-muted-foreground" />
-									</div>
-									<div className="flex-1 min-w-0">
-										<p className="text-xs font-medium truncate">{session.device}</p>
-										<p className="text-[10px] text-muted-foreground">{session.location}</p>
-									</div>
-									{session.current ? (
-										<Badge variant="secondary" className="text-[10px] shrink-0">Current</Badge>
-									) : (
-										<Button variant="ghost" size="sm" className="h-6 text-[10px] text-destructive hover:text-destructive shrink-0">
-											Revoke
-										</Button>
-									)}
-								</div>
+				<CardContent className="flex flex-col gap-3">
+					{activeSessions.map((session) => (
+						<div key={session.id} className="flex items-center gap-3">
+							<session.icon className="text-muted-foreground size-4" />
+							<div className="flex-1">
+								<p className="text-sm font-medium">{session.device}</p>
+								<p className="text-muted-foreground text-xs">{session.location}</p>
 							</div>
-						);
-					})}
-					<Separator />
-					<div className="flex justify-end">
-						<Button variant="outline" size="sm" className="h-7 text-xs text-destructive hover:text-destructive">
-							Sign out all other sessions
-						</Button>
-					</div>
+							{session.current && <Badge variant="secondary">This device</Badge>}
+						</div>
+					))}
 				</CardContent>
 			</Card>
 		</div>
 	);
 }
+
+export default ProfileSecuritySection;

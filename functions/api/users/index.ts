@@ -18,8 +18,8 @@ export const onRequest = withWorkspace(async ({ request, env, payload, workspace
 
   return createMethodRouter(request.method, {
     GET: async () => {
-      const members = await findWorkspaceMembers(env.DB, workspaceId);
-      const users = members.map(({ password_hash: _ph, ...u }) => u);
+      // No field to strip any more: the mirrored users table holds no secrets.
+      const users = await findWorkspaceMembers(env.DB, workspaceId);
       return jsonOk({ users });
     },
     PATCH: async () => {

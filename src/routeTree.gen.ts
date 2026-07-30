@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkspacesRouteImport } from './routes/workspaces'
 import { Route as WRouteImport } from './routes/w'
-import { Route as AuthRouteImport } from './routes/auth'
 import { Route as Char123LangChar125RouteRouteImport } from './routes/{-$lang}/route'
 import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}/index'
 import { Route as WorkspacesIndexRouteImport } from './routes/workspaces/index'
@@ -30,13 +29,8 @@ import { Route as Char123LangChar125ChangelogRouteImport } from './routes/{-$lan
 import { Route as Char123LangChar125CareersRouteImport } from './routes/{-$lang}/careers'
 import { Route as Char123LangChar125BlogRouteImport } from './routes/{-$lang}/blog'
 import { Route as Char123LangChar125AboutRouteImport } from './routes/{-$lang}/about'
-import { Route as WorkspacesNewRouteImport } from './routes/workspaces/new'
 import { Route as WSlugRouteImport } from './routes/w/$slug'
-import { Route as AuthTwoFactorRouteImport } from './routes/auth/two-factor'
-import { Route as AuthSignupRouteImport } from './routes/auth/signup'
-import { Route as AuthSigninRouteImport } from './routes/auth/signin'
-import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
-import { Route as AuthRecoverRouteImport } from './routes/auth/recover'
+import { Route as AuthErrorRouteImport } from './routes/auth/error'
 import { Route as Char123LangChar125SolutionsSupportTeamsRouteImport } from './routes/{-$lang}/solutions/support-teams'
 import { Route as Char123LangChar125SolutionsSoloSmallTeamsRouteImport } from './routes/{-$lang}/solutions/solo-small-teams'
 import { Route as Char123LangChar125SolutionsAgenciesRouteImport } from './routes/{-$lang}/solutions/agencies'
@@ -59,11 +53,6 @@ const WorkspacesRoute = WorkspacesRouteImport.update({
 const WRoute = WRouteImport.update({
   id: '/w',
   path: '/w',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Char123LangChar125RouteRoute = Char123LangChar125RouteRouteImport.update({
@@ -167,40 +156,15 @@ const Char123LangChar125AboutRoute = Char123LangChar125AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => Char123LangChar125RouteRoute,
 } as any)
-const WorkspacesNewRoute = WorkspacesNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => WorkspacesRoute,
-} as any)
 const WSlugRoute = WSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => WRoute,
 } as any)
-const AuthTwoFactorRoute = AuthTwoFactorRouteImport.update({
-  id: '/two-factor',
-  path: '/two-factor',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthSignupRoute = AuthSignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthSigninRoute = AuthSigninRouteImport.update({
-  id: '/signin',
-  path: '/signin',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthRecoverRoute = AuthRecoverRouteImport.update({
-  id: '/recover',
-  path: '/recover',
-  getParentRoute: () => AuthRoute,
+const AuthErrorRoute = AuthErrorRouteImport.update({
+  id: '/auth/error',
+  path: '/auth/error',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const Char123LangChar125SolutionsSupportTeamsRoute =
   Char123LangChar125SolutionsSupportTeamsRouteImport.update({
@@ -273,16 +237,10 @@ const WSlugTicketsIdRoute = WSlugTicketsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/{-$lang}': typeof Char123LangChar125RouteRouteWithChildren
-  '/auth': typeof AuthRouteWithChildren
   '/w': typeof WRouteWithChildren
   '/workspaces': typeof WorkspacesRouteWithChildren
-  '/auth/recover': typeof AuthRecoverRoute
-  '/auth/reset-password': typeof AuthResetPasswordRoute
-  '/auth/signin': typeof AuthSigninRoute
-  '/auth/signup': typeof AuthSignupRoute
-  '/auth/two-factor': typeof AuthTwoFactorRoute
+  '/auth/error': typeof AuthErrorRoute
   '/w/$slug': typeof WSlugRouteWithChildren
-  '/workspaces/new': typeof WorkspacesNewRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/blog': typeof Char123LangChar125BlogRoute
   '/{-$lang}/careers': typeof Char123LangChar125CareersRoute
@@ -315,15 +273,9 @@ export interface FileRoutesByFullPath {
   '/w/$slug/tickets/': typeof WSlugTicketsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/auth': typeof AuthRouteWithChildren
   '/w': typeof WRouteWithChildren
-  '/auth/recover': typeof AuthRecoverRoute
-  '/auth/reset-password': typeof AuthResetPasswordRoute
-  '/auth/signin': typeof AuthSigninRoute
-  '/auth/signup': typeof AuthSignupRoute
-  '/auth/two-factor': typeof AuthTwoFactorRoute
+  '/auth/error': typeof AuthErrorRoute
   '/w/$slug': typeof WSlugRouteWithChildren
-  '/workspaces/new': typeof WorkspacesNewRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/blog': typeof Char123LangChar125BlogRoute
   '/{-$lang}/careers': typeof Char123LangChar125CareersRoute
@@ -357,16 +309,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/{-$lang}': typeof Char123LangChar125RouteRouteWithChildren
-  '/auth': typeof AuthRouteWithChildren
   '/w': typeof WRouteWithChildren
   '/workspaces': typeof WorkspacesRouteWithChildren
-  '/auth/recover': typeof AuthRecoverRoute
-  '/auth/reset-password': typeof AuthResetPasswordRoute
-  '/auth/signin': typeof AuthSigninRoute
-  '/auth/signup': typeof AuthSignupRoute
-  '/auth/two-factor': typeof AuthTwoFactorRoute
+  '/auth/error': typeof AuthErrorRoute
   '/w/$slug': typeof WSlugRouteWithChildren
-  '/workspaces/new': typeof WorkspacesNewRoute
   '/{-$lang}/about': typeof Char123LangChar125AboutRoute
   '/{-$lang}/blog': typeof Char123LangChar125BlogRoute
   '/{-$lang}/careers': typeof Char123LangChar125CareersRoute
@@ -402,16 +348,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/{-$lang}'
-    | '/auth'
     | '/w'
     | '/workspaces'
-    | '/auth/recover'
-    | '/auth/reset-password'
-    | '/auth/signin'
-    | '/auth/signup'
-    | '/auth/two-factor'
+    | '/auth/error'
     | '/w/$slug'
-    | '/workspaces/new'
     | '/{-$lang}/about'
     | '/{-$lang}/blog'
     | '/{-$lang}/careers'
@@ -444,15 +384,9 @@ export interface FileRouteTypes {
     | '/w/$slug/tickets/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/auth'
     | '/w'
-    | '/auth/recover'
-    | '/auth/reset-password'
-    | '/auth/signin'
-    | '/auth/signup'
-    | '/auth/two-factor'
+    | '/auth/error'
     | '/w/$slug'
-    | '/workspaces/new'
     | '/{-$lang}/about'
     | '/{-$lang}/blog'
     | '/{-$lang}/careers'
@@ -485,16 +419,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/{-$lang}'
-    | '/auth'
     | '/w'
     | '/workspaces'
-    | '/auth/recover'
-    | '/auth/reset-password'
-    | '/auth/signin'
-    | '/auth/signup'
-    | '/auth/two-factor'
+    | '/auth/error'
     | '/w/$slug'
-    | '/workspaces/new'
     | '/{-$lang}/about'
     | '/{-$lang}/blog'
     | '/{-$lang}/careers'
@@ -529,9 +457,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   Char123LangChar125RouteRoute: typeof Char123LangChar125RouteRouteWithChildren
-  AuthRoute: typeof AuthRouteWithChildren
   WRoute: typeof WRouteWithChildren
   WorkspacesRoute: typeof WorkspacesRouteWithChildren
+  AuthErrorRoute: typeof AuthErrorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -548,13 +476,6 @@ declare module '@tanstack/react-router' {
       path: '/w'
       fullPath: '/w'
       preLoaderRoute: typeof WRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/{-$lang}': {
@@ -683,13 +604,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LangChar125AboutRouteImport
       parentRoute: typeof Char123LangChar125RouteRoute
     }
-    '/workspaces/new': {
-      id: '/workspaces/new'
-      path: '/new'
-      fullPath: '/workspaces/new'
-      preLoaderRoute: typeof WorkspacesNewRouteImport
-      parentRoute: typeof WorkspacesRoute
-    }
     '/w/$slug': {
       id: '/w/$slug'
       path: '/$slug'
@@ -697,40 +611,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WSlugRouteImport
       parentRoute: typeof WRoute
     }
-    '/auth/two-factor': {
-      id: '/auth/two-factor'
-      path: '/two-factor'
-      fullPath: '/auth/two-factor'
-      preLoaderRoute: typeof AuthTwoFactorRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/signup': {
-      id: '/auth/signup'
-      path: '/signup'
-      fullPath: '/auth/signup'
-      preLoaderRoute: typeof AuthSignupRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/signin': {
-      id: '/auth/signin'
-      path: '/signin'
-      fullPath: '/auth/signin'
-      preLoaderRoute: typeof AuthSigninRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/reset-password': {
-      id: '/auth/reset-password'
-      path: '/reset-password'
-      fullPath: '/auth/reset-password'
-      preLoaderRoute: typeof AuthResetPasswordRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/recover': {
-      id: '/auth/recover'
-      path: '/recover'
-      fullPath: '/auth/recover'
-      preLoaderRoute: typeof AuthRecoverRouteImport
-      parentRoute: typeof AuthRoute
+    '/auth/error': {
+      id: '/auth/error'
+      path: '/auth/error'
+      fullPath: '/auth/error'
+      preLoaderRoute: typeof AuthErrorRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/{-$lang}/solutions/support-teams': {
       id: '/{-$lang}/solutions/support-teams'
@@ -892,24 +778,6 @@ const Char123LangChar125RouteRouteWithChildren =
     Char123LangChar125RouteRouteChildren,
   )
 
-interface AuthRouteChildren {
-  AuthRecoverRoute: typeof AuthRecoverRoute
-  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
-  AuthSigninRoute: typeof AuthSigninRoute
-  AuthSignupRoute: typeof AuthSignupRoute
-  AuthTwoFactorRoute: typeof AuthTwoFactorRoute
-}
-
-const AuthRouteChildren: AuthRouteChildren = {
-  AuthRecoverRoute: AuthRecoverRoute,
-  AuthResetPasswordRoute: AuthResetPasswordRoute,
-  AuthSigninRoute: AuthSigninRoute,
-  AuthSignupRoute: AuthSignupRoute,
-  AuthTwoFactorRoute: AuthTwoFactorRoute,
-}
-
-const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
-
 interface WSlugTicketsRouteChildren {
   WSlugTicketsIdRoute: typeof WSlugTicketsIdRoute
   WSlugTicketsIndexRoute: typeof WSlugTicketsIndexRoute
@@ -959,12 +827,10 @@ const WRouteChildren: WRouteChildren = {
 const WRouteWithChildren = WRoute._addFileChildren(WRouteChildren)
 
 interface WorkspacesRouteChildren {
-  WorkspacesNewRoute: typeof WorkspacesNewRoute
   WorkspacesIndexRoute: typeof WorkspacesIndexRoute
 }
 
 const WorkspacesRouteChildren: WorkspacesRouteChildren = {
-  WorkspacesNewRoute: WorkspacesNewRoute,
   WorkspacesIndexRoute: WorkspacesIndexRoute,
 }
 
@@ -974,9 +840,9 @@ const WorkspacesRouteWithChildren = WorkspacesRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   Char123LangChar125RouteRoute: Char123LangChar125RouteRouteWithChildren,
-  AuthRoute: AuthRouteWithChildren,
   WRoute: WRouteWithChildren,
   WorkspacesRoute: WorkspacesRouteWithChildren,
+  AuthErrorRoute: AuthErrorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

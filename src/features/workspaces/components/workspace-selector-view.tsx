@@ -92,9 +92,12 @@ export function WorkspaceSelectorView() {
 					)}
 				</div>
 
-				{/* Create workspace */}
+				{/* Create workspace — an OnDesk action: a workspace spans products and
+				    carries the billing account, so Pulse links out instead. */}
 				<button
-					onClick={() => navigate({ to: "/workspaces/new" })}
+					onClick={() => {
+						window.location.href = `${import.meta.env.VITE_ONDESK_URL ?? "https://ondesk.cc"}/workspaces/new?app=pulse`;
+					}}
 					className="w-full flex items-center justify-center gap-2.5 border-t border-dashed border-border px-6 py-4 font-mono text-xs uppercase tracking-[0.12em] font-semibold text-muted-foreground hover:text-primary hover:bg-primary/5 dark:hover:text-accent dark:hover:bg-accent/5 transition-colors group">
 					<Plus className="size-3.5" />
 					Create new workspace

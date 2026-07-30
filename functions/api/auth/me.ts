@@ -23,13 +23,15 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 		return jsonError("User not found", 401);
 	}
 
+	// 2FA is configured on the OnDesk account page, not here — pulse has no
+	// state to report about it.
 	return jsonOk({
 		user: {
 			id: user.id,
 			name: user.name,
 			email: user.email,
 			role: user.role,
-			two_factor_enabled: user.two_factor_enabled === 1,
+			logo_url: user.logo_url,
 		},
 	});
 };

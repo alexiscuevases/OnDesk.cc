@@ -7,7 +7,11 @@
     "types": ["@cloudflare/workers-types"],
     "strict": true,
     "noEmit": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    // stripe pulls @types/node in transitively and its globals collide with
+    // @cloudflare/workers-types — without this the output is ~74 duplicate
+    // identifier errors from inside .d.ts files, which buries the real ones.
+    "skipLibCheck": true
   },
   "include": ["functions/**/*.ts"]
 }

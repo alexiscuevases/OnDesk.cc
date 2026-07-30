@@ -1,26 +1,19 @@
+/**
+ * A user as pulse sees them: a read-only mirror of the OnDesk record.
+ *
+ * Credentials, OAuth identities, 2FA state and lockout counters are gone —
+ * they live in ondesk-db and were dropped from pulse-db by migration
+ * 003_ondesk_sso.sql. Anything here is refreshed by the SSO callback or the
+ * platform webhook, never written by product code.
+ */
 export interface UserRow {
 	id: string;
 	name: string;
 	email: string;
-	password_hash: string | null;
 	role: string;
 	logo_url: string | null;
-	login_attempts: number;
-	locked_until: number | null;
-	two_factor_enabled: number; // 0 | 1
 	created_at: number;
 	updated_at: number;
-}
-
-export type OAuthProvider = "google" | "microsoft";
-
-export interface UserIdentityRow {
-	id: string;
-	user_id: string;
-	provider: OAuthProvider;
-	provider_user_id: string;
-	email: string;
-	created_at: number;
 }
 
 export interface PublicUser {

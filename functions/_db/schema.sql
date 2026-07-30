@@ -1,34 +1,26 @@
--- Users table
--- password_hash is nullable to support OAuth-only accounts (Google / Microsoft)
+-- ─── Mirrored from OnDesk ─────────────────────────────────────────────────────
+--
+-- Identity and tenancy are owned by the OnDesk control plane. The three tables
+-- below (users, workspaces, workspace_members) are a read-only local cache,
+-- refreshed by the SSO callback and the platform webhook, so that the ~35
+-- foreign keys pointing at users(id) and workspaces(id) keep resolving.
+--
+-- Only functions/_lib/db/mirror.ts writes them. Anything else will drift.
+-- See ondesk/docs/platform-architecture.md.
+
+-- Users: no credentials, no OAuth identities, no 2FA state, no lockout
+-- counters. All of that lives in ondesk-db.
 CREATE TABLE IF NOT EXISTS users (
   id                  TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
   name                TEXT    NOT NULL,
   email               TEXT    NOT NULL UNIQUE,
-  password_hash       TEXT,
   role                TEXT    NOT NULL DEFAULT 'agent',
   logo_url            TEXT,
-  login_attempts      INTEGER NOT NULL DEFAULT 0,
-  locked_until        INTEGER,
-  two_factor_enabled  INTEGER NOT NULL DEFAULT 0,
   created_at          INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at          INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
--- OAuth identities linked to a user (a user can have multiple providers)
--- provider: 'google' | 'microsoft'
-CREATE TABLE IF NOT EXISTS user_identities (
-  id                TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  user_id           TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  provider          TEXT NOT NULL,
-  provider_user_id  TEXT NOT NULL,
-  email             TEXT NOT NULL,
-  created_at        INTEGER NOT NULL DEFAULT (unixepoch()),
-  UNIQUE(provider, provider_user_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_user_identities_user_id ON user_identities(user_id);
-
--- Refresh tokens table
+-- Refresh tokens for pulse's OWN session, issued by the SSO callback.
 -- token_hash stores SHA-256 of the raw token (never stored in plain text)
 CREATE TABLE IF NOT EXISTS refresh_tokens (
   id          TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
@@ -42,32 +34,12 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token_hash ON refresh_tokens(token_hash);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id    ON refresh_tokens(user_id);
 
--- Password reset tokens (1-hour TTL, single-use)
-CREATE TABLE IF NOT EXISTS password_reset_tokens (
-  id         TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  user_id    TEXT    NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  token_hash TEXT    NOT NULL UNIQUE,
-  expires_at INTEGER NOT NULL,
-  used       INTEGER NOT NULL DEFAULT 0,
-  created_at INTEGER NOT NULL DEFAULT (unixepoch())
-);
+-- Password reset and 2FA codes live in ondesk-db: pulse never authenticates
+-- anyone, so it has nothing to reset and no code to verify.
 
-CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id    ON password_reset_tokens(user_id);
-CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token_hash ON password_reset_tokens(token_hash);
-
--- 2FA email codes (10-minute TTL, single-use)
-CREATE TABLE IF NOT EXISTS two_factor_codes (
-  id         TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  user_id    TEXT    NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  code_hash  TEXT    NOT NULL,
-  expires_at INTEGER NOT NULL,
-  used       INTEGER NOT NULL DEFAULT 0,
-  created_at INTEGER NOT NULL DEFAULT (unixepoch())
-);
-
-CREATE INDEX IF NOT EXISTS idx_two_factor_codes_user_id ON two_factor_codes(user_id);
-
--- Workspaces table
+-- Workspaces: mirrored, except `workspace_prompt`, which is Pulse's own AI
+-- configuration and exists nowhere else. `audit_log_enabled` is mirrored so
+-- writeAuditLog keeps honouring the tenant's setting after it moved to ondesk.
 CREATE TABLE IF NOT EXISTS workspaces (
   id          TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
   name        TEXT NOT NULL,
@@ -75,9 +47,21 @@ CREATE TABLE IF NOT EXISTS workspaces (
   description TEXT,
   logo_url    TEXT,
   workspace_prompt TEXT,
+  audit_log_enabled INTEGER NOT NULL DEFAULT 1,
   created_by  TEXT NOT NULL REFERENCES users(id),
   created_at  INTEGER NOT NULL DEFAULT (unixepoch()),
   updated_at  INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- What this workspace may do in Pulse, mirrored from ondesk's subscriptions.
+-- The access gate: findWorkspacesByUserId joins against it.
+CREATE TABLE IF NOT EXISTS workspace_entitlements (
+  workspace_id       TEXT    PRIMARY KEY REFERENCES workspaces(id) ON DELETE CASCADE,
+  plan               TEXT    NOT NULL DEFAULT 'core',
+  status             TEXT    NOT NULL DEFAULT 'active',
+  agent_count        INTEGER NOT NULL DEFAULT 1,
+  current_period_end INTEGER,
+  updated_at         INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
 -- Workspace members (user <-> workspace relationship)
@@ -229,25 +213,8 @@ CREATE TABLE IF NOT EXISTS signatures (
 CREATE INDEX IF NOT EXISTS idx_signatures_created_by   ON signatures(created_by);
 CREATE INDEX IF NOT EXISTS idx_signatures_workspace_id ON signatures(workspace_id);
 
--- Workspace invitations
--- status: 'pending' | 'accepted' | 'cancelled'
--- token: secure random value sent in the invitation email link
-CREATE TABLE IF NOT EXISTS workspace_invitations (
-  id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
-  email        TEXT NOT NULL,
-  role         TEXT NOT NULL DEFAULT 'agent',
-  invited_by   TEXT NOT NULL REFERENCES users(id),
-  token        TEXT NOT NULL UNIQUE,
-  status       TEXT NOT NULL DEFAULT 'pending',
-  expires_at   INTEGER NOT NULL,
-  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
-  UNIQUE(workspace_id, email)
-);
-
-CREATE INDEX IF NOT EXISTS idx_workspace_invitations_email        ON workspace_invitations(email);
-CREATE INDEX IF NOT EXISTS idx_workspace_invitations_token        ON workspace_invitations(token);
-CREATE INDEX IF NOT EXISTS idx_workspace_invitations_workspace_id ON workspace_invitations(workspace_id);
+-- Invitations live in ondesk-db: inviting someone creates an OnDesk account,
+-- which is not something a product can do.
 
 -- Mailbox integrations (Microsoft Outlook via Graph API + Gmail via Google API)
 -- Stores OAuth tokens per connected email account per workspace
@@ -529,54 +496,12 @@ CREATE INDEX IF NOT EXISTS idx_tool_call_logs_ticket     ON tool_call_logs(ticke
 -- plan: 'starter' | 'core' | 'enterprise'
 -- cycle: 'monthly' | 'annual'
 -- status: 'trialing' | 'active' | 'past_due' | 'canceled' | 'incomplete'
-CREATE TABLE IF NOT EXISTS subscriptions (
-  id                       TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  workspace_id             TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE UNIQUE,
-  stripe_customer_id       TEXT    NOT NULL UNIQUE,
-  stripe_subscription_id   TEXT    UNIQUE,
-  plan                     TEXT    NOT NULL DEFAULT 'core',
-  cycle                    TEXT    NOT NULL DEFAULT 'monthly',
-  status                   TEXT    NOT NULL DEFAULT 'incomplete',
-  agent_count              INTEGER NOT NULL DEFAULT 1,
-  trial_ends_at            INTEGER,
-  current_period_start     INTEGER,
-  current_period_end       INTEGER,
-  created_at               INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at               INTEGER NOT NULL DEFAULT (unixepoch())
-);
+-- Subscriptions live in ondesk-db: one Stripe customer per workspace, one
+-- subscription per product. Pulse reads workspace_entitlements instead.
 
-CREATE INDEX IF NOT EXISTS idx_subscriptions_workspace_id           ON subscriptions(workspace_id);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_customer_id     ON subscriptions(stripe_customer_id);
-CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_subscription_id ON subscriptions(stripe_subscription_id);
-
--- ─── Workspace Security ───────────────────────────────────────────────────────
-
--- One row per workspace with security toggles
--- require_2fa:           enforce 2FA for every member on next login
--- strong_password:       enforce strong-password policy on registration/reset
--- ip_allowlist_enabled:  if 1, reject sign-ins from IPs not present in workspace_ip_allowlist
--- audit_log_enabled:     record sensitive actions into audit_logs
-CREATE TABLE IF NOT EXISTS workspace_security_settings (
-  workspace_id         TEXT    PRIMARY KEY REFERENCES workspaces(id) ON DELETE CASCADE,
-  require_2fa          INTEGER NOT NULL DEFAULT 0,
-  strong_password      INTEGER NOT NULL DEFAULT 0,
-  ip_allowlist_enabled INTEGER NOT NULL DEFAULT 0,
-  audit_log_enabled    INTEGER NOT NULL DEFAULT 1,
-  updated_at           INTEGER NOT NULL DEFAULT (unixepoch())
-);
-
--- Allowed CIDR ranges (or single IPs as /32) for a workspace
-CREATE TABLE IF NOT EXISTS workspace_ip_allowlist (
-  id           TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  workspace_id TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
-  cidr         TEXT    NOT NULL,
-  label        TEXT,
-  created_by   TEXT    NOT NULL REFERENCES users(id),
-  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
-  UNIQUE(workspace_id, cidr)
-);
-
-CREATE INDEX IF NOT EXISTS idx_workspace_ip_allowlist_workspace_id ON workspace_ip_allowlist(workspace_id);
+-- Security policy (2FA enforcement, password rules, IP allowlist) lives in
+-- ondesk-db: all three gate sign-in, which no longer happens here.
+-- audit_logs below stays: it records what people did inside Pulse.
 
 -- Audit log of sensitive actions
 -- action examples: 'security.settings_updated' | 'security.ip_added' | 'security.ip_removed'

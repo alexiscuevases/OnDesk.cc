@@ -25,8 +25,10 @@ export function withAuth<P extends string = string>(
 		const accessToken = cookies[ACCESS_TOKEN_COOKIE];
 		if (!accessToken) return jsonError("Not authenticated", 401);
 
+		// Pulse only ever issues fully-authenticated tokens now — the half-issued
+		// '2fa_pending' state belongs to ondesk's login flow, not here.
 		const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-		if (!payload || payload.type === "2fa_pending") return jsonError("Invalid or expired token", 401);
+		if (!payload) return jsonError("Invalid or expired token", 401);
 
 		return handler({ request, env, params: params as Record<P, string>, payload, waitUntil });
 	};

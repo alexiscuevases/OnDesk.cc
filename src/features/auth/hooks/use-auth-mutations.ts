@@ -1,101 +1,30 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/auth-context";
-import { apiLogin, apiRegister, apiLogout, apiMe } from "../api/auth-api";
-import { apiGetWorkspaces } from "@/features/workspaces/api/workspaces-api";
+import { apiLogout } from "../api/auth-api";
 
 export const authQueryKeys = {
 	me: ["auth", "me"] as const,
 };
 
-/** Fetch the current user. Stale time is slightly under the 15-min JWT TTL. */
-export function useCurrentUser() {
-	return useQuery({
-		queryKey: authQueryKeys.me,
-		queryFn: apiMe,
-		staleTime: 1000 * 60 * 14, // 14 minutes
-		retry: false,
-	});
-}
-
-async function navigateAfterLogin(
-	navigate: ReturnType<typeof useNavigate>
-): Promise<void> {
-	const workspaces = await apiGetWorkspaces().catch(() => []);
-	if (workspaces.length === 0) {
-		navigate({ to: "/workspaces/new" });
-	} else if (workspaces.length === 1) {
-		navigate({ to: "/w/$slug/overview", params: { slug: workspaces[0].slug } });
-	} else {
-		navigate({ to: "/workspaces" });
-	}
-}
-
-export function useLoginMutation() {
-	const { setUser } = useAuth();
-	const navigate = useNavigate();
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: ({
-			email,
-			password,
-			rememberMe,
-		}: {
-			email: string;
-			password: string;
-			rememberMe: boolean;
-		}) => apiLogin(email, password, rememberMe),
-		onSuccess: async (data, variables) => {
-			if (data.requiresTwoFactor) {
-				sessionStorage.setItem(
-					"2fa_pending",
-					JSON.stringify({ token: data.twoFactorToken, rememberMe: variables.rememberMe })
-				);
-				navigate({ to: "/auth/two-factor" });
-				return;
-			}
-			setUser(data.user);
-			queryClient.setQueryData(authQueryKeys.me, data.user);
-			await navigateAfterLogin(navigate);
-		},
-	});
-}
-
-export function useRegisterMutation() {
-	const { setUser } = useAuth();
-	const navigate = useNavigate();
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: ({
-			name,
-			email,
-			password,
-		}: {
-			name: string;
-			email: string;
-			password: string;
-		}) => apiRegister(name, email, password),
-		onSuccess: async ({ user }) => {
-			setUser(user);
-			queryClient.setQueryData(authQueryKeys.me, user);
-			await navigateAfterLogin(navigate);
-		},
-	});
-}
-
+/**
+ * Signing out clears the local Pulse session and then hands off to OnDesk's
+ * end-session endpoint, which drops the platform session and revokes every
+ * product refresh token. Stopping at the local logout would leave the user
+ * silently signed back in on the next visit.
+ */
 export function useLogoutMutation() {
-	const { clearUser } = useAuth();
-	const navigate = useNavigate();
 	const queryClient = useQueryClient();
+	const { clearUser } = useAuth();
 
 	return useMutation({
 		mutationFn: apiLogout,
-		onSettled: () => {
+		onSuccess: () => {
 			clearUser();
 			queryClient.clear();
-			navigate({ to: "/auth/signin" });
+			const issuer = import.meta.env.VITE_ONDESK_URL ?? "https://ondesk.cc";
+			window.location.href = `${issuer}/api/oidc/logout?client_id=pulse&post_logout_redirect_uri=${encodeURIComponent(
+				`${window.location.origin}/`,
+			)}`;
 		},
 	});
 }

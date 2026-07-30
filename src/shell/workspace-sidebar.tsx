@@ -109,7 +109,13 @@ export function WorkspaceSidebar() {
 							</DropdownMenuItem>
 						))}
 						<DropdownMenuSeparator />
-						<DropdownMenuItem onClick={() => navigate({ to: "/workspaces/new" })} className="gap-2 text-muted-foreground">
+						<DropdownMenuItem
+							onClick={() => {
+								// Workspaces are created on OnDesk: they span products and hold the
+								// billing account.
+								window.location.href = `${import.meta.env.VITE_ONDESK_URL ?? "https://ondesk.cc"}/workspaces/new?app=pulse`;
+							}}
+							className="gap-2 text-muted-foreground">
 							<Plus className="size-4" />
 							Create workspace
 						</DropdownMenuItem>

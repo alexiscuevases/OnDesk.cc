@@ -2,13 +2,21 @@ import type { UserRow, WorkspaceRow, PublicWorkspace } from "../types";
 
 // ─── Workspace queries ────────────────────────────────────────────────────────
 
+/**
+ * The user's workspaces that currently hold a Pulse entitlement.
+ *
+ * The join against workspace_entitlements is the access gate: a cancelled
+ * tenant keeps its mirrored rows and its ticket data, but stops appearing here.
+ */
 export async function findWorkspacesByUserId(db: D1Database, userId: string): Promise<PublicWorkspace[]> {
 	const result = await db
 		.prepare(
 			`SELECT w.id, w.name, w.slug, w.description, w.logo_url, w.workspace_prompt, w.created_at, wm.role
        FROM workspaces w
-       JOIN workspace_members wm ON wm.workspace_id = w.id
+       JOIN workspace_members wm      ON wm.workspace_id = w.id
+       JOIN workspace_entitlements we ON we.workspace_id = w.id
        WHERE wm.user_id = ?
+         AND we.status IN ('active', 'trialing', 'past_due')
        ORDER BY w.created_at ASC`,
 		)
 		.bind(userId)

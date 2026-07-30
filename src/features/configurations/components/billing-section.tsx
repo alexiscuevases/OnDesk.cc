@@ -1,400 +1,144 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CreditCard, Zap, ArrowRight, CheckCircle2, Receipt, ExternalLink, Users, CalendarDays, TrendingUp, Loader2, AlertCircle } from "lucide-react";
+import { CreditCard, ExternalLink, Users, CalendarDays, Loader2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
 import { useWorkspace } from "@/context/workspace-context";
-import {
-	apiGetSubscription,
-	apiCreateCheckoutSession,
-	apiCreatePortalSession,
-	type Subscription,
-	type SubscriptionPlan,
-	type SubscriptionCycle,
-} from "../api/billing-api";
 
-const PLANS = [
-	{
-		id: "starter" as SubscriptionPlan,
-		name: "Pulse Starter",
-		priceMonthly: 9,
-		priceAnnual: 7,
-		flat: true,
-		maxAgents: 2,
-		features: ["Up to 2 agents", "300 tickets / month", "2 channels (email + chat)", "Unified inbox", "Canned replies", "Basic automations"],
-	},
-	{
-		id: "core" as SubscriptionPlan,
-		name: "Pulse Core",
-		priceMonthly: 19,
-		priceAnnual: 15,
-		flat: false,
-		features: ["Unlimited tickets", "All channels unified", "AI Classification & Routing", "Team workload management", "Analytics dashboard", "24/7 Priority support"],
-	},
-	{
-		id: "enterprise" as SubscriptionPlan,
-		name: "Pulse Enterprise",
-		priceMonthly: 39,
-		priceAnnual: 31,
-		flat: false,
-		features: ["Everything in Core", "AI Auto-resolution Engine", "Sovereign Data Residency", "Dedicated Success Architect", "Custom SLA Frameworks", "99.99% Uptime Guarantee"],
-	},
-];
-
-const PLAN_RANK: Record<SubscriptionPlan, number> = { starter: 0, core: 1, enterprise: 2 };
-
-function statusBadge(status: string) {
-	if (status === "active") return <Badge className="bg-success/10 text-success border-success/20 text-[10px]">Active</Badge>;
-	if (status === "trialing") return <Badge className="bg-info/10 text-info border-info/20 text-[10px]">Trial</Badge>;
-	if (status === "past_due") return <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[10px]">Past due</Badge>;
-	if (status === "canceled") return <Badge variant="secondary" className="text-[10px]">Canceled</Badge>;
-	return <Badge variant="secondary" className="text-[10px]">{status}</Badge>;
+interface Entitlement {
+	plan: string;
+	status: string;
+	agent_count: number;
+	current_period_end: number | null;
+	updated_at: number;
 }
 
-function NoSubscription({ workspaceId, workspaceName }: { workspaceId: string; workspaceName: string }) {
-	const [plan, setPlan] = useState<SubscriptionPlan>("core");
-	const [cycle, setCycle] = useState<SubscriptionCycle>("monthly");
-	const [agents, setAgents] = useState(5);
-	const [loading, setLoading] = useState(false);
-
-	const currentPlan = PLANS.find((p) => p.id === plan)!;
-	const pricePerAgent = cycle === "annual" ? currentPlan.priceAnnual : currentPlan.priceMonthly;
-	const effectiveAgents = currentPlan.flat ? Math.min(agents, currentPlan.maxAgents ?? agents) : agents;
-	const total = currentPlan.flat ? pricePerAgent : pricePerAgent * effectiveAgents;
-
-	async function handleCheckout() {
-		setLoading(true);
-		try {
-			const url = await apiCreateCheckoutSession({
-				workspace_id: workspaceId,
-				plan,
-				cycle,
-				agent_count: effectiveAgents,
-				workspace_name: workspaceName,
-			});
-			window.location.href = url;
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Failed to start checkout");
-			setLoading(false);
-		}
-	}
-
-	return (
-		<div className="grid gap-4">
-			<Card>
-				<CardHeader>
-					<CardTitle className="console-label">Choose a Plan</CardTitle>
-					<CardDescription className="text-xs">Start your 14-day free trial — no credit card required upfront</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-5">
-					{/* Billing cycle toggle */}
-					<div className="flex items-center gap-2">
-						{(["monthly", "annual"] as SubscriptionCycle[]).map((c) => (
-							<button
-								key={c}
-								onClick={() => setCycle(c)}
-								className={`px-3 py-1.5 text-xs font-semibold border transition-all ${cycle === c ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary/40"}`}>
-								{c === "monthly" ? "Monthly" : "Annual (save 20%)"}
-							</button>
-						))}
-					</div>
-
-					{/* Plan cards */}
-					<div className="grid gap-3 sm:grid-cols-3">
-						{PLANS.map((p) => {
-							const price = cycle === "annual" ? p.priceAnnual : p.priceMonthly;
-							const isSelected = plan === p.id;
-							return (
-								<button
-									key={p.id}
-									onClick={() => setPlan(p.id)}
-									className={`border p-4 text-left transition-all ${isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
-									<div className="flex items-center justify-between mb-2">
-										<p className="text-xs font-bold">{p.name}</p>
-										<p className="text-sm font-black tracking-tight tabular-nums">${price}<span className="text-[10px] font-normal text-muted-foreground">{p.flat ? "/mo" : "/agent/mo"}</span></p>
-									</div>
-									<ul className="space-y-1">
-										{p.features.slice(0, 3).map((f) => (
-											<li key={f} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-												<CheckCircle2 className="size-2.5 text-primary shrink-0" />
-												{f}
-											</li>
-										))}
-									</ul>
-								</button>
-							);
-						})}
-					</div>
-
-					{/* Agent count */}
-					<div className="flex items-center justify-between gap-4 border p-3">
-						<div>
-							<p className="text-xs font-semibold">Number of agents</p>
-							<p className="text-[10px] text-muted-foreground">Active support agents in your workspace</p>
-						</div>
-						<div className="flex items-center gap-2">
-							<button onClick={() => setAgents(Math.max(1, agents - 1))} className="size-7 border flex items-center justify-center hover:border-primary/50 text-sm font-bold">-</button>
-							<span className="text-sm font-black tabular-nums w-6 text-center font-mono">{agents}</span>
-							<button onClick={() => setAgents(agents + 1)} className="size-7 border flex items-center justify-center hover:border-primary/50 text-sm font-bold">+</button>
-						</div>
-					</div>
-
-					{/* Summary + CTA */}
-					<div className="bg-secondary/50 p-3 flex items-center justify-between gap-4">
-						<div>
-							<p className="console-label">Total</p>
-							<p className="text-lg font-black tracking-tight tabular-nums">${total}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
-							<p className="text-[10px] text-muted-foreground font-mono tabular-nums">{currentPlan.flat ? `Flat · up to ${currentPlan.maxAgents} agents` : `$${pricePerAgent} × ${effectiveAgents} agents`}</p>
-						</div>
-						<Button size="sm" className="gap-1.5 h-8 text-xs" onClick={handleCheckout} disabled={loading}>
-							{loading ? <Loader2 className="size-3 animate-spin" /> : <ArrowRight className="size-3" />}
-							Start free trial
-						</Button>
-					</div>
-				</CardContent>
-			</Card>
-		</div>
-	);
+interface BillingResponse {
+	entitlement: Entitlement | null;
+	manage_url: string;
 }
 
-function ActiveSubscription({ sub, workspaceId }: { sub: Subscription; workspaceId: string }) {
-	const [portalLoading, setPortalLoading] = useState(false);
-	const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+const STATUS_LABELS: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
+	active: { label: "Active", variant: "default" },
+	trialing: { label: "Trial", variant: "secondary" },
+	past_due: { label: "Payment overdue", variant: "destructive" },
+	canceled: { label: "Cancelled", variant: "destructive" },
+	incomplete: { label: "Incomplete", variant: "secondary" },
+};
 
-	const currentPlan = PLANS.find((p) => p.id === sub.plan) ?? PLANS[1];
-	const otherPlans = PLANS.filter((p) => p.id !== currentPlan.id);
-	const pricePerAgent = sub.cycle === "annual" ? currentPlan.priceAnnual : currentPlan.priceMonthly;
-	const totalMonthly = currentPlan.flat ? pricePerAgent : pricePerAgent * sub.agent_count;
+const PLAN_LABELS: Record<string, string> = {
+	starter: "Pulse Starter",
+	core: "Pulse Core",
+	enterprise: "Pulse Enterprise",
+};
 
-	async function openPortal() {
-		setPortalLoading(true);
-		try {
-			const url = await apiCreatePortalSession(workspaceId);
-			window.location.href = url;
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Failed to open billing portal");
-			setPortalLoading(false);
-		}
-	}
-
-	async function switchCycle() {
-		const newCycle: SubscriptionCycle = sub.cycle === "monthly" ? "annual" : "monthly";
-		setCheckoutLoading("cycle");
-		try {
-			const url = await apiCreateCheckoutSession({
-				workspace_id: workspaceId,
-				plan: sub.plan,
-				cycle: newCycle,
-				agent_count: sub.agent_count,
-			});
-			window.location.href = url;
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Failed to switch billing cycle");
-			setCheckoutLoading(null);
-		}
-	}
-
-	async function changePlan(plan: SubscriptionPlan) {
-		setCheckoutLoading(plan);
-		try {
-			const url = await apiCreateCheckoutSession({
-				workspace_id: workspaceId,
-				plan,
-				cycle: sub.cycle,
-				agent_count: sub.agent_count,
-			});
-			window.location.href = url;
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : "Failed to change plan");
-			setCheckoutLoading(null);
-		}
-	}
-
-	return (
-		<div className="grid gap-4">
-			{/* Current plan */}
-			<Card>
-				<CardHeader>
-					<div className="flex items-center justify-between">
-						<div>
-							<CardTitle className="console-label">Current Plan</CardTitle>
-							<CardDescription className="text-xs">Your active subscription and usage</CardDescription>
-						</div>
-						{statusBadge(sub.status)}
-					</div>
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="flex items-start justify-between gap-4">
-						<div className="flex items-center gap-3">
-							<div className="size-10 flex items-center justify-center bg-primary/10">
-								<Zap className="size-4 text-primary" />
-							</div>
-							<div>
-								<p className="text-sm font-bold">{currentPlan.name}</p>
-								<p className="text-[10px] text-muted-foreground capitalize">{sub.cycle} billing</p>
-							</div>
-						</div>
-						<div className="text-right">
-							<p className="text-xl font-black tracking-tight tabular-nums">${totalMonthly}<span className="text-xs font-normal text-muted-foreground">/mo</span></p>
-							<p className="text-[10px] text-muted-foreground font-mono tabular-nums">${pricePerAgent} × {sub.agent_count} agents</p>
-						</div>
-					</div>
-
-					<Separator />
-
-					<div className="grid grid-cols-3 gap-4 text-center">
-						<div>
-							<div className="flex items-center justify-center gap-1.5 mb-1">
-								<Users className="size-3 text-muted-foreground" />
-								<p className="console-label">Agents</p>
-							</div>
-							<p className="text-sm font-bold font-mono tabular-nums">{sub.agent_count}</p>
-						</div>
-						<div>
-							<div className="flex items-center justify-center gap-1.5 mb-1">
-								<CalendarDays className="size-3 text-muted-foreground" />
-								<p className="console-label">Next billing</p>
-							</div>
-							<p className="text-sm font-bold">
-								{sub.current_period_end
-									? new Date(sub.current_period_end * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-									: "—"}
-							</p>
-						</div>
-						<div>
-							<div className="flex items-center justify-center gap-1.5 mb-1">
-								<TrendingUp className="size-3 text-muted-foreground" />
-								<p className="console-label">Annual total</p>
-							</div>
-							<p className="text-sm font-bold font-mono tabular-nums">${(totalMonthly * 12).toLocaleString()}</p>
-						</div>
-					</div>
-
-					{sub.status === "trialing" && sub.trial_ends_at && (
-						<>
-							<Separator />
-							<div className="flex items-center gap-2 bg-info/10 border border-info/20 px-3 py-2">
-								<AlertCircle className="size-3.5 text-info shrink-0" />
-								<p className="text-[10px] text-info">
-									Free trial ends on {new Date(sub.trial_ends_at * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-								</p>
-							</div>
-						</>
-					)}
-
-					{sub.status === "past_due" && (
-						<>
-							<Separator />
-							<div className="flex items-center gap-2 bg-destructive/10 border border-destructive/20 px-3 py-2">
-								<AlertCircle className="size-3.5 text-destructive shrink-0" />
-								<p className="text-[10px] text-destructive">
-									Your last payment failed. Update your payment method to keep your subscription active.
-								</p>
-							</div>
-						</>
-					)}
-
-					<Separator />
-
-					<div className="flex gap-2 flex-wrap">
-						<Button size="sm" className="h-7 text-xs gap-1.5" onClick={openPortal} disabled={portalLoading}>
-							{portalLoading ? <Loader2 className="size-3 animate-spin" /> : <CreditCard className="size-3" />}
-							Manage subscription
-							{!portalLoading && <ExternalLink className="size-3 opacity-60" />}
-						</Button>
-						<Button size="sm" variant="outline" className="h-7 text-xs" onClick={switchCycle} disabled={checkoutLoading === "cycle"}>
-							{checkoutLoading === "cycle" && <Loader2 className="size-3 animate-spin mr-1" />}
-							{sub.cycle === "monthly" ? "Switch to annual (save 20%)" : "Switch to monthly"}
-						</Button>
-					</div>
-				</CardContent>
-			</Card>
-
-			{/* Upgrade / downgrade */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="console-label">Available Plans</CardTitle>
-					<CardDescription className="text-xs">Upgrade or downgrade at any time — changes are prorated</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-3">
-					{otherPlans.map((other) => {
-						const isUpgrade = PLAN_RANK[other.id] > PLAN_RANK[sub.plan];
-						const price = sub.cycle === "annual" ? other.priceAnnual : other.priceMonthly;
-						return (
-							<div key={other.id} className="border p-4 flex items-start gap-4">
-								<div className="size-9 flex items-center justify-center bg-primary/10 shrink-0">
-									<Zap className="size-4 text-primary" />
-								</div>
-								<div className="flex-1 min-w-0">
-									<div className="flex items-center justify-between gap-2">
-										<p className="text-sm font-bold">{other.name}</p>
-										<p className="text-sm font-black tracking-tight tabular-nums">
-											${price}
-											<span className="text-[10px] font-normal text-muted-foreground">{other.flat ? "/mo" : "/agent/mo"}</span>
-										</p>
-									</div>
-									<ul className="mt-2 space-y-1">
-										{other.features.slice(0, 4).map((f) => (
-											<li key={f} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-												<CheckCircle2 className="size-3 text-primary shrink-0" />
-												{f}
-											</li>
-										))}
-									</ul>
-								</div>
-								<Button
-									size="sm"
-									variant={isUpgrade ? "default" : "outline"}
-									className="h-7 text-xs shrink-0 gap-1"
-									onClick={() => changePlan(other.id)}
-									disabled={checkoutLoading === other.id}>
-									{checkoutLoading === other.id
-										? <Loader2 className="size-3 animate-spin" />
-										: <ArrowRight className="size-3" />}
-									{isUpgrade ? "Upgrade" : "Downgrade"}
-								</Button>
-							</div>
-						);
-					})}
-				</CardContent>
-			</Card>
-		</div>
-	);
-}
-
+/**
+ * Read-only view of this workspace's Pulse subscription.
+ *
+ * Plans are bought and changed on OnDesk: billing spans products, so a single
+ * customer and a single invoice live at the platform level. Everything here is
+ * mirrored state, and every action links out.
+ */
 export function BillingSection() {
 	const { workspace } = useWorkspace();
 
-	const { data: sub, isLoading, isError } = useQuery({
-		queryKey: ["subscription", workspace.id],
-		queryFn: () => apiGetSubscription(workspace.id),
-		retry: false,
+	const { data, isLoading } = useQuery({
+		queryKey: ["billing", workspace?.id],
+		enabled: Boolean(workspace?.id),
+		queryFn: async (): Promise<BillingResponse> => {
+			const res = await fetch(`/api/billing?workspace_id=${workspace!.id}`, { credentials: "include" });
+			if (!res.ok) throw new Error("Failed to load billing");
+			return res.json() as Promise<BillingResponse>;
+		},
 	});
 
 	if (isLoading) {
 		return (
-			<div className="flex items-center justify-center py-12 text-muted-foreground">
-				<Loader2 className="size-4 animate-spin mr-2" />
-				<span className="text-sm">Loading billing info...</span>
+			<div className="flex items-center justify-center py-12">
+				<Loader2 className="text-muted-foreground size-5 animate-spin" />
 			</div>
 		);
 	}
 
-	if (isError) {
-		return (
-			<div className="flex items-center gap-2 border border-destructive/20 bg-destructive/5 p-4">
-				<AlertCircle className="size-4 text-destructive shrink-0" />
-				<p className="text-xs text-destructive">Failed to load billing information. Please try again.</p>
-			</div>
-		);
-	}
+	const entitlement = data?.entitlement ?? null;
+	const manageUrl = data?.manage_url ?? "https://ondesk.cc/workspaces";
+	const status = entitlement ? (STATUS_LABELS[entitlement.status] ?? STATUS_LABELS.incomplete) : null;
 
-	if (!sub) {
-		return <NoSubscription workspaceId={workspace.id} workspaceName={workspace.name} />;
-	}
+	return (
+		<div className="flex flex-col gap-6">
+			<Card>
+				<CardHeader>
+					<div className="flex items-start justify-between gap-4">
+						<div>
+							<CardTitle className="flex items-center gap-2">
+								<CreditCard className="size-4" />
+								Subscription
+							</CardTitle>
+							<CardDescription>
+								Managed on your OnDesk account, alongside every other product.
+							</CardDescription>
+						</div>
+						{status && <Badge variant={status.variant}>{status.label}</Badge>}
+					</div>
+				</CardHeader>
 
-	return <ActiveSubscription sub={sub} workspaceId={workspace.id} />;
+				<CardContent className="flex flex-col gap-4">
+					{entitlement ? (
+						<>
+							<div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-sm">
+								<div>
+									<p className="text-muted-foreground text-xs">Plan</p>
+									<p className="font-medium">{PLAN_LABELS[entitlement.plan] ?? entitlement.plan}</p>
+								</div>
+								<div>
+									<p className="text-muted-foreground text-xs">Seats</p>
+									<p className="flex items-center gap-1.5 font-medium">
+										<Users className="size-3.5" />
+										{entitlement.agent_count}
+									</p>
+								</div>
+								{entitlement.current_period_end && (
+									<div>
+										<p className="text-muted-foreground text-xs">Renews</p>
+										<p className="flex items-center gap-1.5 font-medium">
+											<CalendarDays className="size-3.5" />
+											{new Date(entitlement.current_period_end * 1000).toLocaleDateString()}
+										</p>
+									</div>
+								)}
+							</div>
+
+							{entitlement.status === "past_due" && (
+								<div className="bg-destructive/10 text-destructive flex items-start gap-2 rounded-md p-3 text-sm">
+									<AlertCircle className="mt-0.5 size-4 shrink-0" />
+									<span>
+										The last payment failed. Update your payment method on OnDesk to keep this
+										workspace active.
+									</span>
+								</div>
+							)}
+						</>
+					) : (
+						<p className="text-muted-foreground text-sm">
+							This workspace has no Pulse subscription on record.
+						</p>
+					)}
+
+					<Separator />
+
+					<div className="flex flex-wrap gap-2">
+						<Button asChild>
+							<a href={manageUrl} target="_blank" rel="noreferrer">
+								Manage on OnDesk
+								<ExternalLink className="size-3.5" />
+							</a>
+						</Button>
+					</div>
+				</CardContent>
+			</Card>
+		</div>
+	);
 }
+
+export default BillingSection;

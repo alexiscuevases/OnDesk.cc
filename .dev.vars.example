@@ -1,20 +1,31 @@
 APP_URL="http://localhost:8788"
 
+# Signs pulse's own session cookies. Unrelated to OnDesk's signing keys.
 JWT_SECRET=""
+
+# ── OnDesk SSO ───────────────────────────────────────────────────────────────
+# Pulse authenticates nobody: it is an OIDC Relying Party of the control plane.
+# Generate the client credentials with, in the ondesk repo:
+#
+#   node scripts/register-client.mjs pulse
+#
+ONDESK_ISSUER="http://localhost:8789"
+ONDESK_CLIENT_ID="pulse"
+ONDESK_CLIENT_SECRET=""
+ONDESK_WEBHOOK_SECRET=""
+
+# Lets the reconcile job pull the mirror from ondesk.
+CRON_SECRET=""
 
 CF_ACCOUNT_ID=""
 EMAIL_API_TOKEN=""
 EMAIL_FROM=""
 EMAIL_FROM_NAME="OnDesk"
 
+# Mailbox integrations (inbound email) — these stay in pulse. Sign-in with
+# Google/Microsoft moved to ondesk and is configured there.
 MS_CLIENT_ID=""
 MS_CLIENT_SECRET=""
 
-STRIPE_SECRET_KEY=""
-STRIPE_WEBHOOK_SECRET=""
-STRIPE_STARTER_MONTHLY_PRICE_ID=""
-STRIPE_STARTER_ANNUAL_PRICE_ID=""
-STRIPE_CORE_MONTHLY_PRICE_ID=""
-STRIPE_CORE_ANNUAL_PRICE_ID=""
-STRIPE_ENTERPRISE_MONTHLY_PRICE_ID=""
-STRIPE_ENTERPRISE_ANNUAL_PRICE_ID=""
+# Stripe moved to ondesk: one customer per workspace, one subscription per
+# product. Nothing here talks to Stripe any more.
