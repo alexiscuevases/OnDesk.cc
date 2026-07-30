@@ -85,3 +85,40 @@ export async function apiDismissNotification(id: string, workspaceId: string): P
 	});
 	if (!res.ok) throw new Error((await res.json() as { error: string }).error);
 }
+
+// ─── Email preferences ───────────────────────────────────────────────────────
+
+/** Per-event email toggles. Mirrors the backend `notification_preferences` columns. */
+export type NotificationPrefKey =
+	| "ticket_assigned_to_me"
+	| "ticket_assigned_to_team"
+	| "reply_on_my_ticket"
+	| "reply_on_team_ticket"
+	| "mention"
+	| "escalation"
+	| "sla_breach"
+	| "ticket_status";
+
+export type NotificationPreferences = { email_enabled: boolean } & Record<NotificationPrefKey, boolean>;
+
+export async function apiGetNotificationPreferences(workspaceId: string): Promise<NotificationPreferences> {
+	const res = await fetch(`${BASE}/preferences?workspace_id=${workspaceId}`, { credentials: "include" });
+	if (!res.ok) throw new Error((await res.json() as { error: string }).error);
+	const data = (await res.json()) as { preferences: NotificationPreferences };
+	return data.preferences;
+}
+
+export async function apiUpdateNotificationPreferences(
+	workspaceId: string,
+	updates: Partial<NotificationPreferences>,
+): Promise<NotificationPreferences> {
+	const res = await fetch(`${BASE}/preferences?workspace_id=${workspaceId}`, {
+		method: "PATCH",
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(updates),
+	});
+	if (!res.ok) throw new Error((await res.json() as { error: string }).error);
+	const data = (await res.json()) as { preferences: NotificationPreferences };
+	return data.preferences;
+}

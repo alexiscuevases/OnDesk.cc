@@ -7,14 +7,13 @@ import {
   createTicketMessage,
   updateTicket,
   findMessagesByTicket,
-  findWorkspaceMemberIds,
-  createNotification,
   createAiActionLog,
   updateMailboxTokens,
   findLastInboundMessageByTicket,
   findAgentTools,
   findWorkspaceById,
 } from "./db";
+import { buildTicketAudience, notify, ticketDetails } from "./notify";
 import { refreshAccessToken, replyGraphMail, sendGraphMail } from "./graph";
 import { refreshGmailAccessToken, replyGmailMail, sendGmailMail } from "./gmail";
 import { buildToolsSection, buildFullSystemPrompt } from "./ai-agent-testing-utils";
@@ -46,19 +45,30 @@ async function triggerEscalation(env: Env, ticket: TicketRow, aiAgent: AiAgentRo
     metadata: { reason },
   });
 
-  const memberIds = await findWorkspaceMemberIds(env.DB, ticket.workspace_id);
-  await Promise.all(
-    memberIds.map((uid) =>
-      createNotification(env.DB, {
-        user_id: uid,
-        workspace_id: ticket.workspace_id,
-        type: "assign",
-        title: "AI escalation - human review required",
-        description: `AI agent could not resolve "${ticket.subject}": ${reason}`,
-        resource_id: ticket.id,
-      }),
-    ),
-  );
+  // Escalation goes to whoever owns the ticket — assignee, then team, then the
+  // whole workspace when it is still unclaimed.
+  const audience = await buildTicketAudience(env.DB, ticket, {
+    selfPref: "escalation",
+    teamPref: "escalation",
+  });
+
+  await notify(env, {
+    workspaceId: ticket.workspace_id,
+    recipients: audience,
+    type: "assign",
+    title: "AI escalation - human review required",
+    description: `AI agent could not resolve "${ticket.subject}": ${reason}`,
+    resourceId: ticket.id,
+    email: {
+      subject: `[#${ticket.number}] Escalated to a human: ${ticket.subject}`,
+      heading: "AI escalation — human review required",
+      body: `${aiAgent.name} could not resolve this ticket and handed it back to the team.`,
+      warning: `Reason: ${reason}`,
+      details: ticketDetails(ticket, [{ label: "AI agent", value: aiAgent.name }]),
+      ticketId: ticket.id,
+      ctaLabel: "Take over ticket",
+    },
+  });
 }
 
 export async function runAiAgentPipeline(env: Env, ctx: PipelineContext): Promise<void> {

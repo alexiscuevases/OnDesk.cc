@@ -311,6 +311,29 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_id      ON notifications(user_
 CREATE INDEX IF NOT EXISTS idx_notifications_workspace_id ON notifications(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_read         ON notifications(user_id, read);
 
+-- Per-user email notification preferences (one row per user + workspace).
+-- A missing row means "all defaults", so email works before a user ever opens
+-- the preferences screen. Columns map 1:1 to the pref keys in _lib/notify.ts.
+CREATE TABLE IF NOT EXISTS notification_preferences (
+  id                      TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+  user_id                 TEXT    NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  workspace_id            TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  email_enabled           INTEGER NOT NULL DEFAULT 1,
+  ticket_assigned_to_me   INTEGER NOT NULL DEFAULT 1,
+  ticket_assigned_to_team INTEGER NOT NULL DEFAULT 1,
+  reply_on_my_ticket      INTEGER NOT NULL DEFAULT 1,
+  reply_on_team_ticket    INTEGER NOT NULL DEFAULT 1,
+  mention                 INTEGER NOT NULL DEFAULT 1,
+  escalation              INTEGER NOT NULL DEFAULT 1,
+  sla_breach              INTEGER NOT NULL DEFAULT 1,
+  ticket_status           INTEGER NOT NULL DEFAULT 0,
+  created_at              INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at              INTEGER NOT NULL DEFAULT (unixepoch()),
+  UNIQUE(user_id, workspace_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_notification_preferences_user ON notification_preferences(user_id, workspace_id);
+
 -- ─── AI Agents ────────────────────────────────────────────────────────────────
 
 -- AI Agents: workspace-owned bot entities that handle tickets automatically

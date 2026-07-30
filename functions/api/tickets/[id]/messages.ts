@@ -2,8 +2,9 @@ import { jsonOk, jsonCreated, jsonError } from "../../../_lib/response";
 import {
   findTicketById, findMessagesByTicket, createTicketMessage, isWorkspaceMember,
   findContactById, findFirstMailboxByWorkspace, findMailboxByTicketId, updateMailboxTokens,
-  findLastInboundMessageByTicket, updateTicket, findUserById, createNotification,
+  findLastInboundMessageByTicket, updateTicket, findUserById,
 } from "../../../_lib/db";
+import { buildTicketAudience, notify, ticketDetails } from "../../../_lib/notify";
 import { sendGraphMail, replyGraphMail, refreshAccessToken } from "../../../_lib/graph";
 import { sendGmailMail, replyGmailMail, refreshGmailAccessToken } from "../../../_lib/gmail";
 import type { MessageType } from "../../../_lib/types";
@@ -17,7 +18,7 @@ const VALID_TYPES: MessageType[] = ["message", "note"];
 
 // GET  /api/tickets/:id/messages
 // POST /api/tickets/:id/messages
-export const onRequest = withAuth<"id">(async ({ request, env, payload, params }) => {
+export const onRequest = withAuth<"id">(async ({ request, env, payload, params, waitUntil }) => {
   const ticketId = params.id;
   const ticket = await findTicketById(env.DB, ticketId);
   if (!ticket) return jsonError("Ticket not found", 404);
@@ -193,43 +194,70 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
     }
 
     const actor = await findUserById(env.DB, payload.sub);
+    const actorName = actor?.name ?? "An agent";
 
-    // — Notification: new message on ticket to the assignee (if not themselves)
-    if (msgType === "message" && ticket.assignee_id && ticket.assignee_id !== payload.sub) {
-      await createNotification(env.DB, {
-        user_id: ticket.assignee_id,
-        workspace_id: ticket.workspace_id,
-        type: "message",
-        title: "New reply on your ticket",
-        description: `${actor?.name ?? "An agent"} replied to "${ticket.subject}".`,
-        resource_id: ticketId,
-        actor_id: payload.sub,
-      });
-    }
-
-    // — Notification: @mentions — TipTap serializes mentions as:
+    // — @mentions — TipTap serializes mentions as:
     // <span data-mention="true" data-mention-id="<user-id>">@Name</span>
     const mentionIdPattern = /data-mention-id="([^"]+)"/g;
     const mentionedIds = new Set<string>();
     let mentionMatch: RegExpExecArray | null;
     while ((mentionMatch = mentionIdPattern.exec(content)) !== null) {
-      mentionedIds.add(mentionMatch[1]);
+      if (mentionMatch[1] !== payload.sub) mentionedIds.add(mentionMatch[1]);
     }
+
+    // — New reply on the ticket → the assignee and the assigned team.
+    // Mentioned users are excluded: they get the (more specific) mention email instead.
+    if (msgType === "message") {
+      const audience = await buildTicketAudience(env.DB, ticket, {
+        selfPref: "reply_on_my_ticket",
+        teamPref: "reply_on_team_ticket",
+        exclude: [payload.sub, ...mentionedIds],
+        workspaceFallback: false,
+      });
+      if (audience.length > 0) {
+        waitUntil(
+          notify(env, {
+            workspaceId: ticket.workspace_id,
+            recipients: audience,
+            type: "message",
+            title: "New reply on your ticket",
+            description: `${actorName} replied to "${ticket.subject}".`,
+            resourceId: ticketId,
+            actorId: payload.sub,
+            email: {
+              subject: `[#${ticket.number}] Re: ${ticket.subject}`,
+              heading: "New reply on a ticket you follow",
+              body: `${actorName} replied to this ticket.`,
+              details: ticketDetails(ticket),
+              previewHtml: content,
+              ticketId,
+              ctaLabel: "View conversation",
+            },
+          }),
+        );
+      }
+    }
+
     if (mentionedIds.size > 0) {
-      await Promise.all(
-        [...mentionedIds]
-          .filter((uid) => uid !== payload.sub)
-          .map((uid) =>
-            createNotification(env.DB, {
-              user_id: uid,
-              workspace_id: ticket.workspace_id,
-              type: "message",
-              title: "You were mentioned",
-              description: `${actor?.name ?? "An agent"} mentioned you in "${ticket.subject}".`,
-              resource_id: ticketId,
-              actor_id: payload.sub,
-            })
-          )
+      waitUntil(
+        notify(env, {
+          workspaceId: ticket.workspace_id,
+          recipients: [...mentionedIds].map((userId) => ({ userId, pref: "mention" as const })),
+          type: "message",
+          title: "You were mentioned",
+          description: `${actorName} mentioned you in "${ticket.subject}".`,
+          resourceId: ticketId,
+          actorId: payload.sub,
+          email: {
+            subject: `[#${ticket.number}] ${actorName} mentioned you`,
+            heading: "You were mentioned",
+            body: `${actorName} mentioned you in a ${msgType === "note" ? "note" : "reply"} on this ticket.`,
+            details: ticketDetails(ticket),
+            previewHtml: content,
+            ticketId,
+            ctaLabel: "View conversation",
+          },
+        }),
       );
     }
 

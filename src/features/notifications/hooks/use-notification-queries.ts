@@ -3,6 +3,7 @@ import {
 	apiGetNotifications,
 	apiGetRecentNotifications,
 	apiGetNotificationCounts,
+	apiGetNotificationPreferences,
 	type NotificationFilter,
 } from "../api/notifications-api";
 
@@ -13,6 +14,7 @@ export const notificationQueryKeys = {
 	recent: (workspaceId: string, limit: number) =>
 		["notifications", workspaceId, "recent", limit] as const,
 	counts: (workspaceId: string) => ["notifications", workspaceId, "counts"] as const,
+	preferences: (workspaceId: string) => ["notifications", workspaceId, "preferences"] as const,
 };
 
 export function useNotificationsQuery(
@@ -44,5 +46,14 @@ export function useNotificationCountsQuery(workspaceId: string) {
 		queryFn: () => apiGetNotificationCounts(workspaceId),
 		staleTime: 1000 * 30,
 		refetchInterval: 1000 * 60,
+	});
+}
+
+export function useNotificationPreferencesQuery(workspaceId: string) {
+	return useQuery({
+		queryKey: notificationQueryKeys.preferences(workspaceId),
+		queryFn: () => apiGetNotificationPreferences(workspaceId),
+		enabled: Boolean(workspaceId),
+		staleTime: 1000 * 60 * 5,
 	});
 }

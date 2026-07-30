@@ -1,5 +1,5 @@
 import { jsonOk, jsonError } from "../../_lib/response";
-import { findTicketById, updateTicket, deleteTicket, isWorkspaceMember, findUserById, createNotification, findMessagesByTicket } from "../../_lib/db";
+import { findTicketById, updateTicket, deleteTicket, isWorkspaceMember, findUserById, findMessagesByTicket, findTeamById } from "../../_lib/db";
 import type { TicketStatus, TicketPriority } from "../../_lib/types";
 import { withAuth } from "../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../_lib/http";
@@ -7,6 +7,7 @@ import { upsertTicket, deleteTicketVector, deleteMessageVectors } from "../../_l
 import { triggerTicketUpdated } from "../../_lib/automations-runner";
 import { markSlaResolved, applySlaToTicket } from "../../_lib/db";
 import { extractAndSaveMemories } from "../../_lib/memory-extraction";
+import { buildTicketAudience, notify, ticketDetails } from "../../_lib/notify";
 
 const VALID_STATUSES: TicketStatus[] = ["open", "pending", "resolved", "closed"];
 const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
@@ -14,7 +15,7 @@ const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
 // GET  /api/tickets/:id
 // PATCH /api/tickets/:id
 // DELETE /api/tickets/:id
-export const onRequest = withAuth<"id">(async ({ request, env, payload, params }) => {
+export const onRequest = withAuth<"id">(async ({ request, env, payload, params, waitUntil }) => {
 	const ticketId = params.id;
 	const ticket = await findTicketById(env.DB, ticketId);
 	if (!ticket) return jsonError("Ticket not found", 404);
@@ -50,66 +51,158 @@ export const onRequest = withAuth<"id">(async ({ request, env, payload, params }
 			});
 
 			const updated = await findTicketById(env.DB, ticketId);
+			const target = updated ?? ticket;
 
-			const newAssigneeId = typeof assignee_id === "string" ? assignee_id : prevAssignee;
-			if (typeof assignee_id === "string" && assignee_id !== prevAssignee && assignee_id !== payload.sub) {
-				const actor = await findUserById(env.DB, payload.sub);
-				await createNotification(env.DB, {
-					user_id: assignee_id,
-					workspace_id: ticket.workspace_id,
-					type: "assign",
-					title: "Ticket assigned to you",
-					description: `${actor?.name ?? "Someone"} assigned ticket "${ticket.subject}" to you.`,
-					resource_id: ticketId,
-					actor_id: payload.sub,
-				});
-			}
-
+			const prevTeam = ticket.team_id;
+			const assigneeChanged = typeof assignee_id === "string" && assignee_id !== prevAssignee;
+			const teamChanged = typeof team_id === "string" && team_id !== prevTeam;
+			const priorityChanged = typeof priority === "string" && priority !== ticket.priority;
 			const isClosingStatus = status === "resolved" || status === "closed";
 			const wasAlreadyClosed = prevStatus === "resolved" || prevStatus === "closed";
-			if (isClosingStatus && !wasAlreadyClosed && prevAssignee && prevAssignee !== payload.sub) {
-				const actor = await findUserById(env.DB, payload.sub);
-				await createNotification(env.DB, {
-					user_id: prevAssignee,
-					workspace_id: ticket.workspace_id,
-					type: "resolved",
-					title: status === "closed" ? "Ticket closed" : "Ticket resolved",
-					description: `${actor?.name ?? "Someone"} marked ticket "${ticket.subject}" as ${status}.`,
-					resource_id: ticketId,
-					actor_id: payload.sub,
-				});
+			const justClosed = isClosingStatus && !wasAlreadyClosed;
+
+			// Only look the actor up when a change is actually worth announcing.
+			const notifiable = assigneeChanged || teamChanged || priorityChanged || justClosed;
+			const actor = notifiable ? await findUserById(env.DB, payload.sub) : null;
+			const actorName = actor?.name ?? "Someone";
+
+			// — Ticket handed to a new assignee
+			if (assigneeChanged && assignee_id !== payload.sub) {
+				waitUntil(
+					notify(env, {
+						workspaceId: ticket.workspace_id,
+						recipients: [{ userId: assignee_id as string, pref: "ticket_assigned_to_me" }],
+						type: "assign",
+						title: "Ticket assigned to you",
+						description: `${actorName} assigned ticket "${ticket.subject}" to you.`,
+						resourceId: ticketId,
+						actorId: payload.sub,
+						email: {
+							subject: `[#${target.number}] Assigned to you: ${target.subject}`,
+							heading: "Ticket assigned to you",
+							body: `${actorName} assigned this ticket to you.`,
+							details: ticketDetails(target),
+							ticketId,
+							ctaLabel: "View ticket",
+						},
+					}),
+				);
 			}
 
-			if (
-				typeof priority === "string" &&
-				priority !== ticket.priority &&
-				ticket.assignee_id &&
-				ticket.assignee_id !== payload.sub
-			) {
-				const actor = await findUserById(env.DB, payload.sub);
-				await createNotification(env.DB, {
-					user_id: ticket.assignee_id,
-					workspace_id: ticket.workspace_id,
-					type: "ticket",
-					title: "Ticket priority changed",
-					description: `${actor?.name ?? "Someone"} changed priority of "${ticket.subject}" to ${priority}.`,
-					resource_id: ticketId,
-					actor_id: payload.sub,
-				});
+			// — Ticket handed to a new team
+			if (teamChanged) {
+				const team = await findTeamById(env.DB, team_id as string);
+				const teamAudience = await buildTicketAudience(
+					env.DB,
+					{ ...target, assignee_id: null },
+					{
+						selfPref: "ticket_assigned_to_team",
+						teamPref: "ticket_assigned_to_team",
+						exclude: [payload.sub, assigneeChanged ? (assignee_id as string) : null],
+						workspaceFallback: false,
+					},
+				);
+				if (teamAudience.length > 0) {
+					waitUntil(
+						notify(env, {
+							workspaceId: ticket.workspace_id,
+							recipients: teamAudience,
+							type: "assign",
+							title: "Ticket assigned to your team",
+							description: `${actorName} assigned ticket "${ticket.subject}" to ${team?.name ?? "your team"}.`,
+							resourceId: ticketId,
+							actorId: payload.sub,
+							email: {
+								subject: `[#${target.number}] Assigned to your team: ${target.subject}`,
+								heading: "Ticket assigned to your team",
+								body: `${actorName} assigned this ticket to ${team?.name ?? "your team"}.`,
+								details: ticketDetails(target),
+								ticketId,
+								ctaLabel: "View ticket",
+							},
+						}),
+					);
+				}
 			}
 
-			void newAssigneeId;
+			// — Ticket resolved or closed
+			if (justClosed) {
+				const audience = await buildTicketAudience(
+					env.DB,
+					{ ...target, assignee_id: prevAssignee },
+					{
+						selfPref: "ticket_status",
+						teamPref: "ticket_status",
+						exclude: [payload.sub],
+						workspaceFallback: false,
+					},
+				);
+				if (audience.length > 0) {
+					const label = status === "closed" ? "closed" : "resolved";
+					waitUntil(
+						notify(env, {
+							workspaceId: ticket.workspace_id,
+							recipients: audience,
+							type: "resolved",
+							title: status === "closed" ? "Ticket closed" : "Ticket resolved",
+							description: `${actorName} marked ticket "${ticket.subject}" as ${status}.`,
+							resourceId: ticketId,
+							actorId: payload.sub,
+							email: {
+								subject: `[#${target.number}] Ticket ${label}: ${target.subject}`,
+								heading: `Ticket ${label}`,
+								body: `${actorName} marked this ticket as ${label}.`,
+								details: ticketDetails(target),
+								ticketId,
+								ctaLabel: "View ticket",
+							},
+						}),
+					);
+				}
+			}
+
+			// — Priority changed
+			if (priorityChanged) {
+				const audience = await buildTicketAudience(env.DB, target, {
+					selfPref: "ticket_status",
+					teamPref: "ticket_status",
+					exclude: [payload.sub],
+					workspaceFallback: false,
+				});
+				if (audience.length > 0) {
+					waitUntil(
+						notify(env, {
+							workspaceId: ticket.workspace_id,
+							recipients: audience,
+							type: "ticket",
+							title: "Ticket priority changed",
+							description: `${actorName} changed priority of "${ticket.subject}" to ${priority}.`,
+							resourceId: ticketId,
+							actorId: payload.sub,
+							email: {
+								subject: `[#${target.number}] Priority now ${priority}: ${target.subject}`,
+								heading: "Ticket priority changed",
+								body: `${actorName} changed the priority of this ticket from ${ticket.priority} to ${priority}.`,
+								details: ticketDetails(target),
+								ticketId,
+								ctaLabel: "View ticket",
+							},
+						}),
+					);
+				}
+			}
+
 			if (updated) {
 				void upsertTicket(env, updated);
 				void triggerTicketUpdated(env, updated, {
 					statusChanged: typeof status === "string" && status !== prevStatus,
-					priorityChanged: typeof priority === "string" && priority !== ticket.priority,
-					assigneeChanged: typeof assignee_id === "string" && assignee_id !== prevAssignee,
+					priorityChanged,
+					assigneeChanged,
 				});
-				if (isClosingStatus && !wasAlreadyClosed) {
+				if (justClosed) {
 					void markSlaResolved(env.DB, ticketId, Math.floor(Date.now() / 1000));
 				}
-				if (typeof priority === "string" && priority !== ticket.priority) {
+				if (priorityChanged) {
 					// Re-apply SLA when priority changes (targets are priority-dependent)
 					void applySlaToTicket(env.DB, updated);
 				}

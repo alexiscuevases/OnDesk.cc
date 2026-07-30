@@ -14,7 +14,8 @@ import {
 	recordAutomationRun,
 	hasScheduledRunForTicket,
 } from "./db/automations";
-import { findTicketById, updateTicket, createTicketMessage, findCannedReplyById, findContactById } from "./db";
+import { findTicketById, updateTicket, createTicketMessage, findCannedReplyById, findContactById, findTeamById } from "./db";
+import { buildTicketAudience, notify, ticketDetails } from "./notify";
 
 // ─── Condition evaluation ─────────────────────────────────────────────────────
 
@@ -93,6 +94,7 @@ interface ActionContext {
 	ticket: TicketRow;
 	workspaceId: string;
 	systemUserId: string; // user that "performed" the automation (creator)
+	automationName: string;
 }
 
 async function executeAction(action: AutomationAction, ctx: ActionContext): Promise<{ stop: boolean }> {
@@ -110,11 +112,57 @@ async function executeAction(action: AutomationAction, ctx: ActionContext): Prom
 		case "assign_user": {
 			const userId = action.params.user_id as string | undefined;
 			await updateTicket(ctx.env.DB, ctx.ticket.id, { assignee_id: userId ?? null });
+			if (userId && userId !== ctx.ticket.assignee_id) {
+				await notify(ctx.env, {
+					workspaceId: ctx.workspaceId,
+					recipients: [{ userId, pref: "ticket_assigned_to_me" }],
+					type: "assign",
+					title: "Ticket assigned to you",
+					description: `"${ctx.automationName}" assigned ticket "${ctx.ticket.subject}" to you.`,
+					resourceId: ctx.ticket.id,
+					email: {
+						subject: `[#${ctx.ticket.number}] Assigned to you: ${ctx.ticket.subject}`,
+						heading: "Ticket assigned to you",
+						body: `The automation "${ctx.automationName}" routed this ticket to you.`,
+						details: ticketDetails(ctx.ticket),
+						ticketId: ctx.ticket.id,
+						ctaLabel: "View ticket",
+					},
+				});
+			}
 			return { stop: false };
 		}
 		case "assign_team": {
 			const teamId = action.params.team_id as string | undefined;
 			await updateTicket(ctx.env.DB, ctx.ticket.id, { team_id: teamId ?? null });
+			if (teamId && teamId !== ctx.ticket.team_id) {
+				const team = await findTeamById(ctx.env.DB, teamId);
+				const audience = await buildTicketAudience(
+					ctx.env.DB,
+					{ ...ctx.ticket, team_id: teamId, assignee_id: null },
+					{
+						selfPref: "ticket_assigned_to_team",
+						teamPref: "ticket_assigned_to_team",
+						workspaceFallback: false,
+					},
+				);
+				await notify(ctx.env, {
+					workspaceId: ctx.workspaceId,
+					recipients: audience,
+					type: "assign",
+					title: "Ticket assigned to your team",
+					description: `"${ctx.automationName}" assigned ticket "${ctx.ticket.subject}" to ${team?.name ?? "your team"}.`,
+					resourceId: ctx.ticket.id,
+					email: {
+						subject: `[#${ctx.ticket.number}] Assigned to your team: ${ctx.ticket.subject}`,
+						heading: "Ticket assigned to your team",
+						body: `The automation "${ctx.automationName}" routed this ticket to ${team?.name ?? "your team"}.`,
+						details: ticketDetails(ctx.ticket),
+						ticketId: ctx.ticket.id,
+						ctaLabel: "View ticket",
+					},
+				});
+			}
 			return { stop: false };
 		}
 		case "send_canned_reply": {
@@ -144,11 +192,34 @@ async function executeAction(action: AutomationAction, ctx: ActionContext): Prom
 			return { stop: false };
 		}
 		case "escalate_to_human": {
+			const note = (action.params.note as string) ?? "Escalated by automation";
 			await ctx.env.DB.prepare(
 				"UPDATE ai_ticket_state SET escalated = 1, escalated_at = unixepoch(), escalation_note = ? WHERE ticket_id = ?",
 			)
-				.bind((action.params.note as string) ?? "Escalated by automation", ctx.ticket.id)
+				.bind(note, ctx.ticket.id)
 				.run();
+
+			const audience = await buildTicketAudience(ctx.env.DB, ctx.ticket, {
+				selfPref: "escalation",
+				teamPref: "escalation",
+			});
+			await notify(ctx.env, {
+				workspaceId: ctx.workspaceId,
+				recipients: audience,
+				type: "assign",
+				title: "Ticket escalated - human review required",
+				description: `"${ctx.automationName}" escalated "${ctx.ticket.subject}": ${note}`,
+				resourceId: ctx.ticket.id,
+				email: {
+					subject: `[#${ctx.ticket.number}] Escalated to a human: ${ctx.ticket.subject}`,
+					heading: "Ticket escalated — human review required",
+					body: `The automation "${ctx.automationName}" handed this ticket to the team.`,
+					warning: `Reason: ${note}`,
+					details: ticketDetails(ctx.ticket),
+					ticketId: ctx.ticket.id,
+					ctaLabel: "Take over ticket",
+				},
+			});
 			return { stop: false };
 		}
 		case "stop_processing":
@@ -199,6 +270,7 @@ async function runAutomationsForTrigger(
 					ticket: freshTicket,
 					workspaceId,
 					systemUserId: automation.created_by,
+					automationName: automation.name,
 				});
 				if (result.stop) {
 					stopped = true;
@@ -282,6 +354,7 @@ export async function runScheduledAutomations(env: Env): Promise<{ evaluated: nu
 						ticket: fresh,
 						workspaceId: automation.workspace_id,
 						systemUserId: automation.created_by,
+						automationName: automation.name,
 					});
 					if (result.stop) break;
 				}

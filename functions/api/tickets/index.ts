@@ -1,5 +1,5 @@
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
-import { findTicketsByWorkspace, createTicket, findUserById, createNotification } from "../../_lib/db";
+import { findTicketsByWorkspace, createTicket, findUserById } from "../../_lib/db";
 import type { TicketStatus, TicketPriority } from "../../_lib/types";
 import type { TicketSortField, SortDirection } from "../../_lib/db/tickets";
 import { withWorkspace } from "../../_lib/middleware";
@@ -7,6 +7,7 @@ import { createMethodRouter, parseJsonBody } from "../../_lib/http";
 import { upsertTicket } from "../../_lib/vectorize";
 import { triggerTicketCreated } from "../../_lib/automations-runner";
 import { applySlaToTicket } from "../../_lib/db";
+import { buildTicketAudience, notify, ticketDetails } from "../../_lib/notify";
 
 const VALID_STATUSES: TicketStatus[] = ["open", "pending", "resolved", "closed"];
 const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
@@ -14,7 +15,7 @@ const VALID_SORT_FIELDS: TicketSortField[] = ["number", "subject", "priority", "
 
 // GET /api/tickets?workspace_id=&status=&priority=&assignee_id=&team_id=&contact_id=&search=&page=&page_size=
 // POST /api/tickets
-export const onRequest = withWorkspace(async ({ request, env, payload, workspaceId }) => {
+export const onRequest = withWorkspace(async ({ request, env, payload, workspaceId, waitUntil }) => {
 	const url = new URL(request.url);
 
 	return createMethodRouter(request.method, {
@@ -90,17 +91,36 @@ export const onRequest = withWorkspace(async ({ request, env, payload, workspace
 			});
 
 			const actor = await findUserById(env.DB, payload.sub);
+			const actorName = actor?.name ?? "Someone";
 
-			if (typeof assignee_id === "string" && assignee_id !== payload.sub) {
-				await createNotification(env.DB, {
-					user_id: assignee_id,
-					workspace_id: workspaceId,
-					type: "assign",
-					title: "New ticket assigned to you",
-					description: `${actor?.name ?? "Someone"} assigned ticket "${subject.trim()}" to you.`,
-					resource_id: ticket.id,
-					actor_id: payload.sub,
-				});
+			// — Notify the assignee and/or the assigned team. A manually created ticket
+			// with neither is nobody's news yet, so no workspace-wide fallback here.
+			const audience = await buildTicketAudience(env.DB, ticket, {
+				selfPref: "ticket_assigned_to_me",
+				teamPref: "ticket_assigned_to_team",
+				exclude: [payload.sub],
+				workspaceFallback: false,
+			});
+			if (audience.length > 0) {
+				waitUntil(
+					notify(env, {
+						workspaceId,
+						recipients: audience,
+						type: "assign",
+						title: ticket.assignee_id ? "New ticket assigned to you" : "New ticket for your team",
+						description: `${actorName} assigned ticket "${ticket.subject}" ${ticket.assignee_id ? "to you" : "to your team"}.`,
+						resourceId: ticket.id,
+						actorId: payload.sub,
+						email: {
+							subject: `[#${ticket.number}] ${ticket.subject}`,
+							heading: ticket.assignee_id ? "New ticket assigned to you" : "New ticket for your team",
+							body: `${actorName} assigned this ticket to ${ticket.assignee_id ? "you" : "your team"}.`,
+							details: ticketDetails(ticket),
+							ticketId: ticket.id,
+							ctaLabel: "View ticket",
+						},
+					}),
+				);
 			}
 
 			void upsertTicket(env, ticket);

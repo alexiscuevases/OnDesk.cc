@@ -10,11 +10,10 @@ import {
   findOrCreateContact,
   createTicket,
   createTicketMessage,
-  findWorkspaceMemberIds,
-  createNotification,
   findActiveAgentForMailbox,
   findTicketById,
 } from "../../_lib/db";
+import { buildTicketAudience, notify, ticketDetails } from "../../_lib/notify";
 import {
   refreshAccessToken,
   getGraphMessage,
@@ -147,17 +146,28 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
         // Thread the reply into the existing ticket
         ticketId = existingTicket.id;
 
-        // — Notification: contact replied — notify the assigned agent
-        if (existingTicket.assignee_id) {
-          await createNotification(env.DB, {
-            user_id: existingTicket.assignee_id,
-            workspace_id: mailbox.workspace_id,
-            type: "message",
-            title: "Customer replied",
-            description: `${contact.name} replied to "${existingTicket.subject}".`,
-            resource_id: existingTicket.id,
-          });
-        }
+        // — Contact replied — notify the assignee and the assigned team
+        const audience = await buildTicketAudience(env.DB, existingTicket, {
+          selfPref: "reply_on_my_ticket",
+          teamPref: "reply_on_team_ticket",
+        });
+        await notify(env, {
+          workspaceId: mailbox.workspace_id,
+          recipients: audience,
+          type: "message",
+          title: "Customer replied",
+          description: `${contact.name} replied to "${existingTicket.subject}".`,
+          resourceId: existingTicket.id,
+          email: {
+            subject: `[#${existingTicket.number}] Re: ${existingTicket.subject}`,
+            heading: "Customer replied",
+            body: `${contact.name} <${contact.email}> replied to this ticket.`,
+            details: ticketDetails(existingTicket, [{ label: "From", value: `${contact.name} <${contact.email}>` }]),
+            previewHtml: content,
+            ticketId: existingTicket.id,
+            ctaLabel: "View conversation",
+          },
+        });
       } else {
         // New conversation — create a ticket
         const subject = message.subject?.trim() || "(no subject)";
@@ -177,20 +187,29 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, waitUntil })
         ticketId = ticket.id;
         void applySlaToTicket(env.DB, ticket);
 
-        // — Notification: new ticket via email — notify all workspace members
-        const memberIds = await findWorkspaceMemberIds(env.DB, mailbox.workspace_id);
-        await Promise.all(
-          memberIds.map((uid) =>
-            createNotification(env.DB, {
-              user_id: uid,
-              workspace_id: mailbox.workspace_id,
-              type: "ticket",
-              title: "New ticket received",
-              description: `${contact.name} opened "${subject}".`,
-              resource_id: ticket.id,
-            })
-          )
-        );
+        // — New inbound ticket. Unassigned and teamless, so this falls back to the
+        // whole workspace under the "my team" preference (the shared inbox).
+        const audience = await buildTicketAudience(env.DB, ticket, {
+          selfPref: "ticket_assigned_to_me",
+          teamPref: "ticket_assigned_to_team",
+        });
+        await notify(env, {
+          workspaceId: mailbox.workspace_id,
+          recipients: audience,
+          type: "ticket",
+          title: "New ticket received",
+          description: `${contact.name} opened "${subject}".`,
+          resourceId: ticket.id,
+          email: {
+            subject: `[#${ticket.number}] ${subject}`,
+            heading: "New ticket received",
+            body: `${contact.name} <${contact.email}> opened a new ticket.`,
+            details: ticketDetails(ticket, [{ label: "From", value: `${contact.name} <${contact.email}>` }]),
+            previewHtml: content,
+            ticketId: ticket.id,
+            ctaLabel: "View ticket",
+          },
+        });
       }
 
       // 9. Add the email body as a message on the ticket

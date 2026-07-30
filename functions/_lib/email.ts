@@ -83,7 +83,9 @@ function htmlToText(html: string): string {
 
 // ─── Templates ───────────────────────────────────────────────────────────────
 
-function baseTemplate(title: string, content: string): string {
+const DEFAULT_FOOTER = "If you didn't request this, you can safely ignore this email.";
+
+function baseTemplate(title: string, content: string, footer: string = DEFAULT_FOOTER): string {
 	return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -101,13 +103,18 @@ function baseTemplate(title: string, content: string): string {
     .code { font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #18181b; font-family: monospace; }
     .footer { font-size: 12px; color: #a1a1aa; margin-top: 32px; border-top: 1px solid #f4f4f5; padding-top: 20px; }
     .warning { background: #fef2f2; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #b91c1c; margin-bottom: 20px; }
+    .meta { background: #f4f4f5; border-radius: 8px; padding: 14px 16px; margin: 0 0 20px; font-size: 13px; color: #52525b; }
+    .meta-row { margin: 0 0 6px; }
+    .meta-row:last-child { margin-bottom: 0; }
+    .meta-key { color: #a1a1aa; display: inline-block; min-width: 76px; }
+    .quote { border-left: 3px solid #e4e4e7; padding: 2px 0 2px 14px; margin: 0 0 20px; font-size: 14px; color: #3f3f46; }
   </style>
 </head>
 <body>
   <div class="card">
     <div class="logo">OnDesk</div>
     ${content}
-    <div class="footer">If you didn't request this, you can safely ignore this email.</div>
+    <div class="footer">${footer}</div>
   </div>
 </body>
 </html>`;
@@ -152,4 +159,73 @@ export function twoFactorCodeEmail(code: string, name: string): string {
     </div>
     <p>Never share this code with anyone — OnDesk will never ask for it.</p>
   `);
+}
+
+// ─── Notification emails ─────────────────────────────────────────────────────
+
+/** Escapes user/contact-supplied strings before interpolating them into HTML. */
+export function escapeHtml(value: string): string {
+	return value
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
+
+/** Strips HTML and clamps a message body down to a short preview. */
+export function excerpt(html: string, maxLength = 320): string {
+	const text = htmlToText(html);
+	if (text.length <= maxLength) return text;
+	return `${text.slice(0, maxLength).trimEnd()}…`;
+}
+
+export interface NotificationEmailInput {
+	/** Recipient's display name. */
+	recipientName: string;
+	/** Headline, e.g. "New ticket assigned to you". */
+	heading: string;
+	/** One-line explanation of what happened. */
+	body: string;
+	/** Absolute link to the resource in the console. */
+	url: string;
+	ctaLabel?: string;
+	/** Key/value rows rendered above the CTA (ticket number, status, …). */
+	details?: { label: string; value: string }[];
+	/** Optional message preview shown as a blockquote. */
+	preview?: string;
+	/** Rendered as a red callout — used for escalations and SLA breaches. */
+	warning?: string;
+	/** Link to the preferences screen, shown in the footer. */
+	preferencesUrl?: string;
+}
+
+export function notificationEmail(input: NotificationEmailInput): string {
+	const { recipientName, heading, body, url, ctaLabel = "Open in OnDesk", details, preview, warning, preferencesUrl } = input;
+
+	const detailsBlock = details?.length
+		? `<div class="meta">${details
+				.map((d) => `<p class="meta-row"><span class="meta-key">${escapeHtml(d.label)}</span> ${escapeHtml(d.value)}</p>`)
+				.join("")}</div>`
+		: "";
+
+	const previewBlock = preview ? `<div class="quote">${escapeHtml(preview).replace(/\n/g, "<br />")}</div>` : "";
+	const warningBlock = warning ? `<div class="warning">${escapeHtml(warning)}</div>` : "";
+
+	const footer = preferencesUrl
+		? `You're receiving this because of your OnDesk notification settings. <a href="${preferencesUrl}" style="color:#71717a;">Manage preferences</a>.`
+		: "You're receiving this because of your OnDesk notification settings.";
+
+	return baseTemplate(
+		heading,
+		`
+    <h1>${escapeHtml(heading)}</h1>
+    <p>Hi ${escapeHtml(recipientName)}, ${escapeHtml(body)}</p>
+    ${warningBlock}
+    ${detailsBlock}
+    ${previewBlock}
+    <a href="${url}" class="btn">${escapeHtml(ctaLabel)}</a>
+  `,
+		footer,
+	);
 }

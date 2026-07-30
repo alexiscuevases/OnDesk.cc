@@ -322,7 +322,16 @@ export async function applySlaToTicket(db: D1Database, ticket: TicketRow): Promi
 	});
 }
 
-export async function scanSlaBreaches(db: D1Database): Promise<{ scanned: number; breached: number }> {
+export interface SlaBreach {
+	ticket_id: string;
+	workspace_id: string;
+	kind: "response" | "resolution";
+	due_at: number;
+}
+
+export async function scanSlaBreaches(
+	db: D1Database,
+): Promise<{ scanned: number; breached: number; breaches: SlaBreach[] }> {
 	const now = Math.floor(Date.now() / 1000);
 	const rows = await db
 		.prepare(
@@ -331,15 +340,15 @@ export async function scanSlaBreaches(db: D1Database): Promise<{ scanned: number
 		.bind(now, now)
 		.all<SlaTrackingRow>();
 
-	let breached = 0;
+	const breaches: SlaBreach[] = [];
 	for (const t of rows.results ?? []) {
 		if (t.response_due_at && !t.first_response_at && t.response_due_at < now) {
 			await updateSlaStatus(db, t.ticket_id, "response_breached", now);
-			breached++;
+			breaches.push({ ticket_id: t.ticket_id, workspace_id: t.workspace_id, kind: "response", due_at: t.response_due_at });
 		} else if (t.resolution_due_at && !t.resolved_at && t.resolution_due_at < now) {
 			await updateSlaStatus(db, t.ticket_id, "resolution_breached", now);
-			breached++;
+			breaches.push({ ticket_id: t.ticket_id, workspace_id: t.workspace_id, kind: "resolution", due_at: t.resolution_due_at });
 		}
 	}
-	return { scanned: rows.results?.length ?? 0, breached };
+	return { scanned: rows.results?.length ?? 0, breached: breaches.length, breaches };
 }

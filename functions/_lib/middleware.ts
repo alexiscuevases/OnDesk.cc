@@ -20,7 +20,7 @@ type WorkspaceHandler<P extends string = string> = (
 export function withAuth<P extends string = string>(
 	handler: AuthHandler<P>
 ): PagesFunction<Env, P> {
-	return async ({ request, env, params }) => {
+	return async ({ request, env, params, waitUntil }) => {
 		const cookies = parseCookies(request.headers.get("Cookie"));
 		const accessToken = cookies[ACCESS_TOKEN_COOKIE];
 		if (!accessToken) return jsonError("Not authenticated", 401);
@@ -28,7 +28,7 @@ export function withAuth<P extends string = string>(
 		const payload = await verifyJwt(accessToken, env.JWT_SECRET);
 		if (!payload || payload.type === "2fa_pending") return jsonError("Invalid or expired token", 401);
 
-		return handler({ request, env, params: params as Record<P, string>, payload });
+		return handler({ request, env, params: params as Record<P, string>, payload, waitUntil });
 	};
 }
 
@@ -40,7 +40,7 @@ export function withAuth<P extends string = string>(
 export function withWorkspace<P extends string = string>(
 	handler: WorkspaceHandler<P>
 ): PagesFunction<Env, P> {
-	return withAuth<P>(async ({ request, env, params, payload }) => {
+	return withAuth<P>(async ({ request, env, params, payload, waitUntil }) => {
 		const url = new URL(request.url);
 		const workspaceId = url.searchParams.get("workspace_id");
 		if (!workspaceId) return jsonError("workspace_id is required");
@@ -48,6 +48,6 @@ export function withWorkspace<P extends string = string>(
 		const member = await isWorkspaceMember(env.DB, workspaceId, payload.sub);
 		if (!member) return jsonError("Forbidden", 403);
 
-		return handler({ request, env, params, payload, workspaceId });
+		return handler({ request, env, params, payload, workspaceId, waitUntil });
 	});
 }

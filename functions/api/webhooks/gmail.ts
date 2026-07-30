@@ -11,11 +11,10 @@ import {
 	findOrCreateContact,
 	createTicket,
 	createTicketMessage,
-	findWorkspaceMemberIds,
-	createNotification,
 	findActiveAgentForMailbox,
 	findTicketById,
 } from "../../_lib/db";
+import { buildTicketAudience, notify, ticketDetails } from "../../_lib/notify";
 import {
 	refreshGmailAccessToken,
 	listGmailHistory,
@@ -197,16 +196,28 @@ async function processGmailMessage(
 	if (existingTicket) {
 		ticketId = existingTicket.id;
 
-		if (existingTicket.assignee_id) {
-			await createNotification(env.DB, {
-				user_id: existingTicket.assignee_id,
-				workspace_id: workspaceId,
-				type: "message",
-				title: "Customer replied",
-				description: `${contact.name} replied to "${existingTicket.subject}".`,
-				resource_id: existingTicket.id,
-			});
-		}
+		// — Customer replied → the assignee and the assigned team
+		const audience = await buildTicketAudience(env.DB, existingTicket, {
+			selfPref: "reply_on_my_ticket",
+			teamPref: "reply_on_team_ticket",
+		});
+		await notify(env, {
+			workspaceId,
+			recipients: audience,
+			type: "message",
+			title: "Customer replied",
+			description: `${contact.name} replied to "${existingTicket.subject}".`,
+			resourceId: existingTicket.id,
+			email: {
+				subject: `[#${existingTicket.number}] Re: ${existingTicket.subject}`,
+				heading: "Customer replied",
+				body: `${contact.name} <${contact.email}> replied to this ticket.`,
+				details: ticketDetails(existingTicket, [{ label: "From", value: `${contact.name} <${contact.email}>` }]),
+				previewHtml: content,
+				ticketId: existingTicket.id,
+				ctaLabel: "View conversation",
+			},
+		});
 	} else {
 		const ccList = ccHeader
 			? ccHeader.split(",").map((entry) => {
@@ -228,19 +239,29 @@ async function processGmailMessage(
 		ticketId = ticket.id;
 		void applySlaToTicket(env.DB, ticket);
 
-		const memberIds = await findWorkspaceMemberIds(env.DB, workspaceId);
-		await Promise.all(
-			memberIds.map((uid) =>
-				createNotification(env.DB, {
-					user_id: uid,
-					workspace_id: workspaceId,
-					type: "ticket",
-					title: "New ticket received",
-					description: `${contact.name} opened "${subject}".`,
-					resource_id: ticket.id,
-				}),
-			),
-		);
+		// — New inbound ticket. Unassigned and teamless, so this falls back to the
+		// whole workspace under the "my team" preference (the shared inbox).
+		const audience = await buildTicketAudience(env.DB, ticket, {
+			selfPref: "ticket_assigned_to_me",
+			teamPref: "ticket_assigned_to_team",
+		});
+		await notify(env, {
+			workspaceId,
+			recipients: audience,
+			type: "ticket",
+			title: "New ticket received",
+			description: `${contact.name} opened "${subject}".`,
+			resourceId: ticket.id,
+			email: {
+				subject: `[#${ticket.number}] ${subject}`,
+				heading: "New ticket received",
+				body: `${contact.name} <${contact.email}> opened a new ticket.`,
+				details: ticketDetails(ticket, [{ label: "From", value: `${contact.name} <${contact.email}>` }]),
+				previewHtml: content,
+				ticketId: ticket.id,
+				ctaLabel: "View ticket",
+			},
+		});
 	}
 
 	// Store message — provider_message_id holds Gmail message id for reply threading

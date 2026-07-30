@@ -15,6 +15,8 @@
     "db:migrate:local": "wrangler d1 execute pulse-db --local --file=functions/_db/schema.sql",
     "db:migrate:marketplace:local": "wrangler d1 execute pulse-db --local --file=functions/_db/migrations/001_marketplace_connectors.sql",
     "db:migrate:marketplace:remote": "wrangler d1 execute pulse-db --remote --file=functions/_db/migrations/001_marketplace_connectors.sql",
+    "db:migrate:notifprefs:local": "wrangler d1 execute pulse-db --local --file=functions/_db/migrations/002_notification_preferences.sql",
+    "db:migrate:notifprefs:remote": "wrangler d1 execute pulse-db --remote --file=functions/_db/migrations/002_notification_preferences.sql",
     "db:seed:marketplace:local": "wrangler d1 execute pulse-db --local --file=functions/_db/seeds/marketplace_templates.sql",
     "db:seed:marketplace:remote": "wrangler d1 execute pulse-db --remote --file=functions/_db/seeds/marketplace_templates.sql"
   },
