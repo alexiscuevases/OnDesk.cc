@@ -19,6 +19,7 @@ import {
 	UserCheck,
 } from "lucide-react";
 import { useI18n, useLocalizedSeo, type Dictionary } from "@/i18n";
+import { SIGN_UP_HREF } from "@/features/auth";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Segment configuration
@@ -177,7 +178,7 @@ export function SolutionPage({ segment }: { segment: Segment }) {
 						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10">{copy.description}</p>
 
 						<div className="flex flex-col sm:flex-row gap-3">
-							<CtaLink href="/auth/signup">
+							<CtaLink href={SIGN_UP_HREF}>
 								{chrome.ctaPrimary} <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
 							</CtaLink>
 							<CtaLink href="/pricing" variant="outline">
@@ -325,7 +326,7 @@ export function SolutionPage({ segment }: { segment: Segment }) {
 						<h2 className="text-4xl md:text-6xl font-black tracking-tighter text-balance mb-6 max-w-4xl mx-auto">{copy.ctaHeadline}</h2>
 						<p className="text-white/55 text-lg md:text-xl mb-12 max-w-xl mx-auto">{copy.ctaDesc}</p>
 						<div className="flex flex-col sm:flex-row justify-center gap-4">
-							<CtaLink href="/auth/signup" variant="lime">
+							<CtaLink href={SIGN_UP_HREF} variant="lime">
 								{chrome.ctaPrimary} <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
 							</CtaLink>
 							<a

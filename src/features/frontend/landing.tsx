@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useI18n, useLocalizedSeo, type Dictionary } from "@/i18n";
+import { SIGN_UP_HREF } from "@/features/auth";
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -179,7 +180,7 @@ function Hero() {
 					</div>
 
 					<div className="flex flex-col sm:flex-row gap-3">
-						<CtaLink href="/auth/signup">
+						<CtaLink href={SIGN_UP_HREF}>
 							{t.ctaPrimary} <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
 						</CtaLink>
 						<CtaLink href="/pricing" variant="outline">
@@ -561,7 +562,7 @@ function FinalCta() {
 				</h2>
 				<p className="text-white/55 text-lg md:text-xl mb-12 max-w-xl mx-auto">{cta.subhead}</p>
 				<div className="flex flex-col sm:flex-row justify-center gap-4">
-					<CtaLink href="/auth/signup" variant="lime">
+					<CtaLink href={SIGN_UP_HREF} variant="lime">
 						{cta.ctaPrimary} <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
 					</CtaLink>
 					<a

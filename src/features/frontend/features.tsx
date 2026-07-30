@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useInView, useCounter, useMountVisible, PulseLine, MonoTag, SectionRule, Cross, CtaLink, DarkCta } from "./shared";
 import { useI18n, useLocalizedSeo, type Dictionary } from "@/i18n";
+import { SIGN_UP_HREF } from "@/features/auth";
 
 // Filter tabs are matched by these stable ids, never by their labels — so
 // translating a tab can't break the filter.
@@ -90,7 +91,7 @@ export default function FeaturesPage() {
 						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10">{hero.subhead}</p>
 
 						<div className="flex flex-col sm:flex-row gap-3">
-							<CtaLink href="/auth/signup">
+							<CtaLink href={SIGN_UP_HREF}>
 								{hero.ctaPrimary} <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
 							</CtaLink>
 							<CtaLink href="/pricing" variant="outline">
@@ -216,7 +217,7 @@ export default function FeaturesPage() {
 						</>
 					}
 					desc={dict.features.finalCta.desc}
-					primary={{ href: "/auth/signup", label: dict.features.finalCta.primary }}
+					primary={{ href: SIGN_UP_HREF, label: dict.features.finalCta.primary }}
 					secondary={{ href: "/contact", label: dict.features.finalCta.secondary }}
 				/>
 			</div>

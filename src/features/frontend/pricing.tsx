@@ -3,6 +3,7 @@ import { ArrowRight, CheckCircle2, X, Users, Minus, Plus } from "lucide-react";
 import { useState } from "react";
 import { useInView, useMountVisible, PulseLine, MonoTag, SectionRule, Cross, CtaLink, DarkCta } from "./shared";
 import { useI18n, useLocalizedSeo } from "@/i18n";
+import { SIGN_UP_HREF } from "@/features/auth";
 
 // ── Plan structure ──
 // Prices and tier identity live in code; every string comes from the dictionary.
@@ -14,7 +15,7 @@ const PLANS = [
 		name: "Pulse Starter",
 		pricingType: "flat",
 		priceFlat: { monthly: 9, annual: 7 },
-		href: "/auth/signup",
+		href: SIGN_UP_HREF,
 		highlight: false,
 	},
 	{
@@ -22,7 +23,7 @@ const PLANS = [
 		name: "Pulse Core",
 		pricingType: "per-agent",
 		pricePerAgent: { monthly: 19, annual: 15 },
-		href: "/auth/signup",
+		href: SIGN_UP_HREF,
 		highlight: false,
 	},
 	{
@@ -30,7 +31,7 @@ const PLANS = [
 		name: "Pulse Enterprise",
 		pricingType: "per-agent",
 		pricePerAgent: { monthly: 39, annual: 31 },
-		href: "/auth/signup",
+		href: SIGN_UP_HREF,
 		highlight: true,
 	},
 ] as const;
@@ -235,7 +236,7 @@ export default function PricingPage() {
 					}
 					desc={dict.pricing.finalCta.desc}
 					primary={{ href: "/contact", label: dict.pricing.finalCta.primary }}
-					secondary={{ href: "/auth/signup", label: dict.pricing.finalCta.secondary }}
+					secondary={{ href: SIGN_UP_HREF, label: dict.pricing.finalCta.secondary }}
 				/>
 			</div>
 		</SiteLayout>

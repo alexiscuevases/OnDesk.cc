@@ -3,6 +3,7 @@ import { LanguageSwitcher } from "./language-switcher";
 import { ArrowRight, ArrowUpRight, Menu, X, Users, Building2, UserCheck, ChevronDown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { splitLocalePath, useI18n } from "@/i18n";
+import { SIGN_UP_HREF, SIGN_IN_HREF } from "@/features/auth";
 
 // Structure (icons, ordering, hrefs) lives here; every string comes from the
 // dictionary, keyed by `key`. That way a translation can restyle the copy but
@@ -213,12 +214,12 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 					<div className="hidden md:flex items-center gap-4">
 						<LanguageSwitcher />
 						<a
-							href={path("/auth/signin")}
+							href={SIGN_IN_HREF}
 							className="font-mono text-[11px] tracking-[0.15em] uppercase font-semibold text-muted-foreground hover:text-primary transition-colors duration-200">
 							{nav.login}
 						</a>
 						<a
-							href={path("/auth/signup")}
+							href={SIGN_UP_HREF}
 							className="group relative inline-flex items-center gap-2 overflow-hidden bg-primary px-4 py-2.5 font-mono text-[11px] tracking-[0.15em] uppercase font-semibold text-primary-foreground">
 							<span
 								className="absolute inset-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
@@ -272,12 +273,12 @@ export function SiteLayout({ children, withBackground = false }: SiteLayoutProps
 
 						<div className="flex gap-3 px-6 py-5">
 							<a
-								href={path("/auth/signin")}
+								href={SIGN_IN_HREF}
 								className="flex-1 inline-flex items-center justify-center border border-foreground/25 px-4 py-3 font-mono text-[11px] tracking-[0.15em] uppercase font-semibold text-foreground hover:border-primary hover:text-primary transition-colors">
 								{nav.login}
 							</a>
 							<a
-								href={path("/auth/signup")}
+								href={SIGN_UP_HREF}
 								className="flex-1 inline-flex items-center justify-center gap-1.5 bg-primary px-4 py-3 font-mono text-[11px] tracking-[0.15em] uppercase font-semibold text-primary-foreground">
 								{nav.freeTrial}
 								<ArrowRight className="size-3" />

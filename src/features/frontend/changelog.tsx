@@ -3,6 +3,7 @@ import { Bell } from "lucide-react";
 import { useState } from "react";
 import { useInView, useMountVisible, PulseLine, MonoTag, CtaLink, DarkCta } from "./shared";
 import { useI18n, useLocalizedSeo, type Dictionary } from "@/i18n";
+import { SIGN_UP_HREF } from "@/features/auth";
 
 // ── Structure ──
 // Version numbers, release tiers and per-change types are release facts, so they
@@ -85,7 +86,7 @@ export default function ChangelogPage() {
 						<p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed mb-10">{hero.subhead}</p>
 
 						<div className="flex flex-col sm:flex-row gap-3">
-							<CtaLink href="/auth/signup">
+							<CtaLink href={SIGN_UP_HREF}>
 								{hero.cta} <Bell className="size-3.5" />
 							</CtaLink>
 						</div>
@@ -129,7 +130,7 @@ export default function ChangelogPage() {
 					}
 					desc={dict.changelog.finalCta.desc}
 					primary={{ href: "/contact", label: dict.changelog.finalCta.primary }}
-					secondary={{ href: "/auth/signup", label: dict.changelog.finalCta.secondary }}
+					secondary={{ href: SIGN_UP_HREF, label: dict.changelog.finalCta.secondary }}
 				/>
 			</div>
 		</SiteLayout>

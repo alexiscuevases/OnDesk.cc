@@ -3,6 +3,7 @@ import { ArrowRight, ArrowUpRight, Star, TrendingDown, Clock, Users, Zap, BarCha
 import { useState } from "react";
 import { useInView, useCounter, useMountVisible, PulseLine, MonoTag, SectionRule, Cross, CtaLink, DarkCta } from "./shared";
 import { useI18n, useLocalizedSeo, type Dictionary } from "@/i18n";
+import { SIGN_UP_HREF } from "@/features/auth";
 
 // ── Structure ──
 // Company names, authors, logos, colours, plan names, industry ids and result
@@ -206,7 +207,7 @@ export default function CustomersPage() {
 						</>
 					}
 					desc={dict.customers.finalCta.desc}
-					primary={{ href: "/auth/signup", label: dict.customers.finalCta.primary }}
+					primary={{ href: SIGN_UP_HREF, label: dict.customers.finalCta.primary }}
 					secondary={{ href: "/contact", label: dict.customers.finalCta.secondary }}
 				/>
 			</div>
