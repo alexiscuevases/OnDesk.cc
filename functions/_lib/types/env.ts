@@ -34,15 +34,10 @@ export interface Env {
 	GOOGLE_CLIENT_SECRET: string;
 	GOOGLE_PUBSUB_TOPIC: string;
 	GOOGLE_PUBSUB_SECRET: string;
-	// Stripe
-	STRIPE_SECRET_KEY: string;
-	STRIPE_WEBHOOK_SECRET: string;
-	STRIPE_STARTER_MONTHLY_PRICE_ID: string;
-	STRIPE_STARTER_ANNUAL_PRICE_ID: string;
-	STRIPE_CORE_MONTHLY_PRICE_ID: string;
-	STRIPE_CORE_ANNUAL_PRICE_ID: string;
-	STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: string;
-	STRIPE_ENTERPRISE_ANNUAL_PRICE_ID: string;
+	// No Stripe. Billing belongs to ondesk: one customer and one invoice per
+	// workspace across every product. The secret key, webhook secret and six
+	// price IDs that used to be declared here are gone from the Pages project
+	// too — Pulse reads entitlements out of workspace_entitlements instead.
 	// Cron / scheduled jobs (bearer token sent in Authorization header)
 	CRON_SECRET?: string;
 	// AES-GCM key material for marketplace connector credentials at rest.
