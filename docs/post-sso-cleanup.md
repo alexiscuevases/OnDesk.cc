@@ -186,6 +186,28 @@ which did not exist. Three routes now do:
   Stripe webhook may not have landed yet, and links onward to the product.
 - **`/workspaces/:slug/members`** — membership management, the destination Pulse
   now links out to.
+- **`/apps/:id`** — the product page and subscribe flow. This is where
+  `pulse/functions/api/auth/sso/callback.ts:68` sends anyone whose tenant has no
+  Pulse entitlement, and it was a 404, so *every* unsubscribed tenant hit a dead
+  end immediately after signing in. Handles the `incomplete` subscription case:
+  checkout pre-creates that row before handing off to Stripe, so an abandoned
+  checkout leaves one behind and the workspace must still be offered for sale.
+- **`/workspaces`** — the workspace list. This is the `manage_url` that pulse's
+  own `/api/billing` returns, so the "Manage on OnDesk" button in
+  `billing-section.tsx` pointed here; also a 404.
+- **`/account/security`** — 2FA toggle and password reset, the destination of the
+  three identity links in Pulse. Deliberately limited to what the API supports:
+  there is no change-password endpoint (only the emailed reset flow) and nothing
+  exposes connected OAuth identities, so neither appears.
+
+**How these were missed the first time.** The initial sweep grepped `APP_URL`
+across *ondesk's* functions. It found the redirects ondesk makes to itself and
+missed every link *pulse* makes to ondesk, which use `ONDESK_ISSUER` or
+`VITE_ONDESK_URL`. When adding a cross-app redirect, grep both repos:
+
+```
+grep -rnE "\$\{(ONDESK_URL|ONDESK_ISSUER)[^}]*\}[^\"'\`)]*|https://ondesk\.cc[^\"'\`)]*" pulse/src pulse/functions
+```
 
 **Invitations could not be accepted at all.** The previous revision listed the
 invitations API as complete. It could send invites and nothing could redeem them:
@@ -224,10 +246,9 @@ links to was parsed in `routes/auth.tsx` and then dropped.
   side with `oauth_unconfigured` and a real message, instead of handing Google an
   empty `client_id` and letting it render its own error page. The same guard was
   added to the Microsoft route.
-- **`ondesk.cc/account/security` does not exist.** Both
-  `profile-security-section.tsx` and the reworked `account-section.tsx` link
-  there. It is the natural home for password, 2FA and connected accounts — the
-  APIs (`/api/auth/2fa/toggle`, `/api/auth/reset-password`) are already there.
+- **No ondesk frontend route is known to be missing any more.** Every
+  ondesk-bound destination referenced from either repo now resolves; the grep
+  above is the check to re-run after adding one.
 - **`ondesk.cc` as an email sending domain is unconfirmed.** The API token
   authenticates against the send endpoint (verified), but I could not confirm the
   domain is onboarded. If 2FA codes or invitation emails never arrive, that is
