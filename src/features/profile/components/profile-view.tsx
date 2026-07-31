@@ -11,10 +11,10 @@ type ProfileSection = "profile" | "account" | "appearance" | "security" | "notif
 
 const sections: { id: ProfileSection; label: string; icon: typeof User; desc: string }[] = [
 	{ id: "profile", label: "Profile", icon: User, desc: "Your name, photo and bio" },
-	{ id: "account", label: "Account", icon: KeyRound, desc: "Email, password and danger zone" },
+	{ id: "account", label: "Account", icon: KeyRound, desc: "Your OnDesk identity" },
 	{ id: "appearance", label: "Appearance", icon: Palette, desc: "Theme, density and language" },
 	{ id: "notifications", label: "Notifications", icon: Bell, desc: "Email and push preferences" },
-	{ id: "security", label: "Security", icon: ShieldCheck, desc: "2FA and active sessions" },
+	{ id: "security", label: "Security", icon: ShieldCheck, desc: "Sign-in security and sessions" },
 ];
 
 export function ProfileView() {

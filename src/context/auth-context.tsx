@@ -5,7 +5,8 @@ export interface AuthUser {
 	name: string;
 	email: string;
 	role: string;
-	two_factor_enabled?: boolean;
+	// No two_factor_enabled: /api/auth/me stopped returning it when ondesk took
+	// over identity. Two-factor state lives there.
 }
 
 interface AuthContextValue {

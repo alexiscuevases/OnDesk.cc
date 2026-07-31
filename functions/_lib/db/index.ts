@@ -7,7 +7,6 @@ export * from "./tickets";
 export * from "./analytics";
 export * from "./canned-replies";
 export * from "./signatures";
-export * from "./invitations";
 export * from "./mailboxes";
 export * from "./notifications";
 export * from "./ai";

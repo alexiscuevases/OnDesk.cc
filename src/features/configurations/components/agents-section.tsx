@@ -1,226 +1,108 @@
-import { useState } from "react";
-import { Pencil, Trash2, X, UserPlus, Clock, Users, Send, Mail } from "lucide-react";
-import { toast } from "sonner";
+import { ExternalLink, Users, UserCog } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyState, StatGrid, StatTile } from "@/shared/components/console";
 import { useWorkspace } from "@/context/workspace-context";
-import { useWorkspaceMembers, useWorkspaceInvitations } from "@/features/users/hooks/use-user-queries";
-import {
-	useUpdateMemberRoleMutation,
-	useRemoveMemberMutation,
-	useInviteAgentMutation,
-	useCancelInvitationMutation,
-	useResendInvitationMutation,
-} from "@/features/users/hooks/use-user-mutations";
-import type { WorkspaceMember } from "@/features/users/api/users-api";
-import { EditAgentModal } from "../modals/edit-agent-modal";
-import { DeleteAgentModal } from "../modals/delete-agent-modal";
-import { AddAgentModal } from "../modals/add-agent-modal";
-import type { AgentFormValues } from "../schemas/config.schema";
+import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
 
+const ONDESK_URL = import.meta.env.VITE_ONDESK_URL ?? "https://ondesk.cc";
+
+/**
+ * Read-only view of who belongs to this workspace.
+ *
+ * Membership is platform state, not product state: the same person and the same
+ * role apply across every OnDesk product, and `workspace_members` here is a
+ * mirror that only mirror.ts may write. Inviting, changing a role or removing
+ * someone all happen on OnDesk — done here they would be silently reverted by
+ * the next sync.
+ */
 export function AgentsSection() {
 	const { workspace } = useWorkspace();
-	const { data: members = [] } = useWorkspaceMembers(workspace.id);
-	const { data: invitations = [] } = useWorkspaceInvitations(workspace.id);
-	const updateRole = useUpdateMemberRoleMutation(workspace.id);
-	const removeMember = useRemoveMemberMutation(workspace.id);
-	const inviteAgent = useInviteAgentMutation(workspace.id);
-	const cancelInvitation = useCancelInvitationMutation(workspace.id);
-	const resendInvitation = useResendInvitationMutation(workspace.id);
+	const { data: members = [], isLoading } = useWorkspaceMembers(workspace.id);
 
-	const [addOpen, setAddOpen] = useState(false);
-	const [editOpen, setEditOpen] = useState(false);
-	const [deleteOpen, setDeleteOpen] = useState(false);
-	const [selectedMember, setSelectedMember] = useState<WorkspaceMember | null>(null);
-
-	function handleEditRole(role: string) {
-		if (!selectedMember) return;
-		updateRole.mutate({ userId: selectedMember.id, role });
-		setEditOpen(false);
-	}
-
-	function handleDelete() {
-		if (!selectedMember) return;
-		removeMember.mutate(selectedMember.id);
-		setSelectedMember(null);
-	}
-
-	function handleInvite(values: AgentFormValues) {
-		inviteAgent.mutate(
-			{ email: values.email, role: values.role.toLowerCase() },
-			{
-				onSuccess: (data) => {
-					if (data.added) {
-						toast.success("Agent added to workspace");
-					} else {
-						toast.success(`Invitation sent to ${data.email ?? values.email}`);
-					}
-					setAddOpen(false);
-				},
-				onError: (err) => {
-					toast.error(err.message);
-				},
-			},
-		);
-	}
+	const manageUrl = `${ONDESK_URL}/workspaces/${workspace.slug}/members`;
 
 	return (
-		<>
-			<div className="flex flex-col gap-6">
-				<div className="flex items-end justify-between">
-					<p className="text-xs text-muted-foreground">
-						Invite teammates as agents and manage their workspace role.
-					</p>
-					<Button size="sm" className="text-xs gap-1.5" onClick={() => setAddOpen(true)}>
-						<UserPlus className="size-3.5" />
-						Invite Agent
-					</Button>
-				</div>
+		<div className="flex flex-col gap-6">
+			<div className="flex flex-wrap items-end justify-between gap-3">
+				<p className="text-muted-foreground text-xs">
+					Who can work on tickets in this workspace. Managed on your OnDesk account.
+				</p>
+				<Button asChild size="sm" className="gap-1.5 text-xs">
+					<a href={manageUrl} target="_blank" rel="noreferrer">
+						<UserCog className="size-3.5" />
+						Manage on OnDesk
+						<ExternalLink className="size-3" />
+					</a>
+				</Button>
+			</div>
 
-				<StatGrid className="grid-cols-2">
-					<StatTile icon={Users} label="Agents" value={members.length} />
-					<StatTile icon={Mail} label="Pending invites" value={invitations.length} />
-				</StatGrid>
+			<StatGrid className="grid-cols-1">
+				<StatTile icon={Users} label="Agents" value={members.length} />
+			</StatGrid>
 
-				<Card>
-					<CardHeader>
-						<CardTitle className="console-label">Support Agents</CardTitle>
-						<CardDescription className="text-xs">Members currently active in this workspace</CardDescription>
-					</CardHeader>
-					<CardContent>
-					{members.length === 0 ? (
+			<Card>
+				<CardHeader>
+					<CardTitle className="console-label">Support Agents</CardTitle>
+					<CardDescription className="text-xs">
+						Members currently active in this workspace
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="flex flex-col gap-4">
+					{isLoading ? (
+						<div className="text-muted-foreground py-6 text-center text-xs">Loading…</div>
+					) : members.length === 0 ? (
 						<EmptyState
 							icon={Users}
 							title="No agents yet"
-							description="Invite your team members to start collaborating on support tickets."
+							description="Invite your team on OnDesk and they'll appear here."
 						/>
 					) : (
-					<div className="space-y-2">
-						{members.map((member) => {
-							const initials = member.name
-								.split(" ")
-								.map((w) => w[0])
-								.join("")
-								.slice(0, 2)
-								.toUpperCase();
-							return (
-								<div
-									key={member.id}
-									className="flex items-center gap-3 bg-secondary/40 p-3.5 transition-colors hover:bg-secondary/80">
-									<Avatar className="size-9">
-										<AvatarImage src={member.logo_url ?? workspace.logo_url ?? undefined} className="object-cover" />
-										<AvatarFallback className="bg-primary text-primary-foreground text-[11px] font-bold">
-											{initials}
-										</AvatarFallback>
-									</Avatar>
-									<div className="flex-1 min-w-0">
-										<p className="text-sm font-medium">{member.name}</p>
-										<p className="text-[11px] text-muted-foreground font-mono">{member.email}</p>
+						<div className="space-y-2">
+							{members.map((member) => {
+								const initials = member.name
+									.split(" ")
+									.map((w) => w[0])
+									.join("")
+									.slice(0, 2)
+									.toUpperCase();
+								return (
+									<div key={member.id} className="bg-secondary/40 flex items-center gap-3 p-3.5">
+										<Avatar className="size-9">
+											<AvatarImage
+												src={member.logo_url ?? workspace.logo_url ?? undefined}
+												className="object-cover"
+											/>
+											<AvatarFallback className="bg-primary text-primary-foreground text-[11px] font-bold">
+												{initials}
+											</AvatarFallback>
+										</Avatar>
+										<div className="min-w-0 flex-1">
+											<p className="text-sm font-medium">{member.name}</p>
+											<p className="text-muted-foreground font-mono text-[11px]">{member.email}</p>
+										</div>
+										<Badge variant="secondary" className="px-2 text-[10px]">
+											{member.workspace_role}
+										</Badge>
 									</div>
-									<Badge variant="secondary" className="text-[10px] px-2">
-										{member.workspace_role}
-									</Badge>
-									<div className="flex items-center gap-1 shrink-0">
-										<Button
-											variant="ghost"
-											size="icon"
-											className="size-7"
-											onClick={() => {
-												setSelectedMember(member);
-												setEditOpen(true);
-											}}>
-											<Pencil className="size-3" />
-											<span className="sr-only">Edit agent</span>
-										</Button>
-										<Button
-											variant="ghost"
-											size="icon"
-											className="size-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-											onClick={() => {
-												setSelectedMember(member);
-												setDeleteOpen(true);
-											}}>
-											<Trash2 className="size-3" />
-											<span className="sr-only">Remove agent</span>
-										</Button>
-									</div>
-								</div>
-							);
-						})}
-					</div>
-					)}
-
-					{invitations.length > 0 && (
-						<div className="mt-4 space-y-2">
-							<p className="console-label flex items-center gap-1.5">
-								<Clock className="size-3" />
-								Pending Invitations
-							</p>
-							{invitations.map((invite) => (
-								<div key={invite.id} className="flex items-center gap-3 border border-dashed bg-muted/30 p-3.5">
-									<Avatar className="size-9">
-										<AvatarFallback className="bg-muted text-muted-foreground text-[11px] font-bold">
-											{invite.email[0].toUpperCase()}
-										</AvatarFallback>
-									</Avatar>
-									<div className="flex-1 min-w-0">
-										<p className="text-sm font-medium truncate font-mono">{invite.email}</p>
-										<p className="text-[11px] text-muted-foreground">Expires {new Date(invite.expires_at * 1000).toLocaleDateString()}</p>
-									</div>
-									<Badge variant="outline" className="text-[10px] px-2 capitalize">
-										{invite.role}
-									</Badge>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="size-7 text-muted-foreground hover:text-foreground"
-										disabled={resendInvitation.isPending}
-										onClick={() =>
-											resendInvitation.mutate(invite.id, {
-												onSuccess: (data) => toast.success(`Invitation resent to ${data.email}`),
-												onError: (err) => toast.error(err.message),
-											})
-										}>
-										<Send className="size-3" />
-										<span className="sr-only">Resend invitation</span>
-									</Button>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-										onClick={() =>
-											cancelInvitation.mutate(invite.id, {
-												onSuccess: () => toast.success("Invitation cancelled"),
-												onError: (err) => toast.error(err.message),
-											})
-										}>
-										<X className="size-3" />
-										<span className="sr-only">Cancel invitation</span>
-									</Button>
-								</div>
-							))}
+								);
+							})}
 						</div>
 					)}
+
+					<Separator />
+
+					<p className="text-muted-foreground text-xs leading-relaxed">
+						Invitations, roles and removals are handled on OnDesk, where they apply to every product this
+						workspace uses.
+					</p>
 				</CardContent>
 			</Card>
-			</div>
-
-			<AddAgentModal open={addOpen} onOpenChange={setAddOpen} onConfirm={handleInvite} />
-			<EditAgentModal
-				open={editOpen}
-				onOpenChange={setEditOpen}
-				agent={selectedMember ? { id: selectedMember.id, email: selectedMember.email, role: selectedMember.workspace_role } : null}
-				onConfirm={(values) => handleEditRole(values.role)}
-			/>
-			<DeleteAgentModal
-				open={deleteOpen}
-				onOpenChange={setDeleteOpen}
-				agent={selectedMember ? { id: selectedMember.id, name: selectedMember.name } : null}
-				onConfirm={handleDelete}
-			/>
-		</>
+		</div>
 	);
 }
+
+export default AgentsSection;
