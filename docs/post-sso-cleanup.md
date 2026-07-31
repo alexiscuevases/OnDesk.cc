@@ -7,6 +7,11 @@ that still assumes Pulse owns identity, tenancy and billing.
 
 Architecture and rationale: `ondesk/docs/platform-architecture.md`.
 
+> **Revised 2026-07-30.** Tasks A and B are done, and the ondesk workspace UI
+> that blocked new signups now exists. Several claims in the previous revision
+> were stale and are corrected inline below — check anything here against the
+> live system before trusting it, which is how those errors were found.
+
 ---
 
 ## Where things stand
@@ -30,56 +35,54 @@ Architecture and rationale: `ondesk/docs/platform-architecture.md`.
 
 | | app | functions |
 | --- | --- | --- |
-| pulse | 34 errors (all pre-existing) | 1 (pre-existing, `ai-agent-runtime.ts:59`) |
+| pulse | 33 errors (all pre-existing) | 1 (pre-existing, `ai-agent-runtime.ts:59`) |
 | ondesk | 0 | 0 |
 
-Pulse's 34 are pre-existing TanStack Form / recharts type errors that predate this
-work. Confirm any number you see against these before assuming you broke something:
+Pulse's remaining errors are pre-existing TanStack Form / recharts type errors
+that predate this work. The count was 34 until `agent-form.tsx` was deleted in
+Task A. Confirm any number you see against these before assuming you broke
+something:
 `npx tsc -p tsconfig.app.json --noEmit 2>&1 | grep -c "error TS"`.
 
 ---
 
-## Task A — dead code in pulse
+## Task A — dead code in pulse ✅ done
 
-Verified dead. Every one of these refers to a table that no longer exists or an
-endpoint that returns 405.
+Every claim below was re-verified against the tree before deleting; two claims in
+the previous revision were already stale.
 
-**Backend**
+**Backend — removed**
 
-- `functions/_lib/db/invitations.ts` — every function queries
-  `workspace_invitations`, dropped. Delete the file and its re-export in
-  `functions/_lib/db/index.ts`.
+- `functions/_lib/db/invitations.ts` — deleted, with its re-export in
+  `functions/_lib/db/index.ts`. Had zero call sites.
 - `functions/_lib/types/workspaces.ts` — `WorkspaceInvitationRow` and
-  `PublicInvitation` have no table behind them.
+  `PublicInvitation` removed.
 - `functions/_lib/email.ts` — `invitationEmail`, `twoFactorCodeEmail`,
-  `passwordResetEmail`, `accountLockedEmail`. All four are auth emails that ondesk
-  now sends. **Keep** `sendEmail`, `notificationEmail`, `escapeHtml`, `excerpt`
-  and the base template: pulse still sends ticket notifications.
-- `functions/_db/schema.sql` — grep for `invitation` and `two_factor`; leftover
-  comments referencing tables that are gone.
+  `passwordResetEmail`, `accountLockedEmail` removed, plus the now-orphaned
+  `.code-box` / `.code` CSS. `sendEmail`, `notificationEmail`, `escapeHtml`,
+  `excerpt`, `baseTemplate` and `.warning` stay — ticket notifications use them.
+- `functions/_db/schema.sql` — **nothing to do.** The previous revision said to
+  grep for `invitation` and `two_factor` leftovers; there are none.
 
-**Frontend**
+**Frontend — removed**
 
-- `src/features/users/api/users-api.ts:22` — `INVITATIONS_BASE =
-  "/api/invitations"`. This is the only live call to a deleted endpoint in the
-  whole app. Inviting someone creates an OnDesk account, which a product cannot
-  do; this has to become a link out to ondesk.
-- `src/features/users/hooks/use-user-mutations.ts`, `use-user-queries.ts` — the
-  hooks wrapping it.
-- `src/context/auth-context.tsx` — `two_factor_enabled` on `AuthUser`.
-  `/api/auth/me` no longer returns it.
-- `src/features/profile/components/profile-view.tsx` — 2FA reference.
+- `src/features/users/api/users-api.ts` — every `/api/invitations` call gone.
+  The file is now read-only: `apiGetWorkspaceMembers` alone.
+- `src/features/users/hooks/use-user-mutations.ts` — deleted (all five hooks were
+  used only by `agents-section.tsx`).
+- `use-user-queries.ts` — `useWorkspaceInvitations` removed. `useWorkspaceMembers`
+  **stays**: nine other screens read it and `GET /api/users` is alive.
+- `src/context/auth-context.tsx` — `two_factor_enabled` removed from `AuthUser`.
+- Deleted as newly unreachable: `modals/{add,edit,delete}-agent-modal.tsx`,
+  `forms/agent-form.tsx`.
 
 **Dependencies**
 
-- `stripe` in `package.json` — **zero** imports remain in `src/` or `functions/`.
-  Billing is entirely ondesk's. Remove it.
-- `@tanstack/zod-form-adapter` — still imported by 6 files. It is dead upstream
-  (TanStack Form v1 consumes Standard Schema directly) and is the cause of several
-  of the 34 baseline errors. Removing it means reworking those forms the way
-  ondesk's were: drop `validatorAdapter`, drop `.default()` from the zod schemas,
-  pass the schema straight to `validators.onChange`. Optional, but it is how you
-  get the baseline down.
+- `stripe` — removed from `package.json`. Zero imports; the only match was an
+  example URL in a validation message.
+- `@tanstack/zod-form-adapter` — **still there**, still imported by the form files
+  that hold most of the remaining 33 errors. Unchanged from the previous
+  revision: optional, and the way to get the baseline down.
 
 **Not dead — do not remove**
 
@@ -88,23 +91,44 @@ endpoint that returns 405.
 - Stripe in `src/i18n/locales/*` — marketing copy.
 - `createWorkspace`-looking names in `automations`, `business-hours`,
   `canned-replies` etc. — the generic `crud-api.ts` factory, false positives.
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` **on the pulse project** — these are
+  the Gmail mailbox integration (ticket ingestion), not sign-in. In active use.
 
 ---
 
-## Task B — pulse-db
+## Task A.1 — invariant #2 was being violated ⚠️ fixed
 
-The schema is already correct. What is left is one inconsistency in the data and
-one thing that was never cleaned:
+Not in the previous revision, and worse than the dead invite endpoint because it
+failed silently rather than erroring.
 
-- **`plan = 'professional'`** exists in `workspace_entitlements` but is not in
-  `SubscriptionPlan` (`starter | core | enterprise`) and has no row in ondesk's
-  `app_prices`. Decide whether it maps to `core` or `enterprise` and normalise it
-  in **both** databases — ondesk's `subscriptions` is the source of truth, so fix
-  it there first or the next mirror sync will overwrite whatever you change here.
-- **8 unused Stripe secrets on the pulse Pages project**: `STRIPE_SECRET_KEY`,
-  `STRIPE_WEBHOOK_SECRET` and the 6 price IDs. Nothing reads them and
-  `subscriptions` no longer exists. A live Stripe secret key reachable from a
-  project that has no business touching billing is worth deleting.
+`PATCH` and `DELETE` on pulse's `/api/users` called `updateWorkspaceMemberRole`
+and `removeWorkspaceMember`, which write `workspace_members` — a mirrored table
+only `mirror.ts` may write. Changing a role or removing a teammate from inside
+Pulse returned success, wrote pulse-db only, and was then reverted by the next
+mirror event or reconcile pass, with nothing surfaced to the user.
+
+- `functions/api/users/index.ts` is now GET-only.
+- `functions/_lib/db/workspaces.ts` — `updateWorkspaceMemberRole`,
+  `removeWorkspaceMember`, `addWorkspaceMember`, `createWorkspace` and
+  `slugExists` removed; all were unreachable once the handlers went. Each site
+  carries a comment saying where the write side actually lives.
+
+---
+
+## Task B — pulse-db ✅ done
+
+- **`plan = 'professional'`** normalised to **`core`**. Both rows were
+  `status = 'canceled'` (workspaces `okj` and `acm`, `agent_count` 1), so there
+  was no billing consequence and both were already invisible to Pulse via the
+  `status IN ('active','trialing','past_due')` gate. `core` over `enterprise`
+  because `professional` was the old middle tier. Applied to ondesk's
+  `subscriptions` first, then pulse's `workspace_entitlements` — 2 rows each,
+  verified. The only active subscription is `alex` on `enterprise/annual`.
+  To reverse: set `plan='professional'` where `status='canceled'`.
+- **The 8 unused Stripe secrets were already gone.** The previous revision called
+  a live `STRIPE_SECRET_KEY` on the pulse project the main risk here;
+  `wrangler pages secret list --project-name pulse` shows no Stripe secret of any
+  kind. Nothing to delete.
 - `functions/_db/migrations/003_ondesk_sso.sql` was applied in two halves on the
   live database, because the additive half had already run and SQLite has no
   `ADD COLUMN IF NOT EXISTS`. The file as committed is still correct for a
@@ -112,63 +136,111 @@ one thing that was never cleaned:
 
 ---
 
-## Task C — UI that still assumes the old model
+## Task C — UI that still assumes the old model (partly done)
 
-This is the substantial piece. The API is done; the screens are not.
+**Done**
 
-**`configurations/` sections** — `agents`, `users-companies`, `roles`, `general`
+- `configurations/agents-section.tsx` — now a read-only member list plus
+  "Manage on OnDesk", following `billing-section.tsx`. The invite flow and the
+  role/remove controls are gone (see Task A.1: they never worked).
+- `profile/account-section.tsx` — was three forms (change email, change password,
+  delete account) with **no handlers wired to anything**. Now states where
+  identity lives and links out.
+- `profile-view.tsx` — tab descriptions no longer advertise 2FA as a Pulse
+  feature.
 
-- `agents-section.tsx` + `modals/add-agent-modal.tsx` drive the invite flow
-  against the dead `/api/invitations`. Members are managed on ondesk now
-  (`/api/workspaces/:id/members`, `/api/invitations`). Turn these into a
-  read-only member list plus a link out, the way `security-section.tsx` and
-  `billing-section.tsx` were already reworked — follow those two as the pattern.
-- `general-section.tsx` — check whether it still edits name/description/logo.
-  Those are mirrored from ondesk and any local write is overwritten on the next
-  sync. `PATCH /api/workspaces/:slug` now accepts **only** `workspace_prompt`.
+**Still to do**
+
+- `general-section.tsx` — unchecked. Confirm whether it still edits
+  name/description/logo. Those are mirrored from ondesk and any local write is
+  overwritten on the next sync. `PATCH /api/workspaces/:slug` now accepts **only**
+  `workspace_prompt`. This is the last place the Task A.1 class of bug could still
+  be hiding.
+- `profile-security-section.tsx` — `activeSessions` is hardcoded fake data
+  (two invented devices in Buenos Aires) rendered as if real.
+- `workspace-selector-view.tsx` — verify the empty state reads sensibly for a user
+  whose only workspaces have lapsed entitlements; they currently see an empty list
+  with no explanation.
+- `overview-view.tsx` — nothing to fix for correctness. To surface plan and seat
+  usage, the data is in `workspace_entitlements` via
+  `GET /api/billing?workspace_id=`, which also returns `manage_url`.
 - `roles-section.tsx` stays: `workspace_roles` is Pulse's own permission model,
   unrelated to tenancy.
 
-**`profile/`**
+---
 
-- `profile-security-section.tsx` is already reworked to link out.
-- `profile-view.tsx` still references 2FA; the account tab should point at
-  ondesk for anything about the identity itself.
+## ondesk — the missing workspace UI ✅ built
 
-**Workspace shell**
+The API was complete but the frontend had only `/`, `/dashboard` and `/auth/*`,
+so `authorize.ts` redirected every workspace-less user to `/workspaces/new`,
+which did not exist. Three routes now do:
 
-- `workspace-selector-view.tsx` and `workspace-sidebar.tsx` already link out to
-  ondesk for workspace creation. Verify the empty state reads sensibly for a user
-  whose only workspaces have lapsed entitlements — they now see an empty list
-  with no explanation of why.
+- **`/workspaces/new`** — the onboarding target. Creates the workspace, then, when
+  `?app=` is present, continues into checkout for that product. Both halves are
+  needed: a workspace with no subscription is invisible to every product, so
+  stopping after creation would have dead-ended the user just as effectively.
+  `workspace-selector-view.tsx:99` and `workspace-sidebar.tsx:116` in pulse
+  already linked here, so those two buttons were 404s and now work.
+- **`/workspaces/:slug/billing`** — the checkout `success_url` / `cancel_url`
+  target, which was also a 404. Polls for the subscription on return, because the
+  Stripe webhook may not have landed yet, and links onward to the product.
+- **`/workspaces/:slug/members`** — membership management, the destination Pulse
+  now links out to.
 
-**Overview / dashboard**
+**Invitations could not be accepted at all.** The previous revision listed the
+invitations API as complete. It could send invites and nothing could redeem them:
+`/api/invitations` had only GET and POST, and the `?invite=` token the email
+links to was parsed in `routes/auth.tsx` and then dropped.
 
-- `overview-view.tsx` reads tickets, contacts and companies only. Nothing to fix
-  for correctness. If you want it to surface plan and seat usage, the data is in
-  `workspace_entitlements` via `GET /api/billing?workspace_id=`, which also
-  returns `manage_url` pointing at ondesk.
+- `functions/api/invitations/accept.ts` — new. Validates status, expiry and that
+  the signed-in address matches the invited one (a forwarded invite link must not
+  join whoever opens it), is idempotent, and emits `workspace.member_added` so
+  products mirror the new member.
+- `src/features/auth/invite.ts` + both auth mutations — the token is redeemed
+  after sign-in/sign-up and **before** the post-auth navigation, or a parked
+  authorize would bounce the new member into onboarding for the very workspace
+  they were invited to.
+- Auth screens now carry `invite` and `return_to` across the signin↔signup links.
 
 ---
 
 ## Known gaps
 
-- **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are empty on ondesk.**
-  `alexis.cuevases@gmail.com` is an OAuth-only Google account with no password —
-  **that user cannot sign in at all** until these are set. This is the one active
-  blocker.
-- **ondesk has no workspace UI.** The API is complete (workspaces, members,
-  invitations, checkout, portal) but the frontend only has `/`, `/dashboard` and
-  `/auth/*`. `authorize.ts` redirects a user with no workspace to
-  `/workspaces/new`, which does not exist — a new signup dead-ends there.
+- **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are absent on ondesk** — not
+  empty, as the previous revision said: they are not set at all.
+  `alexis.cuevases@gmail.com` is an OAuth-only Google account with no password and
+  **still cannot sign in.** This remains the one active blocker and needs a Google
+  Cloud OAuth client:
+
+  ```
+  wrangler pages secret put GOOGLE_CLIENT_ID     --project-name ondesk
+  wrangler pages secret put GOOGLE_CLIENT_SECRET --project-name ondesk
+  ```
+
+  The authorised redirect URI is `${APP_URL}/api/auth/oauth/google/callback`.
+  Do **not** reuse pulse's Google credentials: those are scoped to the Gmail
+  mailbox integration, and signing in would show every visitor a Gmail consent
+  screen. Until the secrets exist, `/api/auth/oauth/google/start` now fails on our
+  side with `oauth_unconfigured` and a real message, instead of handing Google an
+  empty `client_id` and letting it render its own error page. The same guard was
+  added to the Microsoft route.
+- **`ondesk.cc/account/security` does not exist.** Both
+  `profile-security-section.tsx` and the reworked `account-section.tsx` link
+  there. It is the natural home for password, 2FA and connected accounts — the
+  APIs (`/api/auth/2fa/toggle`, `/api/auth/reset-password`) are already there.
 - **`ondesk.cc` as an email sending domain is unconfirmed.** The API token
   authenticates against the send endpoint (verified), but I could not confirm the
-  domain is onboarded. If 2FA codes never arrive, that is why. Check the dashboard
-  under Email → Email Sending.
+  domain is onboarded. If 2FA codes or invitation emails never arrive, that is
+  why. Check the dashboard under Email → Email Sending.
 - **`https://pulse.ondesk.cc/w/alex` returned a 403** from the edge — an HTML
   error page, not one of ours (ours are JSON). Never diagnosed. Suspect Cloudflare
   Access or a WAF rule on the hostname.
-- **Nothing is committed.** All of this work is in the working tree of both repos.
+- **Committed, but unpushed and untested in a browser.** The previous revision's
+  claim that nothing was committed was wrong even then: the SSO conversion was
+  already in `b564827` (pulse) and `705f307` (ondesk). The work described in this
+  revision landed as `54ad9fd` (pulse) and `6d53a24` (ondesk). Neither is pushed,
+  and none of the three new ondesk routes has been exercised against a running
+  app — they typecheck, lint and build, which is not the same thing.
 
 ---
 
@@ -179,7 +251,9 @@ This is the substantial piece. The API is done; the screens are not.
    because the migration preserved every primary key.
 2. **Only `functions/_lib/db/mirror.ts` writes `users`, `workspaces` and
    `workspace_members`.** Any other write path diverges silently, and the
-   divergence is invisible until a JOIN starts returning wrong rows.
+   divergence is invisible until a JOIN starts returning wrong rows. This was
+   being violated by `/api/users` — see Task A.1. When auditing for more of these,
+   grep for writes to those three tables, not for the endpoints that look risky.
 3. **`workspace_entitlements` is the access gate.** `findWorkspacesByUserId`
    joins it and filters on `status IN ('active','trialing','past_due')`. A
    workspace missing from that table is invisible to the whole app.
