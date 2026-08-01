@@ -309,7 +309,45 @@ Baselines held: 33 app errors, 1 functions error, build green.
 
 - The fake `activeSessions` above. Pulse has no endpoint that lists sessions, so
   making them real means building one over `refresh_tokens`.
-- **Pulse's permission model is not enforced server-side.** `hasPermission()` has
+## Roles moved to ondesk — 2026-08-01
+
+The second finding below is closed, and the cause turned out to be structural
+rather than an omission: **Pulse defined roles it could never assign.** A role's
+`key` had to be written into `workspace_members.role`, which is mirrored and
+validated upstream against `['owner','admin','agent']`, so the definitions lived
+here and the assignments lived there. The UI offered "custom roles you can assign
+to workspace members" and no write path could deliver it.
+
+Roles are now per (workspace, app) on ondesk, attached to the Pulse **seat** —
+see the "Product roles" section of `ondesk/docs/platform-architecture.md`. What
+changed on this side:
+
+- `workspace_members.permissions` — new mirrored column holding the list ondesk
+  resolved for that member. Written by `mirror.ts` on sign-in (from the ID token
+  claim), by the `workspace.permissions_updated` webhook, and on reconcile.
+- `getUserPermissions` reads it, falling back to `BUILTIN_ROLE_PERMISSIONS` when
+  it is empty — which is what makes this deployable before the first sync rather
+  than locking out a workspace.
+- `withPermission` / `withWritePermission` in `_lib/middleware.ts`. The second
+  guards only non-GET methods and is applied to sixteen settings-style routes
+  (automations, SLA, KB, canned replies, teams, AI agents, marketplace, contacts,
+  companies). Reads are untouched: those routes serve GET and POST from one
+  handler, and `.manage` is about editing.
+- Deleted: `functions/api/roles/`, `src/features/roles/` (631 lines) and the role
+  row types. `workspace_roles` is dropped by migration 004 — verified empty in
+  production first, with no member holding a non-standard role key.
+- `configurations → Roles & Permissions` is now a link-out plus a read-only view
+  of your own resolved permissions, from the new `GET /api/me/permissions`.
+
+Four keys did not travel: `billing.manage`, `security.manage`, `workspace.manage`
+and `members.manage`. They are tenancy, ondesk gates them on owner/admin already,
+and two systems answering the same question is how they drift.
+
+Migration 004 has **not** been run against production. It adds a column and drops
+an empty table; run it with the ondesk migration, not before.
+
+- **Pulse's permission model is not enforced server-side.** ✅ closed above.
+  `hasPermission()` had
   no call sites, and `git log -S` finds none in the repo's 141 commits — this
   predates the migration rather than being broken by it. All handlers are guarded
   by `withAuth` (57) or `withWorkspace` (72), i.e. "signed in" and "member of this
