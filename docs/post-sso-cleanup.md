@@ -343,8 +343,28 @@ Four keys did not travel: `billing.manage`, `security.manage`, `workspace.manage
 and `members.manage`. They are tenancy, ondesk gates them on owner/admin already,
 and two systems answering the same question is how they drift.
 
-Migration 004 has **not** been run against production. It adds a column and drops
-an empty table; run it with the ondesk migration, not before.
+**Migration state — 2026-08-01.** Applied in production, in this order:
+
+1. `ondesk/functions/_db/migrations/002_roles.sql` — whole file. Two tables, one
+   index, `role_id` on the seat, and pulse's 22-key catalogue (11 of them
+   `agent_default`). Verified after the fact.
+2. `pulse` — **only the `ALTER TABLE`**, run as a one-off command:
+   `ALTER TABLE workspace_members ADD COLUMN permissions TEXT NOT NULL DEFAULT '[]'`.
+
+The `DROP TABLE workspace_roles` at the end of 004 is deliberately **still
+pending**. Running it before the new Pulse code is deployed would 500 the
+currently-live `/api/roles` handlers, which still read that table. Nothing else
+touches it, and the table is empty, so there is no hurry — but it has to happen
+*after* the deploy, not with it:
+
+```sh
+cd pulse
+wrangler d1 execute pulse-db --remote --command "DROP TABLE IF EXISTS workspace_roles"
+```
+
+Both halves of 004 are still in the file, so a database that has never been
+touched can run it whole. Re-running it against production would fail on the
+duplicate column, which is the correct outcome.
 
 - **Pulse's permission model is not enforced server-side.** ✅ closed above.
   `hasPermission()` had
