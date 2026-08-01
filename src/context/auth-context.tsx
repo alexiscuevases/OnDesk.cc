@@ -5,6 +5,8 @@ export interface AuthUser {
 	name: string;
 	email: string;
 	role: string;
+	/** Mirrored from ondesk, and set there — see the profile page it links out to. */
+	logo_url: string | null;
 	// No two_factor_enabled: /api/auth/me stopped returning it when ondesk took
 	// over identity. Two-factor state lives there.
 }

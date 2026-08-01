@@ -53,9 +53,16 @@ export async function apiCreateWorkspace(input: CreateWorkspaceInput): Promise<W
 	return data.workspace;
 }
 
+/**
+ * `workspace_prompt` and nothing else.
+ *
+ * Name, description and logo are OnDesk's — the endpoint rejects them, and a
+ * wider type here is what let a settings form send them for months and report
+ * success. See functions/api/workspaces/[slug]/index.ts.
+ */
 export async function apiUpdateWorkspace(
 	slug: string,
-	input: { name?: string; description?: string; logo_url?: string; workspace_prompt?: string }
+	input: { workspace_prompt?: string }
 ): Promise<Workspace> {
 	const res = await fetch(`${API_BASE}/${slug}`, {
 		method: "PATCH",

@@ -1,48 +1,52 @@
-import { useState, useEffect } from "react";
-import { Save } from "lucide-react";
+import { useState } from "react";
+import { ExternalLink, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useWorkspace } from "@/context/workspace-context";
 import { useUpdateWorkspaceMutation } from "@/features/workspaces/hooks/use-workspace-mutations";
-import { LogoUpload } from "@/shared/components";
 
+const ONDESK_URL = import.meta.env.VITE_ONDESK_URL ?? "https://ondesk.cc";
+
+/**
+ * Workspace settings, split by who owns them.
+ *
+ * The name, description and logo used to be editable here, with a logo uploader
+ * writing into Pulse's own R2 bucket. All four fields are mirrored from OnDesk,
+ * and the API has refused to write them for a while — so the form saved the AI
+ * prompt, silently dropped the rest, and said "Workspace settings saved". The
+ * identity block is now what it always was underneath: a read-only view of
+ * OnDesk's copy, with a link to the one page that can change it.
+ *
+ * `workspace_prompt` stays editable. It is Pulse's AI configuration and exists
+ * nowhere else on the platform.
+ */
 export function GeneralSection() {
 	const { workspace } = useWorkspace();
 	const updateWorkspace = useUpdateWorkspaceMutation(workspace.slug);
 
-	const [name, setName] = useState(workspace.name);
-	const [description, setDescription] = useState(workspace.description ?? "");
-	const [logoUrl, setLogoUrl] = useState(workspace.logo_url ?? "");
-	const [workspacePrompt, setWorkspacePrompt] = useState(workspace.workspace_prompt ?? "");
-	useEffect(() => {
-		setName(workspace.name);
-		setDescription(workspace.description ?? "");
-		setLogoUrl(workspace.logo_url ?? "");
-		setWorkspacePrompt(workspace.workspace_prompt ?? "");
-	}, [workspace.name, workspace.description, workspace.logo_url, workspace.workspace_prompt]);
+	// An overlay on the saved value, not a copy of it: null means "not editing",
+	// so a refetch updates the textarea without overwriting what is being typed.
+	const [draft, setDraft] = useState<string | null>(null);
+	const workspacePrompt = draft ?? workspace.workspace_prompt ?? "";
 
 	function handleSave() {
-		if (!name.trim()) return;
 		updateWorkspace.mutate(
+			{ workspace_prompt: workspacePrompt.trim() },
 			{
-				name: name.trim(),
-				description: description.trim() || undefined,
-				logo_url: logoUrl || undefined,
-				workspace_prompt: workspacePrompt.trim(),
-			},
-			{
-				onSuccess: () => toast.success("Workspace settings saved"),
+				onSuccess: () => {
+					setDraft(null);
+					toast.success("Workspace prompt saved");
+				},
 				onError: (err) => toast.error(err.message),
 			},
 		);
 	}
 
-	const workspaceInitials = name
-		? name
+	const workspaceInitials = workspace.name
+		? workspace.name
 				.split(" ")
 				.map((w) => w[0])
 				.join("")
@@ -54,50 +58,63 @@ export function GeneralSection() {
 		<div className="grid gap-4">
 			<Card>
 				<CardHeader>
-					<CardTitle className="console-label">Workspace Settings</CardTitle>
-					<CardDescription className="text-xs">Basic workspace configuration</CardDescription>
+					<CardTitle className="console-label">Workspace</CardTitle>
+					<CardDescription className="text-xs">
+						Identity is OnDesk's — the same name and logo appear in every product.
+					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
-					<LogoUpload
-						label="Workspace Logo"
-						initials={workspaceInitials}
-						currentUrl={logoUrl || null}
-						folder="workspaces"
-						onUpload={(url) => setLogoUrl(url)}
-					/>
-					<div className="space-y-2">
-						<Label htmlFor="workspace-name" className="text-xs">
-							Workspace Name
-						</Label>
-						<Input id="workspace-name" value={name} onChange={(e) => setName(e.target.value)} className="h-9" />
+					<div className="flex items-center gap-4">
+						{workspace.logo_url ? (
+							<img src={workspace.logo_url} alt={workspace.name} className="size-12 object-cover" />
+						) : (
+							<div className="flex size-12 items-center justify-center bg-primary font-mono text-sm font-bold text-primary-foreground">
+								{workspaceInitials}
+							</div>
+						)}
+						<div className="min-w-0">
+							<p className="truncate text-base font-bold tracking-tight">{workspace.name}</p>
+							<p className="truncate font-mono text-[11px] text-muted-foreground">/{workspace.slug}</p>
+						</div>
 					</div>
-					<div className="space-y-2">
-						<Label htmlFor="workspace-description" className="text-xs">
-							Description
-						</Label>
-						<Input
-							id="workspace-description"
-							value={description}
-							onChange={(e) => setDescription(e.target.value)}
-							placeholder="Optional workspace description"
-							className="h-9"
-						/>
+
+					{workspace.description && (
+						<p className="text-xs leading-relaxed text-muted-foreground">{workspace.description}</p>
+					)}
+
+					<div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+						<p className="text-[11px] leading-relaxed text-muted-foreground">
+							Change the name, description or logo on OnDesk and every product picks it up.
+						</p>
+						<a
+							href={`${ONDESK_URL}/workspaces/${workspace.slug}/settings`}
+							target="_blank"
+							rel="noreferrer"
+							className="inline-flex shrink-0 items-center gap-1.5 border border-border bg-background px-3 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors hover:border-primary hover:text-primary">
+							Manage on OnDesk
+							<ExternalLink className="size-3" />
+						</a>
 					</div>
-					<div className="space-y-2">
-						<Label className="text-xs text-muted-foreground">Workspace Slug</Label>
-						<Input value={workspace.slug} readOnly className="h-9 bg-muted text-muted-foreground font-mono" />
-					</div>
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle className="console-label">AI</CardTitle>
+					<CardDescription className="text-xs">Pulse's own configuration, stored here.</CardDescription>
+				</CardHeader>
+				<CardContent className="space-y-4">
 					<div className="space-y-2">
 						<Label htmlFor="workspace-prompt" className="text-xs">
 							Workspace Prompt
 						</Label>
-						<p className="text-[11px] text-muted-foreground leading-relaxed">
+						<p className="text-[11px] leading-relaxed text-muted-foreground">
 							General context/instructions that will be injected into the AI agent pipeline for this workspace.
 						</p>
 						<Textarea
 							id="workspace-prompt"
 							value={workspacePrompt}
-							onChange={(e) => setWorkspacePrompt(e.target.value)}
+							onChange={(e) => setDraft(e.target.value)}
 							placeholder="e.g. We are Acme SaaS. Our tone is friendly but professional. Escalate any billing/refund topics. Use product terms: Workspace, Ticket, Agent..."
 							className="min-h-32"
 						/>
@@ -106,7 +123,7 @@ export function GeneralSection() {
 						size="sm"
 						className="h-8 gap-1.5 text-xs"
 						onClick={handleSave}
-						disabled={updateWorkspace.isPending || !name.trim()}>
+						disabled={updateWorkspace.isPending}>
 						<Save className="size-3.5" />
 						{updateWorkspace.isPending ? "Saving..." : "Save Changes"}
 					</Button>

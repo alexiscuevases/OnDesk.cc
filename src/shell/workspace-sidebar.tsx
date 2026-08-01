@@ -4,7 +4,6 @@ import { useAuth } from "@/context/auth-context";
 import { useWorkspace } from "@/context/workspace-context";
 import { useLogoutMutation } from "@/features/auth/hooks/use-auth-mutations";
 import { useWorkspaces } from "@/features/workspaces/hooks/use-workspace-queries";
-import { useWorkspaceMembers } from "@/features/users/hooks/use-user-queries";
 import { PulseLine } from "@/features/frontend/shared";
 import {
 	Sidebar,
@@ -42,8 +41,6 @@ export function WorkspaceSidebar() {
 	const routerState = useRouterState();
 	const currentPath = routerState.location.pathname;
 	const { data: workspaces = [] } = useWorkspaces();
-	const { data: members = [] } = useWorkspaceMembers(workspace.id);
-	const currentMember = members.find((m) => m.id === user?.id) ?? null;
 
 	const slug = workspace.slug;
 
@@ -173,7 +170,9 @@ export function WorkspaceSidebar() {
 									size="lg"
 									className="rounded-none data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
 									<Avatar className="size-8">
-										<AvatarImage src={currentMember?.logo_url ?? workspace.logo_url ?? undefined} className="object-cover" />
+										{/* The signed-in person, not the tenant: falling back to the
+										    workspace logo put the company's mark where a face goes. */}
+										<AvatarImage src={user?.logo_url ?? undefined} className="object-cover" />
 										<AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground font-mono text-xs font-bold">
 											{userInitials}
 										</AvatarFallback>

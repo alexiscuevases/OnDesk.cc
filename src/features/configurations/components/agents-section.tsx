@@ -72,10 +72,10 @@ export function AgentsSection() {
 								return (
 									<div key={member.id} className="bg-secondary/40 flex items-center gap-3 p-3.5">
 										<Avatar className="size-9">
-											<AvatarImage
-												src={member.logo_url ?? workspace.logo_url ?? undefined}
-												className="object-cover"
-											/>
+											{/* No fallback to the workspace logo: a person without a
+											    picture gets their initials, not the company's mark on
+											    their face. */}
+											<AvatarImage src={member.logo_url ?? undefined} className="object-cover" />
 											<AvatarFallback className="bg-primary text-primary-foreground text-[11px] font-bold">
 												{initials}
 											</AvatarFallback>
