@@ -69,8 +69,15 @@ CREATE TABLE IF NOT EXISTS workspace_entitlements (
 CREATE TABLE IF NOT EXISTS workspace_members (
   id           TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
   workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  -- Tenancy: owner / admin / agent. Who administers the workspace and who is
+  -- billed. Mirrored, like the rest of this table.
   user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   role         TEXT NOT NULL DEFAULT 'agent',
+  -- What this member may do *inside Pulse*, resolved by ondesk from the role on
+  -- their Pulse seat. A JSON array of permission keys. Empty means nobody has
+  -- said, and getUserPermissions falls back to the preset for their tenancy
+  -- role — which is what keeps a pre-sync mirror row from locking anyone out.
+  permissions  TEXT NOT NULL DEFAULT '[]',
   joined_at    INTEGER NOT NULL DEFAULT (unixepoch()),
   UNIQUE(workspace_id, user_id)
 );
@@ -759,21 +766,13 @@ CREATE TABLE IF NOT EXISTS ai_agent_kb_categories (
 CREATE INDEX IF NOT EXISTS idx_ai_agent_kb_categories_agent_id ON ai_agent_kb_categories(ai_agent_id);
 
 -- ─── Roles & Permissions ──────────────────────────────────────────────────────
--- Custom workspace roles. Built-in 'owner'|'admin'|'agent' remain valid in
--- workspace_members.role; this table layers optional custom roles on top.
--- permissions: JSON array of permission keys (see Permission catalog in code)
--- is_system: 1 = the built-in row that mirrors owner/admin/agent — read-only
-CREATE TABLE IF NOT EXISTS workspace_roles (
-  id           TEXT    PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  workspace_id TEXT    NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
-  key          TEXT    NOT NULL, -- unique slug used in workspace_members.role
-  name         TEXT    NOT NULL,
-  description  TEXT,
-  permissions  TEXT    NOT NULL DEFAULT '[]',
-  is_system    INTEGER NOT NULL DEFAULT 0,
-  created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at   INTEGER NOT NULL DEFAULT (unixepoch()),
-  UNIQUE(workspace_id, key)
-);
-
-CREATE INDEX IF NOT EXISTS idx_workspace_roles_workspace_id ON workspace_roles(workspace_id);
+--
+-- `workspace_roles` lived here and is gone (migration 004). It could not work in
+-- this database: a role's key had to be written into `workspace_members.role`,
+-- which is mirrored from ondesk and validated there against owner/admin/agent,
+-- so Pulse could define a role and nothing could ever assign anybody to it.
+--
+-- Roles are now per (workspace, app) on ondesk, attached to the Pulse seat. What
+-- arrives here is the resolved answer, in `workspace_members.permissions` above —
+-- written by mirror.ts and read by getUserPermissions. See
+-- ondesk/docs/platform-architecture.md, "Product roles".
