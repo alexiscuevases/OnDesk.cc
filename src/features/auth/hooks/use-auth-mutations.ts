@@ -2,10 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/auth-context";
 import { apiLogout } from "../api/auth-api";
 
-export const authQueryKeys = {
-	me: ["auth", "me"] as const,
-};
-
 /**
  * Signing out clears the local Pulse session and then hands off to OnDesk's
  * end-session endpoint, which drops the platform session and revokes every

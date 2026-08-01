@@ -11,7 +11,9 @@ export * from "./mailboxes";
 export * from "./notifications";
 export * from "./ai";
 export * from "./marketplace";
-export * from "./billing";
+// billing.ts lived here. It queried `subscriptions`, which migration 003 dropped:
+// what a workspace may do in Pulse is `workspace_entitlements`, mirrored from
+// ondesk and read by GET /api/billing. Stripe itself is ondesk's.
 export * from "./security";
 export * from "./automations";
 export * from "./business-hours";

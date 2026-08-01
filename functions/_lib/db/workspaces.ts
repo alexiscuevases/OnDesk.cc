@@ -46,41 +46,31 @@ export async function isWorkspaceMember(db: D1Database, workspaceId: string, use
 // mirror — creating one locally would produce a workspace no other product can
 // see, with an id ondesk has never heard of.
 
+/**
+ * The one column of `workspaces` that is Pulse's own.
+ *
+ * `name`, `description` and `logo_url` used to be settable here too. They are
+ * mirrored from ondesk, so writing them produced a value that looked saved and
+ * was reverted by the next sync — the Task A.1 bug, which reached production
+ * once already. Narrowing the parameter is what stops it coming back: there is
+ * no longer a way to express the mistake.
+ */
 export async function updateWorkspace(
 	db: D1Database,
 	workspaceId: string,
-	data: { name?: string; description?: string; logo_url?: string; workspace_prompt?: string | null },
+	data: { workspace_prompt?: string | null },
 ): Promise<void> {
-	const fields: string[] = [];
-	const values: (string | null)[] = [];
-	if (data.name !== undefined) {
-		fields.push("name = ?");
-		values.push(data.name);
-	}
-	if (data.description !== undefined) {
-		fields.push("description = ?");
-		values.push(data.description);
-	}
-	if (data.logo_url !== undefined) {
-		fields.push("logo_url = ?");
-		values.push(data.logo_url);
-	}
-	if (data.workspace_prompt !== undefined) {
-		fields.push("workspace_prompt = ?");
-		values.push(data.workspace_prompt);
-	}
-	if (fields.length === 0) return;
-	fields.push("updated_at = unixepoch()");
-	values.push(workspaceId);
+	if (data.workspace_prompt === undefined) return;
 	await db
-		.prepare(`UPDATE workspaces SET ${fields.join(", ")} WHERE id = ?`)
-		.bind(...values)
+		.prepare("UPDATE workspaces SET workspace_prompt = ?, updated_at = unixepoch() WHERE id = ?")
+		.bind(data.workspace_prompt, workspaceId)
 		.run();
 }
 
-export async function deleteWorkspace(db: D1Database, workspaceId: string): Promise<void> {
-	await db.prepare("DELETE FROM workspaces WHERE id = ?").bind(workspaceId).run();
-}
+// deleteWorkspace lived here. Deleting a workspace is a control-plane action: it
+// ends a subscription and removes a tenant from four products at once, so it
+// happens on ondesk and arrives as `workspace.deleted`. Locally it was a
+// DELETE on a mirrored row whose cascade takes every ticket with it.
 
 export async function getWorkspaceMemberRole(db: D1Database, workspaceId: string, userId: string): Promise<string | null> {
 	const result = await db

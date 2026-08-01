@@ -11,13 +11,9 @@ import type { UserRow, RefreshTokenRow } from "../types";
  * Writes to `users` go through _lib/db/mirror.ts and nowhere else.
  */
 
-export async function findUserByEmail(db: D1Database, email: string): Promise<UserRow | null> {
-	const result = await db
-		.prepare("SELECT * FROM users WHERE email = ? LIMIT 1")
-		.bind(email.toLowerCase())
-		.first<UserRow>();
-	return result ?? null;
-}
+// findUserByEmail lived here. Looking somebody up by address is what a login
+// form does, and Pulse no longer has one: the SSO callback arrives with a `sub`,
+// so findUserById is the only lookup left.
 
 export async function findUserById(db: D1Database, id: string): Promise<UserRow | null> {
 	const result = await db.prepare("SELECT * FROM users WHERE id = ? LIMIT 1").bind(id).first<UserRow>();

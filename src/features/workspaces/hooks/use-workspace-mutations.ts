@@ -1,26 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { apiCreateWorkspace, apiUpdateWorkspace, apiDeleteWorkspace } from "../api/workspaces-api";
+import { apiUpdateWorkspace } from "../api/workspaces-api";
 import { workspaceQueryKeys } from "./use-workspace-queries";
-import type { CreateWorkspaceInput, Workspace } from "../api/workspaces-api";
 
-export function useCreateWorkspaceMutation(onCreated?: (workspace: Workspace) => void) {
-	const queryClient = useQueryClient();
-	const navigate = useNavigate();
-
-	return useMutation({
-		mutationFn: (input: CreateWorkspaceInput) => apiCreateWorkspace(input),
-		onSuccess: (workspace) => {
-			queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.all });
-			if (onCreated) {
-				onCreated(workspace);
-			} else {
-				navigate({ to: "/w/$slug/overview", params: { slug: workspace.slug } });
-			}
-		},
-	});
-}
-
+/**
+ * The only workspace mutation Pulse has.
+ *
+ * Creating and deleting a workspace are control-plane actions — they span four
+ * products and move money — so they happen on ondesk and arrive here by mirror.
+ * The hooks for both lived in this file and called endpoints that answered 405.
+ */
 export function useUpdateWorkspaceMutation(slug: string) {
 	const queryClient = useQueryClient();
 
@@ -29,19 +17,6 @@ export function useUpdateWorkspaceMutation(slug: string) {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.all });
 			queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.detail(slug) });
-		},
-	});
-}
-
-export function useDeleteWorkspaceMutation() {
-	const queryClient = useQueryClient();
-	const navigate = useNavigate();
-
-	return useMutation({
-		mutationFn: (slug: string) => apiDeleteWorkspace(slug),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.all });
-			navigate({ to: "/workspaces" });
 		},
 	});
 }

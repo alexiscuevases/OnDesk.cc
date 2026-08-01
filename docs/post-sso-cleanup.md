@@ -149,13 +149,16 @@ mirror event or reconcile pass, with nothing surfaced to the user.
 - `profile-view.tsx` — tab descriptions no longer advertise 2FA as a Pulse
   feature.
 
+**Done**
+
+- `general-section.tsx` — it *was* still editing name, description and logo,
+  through a `LogoUpload` writing into Pulse's own R2 bucket. The endpoint had
+  been refusing all three for a while, so Save persisted the AI prompt, dropped
+  the rest and reported success. The identity block is now read-only with a link
+  to `/workspaces/:slug/settings` on ondesk; `workspace_prompt` stays editable.
+
 **Still to do**
 
-- `general-section.tsx` — unchecked. Confirm whether it still edits
-  name/description/logo. Those are mirrored from ondesk and any local write is
-  overwritten on the next sync. `PATCH /api/workspaces/:slug` now accepts **only**
-  `workspace_prompt`. This is the last place the Task A.1 class of bug could still
-  be hiding.
 - `profile-security-section.tsx` — `activeSessions` is hardcoded fake data
   (two invented devices in Buenos Aires) rendered as if real.
 - `workspace-selector-view.tsx` — verify the empty state reads sensibly for a user
@@ -264,6 +267,58 @@ links to was parsed in `routes/auth.tsx` and then dropped.
   app — they typecheck, lint and build, which is not the same thing.
 
 ---
+
+## Audit — 2026-08-01
+
+A sweep for anything the migration left behind, in code and in the database.
+
+**pulse-db is clean, checked against the live database rather than the schema
+file.** 39 declared tables, 39 real ones, no difference in either direction — the
+seven that migration 003 dropped are genuinely gone. `users` in production is
+`id, name, email, role, logo_url, created_at, updated_at`: no credential columns
+survived. All 369 live columns are referenced by code, and all 39 tables have
+consumers. There is nothing to drop.
+
+**Removed from the code.** Of 873 exported symbols, 98 had no external consumer
+and 60 no use at all. These were the ones the migration stranded:
+
+- `_lib/db/billing.ts` and `_lib/types/billing.ts` — deleted, with the two
+  re-exports in `db/index.ts` and `types/index.ts`. Six functions querying
+  `subscriptions`, a table 003 dropped, sitting on the public surface of the db
+  layer: the first caller would have got "no such table" at runtime.
+- `_lib/crypto.ts` — `hashPassword` and `verifyPassword`. `importHmacKey` sits in
+  the same block and is used by the JWT code; it stays.
+- `_lib/db/auth.ts` — `findUserByEmail`. Looking somebody up by address is what a
+  login form does.
+- `_lib/cookies.ts` — `REMEMBER_ME_REFRESH_TOKEN_TTL`.
+- `_lib/db/workspaces.ts` — `deleteWorkspace`, a DELETE on a mirrored row whose
+  cascade takes every ticket with it.
+- `src/features/workspaces` — `apiCreateWorkspace` (POST to a GET-only endpoint),
+  `apiDeleteWorkspace` (DELETE that answered 405), both their hooks, and
+  `schemas/workspace.schema.ts` entire.
+- `src/features/auth/hooks/use-auth-mutations.ts` — `authQueryKeys`.
+
+**`updateWorkspace` was narrowed to `{ workspace_prompt }`.** It still accepted
+`name`, `description` and `logo_url` — mirrored columns. No caller passed them
+any more, but the signature is what made the Task A.1 bug expressible, and now it
+isn't.
+
+Baselines held: 33 app errors, 1 functions error, build green.
+
+**Two findings left alone, both needing a decision rather than a deletion:**
+
+- The fake `activeSessions` above. Pulse has no endpoint that lists sessions, so
+  making them real means building one over `refresh_tokens`.
+- **Pulse's permission model is not enforced server-side.** `hasPermission()` has
+  no call sites, and `git log -S` finds none in the repo's 141 commits — this
+  predates the migration rather than being broken by it. All handlers are guarded
+  by `withAuth` (57) or `withWorkspace` (72), i.e. "signed in" and "member of this
+  workspace"; only the ai-agents routes check owner/admin, by hand. `GET /api/roles`
+  returns `current_user_permissions` to the client, so the model is enforced by
+  hiding buttons: any member can call `POST /api/roles` and mint a role with any
+  permission. `ondesk/docs/platform-architecture.md` describes Pulse's access
+  model as "`workspace_roles`, its own permission model", which is currently a
+  description of the UI and not of the API.
 
 ## Invariants — breaking these breaks the platform
 

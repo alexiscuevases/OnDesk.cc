@@ -9,13 +9,6 @@ export interface Workspace {
 	created_at: number;
 }
 
-export interface CreateWorkspaceInput {
-	name: string;
-	slug: string;
-	description?: string;
-	logo_url?: string;
-}
-
 const API_BASE = "/api/workspaces";
 
 export async function apiGetWorkspaces(): Promise<Workspace[]> {
@@ -38,20 +31,9 @@ export async function apiGetWorkspace(slug: string): Promise<Workspace> {
 	return data.workspace;
 }
 
-export async function apiCreateWorkspace(input: CreateWorkspaceInput): Promise<Workspace> {
-	const res = await fetch(API_BASE, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		credentials: "include",
-		body: JSON.stringify(input),
-	});
-	if (!res.ok) {
-		const err = (await res.json()) as { error: string };
-		throw new Error(err.error ?? "Failed to create workspace");
-	}
-	const data = (await res.json()) as { workspace: Workspace };
-	return data.workspace;
-}
+// apiCreateWorkspace lived here, POSTing to an endpoint that is GET-only.
+// Workspaces are created on ondesk — they span four products and carry the
+// billing account — and arrive here by mirror.
 
 /**
  * `workspace_prompt` and nothing else.
@@ -78,13 +60,6 @@ export async function apiUpdateWorkspace(
 	return data.workspace;
 }
 
-export async function apiDeleteWorkspace(slug: string): Promise<void> {
-	const res = await fetch(`${API_BASE}/${slug}`, {
-		method: "DELETE",
-		credentials: "include",
-	});
-	if (!res.ok) {
-		const err = (await res.json()) as { error: string };
-		throw new Error(err.error ?? "Failed to delete workspace");
-	}
-}
+// apiDeleteWorkspace lived here, calling a DELETE the API never implemented —
+// it answered 405. Deleting a tenant is ondesk's, for the same reason creating
+// one is.

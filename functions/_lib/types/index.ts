@@ -18,7 +18,7 @@ export * from "./middleware";
 export * from "./http";
 export * from "./ai-agent-testing";
 export * from "./ai-agent-runtime";
-export * from "./billing";
+// billing.ts lived here — see the note in _lib/db/index.ts.
 export * from "./security";
 export * from "./automations";
 export * from "./business-hours";
