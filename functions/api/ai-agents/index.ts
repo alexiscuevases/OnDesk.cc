@@ -1,11 +1,11 @@
-import { withWorkspace } from "../../_lib/middleware";
+import { withWritePermission } from "../../_lib/middleware";
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
 import { findAiAgentsByWorkspace, createAiAgent, getWorkspaceMemberRole } from "../../_lib/db";
 import { createMethodRouter, parseJsonBody } from "../../_lib/http";
 
 // GET  /api/ai-agents?workspace_id=
 // POST /api/ai-agents?workspace_id=
-export const onRequest = withWorkspace(async ({ request, env, payload, workspaceId }) => {
+export const onRequest = withWritePermission("ai_agents.manage", async ({ request, env, payload, workspaceId }) => {
 	return createMethodRouter(request.method, {
 		GET: async () => {
 			const agents = await findAiAgentsByWorkspace(env.DB, workspaceId);

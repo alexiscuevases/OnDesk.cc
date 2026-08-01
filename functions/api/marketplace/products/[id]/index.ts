@@ -6,7 +6,7 @@ import {
 	getWorkspaceMemberRole,
 	updateProduct,
 } from "../../../../_lib/db";
-import { withWorkspace } from "../../../../_lib/middleware";
+import { withWritePermission } from "../../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../../_lib/http";
 import {
 	validateAuth,
@@ -30,7 +30,7 @@ function safeParse<T>(raw: string | null, fallback: T): T {
 // GET    /api/marketplace/products/:id?workspace_id=
 // PATCH  /api/marketplace/products/:id?workspace_id=  (own connectors only)
 // DELETE /api/marketplace/products/:id?workspace_id=  (own connectors only)
-export const onRequest = withWorkspace<"id">(async ({ request, env, params, workspaceId, payload }) => {
+export const onRequest = withWritePermission<"id">("marketplace.manage", async ({ request, env, params, workspaceId, payload }) => {
 	const productId = params.id;
 
 	const row = await findProductById(env.DB, productId);

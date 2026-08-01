@@ -1,4 +1,4 @@
-import { withWorkspace } from "../../../_lib/middleware";
+import { withWritePermission } from "../../../_lib/middleware";
 import { jsonOk, jsonError } from "../../../_lib/response";
 import {
 	findAiAgentById,
@@ -14,7 +14,7 @@ import { createMethodRouter, parseJsonBody } from "../../../_lib/http";
 // POST   /api/ai-agents/:id/mailboxes?workspace_id=   — assign mailbox { mailbox_integration_id }
 // DELETE /api/ai-agents/:id/mailboxes?workspace_id=   — unassign { mailbox_integration_id }
 // PATCH  /api/ai-agents/:id/mailboxes?workspace_id=   — toggle enabled { mailbox_integration_id, enabled }
-export const onRequest = withWorkspace<"id">(async ({ request, env, payload, params, workspaceId }) => {
+export const onRequest = withWritePermission<"id">("ai_agents.manage", async ({ request, env, payload, params, workspaceId }) => {
 	const agentId = params.id;
 	const agent = await findAiAgentById(env.DB, agentId);
 	if (!agent) return jsonError("AI agent not found", 404);

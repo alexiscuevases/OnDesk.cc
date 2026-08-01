@@ -76,26 +76,7 @@ export const BUILTIN_ROLE_PERMISSIONS: Record<string, Permission[]> = {
 	],
 };
 
-export interface WorkspaceRoleRow {
-	id: string;
-	workspace_id: string;
-	key: string;
-	name: string;
-	description: string | null;
-	permissions: string; // JSON
-	is_system: number;
-	created_at: number;
-	updated_at: number;
-}
-
-export interface PublicWorkspaceRole {
-	id: string;
-	workspace_id: string;
-	key: string;
-	name: string;
-	description: string | null;
-	permissions: Permission[];
-	is_system: boolean;
-	created_at: number;
-	updated_at: number;
-}
+// WorkspaceRoleRow and PublicWorkspaceRole lived here. The rows themselves are
+// ondesk's now: a role hangs off the Pulse seat, and seats are the control
+// plane's. What Pulse keeps is the vocabulary — the keys below are what it
+// checks, and ondesk renders the very same catalogue in its role editor.

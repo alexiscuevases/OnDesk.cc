@@ -5,7 +5,7 @@ import {
 	getWorkspaceMemberRole,
 	rowToPublicProduct,
 } from "../../../_lib/db";
-import { withWorkspace } from "../../../_lib/middleware";
+import { withWritePermission } from "../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../_lib/http";
 import {
 	validateAuth,
@@ -17,7 +17,7 @@ import {
 
 // GET  /api/marketplace/products?workspace_id=  → catalog templates + own connectors
 // POST /api/marketplace/products?workspace_id=  → create a custom connector
-export const onRequest = withWorkspace(async ({ request, env, workspaceId, payload }) => {
+export const onRequest = withWritePermission("marketplace.manage", async ({ request, env, workspaceId, payload }) => {
 	return createMethodRouter(request.method, {
 		GET: async () => {
 			const products = await findVisibleProducts(env.DB, workspaceId);

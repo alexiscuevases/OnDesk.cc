@@ -5,7 +5,7 @@ import type {
 	AutomationConditions,
 	AutomationAction,
 } from "../../_lib/types";
-import { withWorkspace } from "../../_lib/middleware";
+import { withWritePermission } from "../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../_lib/http";
 
 const VALID_TRIGGERS: AutomationTriggerType[] = [
@@ -35,7 +35,7 @@ function validateActions(value: unknown): AutomationAction[] | null {
 
 // GET  /api/automations?workspace_id=
 // POST /api/automations?workspace_id=
-export const onRequest = withWorkspace(async ({ request, env, workspaceId, payload }) => {
+export const onRequest = withWritePermission("automations.manage", async ({ request, env, workspaceId, payload }) => {
 	return createMethodRouter(request.method, {
 		GET: async () => {
 			const automations = await findAutomationsByWorkspace(env.DB, workspaceId);

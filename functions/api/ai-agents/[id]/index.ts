@@ -1,4 +1,4 @@
-import { withWorkspace } from "../../../_lib/middleware";
+import { withWritePermission } from "../../../_lib/middleware";
 import { jsonOk, jsonError } from "../../../_lib/response";
 import { findAiAgentById, findMailboxesForAgent, updateAiAgent, deleteAiAgent, isWorkspaceMember, getWorkspaceMemberRole } from "../../../_lib/db";
 import type { AiAgentStatus } from "../../../_lib/types";
@@ -9,7 +9,7 @@ const VALID_STATUSES: AiAgentStatus[] = ["active", "inactive"];
 // GET    /api/ai-agents/:id?workspace_id=
 // PATCH  /api/ai-agents/:id?workspace_id=
 // DELETE /api/ai-agents/:id?workspace_id=
-export const onRequest = withWorkspace<"id">(async ({ request, env, payload, params, workspaceId }) => {
+export const onRequest = withWritePermission<"id">("ai_agents.manage", async ({ request, env, payload, params, workspaceId }) => {
 	const agentId = params.id;
 	const agent = await findAiAgentById(env.DB, agentId);
 	if (!agent) return jsonError("AI agent not found", 404);

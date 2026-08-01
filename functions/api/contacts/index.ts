@@ -1,12 +1,12 @@
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
 import { findContactsByWorkspace, findOrCreateContact } from "../../_lib/db";
-import { withWorkspace } from "../../_lib/middleware";
+import { withWritePermission } from "../../_lib/middleware";
 import { asTrimmedString, createMethodRouter, parseJsonBody } from "../../_lib/http";
 import { upsertContact } from "../../_lib/vectorize";
 
 // GET  /api/contacts?workspace_id=
 // POST /api/contacts
-export const onRequest = withWorkspace(async ({ request, env, workspaceId }) => {
+export const onRequest = withWritePermission("contacts.manage", async ({ request, env, workspaceId }) => {
   return createMethodRouter(request.method, {
     GET: async () => {
       const contacts = await findContactsByWorkspace(env.DB, workspaceId);

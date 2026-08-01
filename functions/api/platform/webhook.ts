@@ -5,6 +5,7 @@ import {
 	upsertMirroredUser,
 	upsertMirroredWorkspace,
 	upsertMirroredMember,
+	applyMirroredPermissions,
 	removeMirroredMember,
 	upsertEntitlement,
 	clearEntitlement,
@@ -20,7 +21,8 @@ interface PlatformEvent {
 	workspace_id?: string;
 	user?: { id: string; name: string; email: string; logo_url: string | null };
 	workspace?: { id: string; name: string; slug: string; logo_url: string | null };
-	member?: { user_id: string; role: string };
+	member?: { user_id: string; role: string; permissions?: string[] };
+	members?: { user_id: string; permissions: string[] }[];
 	subscription?: { app_id: string; plan: string; status: string; agent_count: number };
 }
 
@@ -80,7 +82,23 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 		case "workspace.member_updated": {
 			if (!payload.workspace_id || !payload.member) break;
 			if (payload.user) await upsertMirroredUser(env.DB, payload.user);
-			await upsertMirroredMember(env.DB, payload.workspace_id, payload.member.user_id, payload.member.role);
+			await upsertMirroredMember(
+				env.DB,
+				payload.workspace_id,
+				payload.member.user_id,
+				payload.member.role,
+				payload.member.permissions,
+			);
+			break;
+		}
+
+		case "workspace.permissions_updated": {
+			// A role was edited, deleted, or somebody was moved between roles.
+			// Ondesk sends every seat holder at once because one edit changes what
+			// several people may do, and N deliveries for one click is N chances to
+			// leave half a team out of step.
+			if (!payload.workspace_id || !payload.members) break;
+			await applyMirroredPermissions(env.DB, payload.workspace_id, payload.members);
 			break;
 		}
 

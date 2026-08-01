@@ -68,21 +68,62 @@ export async function upsertMirroredWorkspace(
 		.run();
 }
 
+/**
+ * `permissions` is what ondesk resolved from the role on this member's Pulse
+ * seat — the answer, not the role row it came from. Undefined leaves whatever is
+ * stored alone: a `member_updated` webhook that only carries a tenancy change
+ * must not blank the permissions, and there is no "clear them" case (an empty
+ * array is a member with no grants, which is a legitimate thing to store).
+ */
 export async function upsertMirroredMember(
 	db: D1Database,
 	workspaceId: string,
 	userId: string,
 	role: string,
+	permissions?: string[],
 ): Promise<void> {
 	const id = crypto.randomUUID();
+	if (permissions === undefined) {
+		await db
+			.prepare(
+				`INSERT INTO workspace_members (id, workspace_id, user_id, role)
+	     VALUES (?, ?, ?, ?)
+	     ON CONFLICT(workspace_id, user_id) DO UPDATE SET role = excluded.role`,
+			)
+			.bind(id, workspaceId, userId, role)
+			.run();
+		return;
+	}
+
 	await db
 		.prepare(
-			`INSERT INTO workspace_members (id, workspace_id, user_id, role)
-       VALUES (?, ?, ?, ?)
-       ON CONFLICT(workspace_id, user_id) DO UPDATE SET role = excluded.role`,
+			`INSERT INTO workspace_members (id, workspace_id, user_id, role, permissions)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(workspace_id, user_id) DO UPDATE SET
+         role        = excluded.role,
+         permissions = excluded.permissions`,
 		)
-		.bind(id, workspaceId, userId, role)
+		.bind(id, workspaceId, userId, role, JSON.stringify(permissions))
 		.run();
+}
+
+/**
+ * A role edit at ondesk changes what several people may do at once, so it
+ * arrives as one event carrying every seat holder rather than one per member.
+ * Anyone absent from the list is not touched: they hold no seat for this product
+ * and have nothing to update.
+ */
+export async function applyMirroredPermissions(
+	db: D1Database,
+	workspaceId: string,
+	members: { user_id: string; permissions: string[] }[],
+): Promise<void> {
+	for (const member of members) {
+		await db
+			.prepare("UPDATE workspace_members SET permissions = ? WHERE workspace_id = ? AND user_id = ?")
+			.bind(JSON.stringify(member.permissions), workspaceId, member.user_id)
+			.run();
+	}
 }
 
 export async function removeMirroredMember(db: D1Database, workspaceId: string, userId: string): Promise<void> {
@@ -162,7 +203,10 @@ export async function provisionFromIdToken(db: D1Database, claims: IdTokenClaims
 			},
 			claims.sub,
 		);
-		await upsertMirroredMember(db, workspace.id, claims.sub, workspace.role);
+		// The token carries the permissions ondesk resolved for this product, so a
+		// first sign-in lands with them already in place rather than waiting for a
+		// webhook to arrive.
+		await upsertMirroredMember(db, workspace.id, claims.sub, workspace.role, workspace.permissions ?? []);
 		await upsertEntitlement(db, workspace.id, workspace.entitlement);
 	}
 }

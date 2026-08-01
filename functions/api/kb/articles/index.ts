@@ -7,7 +7,7 @@ import {
 	setArticleVectorId,
 } from "../../../_lib/db";
 import type { KbVisibility, KbStatus } from "../../../_lib/types";
-import { withWorkspace } from "../../../_lib/middleware";
+import { withWritePermission } from "../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../_lib/http";
 import { upsertKbArticle } from "../../../_lib/vectorize";
 
@@ -16,7 +16,7 @@ const STATUSES: KbStatus[] = ["draft", "published"];
 
 // GET  /api/kb/articles?workspace_id=
 // POST /api/kb/articles?workspace_id=
-export const onRequest = withWorkspace(async ({ request, env, workspaceId, payload }) => {
+export const onRequest = withWritePermission("kb.manage", async ({ request, env, workspaceId, payload }) => {
 	return createMethodRouter(request.method, {
 		GET: async () => {
 			const kb_articles = await findKbArticlesByWorkspace(env.DB, workspaceId);

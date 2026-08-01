@@ -53,7 +53,7 @@ const sections: { id: ConfigSection; label: string; icon: typeof Globe; desc: st
 	{ id: "canned-replies", label: "Canned Replies", icon: MessageSquareText, desc: "Quick response templates" },
 	{ id: "signatures", label: "Signatures", icon: FileSignature, desc: "Email signatures for agents", groupEnd: true },
 
-	{ id: "roles", label: "Roles & Permissions", icon: ShieldAlert, desc: "Built-in and custom workspace roles" },
+	{ id: "roles", label: "Roles & Permissions", icon: ShieldAlert, desc: "What each person may do inside Pulse" },
 	{ id: "security", label: "Security", icon: Shield, desc: "Authentication and access controls", groupEnd: true },
 
 	{ id: "billing", label: "Plan & Billing", icon: CreditCard, desc: "Subscription, invoices and payment" },

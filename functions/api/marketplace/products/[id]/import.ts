@@ -5,7 +5,7 @@ import {
 	findProductById,
 	getWorkspaceMemberRole,
 } from "../../../../_lib/db";
-import { withWorkspace } from "../../../../_lib/middleware";
+import { withWritePermission } from "../../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../../_lib/http";
 import { importFromCurl, importFromOpenApi, type ActionDraft } from "../../../../_lib/marketplace-import";
 import { validateActionPayload, type ActionPayload } from "../../../../_lib/marketplace-validation";
@@ -18,7 +18,7 @@ const MAX_ACTIONS_PER_PRODUCT = 100;
 // Registering dozens of endpoints by hand is the slow part of building a
 // connector — this reads them off a cURL command or an OpenAPI document.
 // `preview: true` returns the drafts without saving so the UI can show a picker.
-export const onRequest = withWorkspace<"id">(async ({ request, env, params, workspaceId, payload }) => {
+export const onRequest = withWritePermission<"id">("marketplace.manage", async ({ request, env, params, workspaceId, payload }) => {
 	const product = await findProductById(env.DB, params.id);
 	if (!product) return jsonError("Connector not found", 404);
 	if (product.workspace_id !== workspaceId) {

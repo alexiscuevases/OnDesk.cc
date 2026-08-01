@@ -1,11 +1,11 @@
 import { jsonOk, jsonCreated, jsonError } from "../../../_lib/response";
 import { findKbCategoriesByWorkspace, createKbCategory } from "../../../_lib/db";
-import { withWorkspace } from "../../../_lib/middleware";
+import { withWritePermission } from "../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../_lib/http";
 
 // GET  /api/kb/categories?workspace_id=
 // POST /api/kb/categories?workspace_id=
-export const onRequest = withWorkspace(async ({ request, env, workspaceId }) => {
+export const onRequest = withWritePermission("kb.manage", async ({ request, env, workspaceId }) => {
 	return createMethodRouter(request.method, {
 		GET: async () => {
 			const kb_categories = await findKbCategoriesByWorkspace(env.DB, workspaceId);

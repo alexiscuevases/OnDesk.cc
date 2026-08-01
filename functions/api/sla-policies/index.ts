@@ -1,7 +1,7 @@
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
 import { findSlaPoliciesByWorkspace, createSlaPolicy, rowToPublicPolicy } from "../../_lib/db";
 import type { TicketPriority } from "../../_lib/types";
-import { withWorkspace } from "../../_lib/middleware";
+import { withWritePermission } from "../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../_lib/http";
 
 const VALID_PRIORITIES: TicketPriority[] = ["low", "medium", "high", "urgent"];
@@ -15,7 +15,7 @@ function asNumberOrNull(value: unknown): number | null | undefined {
 
 // GET  /api/sla-policies?workspace_id=
 // POST /api/sla-policies?workspace_id=
-export const onRequest = withWorkspace(async ({ request, env, workspaceId }) => {
+export const onRequest = withWritePermission("sla.manage", async ({ request, env, workspaceId }) => {
 	return createMethodRouter(request.method, {
 		GET: async () => {
 			const sla_policies = await findSlaPoliciesByWorkspace(env.DB, workspaceId);

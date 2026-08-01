@@ -19,7 +19,14 @@ export interface IdTokenWorkspace {
 	name: string;
 	slug: string;
 	logo_url: string | null;
+	/** Tenancy: owner / admin / agent. Who administers the workspace on the platform. */
 	role: string;
+	/**
+	 * What this person may do inside Pulse, resolved by ondesk from the role on
+	 * their Pulse seat. Optional because a token minted before roles moved has no
+	 * such claim; `getUserPermissions` falls back to the built-in preset.
+	 */
+	permissions?: string[];
 	entitlement: {
 		plan: string;
 		status: string;

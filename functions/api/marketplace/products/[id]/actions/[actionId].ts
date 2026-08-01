@@ -7,14 +7,14 @@ import {
 	rowToPublicProductAction,
 	updateProductAction,
 } from "../../../../../_lib/db";
-import { withWorkspace } from "../../../../../_lib/middleware";
+import { withWritePermission } from "../../../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../../../_lib/http";
 import { validateActionPayload } from "../../../../../_lib/marketplace-validation";
 import type { ActionParameter } from "../../../../../_lib/types";
 
 // PATCH  /api/marketplace/products/:id/actions/:actionId?workspace_id=
 // DELETE /api/marketplace/products/:id/actions/:actionId?workspace_id=
-export const onRequest = withWorkspace<"id" | "actionId">(async ({ request, env, params, workspaceId, payload }) => {
+export const onRequest = withWritePermission<"id" | "actionId">("marketplace.manage", async ({ request, env, params, workspaceId, payload }) => {
 	const product = await findProductById(env.DB, params.id);
 	if (!product) return jsonError("Connector not found", 404);
 	if (product.workspace_id !== workspaceId) {

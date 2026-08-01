@@ -6,7 +6,7 @@ import {
 	getWorkspaceMemberRole,
 	rowToPublicProductAction,
 } from "../../../../../_lib/db";
-import { withWorkspace } from "../../../../../_lib/middleware";
+import { withWritePermission } from "../../../../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../../../../_lib/http";
 import { validateActionPayload, type ActionPayload } from "../../../../../_lib/marketplace-validation";
 
@@ -14,7 +14,7 @@ const MAX_ACTIONS_PER_PRODUCT = 100;
 
 // GET  /api/marketplace/products/:id/actions?workspace_id=
 // POST /api/marketplace/products/:id/actions?workspace_id=  → register an endpoint
-export const onRequest = withWorkspace<"id">(async ({ request, env, params, workspaceId, payload }) => {
+export const onRequest = withWritePermission<"id">("marketplace.manage", async ({ request, env, params, workspaceId, payload }) => {
 	const productId = params.id;
 
 	const product = await findProductById(env.DB, productId);

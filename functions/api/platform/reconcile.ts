@@ -18,7 +18,15 @@ interface MirrorResponse {
 		slug: string;
 		logo_url: string | null;
 		entitlement: { plan: string; status: string; agent_count: number; current_period_end: number | null };
-		members: { user_id: string; name: string; email: string; logo_url: string | null; role: string }[];
+		members: {
+			user_id: string;
+			name: string;
+			email: string;
+			logo_url: string | null;
+			role: string;
+			/** Resolved by ondesk from the role on this member's Pulse seat. */
+			permissions?: string[];
+		}[];
 	}[];
 }
 
@@ -81,7 +89,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 		workspaces++;
 
 		for (const member of workspace.members) {
-			await upsertMirroredMember(env.DB, workspace.id, member.user_id, member.role);
+			// Permissions come down with the member: this is the path that repairs a
+			// dropped `permissions_updated`, so it has to carry them or a missed
+			// role change would stay missed forever.
+			await upsertMirroredMember(env.DB, workspace.id, member.user_id, member.role, member.permissions ?? []);
 			members++;
 		}
 

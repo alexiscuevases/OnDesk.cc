@@ -1,11 +1,11 @@
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
 import { findTeamsByWorkspace, createTeam } from "../../_lib/db";
-import { withWorkspace } from "../../_lib/middleware";
+import { withWritePermission } from "../../_lib/middleware";
 import { asTrimmedString, createMethodRouter, parseJsonBody } from "../../_lib/http";
 
 // GET  /api/teams?workspace_id=
 // POST /api/teams
-export const onRequest = withWorkspace(async ({ request, env, workspaceId }) => {
+export const onRequest = withWritePermission("teams.manage", async ({ request, env, workspaceId }) => {
   return createMethodRouter(request.method, {
     GET: async () => {
       const teams = await findTeamsByWorkspace(env.DB, workspaceId);

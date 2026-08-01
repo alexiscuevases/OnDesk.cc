@@ -1,11 +1,11 @@
 import { jsonOk, jsonCreated, jsonError } from "../../_lib/response";
 import { findCannedRepliesByWorkspace, createCannedReply } from "../../_lib/db";
-import { withWorkspace } from "../../_lib/middleware";
+import { withWritePermission } from "../../_lib/middleware";
 import { createMethodRouter, parseJsonBody } from "../../_lib/http";
 
 // GET  /api/canned-replies?workspace_id=
 // POST /api/canned-replies
-export const onRequest = withWorkspace(async ({ request, env, workspaceId, payload }) => {
+export const onRequest = withWritePermission("canned_replies.manage", async ({ request, env, workspaceId, payload }) => {
   return createMethodRouter(request.method, {
     GET: async () => {
       const replies = await findCannedRepliesByWorkspace(env.DB, workspaceId);
