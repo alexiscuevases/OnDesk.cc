@@ -1,5 +1,19 @@
 # Notifications
 
+Pulse's is the oldest of four. Vault, Orbit and Nexus now have the same system
+against their own data, and the cross-product rules — how each resolves its
+audience, and why three of the four put less in the email than they could — are in
+`ondesk/docs/platform-architecture.md` § "The three shell systems". Two things about
+this document are worth knowing before reading it as a template:
+
+- The **defect** at the bottom of this file (`ticket_status` off by default is fine;
+  `workspace_members.permissions NOT NULL DEFAULT '[]'` is the live one, recorded in
+  the architecture doc) has not been fixed.
+- The `preview` block in `functions/_lib/email.ts` quotes the message that triggered
+  the email. That is right here and wrong in Vault and Nexus — see the architecture
+  doc. Do not copy it into a product where the content is a credential or a private
+  conversation.
+
 Every notification in Pulse goes through one dispatcher: `functions/_lib/notify.ts`.
 It writes the in-app notification row **and** sends the matching email, so a new
 event only has to be added in one place.

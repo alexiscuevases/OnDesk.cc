@@ -86,7 +86,9 @@ export function TicketAIAssistant({ ticketId, onInsertContent }: TicketAIAssista
 					size="sm"
 					className="h-8 text-xs gap-1.5 text-primary hover:text-primary hover:bg-primary/10 dark:text-accent dark:hover:text-accent dark:hover:bg-accent/10 transition-all duration-200">
 					<Sparkles className="size-3.5 animate-pulse" />
-					Ask AI
+					{/* One assistant, one name. This is Nova scoped to a single ticket;
+					    the topbar's is Nova scoped to the workspace. */}
+					Ask Nova
 				</Button>
 			</SheetTrigger>
 			<SheetContent className="w-100 sm:w-160 border-l-border p-0 flex flex-col h-full bg-background">

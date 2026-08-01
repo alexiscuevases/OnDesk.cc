@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Outlet, useRouterState } from "@tanstack/react-router";
-import { HelpCircle } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -8,7 +9,8 @@ import { useWorkspace } from "@/context/workspace-context";
 import { WorkspaceSidebar } from "./workspace-sidebar";
 import { GlobalSearch } from "./global-search";
 import { NotificationsPanel } from "./notifications-panel";
-import { GlobalAIAssistant } from "./global-ai-assistant";
+import { GlobalNova } from "./global-nova";
+import { HelpMenu } from "./help-menu";
 
 function HeaderBreadcrumb() {
 	const { workspace } = useWorkspace();
@@ -27,6 +29,12 @@ function HeaderBreadcrumb() {
 }
 
 export function WorkspaceShell() {
+	// Nova's open state is lifted here rather than kept inside the sheet, because
+	// two things in the topbar open it: its own button and the help menu's "Ask
+	// Nova instead". A self-contained trigger would need the help menu to reach
+	// into a sibling.
+	const [novaOpen, setNovaOpen] = useState(false);
+
 	return (
 		<NotificationsProvider>
 			<SidebarProvider>
@@ -38,11 +46,15 @@ export function WorkspaceShell() {
 						<HeaderBreadcrumb />
 						<GlobalSearch />
 						<div className="ml-auto flex items-center gap-1.5">
-							<GlobalAIAssistant />
-							<Button variant="ghost" size="icon" className="size-8">
-								<HelpCircle className="size-4" />
-								<span className="sr-only">Help</span>
+							<Button
+								variant="ghost"
+								size="sm"
+								className="h-8 gap-1.5 text-xs text-primary transition-colors hover:bg-primary/5 hover:text-primary dark:text-accent dark:hover:bg-accent/10 dark:hover:text-accent"
+								onClick={() => setNovaOpen(true)}>
+								<Sparkles className="size-3.5" />
+								Nova
 							</Button>
+							<HelpMenu onAskNova={() => setNovaOpen(true)} />
 							<NotificationsPanel />
 						</div>
 					</header>
@@ -50,6 +62,7 @@ export function WorkspaceShell() {
 						<Outlet />
 					</main>
 				</SidebarInset>
+				<GlobalNova open={novaOpen} onOpenChange={setNovaOpen} />
 			</SidebarProvider>
 		</NotificationsProvider>
 	);
