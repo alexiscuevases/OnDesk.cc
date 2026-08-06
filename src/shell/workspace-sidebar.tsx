@@ -4,7 +4,7 @@ import { useAuth } from "@/context/auth-context";
 import { useWorkspace } from "@/context/workspace-context";
 import { useLogoutMutation } from "@/features/auth/hooks/use-auth-mutations";
 import { useWorkspaces } from "@/features/workspaces/hooks/use-workspace-queries";
-import { PulseLine } from "@/features/frontend/shared";
+import { PulseLine } from "@/shared/components/pulse-line";
 import {
 	Sidebar,
 	SidebarContent,

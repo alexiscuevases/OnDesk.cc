@@ -2,7 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Plus, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { useWorkspaces } from "../hooks/use-workspace-queries";
 import { useAuth } from "@/context/auth-context";
-import { PulseLine } from "@/features/frontend/shared";
+import { PulseLine } from "@/shared/components/pulse-line";
 
 function getRoleBadgeClass(role: string) {
 	if (role === "owner") return "border-primary/25 text-primary bg-primary/5 dark:border-accent/30 dark:text-accent dark:bg-accent/10";

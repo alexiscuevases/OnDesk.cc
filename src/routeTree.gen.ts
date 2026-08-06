@@ -11,29 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkspacesRouteImport } from './routes/workspaces'
 import { Route as WRouteImport } from './routes/w'
-import { Route as Char123LangChar125RouteRouteImport } from './routes/{-$lang}/route'
-import { Route as Char123LangChar125IndexRouteImport } from './routes/{-$lang}/index'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkspacesIndexRouteImport } from './routes/workspaces/index'
-import { Route as Char123LangChar125TermsRouteImport } from './routes/{-$lang}/terms'
-import { Route as Char123LangChar125StatusRouteImport } from './routes/{-$lang}/status'
-import { Route as Char123LangChar125SolutionsRouteImport } from './routes/{-$lang}/solutions'
-import { Route as Char123LangChar125SecurityRouteImport } from './routes/{-$lang}/security'
-import { Route as Char123LangChar125PrivacyRouteImport } from './routes/{-$lang}/privacy'
-import { Route as Char123LangChar125PricingRouteImport } from './routes/{-$lang}/pricing'
-import { Route as Char123LangChar125IntegrationsRouteImport } from './routes/{-$lang}/integrations'
-import { Route as Char123LangChar125HelpRouteImport } from './routes/{-$lang}/help'
-import { Route as Char123LangChar125FeaturesRouteImport } from './routes/{-$lang}/features'
-import { Route as Char123LangChar125CustomersRouteImport } from './routes/{-$lang}/customers'
-import { Route as Char123LangChar125ContactRouteImport } from './routes/{-$lang}/contact'
-import { Route as Char123LangChar125ChangelogRouteImport } from './routes/{-$lang}/changelog'
-import { Route as Char123LangChar125CareersRouteImport } from './routes/{-$lang}/careers'
-import { Route as Char123LangChar125BlogRouteImport } from './routes/{-$lang}/blog'
-import { Route as Char123LangChar125AboutRouteImport } from './routes/{-$lang}/about'
 import { Route as WSlugRouteImport } from './routes/w/$slug'
 import { Route as AuthErrorRouteImport } from './routes/auth/error'
-import { Route as Char123LangChar125SolutionsSupportTeamsRouteImport } from './routes/{-$lang}/solutions/support-teams'
-import { Route as Char123LangChar125SolutionsSoloSmallTeamsRouteImport } from './routes/{-$lang}/solutions/solo-small-teams'
-import { Route as Char123LangChar125SolutionsAgenciesRouteImport } from './routes/{-$lang}/solutions/agencies'
 import { Route as WSlugTicketsRouteImport } from './routes/w/$slug/tickets'
 import { Route as WSlugTeamsRouteImport } from './routes/w/$slug/teams'
 import { Route as WSlugSettingsRouteImport } from './routes/w/$slug/settings'
@@ -55,106 +36,15 @@ const WRoute = WRouteImport.update({
   path: '/w',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char123LangChar125RouteRoute = Char123LangChar125RouteRouteImport.update({
-  id: '/{-$lang}',
-  path: '/{-$lang}',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Char123LangChar125IndexRoute = Char123LangChar125IndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => Char123LangChar125RouteRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 const WorkspacesIndexRoute = WorkspacesIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => WorkspacesRoute,
-} as any)
-const Char123LangChar125TermsRoute = Char123LangChar125TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => Char123LangChar125RouteRoute,
-} as any)
-const Char123LangChar125StatusRoute =
-  Char123LangChar125StatusRouteImport.update({
-    id: '/status',
-    path: '/status',
-    getParentRoute: () => Char123LangChar125RouteRoute,
-  } as any)
-const Char123LangChar125SolutionsRoute =
-  Char123LangChar125SolutionsRouteImport.update({
-    id: '/solutions',
-    path: '/solutions',
-    getParentRoute: () => Char123LangChar125RouteRoute,
-  } as any)
-const Char123LangChar125SecurityRoute =
-  Char123LangChar125SecurityRouteImport.update({
-    id: '/security',
-    path: '/security',
-    getParentRoute: () => Char123LangChar125RouteRoute,
-  } as any)
-const Char123LangChar125PrivacyRoute =
-  Char123LangChar125PrivacyRouteImport.update({
-    id: '/privacy',
-    path: '/privacy',
-    getParentRoute: () => Char123LangChar125RouteRoute,
-  } as any)
-const Char123LangChar125PricingRoute =
-  Char123LangChar125PricingRouteImport.update({
-    id: '/pricing',
-    path: '/pricing',
-    getParentRoute: () => Char123LangChar125RouteRoute,
-  } as any)
-const Char123LangChar125IntegrationsRoute =
-  Char123LangChar125IntegrationsRouteImport.update({
-    id: '/integrations',
-    path: '/integrations',
-    getParentRoute: () => Char123LangChar125RouteRoute,
-  } as any)
-const Char123LangChar125HelpRoute = Char123LangChar125HelpRouteImport.update({
-  id: '/help',
-  path: '/help',
-  getParentRoute: () => Char123LangChar125RouteRoute,
-} as any)
-const Char123LangChar125FeaturesRoute =
-  Char123LangChar125FeaturesRouteImport.update({
-    id: '/features',
-    path: '/features',
-    getParentRoute: () => Char123LangChar125RouteRoute,
-  } as any)
-const Char123LangChar125CustomersRoute =
-  Char123LangChar125CustomersRouteImport.update({
-    id: '/customers',
-    path: '/customers',
-    getParentRoute: () => Char123LangChar125RouteRoute,
-  } as any)
-const Char123LangChar125ContactRoute =
-  Char123LangChar125ContactRouteImport.update({
-    id: '/contact',
-    path: '/contact',
-    getParentRoute: () => Char123LangChar125RouteRoute,
-  } as any)
-const Char123LangChar125ChangelogRoute =
-  Char123LangChar125ChangelogRouteImport.update({
-    id: '/changelog',
-    path: '/changelog',
-    getParentRoute: () => Char123LangChar125RouteRoute,
-  } as any)
-const Char123LangChar125CareersRoute =
-  Char123LangChar125CareersRouteImport.update({
-    id: '/careers',
-    path: '/careers',
-    getParentRoute: () => Char123LangChar125RouteRoute,
-  } as any)
-const Char123LangChar125BlogRoute = Char123LangChar125BlogRouteImport.update({
-  id: '/blog',
-  path: '/blog',
-  getParentRoute: () => Char123LangChar125RouteRoute,
-} as any)
-const Char123LangChar125AboutRoute = Char123LangChar125AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => Char123LangChar125RouteRoute,
 } as any)
 const WSlugRoute = WSlugRouteImport.update({
   id: '/$slug',
@@ -166,24 +56,6 @@ const AuthErrorRoute = AuthErrorRouteImport.update({
   path: '/auth/error',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char123LangChar125SolutionsSupportTeamsRoute =
-  Char123LangChar125SolutionsSupportTeamsRouteImport.update({
-    id: '/support-teams',
-    path: '/support-teams',
-    getParentRoute: () => Char123LangChar125SolutionsRoute,
-  } as any)
-const Char123LangChar125SolutionsSoloSmallTeamsRoute =
-  Char123LangChar125SolutionsSoloSmallTeamsRouteImport.update({
-    id: '/solo-small-teams',
-    path: '/solo-small-teams',
-    getParentRoute: () => Char123LangChar125SolutionsRoute,
-  } as any)
-const Char123LangChar125SolutionsAgenciesRoute =
-  Char123LangChar125SolutionsAgenciesRouteImport.update({
-    id: '/agencies',
-    path: '/agencies',
-    getParentRoute: () => Char123LangChar125SolutionsRoute,
-  } as any)
 const WSlugTicketsRoute = WSlugTicketsRouteImport.update({
   id: '/tickets',
   path: '/tickets',
@@ -236,28 +108,12 @@ const WSlugTicketsIdRoute = WSlugTicketsIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/{-$lang}': typeof Char123LangChar125RouteRouteWithChildren
+  '/': typeof IndexRoute
   '/w': typeof WRouteWithChildren
   '/workspaces': typeof WorkspacesRouteWithChildren
   '/auth/error': typeof AuthErrorRoute
   '/w/$slug': typeof WSlugRouteWithChildren
-  '/{-$lang}/about': typeof Char123LangChar125AboutRoute
-  '/{-$lang}/blog': typeof Char123LangChar125BlogRoute
-  '/{-$lang}/careers': typeof Char123LangChar125CareersRoute
-  '/{-$lang}/changelog': typeof Char123LangChar125ChangelogRoute
-  '/{-$lang}/contact': typeof Char123LangChar125ContactRoute
-  '/{-$lang}/customers': typeof Char123LangChar125CustomersRoute
-  '/{-$lang}/features': typeof Char123LangChar125FeaturesRoute
-  '/{-$lang}/help': typeof Char123LangChar125HelpRoute
-  '/{-$lang}/integrations': typeof Char123LangChar125IntegrationsRoute
-  '/{-$lang}/pricing': typeof Char123LangChar125PricingRoute
-  '/{-$lang}/privacy': typeof Char123LangChar125PrivacyRoute
-  '/{-$lang}/security': typeof Char123LangChar125SecurityRoute
-  '/{-$lang}/solutions': typeof Char123LangChar125SolutionsRouteWithChildren
-  '/{-$lang}/status': typeof Char123LangChar125StatusRoute
-  '/{-$lang}/terms': typeof Char123LangChar125TermsRoute
   '/workspaces/': typeof WorkspacesIndexRoute
-  '/{-$lang}/': typeof Char123LangChar125IndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
   '/w/$slug/marketplace': typeof WSlugMarketplaceRoute
   '/w/$slug/notifications': typeof WSlugNotificationsRoute
@@ -266,33 +122,15 @@ export interface FileRoutesByFullPath {
   '/w/$slug/settings': typeof WSlugSettingsRoute
   '/w/$slug/teams': typeof WSlugTeamsRoute
   '/w/$slug/tickets': typeof WSlugTicketsRouteWithChildren
-  '/{-$lang}/solutions/agencies': typeof Char123LangChar125SolutionsAgenciesRoute
-  '/{-$lang}/solutions/solo-small-teams': typeof Char123LangChar125SolutionsSoloSmallTeamsRoute
-  '/{-$lang}/solutions/support-teams': typeof Char123LangChar125SolutionsSupportTeamsRoute
   '/w/$slug/tickets/$id': typeof WSlugTicketsIdRoute
   '/w/$slug/tickets/': typeof WSlugTicketsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/w': typeof WRouteWithChildren
   '/auth/error': typeof AuthErrorRoute
   '/w/$slug': typeof WSlugRouteWithChildren
-  '/{-$lang}/about': typeof Char123LangChar125AboutRoute
-  '/{-$lang}/blog': typeof Char123LangChar125BlogRoute
-  '/{-$lang}/careers': typeof Char123LangChar125CareersRoute
-  '/{-$lang}/changelog': typeof Char123LangChar125ChangelogRoute
-  '/{-$lang}/contact': typeof Char123LangChar125ContactRoute
-  '/{-$lang}/customers': typeof Char123LangChar125CustomersRoute
-  '/{-$lang}/features': typeof Char123LangChar125FeaturesRoute
-  '/{-$lang}/help': typeof Char123LangChar125HelpRoute
-  '/{-$lang}/integrations': typeof Char123LangChar125IntegrationsRoute
-  '/{-$lang}/pricing': typeof Char123LangChar125PricingRoute
-  '/{-$lang}/privacy': typeof Char123LangChar125PrivacyRoute
-  '/{-$lang}/security': typeof Char123LangChar125SecurityRoute
-  '/{-$lang}/solutions': typeof Char123LangChar125SolutionsRouteWithChildren
-  '/{-$lang}/status': typeof Char123LangChar125StatusRoute
-  '/{-$lang}/terms': typeof Char123LangChar125TermsRoute
   '/workspaces': typeof WorkspacesIndexRoute
-  '/{-$lang}': typeof Char123LangChar125IndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
   '/w/$slug/marketplace': typeof WSlugMarketplaceRoute
   '/w/$slug/notifications': typeof WSlugNotificationsRoute
@@ -300,36 +138,17 @@ export interface FileRoutesByTo {
   '/w/$slug/profile': typeof WSlugProfileRoute
   '/w/$slug/settings': typeof WSlugSettingsRoute
   '/w/$slug/teams': typeof WSlugTeamsRoute
-  '/{-$lang}/solutions/agencies': typeof Char123LangChar125SolutionsAgenciesRoute
-  '/{-$lang}/solutions/solo-small-teams': typeof Char123LangChar125SolutionsSoloSmallTeamsRoute
-  '/{-$lang}/solutions/support-teams': typeof Char123LangChar125SolutionsSupportTeamsRoute
   '/w/$slug/tickets/$id': typeof WSlugTicketsIdRoute
   '/w/$slug/tickets': typeof WSlugTicketsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/{-$lang}': typeof Char123LangChar125RouteRouteWithChildren
+  '/': typeof IndexRoute
   '/w': typeof WRouteWithChildren
   '/workspaces': typeof WorkspacesRouteWithChildren
   '/auth/error': typeof AuthErrorRoute
   '/w/$slug': typeof WSlugRouteWithChildren
-  '/{-$lang}/about': typeof Char123LangChar125AboutRoute
-  '/{-$lang}/blog': typeof Char123LangChar125BlogRoute
-  '/{-$lang}/careers': typeof Char123LangChar125CareersRoute
-  '/{-$lang}/changelog': typeof Char123LangChar125ChangelogRoute
-  '/{-$lang}/contact': typeof Char123LangChar125ContactRoute
-  '/{-$lang}/customers': typeof Char123LangChar125CustomersRoute
-  '/{-$lang}/features': typeof Char123LangChar125FeaturesRoute
-  '/{-$lang}/help': typeof Char123LangChar125HelpRoute
-  '/{-$lang}/integrations': typeof Char123LangChar125IntegrationsRoute
-  '/{-$lang}/pricing': typeof Char123LangChar125PricingRoute
-  '/{-$lang}/privacy': typeof Char123LangChar125PrivacyRoute
-  '/{-$lang}/security': typeof Char123LangChar125SecurityRoute
-  '/{-$lang}/solutions': typeof Char123LangChar125SolutionsRouteWithChildren
-  '/{-$lang}/status': typeof Char123LangChar125StatusRoute
-  '/{-$lang}/terms': typeof Char123LangChar125TermsRoute
   '/workspaces/': typeof WorkspacesIndexRoute
-  '/{-$lang}/': typeof Char123LangChar125IndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
   '/w/$slug/marketplace': typeof WSlugMarketplaceRoute
   '/w/$slug/notifications': typeof WSlugNotificationsRoute
@@ -338,37 +157,18 @@ export interface FileRoutesById {
   '/w/$slug/settings': typeof WSlugSettingsRoute
   '/w/$slug/teams': typeof WSlugTeamsRoute
   '/w/$slug/tickets': typeof WSlugTicketsRouteWithChildren
-  '/{-$lang}/solutions/agencies': typeof Char123LangChar125SolutionsAgenciesRoute
-  '/{-$lang}/solutions/solo-small-teams': typeof Char123LangChar125SolutionsSoloSmallTeamsRoute
-  '/{-$lang}/solutions/support-teams': typeof Char123LangChar125SolutionsSupportTeamsRoute
   '/w/$slug/tickets/$id': typeof WSlugTicketsIdRoute
   '/w/$slug/tickets/': typeof WSlugTicketsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/{-$lang}'
+    | '/'
     | '/w'
     | '/workspaces'
     | '/auth/error'
     | '/w/$slug'
-    | '/{-$lang}/about'
-    | '/{-$lang}/blog'
-    | '/{-$lang}/careers'
-    | '/{-$lang}/changelog'
-    | '/{-$lang}/contact'
-    | '/{-$lang}/customers'
-    | '/{-$lang}/features'
-    | '/{-$lang}/help'
-    | '/{-$lang}/integrations'
-    | '/{-$lang}/pricing'
-    | '/{-$lang}/privacy'
-    | '/{-$lang}/security'
-    | '/{-$lang}/solutions'
-    | '/{-$lang}/status'
-    | '/{-$lang}/terms'
     | '/workspaces/'
-    | '/{-$lang}/'
     | '/w/$slug/analytics'
     | '/w/$slug/marketplace'
     | '/w/$slug/notifications'
@@ -377,33 +177,15 @@ export interface FileRouteTypes {
     | '/w/$slug/settings'
     | '/w/$slug/teams'
     | '/w/$slug/tickets'
-    | '/{-$lang}/solutions/agencies'
-    | '/{-$lang}/solutions/solo-small-teams'
-    | '/{-$lang}/solutions/support-teams'
     | '/w/$slug/tickets/$id'
     | '/w/$slug/tickets/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/w'
     | '/auth/error'
     | '/w/$slug'
-    | '/{-$lang}/about'
-    | '/{-$lang}/blog'
-    | '/{-$lang}/careers'
-    | '/{-$lang}/changelog'
-    | '/{-$lang}/contact'
-    | '/{-$lang}/customers'
-    | '/{-$lang}/features'
-    | '/{-$lang}/help'
-    | '/{-$lang}/integrations'
-    | '/{-$lang}/pricing'
-    | '/{-$lang}/privacy'
-    | '/{-$lang}/security'
-    | '/{-$lang}/solutions'
-    | '/{-$lang}/status'
-    | '/{-$lang}/terms'
     | '/workspaces'
-    | '/{-$lang}'
     | '/w/$slug/analytics'
     | '/w/$slug/marketplace'
     | '/w/$slug/notifications'
@@ -411,35 +193,16 @@ export interface FileRouteTypes {
     | '/w/$slug/profile'
     | '/w/$slug/settings'
     | '/w/$slug/teams'
-    | '/{-$lang}/solutions/agencies'
-    | '/{-$lang}/solutions/solo-small-teams'
-    | '/{-$lang}/solutions/support-teams'
     | '/w/$slug/tickets/$id'
     | '/w/$slug/tickets'
   id:
     | '__root__'
-    | '/{-$lang}'
+    | '/'
     | '/w'
     | '/workspaces'
     | '/auth/error'
     | '/w/$slug'
-    | '/{-$lang}/about'
-    | '/{-$lang}/blog'
-    | '/{-$lang}/careers'
-    | '/{-$lang}/changelog'
-    | '/{-$lang}/contact'
-    | '/{-$lang}/customers'
-    | '/{-$lang}/features'
-    | '/{-$lang}/help'
-    | '/{-$lang}/integrations'
-    | '/{-$lang}/pricing'
-    | '/{-$lang}/privacy'
-    | '/{-$lang}/security'
-    | '/{-$lang}/solutions'
-    | '/{-$lang}/status'
-    | '/{-$lang}/terms'
     | '/workspaces/'
-    | '/{-$lang}/'
     | '/w/$slug/analytics'
     | '/w/$slug/marketplace'
     | '/w/$slug/notifications'
@@ -448,15 +211,12 @@ export interface FileRouteTypes {
     | '/w/$slug/settings'
     | '/w/$slug/teams'
     | '/w/$slug/tickets'
-    | '/{-$lang}/solutions/agencies'
-    | '/{-$lang}/solutions/solo-small-teams'
-    | '/{-$lang}/solutions/support-teams'
     | '/w/$slug/tickets/$id'
     | '/w/$slug/tickets/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  Char123LangChar125RouteRoute: typeof Char123LangChar125RouteRouteWithChildren
+  IndexRoute: typeof IndexRoute
   WRoute: typeof WRouteWithChildren
   WorkspacesRoute: typeof WorkspacesRouteWithChildren
   AuthErrorRoute: typeof AuthErrorRoute
@@ -478,19 +238,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/{-$lang}': {
-      id: '/{-$lang}'
-      path: '/{-$lang}'
-      fullPath: '/{-$lang}'
-      preLoaderRoute: typeof Char123LangChar125RouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/{-$lang}/': {
-      id: '/{-$lang}/'
+    '/': {
+      id: '/'
       path: '/'
-      fullPath: '/{-$lang}/'
-      preLoaderRoute: typeof Char123LangChar125IndexRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/workspaces/': {
       id: '/workspaces/'
@@ -498,111 +251,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/workspaces/'
       preLoaderRoute: typeof WorkspacesIndexRouteImport
       parentRoute: typeof WorkspacesRoute
-    }
-    '/{-$lang}/terms': {
-      id: '/{-$lang}/terms'
-      path: '/terms'
-      fullPath: '/{-$lang}/terms'
-      preLoaderRoute: typeof Char123LangChar125TermsRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/status': {
-      id: '/{-$lang}/status'
-      path: '/status'
-      fullPath: '/{-$lang}/status'
-      preLoaderRoute: typeof Char123LangChar125StatusRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/solutions': {
-      id: '/{-$lang}/solutions'
-      path: '/solutions'
-      fullPath: '/{-$lang}/solutions'
-      preLoaderRoute: typeof Char123LangChar125SolutionsRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/security': {
-      id: '/{-$lang}/security'
-      path: '/security'
-      fullPath: '/{-$lang}/security'
-      preLoaderRoute: typeof Char123LangChar125SecurityRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/privacy': {
-      id: '/{-$lang}/privacy'
-      path: '/privacy'
-      fullPath: '/{-$lang}/privacy'
-      preLoaderRoute: typeof Char123LangChar125PrivacyRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/pricing': {
-      id: '/{-$lang}/pricing'
-      path: '/pricing'
-      fullPath: '/{-$lang}/pricing'
-      preLoaderRoute: typeof Char123LangChar125PricingRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/integrations': {
-      id: '/{-$lang}/integrations'
-      path: '/integrations'
-      fullPath: '/{-$lang}/integrations'
-      preLoaderRoute: typeof Char123LangChar125IntegrationsRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/help': {
-      id: '/{-$lang}/help'
-      path: '/help'
-      fullPath: '/{-$lang}/help'
-      preLoaderRoute: typeof Char123LangChar125HelpRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/features': {
-      id: '/{-$lang}/features'
-      path: '/features'
-      fullPath: '/{-$lang}/features'
-      preLoaderRoute: typeof Char123LangChar125FeaturesRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/customers': {
-      id: '/{-$lang}/customers'
-      path: '/customers'
-      fullPath: '/{-$lang}/customers'
-      preLoaderRoute: typeof Char123LangChar125CustomersRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/contact': {
-      id: '/{-$lang}/contact'
-      path: '/contact'
-      fullPath: '/{-$lang}/contact'
-      preLoaderRoute: typeof Char123LangChar125ContactRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/changelog': {
-      id: '/{-$lang}/changelog'
-      path: '/changelog'
-      fullPath: '/{-$lang}/changelog'
-      preLoaderRoute: typeof Char123LangChar125ChangelogRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/careers': {
-      id: '/{-$lang}/careers'
-      path: '/careers'
-      fullPath: '/{-$lang}/careers'
-      preLoaderRoute: typeof Char123LangChar125CareersRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/blog': {
-      id: '/{-$lang}/blog'
-      path: '/blog'
-      fullPath: '/{-$lang}/blog'
-      preLoaderRoute: typeof Char123LangChar125BlogRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
-    }
-    '/{-$lang}/about': {
-      id: '/{-$lang}/about'
-      path: '/about'
-      fullPath: '/{-$lang}/about'
-      preLoaderRoute: typeof Char123LangChar125AboutRouteImport
-      parentRoute: typeof Char123LangChar125RouteRoute
     }
     '/w/$slug': {
       id: '/w/$slug'
@@ -617,27 +265,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/error'
       preLoaderRoute: typeof AuthErrorRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/{-$lang}/solutions/support-teams': {
-      id: '/{-$lang}/solutions/support-teams'
-      path: '/support-teams'
-      fullPath: '/{-$lang}/solutions/support-teams'
-      preLoaderRoute: typeof Char123LangChar125SolutionsSupportTeamsRouteImport
-      parentRoute: typeof Char123LangChar125SolutionsRoute
-    }
-    '/{-$lang}/solutions/solo-small-teams': {
-      id: '/{-$lang}/solutions/solo-small-teams'
-      path: '/solo-small-teams'
-      fullPath: '/{-$lang}/solutions/solo-small-teams'
-      preLoaderRoute: typeof Char123LangChar125SolutionsSoloSmallTeamsRouteImport
-      parentRoute: typeof Char123LangChar125SolutionsRoute
-    }
-    '/{-$lang}/solutions/agencies': {
-      id: '/{-$lang}/solutions/agencies'
-      path: '/agencies'
-      fullPath: '/{-$lang}/solutions/agencies'
-      preLoaderRoute: typeof Char123LangChar125SolutionsAgenciesRouteImport
-      parentRoute: typeof Char123LangChar125SolutionsRoute
     }
     '/w/$slug/tickets': {
       id: '/w/$slug/tickets'
@@ -712,72 +339,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface Char123LangChar125SolutionsRouteChildren {
-  Char123LangChar125SolutionsAgenciesRoute: typeof Char123LangChar125SolutionsAgenciesRoute
-  Char123LangChar125SolutionsSoloSmallTeamsRoute: typeof Char123LangChar125SolutionsSoloSmallTeamsRoute
-  Char123LangChar125SolutionsSupportTeamsRoute: typeof Char123LangChar125SolutionsSupportTeamsRoute
-}
-
-const Char123LangChar125SolutionsRouteChildren: Char123LangChar125SolutionsRouteChildren =
-  {
-    Char123LangChar125SolutionsAgenciesRoute:
-      Char123LangChar125SolutionsAgenciesRoute,
-    Char123LangChar125SolutionsSoloSmallTeamsRoute:
-      Char123LangChar125SolutionsSoloSmallTeamsRoute,
-    Char123LangChar125SolutionsSupportTeamsRoute:
-      Char123LangChar125SolutionsSupportTeamsRoute,
-  }
-
-const Char123LangChar125SolutionsRouteWithChildren =
-  Char123LangChar125SolutionsRoute._addFileChildren(
-    Char123LangChar125SolutionsRouteChildren,
-  )
-
-interface Char123LangChar125RouteRouteChildren {
-  Char123LangChar125AboutRoute: typeof Char123LangChar125AboutRoute
-  Char123LangChar125BlogRoute: typeof Char123LangChar125BlogRoute
-  Char123LangChar125CareersRoute: typeof Char123LangChar125CareersRoute
-  Char123LangChar125ChangelogRoute: typeof Char123LangChar125ChangelogRoute
-  Char123LangChar125ContactRoute: typeof Char123LangChar125ContactRoute
-  Char123LangChar125CustomersRoute: typeof Char123LangChar125CustomersRoute
-  Char123LangChar125FeaturesRoute: typeof Char123LangChar125FeaturesRoute
-  Char123LangChar125HelpRoute: typeof Char123LangChar125HelpRoute
-  Char123LangChar125IntegrationsRoute: typeof Char123LangChar125IntegrationsRoute
-  Char123LangChar125PricingRoute: typeof Char123LangChar125PricingRoute
-  Char123LangChar125PrivacyRoute: typeof Char123LangChar125PrivacyRoute
-  Char123LangChar125SecurityRoute: typeof Char123LangChar125SecurityRoute
-  Char123LangChar125SolutionsRoute: typeof Char123LangChar125SolutionsRouteWithChildren
-  Char123LangChar125StatusRoute: typeof Char123LangChar125StatusRoute
-  Char123LangChar125TermsRoute: typeof Char123LangChar125TermsRoute
-  Char123LangChar125IndexRoute: typeof Char123LangChar125IndexRoute
-}
-
-const Char123LangChar125RouteRouteChildren: Char123LangChar125RouteRouteChildren =
-  {
-    Char123LangChar125AboutRoute: Char123LangChar125AboutRoute,
-    Char123LangChar125BlogRoute: Char123LangChar125BlogRoute,
-    Char123LangChar125CareersRoute: Char123LangChar125CareersRoute,
-    Char123LangChar125ChangelogRoute: Char123LangChar125ChangelogRoute,
-    Char123LangChar125ContactRoute: Char123LangChar125ContactRoute,
-    Char123LangChar125CustomersRoute: Char123LangChar125CustomersRoute,
-    Char123LangChar125FeaturesRoute: Char123LangChar125FeaturesRoute,
-    Char123LangChar125HelpRoute: Char123LangChar125HelpRoute,
-    Char123LangChar125IntegrationsRoute: Char123LangChar125IntegrationsRoute,
-    Char123LangChar125PricingRoute: Char123LangChar125PricingRoute,
-    Char123LangChar125PrivacyRoute: Char123LangChar125PrivacyRoute,
-    Char123LangChar125SecurityRoute: Char123LangChar125SecurityRoute,
-    Char123LangChar125SolutionsRoute:
-      Char123LangChar125SolutionsRouteWithChildren,
-    Char123LangChar125StatusRoute: Char123LangChar125StatusRoute,
-    Char123LangChar125TermsRoute: Char123LangChar125TermsRoute,
-    Char123LangChar125IndexRoute: Char123LangChar125IndexRoute,
-  }
-
-const Char123LangChar125RouteRouteWithChildren =
-  Char123LangChar125RouteRoute._addFileChildren(
-    Char123LangChar125RouteRouteChildren,
-  )
-
 interface WSlugTicketsRouteChildren {
   WSlugTicketsIdRoute: typeof WSlugTicketsIdRoute
   WSlugTicketsIndexRoute: typeof WSlugTicketsIndexRoute
@@ -839,7 +400,7 @@ const WorkspacesRouteWithChildren = WorkspacesRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  Char123LangChar125RouteRoute: Char123LangChar125RouteRouteWithChildren,
+  IndexRoute: IndexRoute,
   WRoute: WRouteWithChildren,
   WorkspacesRoute: WorkspacesRouteWithChildren,
   AuthErrorRoute: AuthErrorRoute,

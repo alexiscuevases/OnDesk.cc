@@ -1,7 +1,6 @@
 /**
- * "Pulse console" primitives — the dashboard counterpart of the editorial
- * marketing system (src/features/frontend/shared.tsx). Hard corners,
- * hairline grids, mono telemetry labels, lime scan-lines.
+ * "Pulse console" primitives — hard corners, hairline grids, mono telemetry
+ * labels, lime scan-lines.
  *
  * Use these instead of ad-hoc Card headers so every dashboard page reads
  * as the same instrument panel.
