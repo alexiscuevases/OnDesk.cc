@@ -1,12 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/auth-context";
 import { apiLogout } from "../api/auth-api";
+import { ondeskUrl } from "@/lib/ondesk";
 
 /**
- * Signing out clears the local Pulse session and then hands off to OnDesk's
- * end-session endpoint, which drops the platform session and revokes every
- * product refresh token. Stopping at the local logout would leave the user
- * silently signed back in on the next visit.
+ * Signing out calls OnDesk's logout, which revokes the platform refresh token
+ * and clears the shared `.ondesk.cc` cookies — one call ends the session for
+ * every app at once. There is no local session to clear any more; what's left
+ * is dropping in-memory state and landing on the sign-in screen.
  */
 export function useLogoutMutation() {
 	const queryClient = useQueryClient();
@@ -17,10 +18,7 @@ export function useLogoutMutation() {
 		onSuccess: () => {
 			clearUser();
 			queryClient.clear();
-			const issuer = import.meta.env.VITE_ONDESK_URL ?? "https://ondesk.cc";
-			window.location.href = `${issuer}/api/oidc/logout?client_id=pulse&post_logout_redirect_uri=${encodeURIComponent(
-				`${window.location.origin}/`,
-			)}`;
+			window.location.href = `${ondeskUrl()}/auth/signin`;
 		},
 	});
 }

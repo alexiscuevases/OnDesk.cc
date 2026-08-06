@@ -11,6 +11,7 @@ import { GlobalSearch } from "./global-search";
 import { NotificationsPanel } from "./notifications-panel";
 import { GlobalNova } from "./global-nova";
 import { HelpMenu } from "./help-menu";
+import { AppSwitcher } from "./app-switcher";
 
 function HeaderBreadcrumb() {
 	const { workspace } = useWorkspace();
@@ -46,6 +47,7 @@ export function WorkspaceShell() {
 						<HeaderBreadcrumb />
 						<GlobalSearch />
 						<div className="ml-auto flex items-center gap-1.5">
+							<AppSwitcher />
 							<Button
 								variant="ghost"
 								size="sm"

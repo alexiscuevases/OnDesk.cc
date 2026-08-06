@@ -14,7 +14,6 @@ import { Route as WRouteImport } from './routes/w'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkspacesIndexRouteImport } from './routes/workspaces/index'
 import { Route as WSlugRouteImport } from './routes/w/$slug'
-import { Route as AuthErrorRouteImport } from './routes/auth/error'
 import { Route as WSlugTicketsRouteImport } from './routes/w/$slug/tickets'
 import { Route as WSlugTeamsRouteImport } from './routes/w/$slug/teams'
 import { Route as WSlugSettingsRouteImport } from './routes/w/$slug/settings'
@@ -50,11 +49,6 @@ const WSlugRoute = WSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => WRoute,
-} as any)
-const AuthErrorRoute = AuthErrorRouteImport.update({
-  id: '/auth/error',
-  path: '/auth/error',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const WSlugTicketsRoute = WSlugTicketsRouteImport.update({
   id: '/tickets',
@@ -111,7 +105,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/w': typeof WRouteWithChildren
   '/workspaces': typeof WorkspacesRouteWithChildren
-  '/auth/error': typeof AuthErrorRoute
   '/w/$slug': typeof WSlugRouteWithChildren
   '/workspaces/': typeof WorkspacesIndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
@@ -128,7 +121,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/w': typeof WRouteWithChildren
-  '/auth/error': typeof AuthErrorRoute
   '/w/$slug': typeof WSlugRouteWithChildren
   '/workspaces': typeof WorkspacesIndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
@@ -146,7 +138,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/w': typeof WRouteWithChildren
   '/workspaces': typeof WorkspacesRouteWithChildren
-  '/auth/error': typeof AuthErrorRoute
   '/w/$slug': typeof WSlugRouteWithChildren
   '/workspaces/': typeof WorkspacesIndexRoute
   '/w/$slug/analytics': typeof WSlugAnalyticsRoute
@@ -166,7 +157,6 @@ export interface FileRouteTypes {
     | '/'
     | '/w'
     | '/workspaces'
-    | '/auth/error'
     | '/w/$slug'
     | '/workspaces/'
     | '/w/$slug/analytics'
@@ -183,7 +173,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/w'
-    | '/auth/error'
     | '/w/$slug'
     | '/workspaces'
     | '/w/$slug/analytics'
@@ -200,7 +189,6 @@ export interface FileRouteTypes {
     | '/'
     | '/w'
     | '/workspaces'
-    | '/auth/error'
     | '/w/$slug'
     | '/workspaces/'
     | '/w/$slug/analytics'
@@ -219,7 +207,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   WRoute: typeof WRouteWithChildren
   WorkspacesRoute: typeof WorkspacesRouteWithChildren
-  AuthErrorRoute: typeof AuthErrorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -258,13 +245,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/w/$slug'
       preLoaderRoute: typeof WSlugRouteImport
       parentRoute: typeof WRoute
-    }
-    '/auth/error': {
-      id: '/auth/error'
-      path: '/auth/error'
-      fullPath: '/auth/error'
-      preLoaderRoute: typeof AuthErrorRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/w/$slug/tickets': {
       id: '/w/$slug/tickets'
@@ -403,7 +383,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   WRoute: WRouteWithChildren,
   WorkspacesRoute: WorkspacesRouteWithChildren,
-  AuthErrorRoute: AuthErrorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

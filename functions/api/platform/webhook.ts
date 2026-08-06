@@ -11,7 +11,6 @@ import {
 	clearEntitlement,
 } from "../../_lib/db/mirror";
 import { jsonOk, jsonError } from "../../_lib/response";
-import { revokeAllUserRefreshTokens } from "../../_lib/db";
 
 const MAX_SKEW_SECONDS = 5 * 60;
 
@@ -104,10 +103,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
 		case "workspace.member_removed": {
 			if (!payload.workspace_id || !payload.member) break;
+			// Nothing to revoke here any more: the session is the platform-wide
+			// `.ondesk.cc` cookie, and losing a seat in one workspace must not sign
+			// the person out of everything. withWorkspace answers 403 immediately.
 			await removeMirroredMember(env.DB, payload.workspace_id, payload.member.user_id);
-			// Their pulse session is still valid for up to 15 minutes; killing the
-			// refresh tokens means it cannot be renewed past that.
-			await revokeAllUserRefreshTokens(env.DB, payload.member.user_id);
 			break;
 		}
 

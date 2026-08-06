@@ -1,34 +1,35 @@
 import type { AuthUser } from "@/context/auth-context";
-
-const API_BASE = "/api/auth";
+import { ondeskUrl, signInUrl } from "@/lib/ondesk";
 
 /**
  * Pulse's session client.
  *
- * Authentication itself happens on OnDesk — there is no login form here any
- * more. What remains is reading the local session that the SSO callback issued,
- * refreshing it, and ending it.
+ * Authentication happens on OnDesk — there is no login form in this app, and
+ * since the session cookie lives on `.ondesk.cc` there is no local session
+ * either. Every call here goes to ondesk's own /api/auth endpoints,
+ * cross-origin with credentials (ondesk's middleware answers the CORS side).
+ * Pulse's `/api/auth/*` routes are gone on purpose: auth routes are exclusive
+ * to ondesk.
  */
 
-/** Sends the browser to OnDesk to authenticate, then back to `next`. */
-export function startSignIn(next: string = window.location.pathname): void {
-	window.location.href = `${API_BASE}/sso/start?next=${encodeURIComponent(next)}`;
+/** Sends the browser to OnDesk to authenticate, then back to `returnTo`. */
+export function startSignIn(returnTo: string = window.location.href): void {
+	window.location.href = signInUrl(returnTo);
 }
 
+/** Ends the platform session — for this app and every other one at once. */
 export async function apiLogout(): Promise<void> {
-	await fetch(`${API_BASE}/logout`, { method: "POST", credentials: "include" });
+	await fetch(`${ondeskUrl()}/api/auth/logout`, { method: "POST", credentials: "include" });
 }
 
 export async function apiMe(): Promise<AuthUser | null> {
-	let res = await fetch(`${API_BASE}/me`, { credentials: "include" });
+	const base = `${ondeskUrl()}/api/auth`;
+	let res = await fetch(`${base}/me`, { credentials: "include" });
 
 	if (res.status === 401) {
-		const refreshRes = await fetch(`${API_BASE}/refresh`, {
-			method: "POST",
-			credentials: "include",
-		});
+		const refreshRes = await fetch(`${base}/refresh`, { method: "POST", credentials: "include" });
 		if (!refreshRes.ok) return null;
-		res = await fetch(`${API_BASE}/me`, { credentials: "include" });
+		res = await fetch(`${base}/me`, { credentials: "include" });
 		if (!res.ok) return null;
 	}
 

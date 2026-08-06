@@ -1,7 +1,7 @@
 import type { PagesFunction } from "@cloudflare/workers-types";
 import type { Env, AuthContext, WorkspaceContext, Permission } from "./types";
-import { verifyJwt } from "./crypto";
-import { parseCookies, ACCESS_TOKEN_COOKIE } from "./cookies";
+import { verifySessionToken } from "./sso";
+import { parseCookieValues, ACCESS_TOKEN_COOKIE } from "./cookies";
 import { jsonError } from "./response";
 import { isWorkspaceMember, hasPermission } from "./db";
 
@@ -14,23 +14,29 @@ type WorkspaceHandler<P extends string = string> = (
 ) => Promise<Response>;
 
 /**
- * Middleware HOF that extracts and verifies the JWT from cookies.
- * Passes the verified payload to the handler as `ctx.payload`.
+ * Verifies the shared platform session cookie and hands the payload to the
+ * handler.
+ *
+ * The cookie is minted by ondesk on `Domain=.ondesk.cc` and verified here
+ * against ondesk's published JWKS — Pulse issues no session of its own. Every
+ * candidate value is tried because a stale host-only cookie from the
+ * per-product-session era can shadow the shared one for a few minutes.
  */
 export function withAuth<P extends string = string>(
 	handler: AuthHandler<P>
 ): PagesFunction<Env, P> {
 	return async ({ request, env, params, waitUntil }) => {
-		const cookies = parseCookies(request.headers.get("Cookie"));
-		const accessToken = cookies[ACCESS_TOKEN_COOKIE];
-		if (!accessToken) return jsonError("Not authenticated", 401);
+		const candidates = parseCookieValues(request.headers.get("Cookie"), ACCESS_TOKEN_COOKIE);
+		if (candidates.length === 0) return jsonError("Not authenticated", 401);
 
-		// Pulse only ever issues fully-authenticated tokens now — the half-issued
-		// '2fa_pending' state belongs to ondesk's login flow, not here.
-		const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-		if (!payload) return jsonError("Invalid or expired token", 401);
+		for (const candidate of candidates) {
+			const payload = await verifySessionToken(env, candidate);
+			if (payload) {
+				return handler({ request, env, params: params as Record<P, string>, payload, waitUntil });
+			}
+		}
 
-		return handler({ request, env, params: params as Record<P, string>, payload, waitUntil });
+		return jsonError("Invalid or expired token", 401);
 	};
 }
 

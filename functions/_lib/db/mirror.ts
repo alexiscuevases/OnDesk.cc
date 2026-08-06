@@ -1,5 +1,3 @@
-import type { IdTokenClaims, IdTokenWorkspace } from "../sso";
-
 /**
  * The mirror of OnDesk state.
  *
@@ -8,8 +6,12 @@ import type { IdTokenClaims, IdTokenWorkspace } from "../sso";
  * at users(id) and workspaces(id) keep resolving and none of pulse's queries
  * have to change.
  *
- * The only writers are this module and the platform webhook. Anything else that
- * writes these tables will drift, and the drift is invisible until a JOIN starts
+ * The only writers are the platform webhook and the reconcile job. Sign-in no
+ * longer provisions anything: the session is the shared `.ondesk.cc` cookie,
+ * granting a seat is what tells this product about a person (the
+ * `member_added` webhook carries the profile), and the hourly reconcile
+ * repairs whatever a dropped delivery left stale. Anything else that writes
+ * these tables will drift, and the drift is invisible until a JOIN starts
  * returning the wrong rows.
  */
 
@@ -173,47 +175,3 @@ export async function isEntitled(db: D1Database, workspaceId: string): Promise<b
 	return row !== null && ACTIVE_STATUSES.has(row.status);
 }
 
-/**
- * Just-in-time provisioning, run on every sign-in.
- *
- * Workspaces the token doesn't mention are NOT deleted: the ID token only
- * carries what this client is entitled to see, and treating its absence as a
- * deletion would wipe local data the moment a subscription lapsed. Removals
- * arrive as explicit webhook events instead.
- */
-export async function provisionFromIdToken(db: D1Database, claims: IdTokenClaims): Promise<void> {
-	await upsertMirroredUser(db, {
-		id: claims.sub,
-		name: claims.name,
-		email: claims.email,
-		logo_url: claims.picture,
-	});
-
-	for (const workspace of claims.workspaces) {
-		if (!workspace.entitlement) continue; // not a pulse customer — nothing to mirror
-
-		await upsertMirroredWorkspace(
-			db,
-			{
-				id: workspace.id,
-				name: workspace.name,
-				slug: workspace.slug,
-				logo_url: workspace.logo_url,
-				audit_log_enabled: workspace.audit_log_enabled,
-			},
-			claims.sub,
-		);
-		// The token carries the permissions ondesk resolved for this product, so a
-		// first sign-in lands with them already in place rather than waiting for a
-		// webhook to arrive.
-		await upsertMirroredMember(db, workspace.id, claims.sub, workspace.role, workspace.permissions ?? []);
-		await upsertEntitlement(db, workspace.id, workspace.entitlement);
-	}
-}
-
-/** The workspaces from a token that pulse should actually surface. */
-export function entitledWorkspaces(claims: IdTokenClaims): IdTokenWorkspace[] {
-	return claims.workspaces.filter(
-		(w) => w.entitlement !== null && ACTIVE_STATUSES.has(w.entitlement.status),
-	);
-}

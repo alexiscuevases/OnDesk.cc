@@ -1,7 +1,7 @@
 import type { PagesFunction } from "@cloudflare/workers-types";
 import type { Env } from "../../_lib/types";
-import { verifyJwt } from "../../_lib/crypto";
-import { parseCookies, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
+import { verifySessionToken } from "../../_lib/sso";
+import { parseCookieValues, ACCESS_TOKEN_COOKIE } from "../../_lib/cookies";
 import { jsonOk, jsonError } from "../../_lib/response";
 import { createMethodRouter } from "../../_lib/http";
 
@@ -14,12 +14,17 @@ const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
 export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
 	return createMethodRouter(request.method, {
 		POST: async () => {
-			const cookies = parseCookies(request.headers.get("Cookie"));
-			const accessToken = cookies[ACCESS_TOKEN_COOKIE];
-			if (!accessToken) return jsonError("Not authenticated", 401);
-
-			const payload = await verifyJwt(accessToken, env.JWT_SECRET);
-			if (!payload) return jsonError("Invalid or expired token", 401);
+			// Same verification withAuth does: the shared platform session cookie,
+			// tried candidate by candidate (see _lib/middleware.ts).
+			const candidates = parseCookieValues(request.headers.get("Cookie"), ACCESS_TOKEN_COOKIE);
+			let authenticated = false;
+			for (const candidate of candidates) {
+				if (await verifySessionToken(env, candidate)) {
+					authenticated = true;
+					break;
+				}
+			}
+			if (!authenticated) return jsonError("Not authenticated", 401);
 
 			const url = new URL(request.url);
 			const folder = url.searchParams.get("folder") ?? "logos";
