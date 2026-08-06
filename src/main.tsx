@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { routeTree } from "./routeTree.gen";
 import { AuthProvider, type AuthUser } from "@/context/auth-context";
+import { ThemeProvider } from "@/components/theme-provider";
 import { apiMe } from "@/features/auth/api/auth-api";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -33,12 +34,14 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>
-		<AuthProvider initialUser={initialUser}>
-			<QueryClientProvider client={queryClient}>
-				<RouterProvider router={router} />
-				<Toaster />
-				<ReactQueryDevtools initialIsOpen={false} />
-			</QueryClientProvider>
-		</AuthProvider>
+		<ThemeProvider>
+			<AuthProvider initialUser={initialUser}>
+				<QueryClientProvider client={queryClient}>
+					<RouterProvider router={router} />
+					<Toaster />
+					<ReactQueryDevtools initialIsOpen={false} />
+				</QueryClientProvider>
+			</AuthProvider>
+		</ThemeProvider>
 	</StrictMode>,
 );

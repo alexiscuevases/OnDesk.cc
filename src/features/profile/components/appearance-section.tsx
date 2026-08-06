@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTheme } from "@/components/theme-provider";
 
 const themes = [
 	{ id: "system", label: "System", description: "Follows your OS preference" },
@@ -10,10 +11,8 @@ const themes = [
 	{ id: "dark", label: "Dark", description: "Always use dark mode" },
 ] as const;
 
-type ThemeId = (typeof themes)[number]["id"];
-
 export function AppearanceSection() {
-	const [theme, setTheme] = useState<ThemeId>("system");
+	const { theme, setTheme } = useTheme();
 	const [density, setDensity] = useState("comfortable");
 	const [language, setLanguage] = useState("en");
 
