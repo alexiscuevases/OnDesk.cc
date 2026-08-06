@@ -2,7 +2,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { Plus, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { useWorkspaces } from "../hooks/use-workspace-queries";
 import { useAuth } from "@/context/auth-context";
-import { PulseLine } from "@/shared/components/pulse-line";
 
 function getRoleBadgeClass(role: string) {
 	if (role === "owner") return "border-primary/25 text-primary bg-primary/5 dark:border-accent/30 dark:text-accent dark:bg-accent/10";
@@ -44,8 +43,6 @@ export function WorkspaceSelectorView() {
 						</div>
 					</div>
 				</div>
-
-				<PulseLine className="h-6 w-full text-primary/40 dark:text-accent/40" strokeWidth={1.2} />
 
 				{/* Workspace list */}
 				<div className="border-t border-border divide-y divide-border">

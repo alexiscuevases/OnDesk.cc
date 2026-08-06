@@ -4,7 +4,6 @@ import { useAuth } from "@/context/auth-context";
 import { useWorkspace } from "@/context/workspace-context";
 import { useLogoutMutation } from "@/features/auth/hooks/use-auth-mutations";
 import { useWorkspaces } from "@/features/workspaces/hooks/use-workspace-queries";
-import { PulseLine } from "@/shared/components/pulse-line";
 import {
 	Sidebar,
 	SidebarContent,
@@ -153,7 +152,6 @@ export function WorkspaceSidebar() {
 
 			<SidebarFooter className="p-3 group-data-[collapsible=icon]:p-2">
 				<div className="group-data-[collapsible=icon]:hidden">
-					<PulseLine className="h-5 w-full text-(--pulse-lime)/60" strokeWidth={1.2} />
 					<div className="flex items-center justify-between border-t border-sidebar-border pt-2.5 pb-2 px-0.5">
 						<span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-sidebar-foreground/45">
 							<span className="relative size-1.5 rounded-full bg-(--pulse-lime) dot-live text-(--pulse-lime)" />

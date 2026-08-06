@@ -166,15 +166,6 @@
   --pulse-lime: #a8e02e;       /* bright lime for dark surfaces */
 }
 
-/* EKG signal traveling along the line (requires pathLength={100} on the path) */
-.ekg-path {
-  stroke-dasharray: 12 88;
-  animation: ekg-flow 3.6s linear infinite;
-}
-@keyframes ekg-flow {
-  to { stroke-dashoffset: -100; }
-}
-
 .blink-cursor {
   animation: cursor-blink 1.1s steps(1) infinite;
 }
